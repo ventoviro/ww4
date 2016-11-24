@@ -104,12 +104,12 @@ class ArrayHelper
         $dataTmp = $data;
 
         foreach ($nodes as $arg) {
-            if (is_object($dataTmp) && isset($dataTmp->$arg)) {
-                // Check object value exists
-                $dataTmp = $dataTmp->$arg;
-            } elseif ($dataTmp instanceof \ArrayAccess && isset($dataTmp[$arg])) {
+            if ($dataTmp instanceof \ArrayAccess && isset($dataTmp[$arg])) {
                 // Check arrayAccess value exists
                 $dataTmp = $dataTmp[$arg];
+            } elseif (is_object($dataTmp) && isset($dataTmp->$arg)) {
+                // Check object value exists
+                $dataTmp = $dataTmp->$arg;
             } elseif (is_array($dataTmp) && isset($dataTmp[$arg])) {
                 // Check object value exists
                 $dataTmp = $dataTmp[$arg];
@@ -195,18 +195,18 @@ class ArrayHelper
     /**
      * Remove a value from array or object. The key can be a path separated by dots.
      *
-     * @param array|object &$data     Object or array to remove value.
+     * @param array|object $data      Object or array to remove value.
      * @param string       $key       The key path name.
      * @param string       $separator The separator to split paths.
      *
-     * @return  bool
+     * @return  array|object
      */
-    public static function remove(&$data, string $key, string $separator = '.') : bool
+    public static function remove($data, string $key, string $separator = '.')
     {
         $nodes = array_values(array_filter(explode($separator, $key), 'strlen'));
 
         if (!count($nodes)) {
-            return false;
+            return $data;
         }
 
         $previous = null;
@@ -215,30 +215,81 @@ class ArrayHelper
         foreach ($nodes as $node) {
             if (is_object($dataTmp)) {
                 if (empty($dataTmp->$node)) {
-                    return false;
+                    return $data;
                 }
 
                 $previous = &$dataTmp;
                 $dataTmp  = &$dataTmp->$node;
             } elseif (is_array($dataTmp)) {
                 if (empty($dataTmp[$node])) {
-                    return false;
+                    return $data;
                 }
 
                 $previous = &$dataTmp;
                 $dataTmp  = &$dataTmp[$node];
             } else {
-                return false;
+                return $data;
             }
         }
 
-        // Now, path go to the end, means we get latest node, set value to this node.
+        // Now, path go to the end, means we get latest node, unset value to this node.
         if (is_object($previous)) {
             unset($previous->$node);
         } elseif (is_array($previous)) {
             unset($previous[$node]);
         }
 
-        return true;
+        return $data;
+    }
+
+    /**
+     * Collapse array to one dimension
+     *
+     * @param $data
+     *
+     * @return  array
+     */
+    public static function collapse($data)
+    {
+        return array_values(static::flatten($data, '.', 2));
+    }
+
+    /**
+     * Method to recursively convert data to one dimension array.
+     *
+     * @param   array|object $array     The array or object to convert.
+     * @param   string       $separator The key separator.
+     * @param   int          $depth     Only flatten limited depth, 0 means on limit.
+     * @param   string       $prefix    Last level key prefix.
+     *
+     * @return array
+     */
+    public static function flatten($array, string $separator = '.', int $depth = 0, string $prefix = '')
+    {
+        $temp = [];
+
+        if ($array instanceof \Traversable) {
+            $array = iterator_to_array($array);
+        } elseif (is_object($array)) {
+            $array = get_object_vars($array);
+        }
+
+        foreach ($array as $k => $v) {
+            $key = $prefix ? $prefix . $separator . $k : $k;
+
+            if (($depth === 0 || $depth > 1) && (is_object($v) || is_array($v))) {
+                if ($depth === 0) {
+                    $temp[] = static::flatten($v, $separator, 0, (string) $key);
+                } else {
+                    $temp[] = static::flatten($v, $separator, $depth - 1, (string) $key);
+                }
+            } else {
+                $temp[] = [$key => $v];
+            }
+        }
+
+        // Prevent resource-greedy loop.
+        // @see https://github.com/dseguy/clearPHP/blob/master/rules/no-array_merge-in-loop.md
+        return array_merge(...$temp);
     }
 }

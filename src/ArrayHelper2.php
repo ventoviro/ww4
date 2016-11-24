@@ -14,7 +14,7 @@ namespace Windwalker\Utilities;
  *
  * @since  2.0
  */
-class ArrayHelper
+class ArrayHelper2
 {
     /**
      * Utility function to map an array to a stdClass object.
