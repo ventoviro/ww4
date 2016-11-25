@@ -5,6 +5,7 @@
  * @copyright  Copyright (C) 2016 LYRASOFT.
  * @license    Please see LICENSE file.
  */
+declare(strict_types = 1);
 
 namespace Windwalker\Utilities\Test;
 
@@ -19,6 +20,70 @@ use Windwalker\Utilities\ArrayHelper;
  */
 class ArrayHelperTest extends AbstractBaseTestCase
 {
+    /**
+     * testToArray
+     *
+     * @param $input
+     * @param $recursive
+     * @param $expect
+     *
+     * @return  void
+     *
+     * @dataProvider  providerTestToArray
+     */
+    public function testToArray($input, $recursive, $expect)
+    {
+        $this->assertEquals($expect, ArrayHelper::toArray($input, $recursive));
+    }
+
+    /**
+     * Data provider for object inputs
+     *
+     * @return  array
+     *
+     * @since   2.0
+     */
+    public function providerTestToArray()
+    {
+        return [
+            'string' => [
+                'foo',
+                false,
+                ['foo']
+            ],
+            'array' => [
+                ['foo'],
+                false,
+                ['foo']
+            ],
+            'array_recursive' => [
+                [
+                    'foo' => [
+                    (object) ['bar' => 'bar'],
+                    (object) ['baz' => 'baz']
+                    ]
+                ],
+                true,
+                [
+                    'foo' => [
+                    ['bar' => 'bar'],
+                    ['baz' => 'baz']
+                    ]
+                ]
+            ],
+            'iterator' => [
+                ['foo' => new \ArrayIterator(['bar' => 'baz'])],
+                true,
+                ['foo' => ['bar' => 'baz']]
+            ]
+        ];
+    }
+
+    public function testToObject()
+    {
+        self::markTestIncomplete();
+    }
+
     /**
      * testDef
      *
@@ -86,6 +151,7 @@ class ArrayHelperTest extends AbstractBaseTestCase
         self::assertTrue(ArrayHelper::has(['foo' => 'bar'], 'foo'));
         self::assertFalse(ArrayHelper::has(['foo' => 'bar'], 'yoo'));
         self::assertTrue(ArrayHelper::has(['foo' => ['bar' => 'yoo']], 'foo.bar'));
+        self::assertTrue(ArrayHelper::has(['foo' => new \ArrayObject(['bar' => 'yoo'])], 'foo.bar'));
         self::assertTrue(ArrayHelper::has(['foo' => ['bar' => 'yoo']], 'foo/bar', '/'));
         self::assertFalse(ArrayHelper::has(['foo' => ['bar' => 'yoo']], ''));
     }
@@ -162,14 +228,14 @@ class ArrayHelperTest extends AbstractBaseTestCase
 
         $this->assertEquals($flatted['pos2/pos3/0'], 'olive');
 
-        $array = [
+        $array = new \ArrayObject([
             'Apple' => [
                 ['name' => 'iPhone 6S', 'brand' => 'Apple'],
             ],
             'Samsung' => [
                 ['name' => 'Galaxy S7', 'brand' => 'Samsung']
             ],
-        ];
+        ]);
 
         $expected = [
             'Apple.0' => ['name' => 'iPhone 6S', 'brand' => 'Apple'],
@@ -242,35 +308,32 @@ class ArrayHelperTest extends AbstractBaseTestCase
         // One level
         $return = ArrayHelper::set($data, 'flower', 'sakura');
 
-        $this->assertEquals('sakura', $data['flower']);
-        $this->assertTrue($return);
+        $this->assertEquals('sakura', $return['flower']);
 
         // Multi-level
-        ArrayHelper::set($data, 'foo.bar', 'test');
+        $return = ArrayHelper::set($data, 'foo.bar', 'test');
 
-        $this->assertEquals('test', $data['foo']['bar']);
+        $this->assertEquals('test', $return['foo']['bar']);
 
         // Separator
-        ArrayHelper::set($data, 'foo/bar', 'play', '/');
+        $return = ArrayHelper::set($data, 'foo/bar', 'play', '/');
 
-        $this->assertEquals('play', $data['foo']['bar']);
+        $this->assertEquals('play', $return['foo']['bar']);
 
         // Type
-        ArrayHelper::set($data, 'cloud/fly', 'bird', '/', 'stdClass');
+        $return = ArrayHelper::set($data, 'cloud/fly', 'bird', '/', 'stdClass');
 
-        $this->assertEquals('bird', $data['cloud']->fly);
+        $this->assertEquals('bird', $return['cloud']->fly);
 
         // False
-        $return = ArrayHelper::set($data, '', 'goo');
-
-        $this->assertFalse($return);
+        ArrayHelper::set($data, '', 'goo');
 
         // Fix path
-        ArrayHelper::set($data, 'double..separators', 'value');
+        $return = ArrayHelper::set($data, 'double..separators', 'value');
 
-        $this->assertEquals('value', $data['double']['separators']);
+        $this->assertEquals('value', $return['double']['separators']);
 
-        $this->assertExpectedException(function () {
+        $this->assertExpectedException(function () use ($data) {
             ArrayHelper::set($data, 'a.b', 'c', '.', 'Non\Exists\Class');
         }, \InvalidArgumentException::class, 'Type or class: Non\Exists\Class not exists');
     }
@@ -318,6 +381,12 @@ class ArrayHelperTest extends AbstractBaseTestCase
                 '.'
             ],
             [
+                [1, 2, 3],
+                [1, 2, 3],
+                '',
+                '.'
+            ],
+            [
                 ['foo' => 'bar', 'baz' => 'yoo'],
                 ['baz' => 'yoo'],
                 'foo',
@@ -356,19 +425,147 @@ class ArrayHelperTest extends AbstractBaseTestCase
         ];
     }
 
+    /**
+     * testKeep
+     *
+     * @return  void
+     */
     public function testKeep()
     {
-        self::markTestIncomplete();
+        $array = [
+            'Lycoris' => 'energetic',
+            'Sunflower' => 'worship',
+            'Zinnia' => 'robust',
+            'Lily' => 'love',
+        ];
+
+        self::assertEquals(
+            ['Lycoris' => 'energetic', 'Zinnia' => 'robust'],
+            ArrayHelper::keep($array, ['Lycoris', 'Zinnia'])
+        );
+
+        self::assertEquals(
+            ['Lycoris' => 'energetic'],
+            ArrayHelper::keep($array, ['Lycoris'])
+        );
+
+        self::assertEquals(
+            (object) ['Lycoris' => 'energetic', 'Zinnia' => 'robust'],
+            ArrayHelper::keep((object) $array, ['Lycoris', 'Zinnia'])
+        );
+
+        self::assertEquals(
+            (object) ['Lycoris' => 'energetic'],
+            ArrayHelper::keep((object) $array, ['Lycoris'])
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        ArrayHelper::keep('string', ['test']);
     }
 
+    /**
+     * testFind
+     *
+     * @return  void
+     */
     public function testFind()
     {
-        self::markTestIncomplete();
+        $data = [
+            [
+                'id' => 1,
+                'title' => 'Julius Caesar',
+                'data' => (object) ['foo' => 'bar'],
+            ],
+            [
+                'id' => 2,
+                'title' => 'Macbeth',
+                'data' => [],
+            ],
+            [
+                'id' => 3,
+                'title' => 'Othello',
+                'data' => 123,
+            ],
+            [
+                'id' => 4,
+                'title' => 'Hamlet',
+                'data' => true,
+            ],
+        ];
+
+        $results = ArrayHelper::find($data, function ($value, $key) {
+            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+        });
+
+        $this->assertEquals([$data[0], $data[3]], $results);
+
+        // Keep key
+        $results = ArrayHelper::find($data, function ($value, &$key) {
+            $key++;
+            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+        }, true);
+
+        $this->assertEquals([1 => $data[0], 4 => $data[3]], $results);
+
+        // Offset limit
+        $results = ArrayHelper::find($data, function ($value, &$key) {
+            $key++;
+            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+        }, false, 0, 1);
+
+        $this->assertEquals([$data[0]], $results);
+
+        // Offset limit
+        $results = ArrayHelper::find($data, function ($value, &$key) {
+            $key++;
+            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+        }, false, 1, 1);
+
+        $this->assertEquals([$data[3]], $results);
     }
 
+    /**
+     * testFindFirst
+     *
+     * @return  void
+     */
     public function testFindFirst()
     {
-        self::markTestIncomplete();
+        $data = [
+            [
+                'id' => 1,
+                'title' => 'Julius Caesar',
+                'data' => (object) ['foo' => 'bar'],
+            ],
+            [
+                'id' => 2,
+                'title' => 'Macbeth',
+                'data' => [],
+            ],
+            [
+                'id' => 3,
+                'title' => 'Othello',
+                'data' => 123,
+            ],
+            [
+                'id' => 4,
+                'title' => 'Hamlet',
+                'data' => true,
+            ],
+        ];
+
+        $result = ArrayHelper::findFirst($data, function ($value, $key) {
+            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+        });
+
+        $this->assertEquals($data[0], $result);
+
+        $result = ArrayHelper::findFirst($data, function ($value, $key) {
+            return $value['title'] === 'No exists';
+        });
+
+        $this->assertNull($result);
     }
 
     public function testPluck()
@@ -387,16 +584,6 @@ class ArrayHelperTest extends AbstractBaseTestCase
     }
 
     public function testSortRecursive()
-    {
-        self::markTestIncomplete();
-    }
-
-    public function testToArray()
-    {
-        self::markTestIncomplete();
-    }
-
-    public function testToObject()
     {
         self::markTestIncomplete();
     }

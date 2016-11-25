@@ -17,19 +17,49 @@ namespace Windwalker\Utilities;
 class ArrayHelper
 {
     /**
+     * Utility function to convert all types to an array.
+     *
+     * @param   mixed  $data       The data to convert.
+     * @param   bool   $recursive  Recursive if data is nested.
+     *
+     * @return  array  The converted array.
+     */
+    public static function toArray($data, $recursive = false)
+    {
+        // Ensure the input data is an array.
+        if ($data instanceof \Traversable) {
+            $data = iterator_to_array($data);
+        } elseif (is_object($data)) {
+            $data = get_object_vars($data);
+        } else {
+            $data = (array) $data;
+        }
+
+        if ($recursive) {
+            foreach ($data as &$value) {
+                if (is_array($value) || is_object($value)) {
+                    $value = static::toArray($value, $recursive);
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Check a key exists in object or array. The key can be a path separated by dots.
      *
      * @param array|object $array     Object or array to check.
      * @param string       $key       The key path name.
-     * @param string       $separator The separator to split paths.
+     * @param string       $delimiter The separator to split paths.
      *
      * @return  bool
      *
      * @since 4.0
      */
-    public static function has($array, string $key, string $separator = '.') : bool
+    public static function has($array, $key, string $delimiter = '.') : bool
     {
-        $nodes = array_values(array_filter(explode($separator, $key), 'strlen'));
+        $nodes = array_values(array_filter(explode($delimiter, (string) $key), 'strlen'));
 
         if (empty($nodes)) {
             return false;
@@ -61,22 +91,20 @@ class ArrayHelper
      * @param array|object $array     Object or array to set default value.
      * @param string       $key       Key path name.
      * @param mixed        $value     Value to set if not exists.
-     * @param string       $separator Separator to split paths.
+     * @param string       $delimiter Separator to split paths.
      *
      * @return  array|object
      * @throws \InvalidArgumentException
      *
      * @since 4.0
      */
-    public static function def($array, string $key, $value, string $separator = '.')
+    public static function def($array, $key, $value, string $delimiter = '.')
     {
-        if (static::has($array, $key, $separator)) {
+        if (static::has($array, $key, $delimiter)) {
             return $array;
         }
 
-        static::set($array, $key, $value, $separator);
-
-        return $array;
+        return static::set($array, $key, $value, $delimiter);
     }
 
     /**
@@ -87,15 +115,15 @@ class ArrayHelper
      * @param mixed  $data      An array or object to get value.
      * @param string $key       The key path.
      * @param mixed  $default   The default value if not exists.
-     * @param string $separator Separator of paths.
+     * @param string $delimiter Separator of paths.
      *
      * @return mixed Found value, null if not exists.
      *
      * @since   2.0
      */
-    public static function get($data, string $key, $default = null, string $separator = '.')
+    public static function get($data, $key, $default = null, string $delimiter = '.')
     {
-        $nodes = array_values(array_filter(explode($separator, $key), 'strlen'));
+        $nodes = array_values(array_filter(explode($delimiter, (string) $key), 'strlen'));
 
         if (empty($nodes)) {
             return $default;
@@ -124,23 +152,23 @@ class ArrayHelper
     /**
      * Set value into array or object. The key can be path type.
      *
-     * @param mixed  &$data     An array or object to set data.
+     * @param mixed  $data      An array or object to set data.
      * @param string $key       Path name separate by dot.
      * @param mixed  $value     Value to set into array or object.
-     * @param string $separator Separator to split path.
+     * @param string $delimiter Separator to split path.
      * @param string $storeType The new store data type, default is `array`. you can set object class name.
      *
-     * @return  boolean
+     * @return  array|object
      * @throws \InvalidArgumentException
      *
      * @since   2.0
      */
-    public static function set(&$data, string $key, $value, string $separator = '.', string $storeType = 'array') : bool
+    public static function set($data, $key, $value, string $delimiter = '.', string $storeType = 'array')
     {
-        $nodes = array_values(array_filter(explode($separator, $key), 'strlen'));
+        $nodes = array_values(array_filter(explode($delimiter, (string) $key), 'strlen'));
 
         if (empty($nodes)) {
-            return false;
+            return $data;
         }
 
         /**
@@ -168,12 +196,14 @@ class ArrayHelper
 
         foreach ($nodes as $node) {
             if (is_object($dataTmp)) {
+                // If this node not exists, create new one.
                 if (empty($dataTmp->$node)) {
                     $dataTmp->$node = $createStore($storeType);
                 }
 
                 $dataTmp = &$dataTmp->$node;
             } elseif (is_array($dataTmp)) {
+                // If this node not exists, create new one.
                 if (empty($dataTmp[$node])) {
                     $dataTmp[$node] = $createStore($storeType);
                 }
@@ -189,7 +219,7 @@ class ArrayHelper
         // Now, path go to the end, means we get latest node, set value to this node.
         $dataTmp = $value;
 
-        return true;
+        return $data;
     }
 
     /**
@@ -197,13 +227,13 @@ class ArrayHelper
      *
      * @param array|object $data      Object or array to remove value.
      * @param string       $key       The key path name.
-     * @param string       $separator The separator to split paths.
+     * @param string       $delimiter The separator to split paths.
      *
      * @return  array|object
      */
-    public static function remove($data, string $key, string $separator = '.')
+    public static function remove($data, $key, string $delimiter = '.')
     {
-        $nodes = array_values(array_filter(explode($separator, $key), 'strlen'));
+        $nodes = array_values(array_filter(explode($delimiter, (string) $key), 'strlen'));
 
         if (!count($nodes)) {
             return $data;
@@ -245,7 +275,7 @@ class ArrayHelper
     /**
      * Collapse array to one dimension
      *
-     * @param $data
+     * @param   array|object $data
      *
      * @return  array
      */
@@ -258,13 +288,13 @@ class ArrayHelper
      * Method to recursively convert data to one dimension array.
      *
      * @param   array|object $array     The array or object to convert.
-     * @param   string       $separator The key separator.
+     * @param   string       $delimiter The key path delimiter.
      * @param   int          $depth     Only flatten limited depth, 0 means on limit.
      * @param   string       $prefix    Last level key prefix.
      *
      * @return array
      */
-    public static function flatten($array, string $separator = '.', int $depth = 0, string $prefix = '')
+    public static function flatten($array, string $delimiter = '.', int $depth = 0, string $prefix = '')
     {
         $temp = [];
 
@@ -275,13 +305,13 @@ class ArrayHelper
         }
 
         foreach ($array as $k => $v) {
-            $key = $prefix ? $prefix . $separator . $k : $k;
+            $key = $prefix ? $prefix . $delimiter . $k : $k;
 
             if (($depth === 0 || $depth > 1) && (is_object($v) || is_array($v))) {
                 if ($depth === 0) {
-                    $temp[] = static::flatten($v, $separator, 0, (string) $key);
+                    $temp[] = static::flatten($v, $delimiter, 0, (string) $key);
                 } else {
-                    $temp[] = static::flatten($v, $separator, $depth - 1, (string) $key);
+                    $temp[] = static::flatten($v, $delimiter, $depth - 1, (string) $key);
                 }
             } else {
                 $temp[] = [$key => $v];
@@ -292,4 +322,86 @@ class ArrayHelper
         // @see https://github.com/dseguy/clearPHP/blob/master/rules/no-array_merge-in-loop.md
         return array_merge(...$temp);
     }
+
+    /**
+     * keep
+     *
+     * @param array|object $data
+     * @param array        $fields
+     *
+     * @return  array|object
+     * @throws \InvalidArgumentException
+     */
+    public static function keep($data, array $fields)
+    {
+        if (is_array($data)) {
+            return array_intersect_key($data, array_flip($fields));
+        } elseif (is_object($data)) {
+            $keeps = array_keys(array_diff_key(get_object_vars($data), array_flip($fields)));
+
+            foreach ($keeps as $key) {
+                if (property_exists($data, $key)) {
+                    unset($data->$key);
+                }
+            }
+
+            return $data;
+        }
+
+        throw new \InvalidArgumentException('Argument 1 not array or object');
+    }
+
+    /**
+     * find
+     *
+     * @param array|object $data
+     * @param callable     $callback
+     * @param bool         $keepKey
+     * @param int          $offset
+     * @param int          $limit
+     *
+     * @return array
+     */
+    public static function find($data, callable $callback, bool $keepKey = false, int $offset = null, int $limit = null)
+    {
+        $results = [];
+        $i = 0;
+        $c = 0;
+
+        foreach (static::toArray($data, false) as $key => $value) {
+            // Set Query results
+            if ($callback($value, $key)) {
+                if ($offset !== null && $offset > $i) {
+                    continue;
+                }
+
+                if ($limit !== null && $c >= $limit) {
+                    break;
+                }
+
+                $results[$key] = $value;
+                $c++;
+            }
+
+            $i++;
+        }
+
+        return $keepKey ? $results : array_values($results);
+    }
+
+    /**
+     * findFirst
+     *
+     * @param array    $data
+     * @param callable $callback
+     *
+     * @return  array|null
+     */
+    public static function findFirst($data, callable $callback)
+    {
+        $results = static::find($data, $callback, false, 0, 1);
+
+        return count($results) ? $results[0] : null;
+    }
+
 }
