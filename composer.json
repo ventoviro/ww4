@@ -18,9 +18,6 @@
         "psr/link": "~1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~5.0",
-        "phpunit/php-code-coverage": "~4.0",
-        "squizlabs/php_codesniffer": "~2.0",
         "mockery/mockery": "0.9.*"
     },
     "suggest": {

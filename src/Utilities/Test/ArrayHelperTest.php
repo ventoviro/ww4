@@ -9,7 +9,8 @@ declare(strict_types = 1);
 
 namespace Windwalker\Utilities\Test;
 
-use Windwalker\Test\TestCase\AbstractBaseTestCase;
+use PHPUnit\Framework\TestCase;
+use Windwalker\Test\Traits\BaseAssertionTrait;
 use Windwalker\Utilities\ArrayHelper;
 
 /**
@@ -17,8 +18,10 @@ use Windwalker\Utilities\ArrayHelper;
  *
  * @since  __DEPLOY_VERSION__
  */
-class ArrayHelperTest extends AbstractBaseTestCase
+class ArrayHelperTest extends TestCase
 {
+    use BaseAssertionTrait;
+
     /**
      * testToArray
      *

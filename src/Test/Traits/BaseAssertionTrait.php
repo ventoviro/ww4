@@ -1,22 +1,22 @@
 <?php
 /**
- * Part of windwalker project.
+ * Part of ww4 project.
  *
- * @copyright  Copyright (C) 2014 - 2015 LYRASOFT. All rights reserved.
- * @license    GNU Lesser General Public License version 3 or later.
+ * @copyright  Copyright (C) 2016 {ORGANIZATION}. All rights reserved.
+ * @license    GNU General Public License version 2 or later.
  */
 
-namespace Windwalker\Test\TestCase;
+namespace Windwalker\Test\Traits;
 
-use PHPUnit\Framework\TestCase;
 use Windwalker\Test\Helper\TestStringHelper;
 
+
 /**
- * The AbstractBaseTestCase class.
+ * StringTestTrait
  *
- * @since  2.0
+ * @since  {DEPLOY_VERSION}
  */
-abstract class AbstractBaseTestCase extends TestCase
+trait BaseAssertionTrait
 {
     /**
      * assertStringDataEquals
