@@ -640,6 +640,9 @@ class ArrayHelperTest extends AbstractBaseTestCase
         }, false, 1, 1);
 
         $this->assertEquals([$data[3]], $results);
+
+        // Test global function
+        self::assertEquals(['foo' => 'bar'], ArrayHelper::find(['foo' => 'bar', 'baz' => ''], 'strlen', true));
     }
 
     /**
@@ -683,6 +686,43 @@ class ArrayHelperTest extends AbstractBaseTestCase
         });
 
         $this->assertNull($result);
+    }
+
+    /**
+     * testReject
+     *
+     * @return  void
+     */
+    public function testReject()
+    {
+        $data = [
+            [
+                'id' => 1,
+                'title' => 'Julius Caesar',
+                'data' => (object) ['foo' => 'bar'],
+            ],
+            [
+                'id' => 2,
+                'title' => 'Macbeth',
+                'data' => [],
+            ],
+            [
+                'id' => 3,
+                'title' => 'Othello',
+                'data' => 123,
+            ],
+            [
+                'id' => 4,
+                'title' => 'Hamlet',
+                'data' => true,
+            ],
+        ];
+
+        $results = ArrayHelper::reject($data, function ($value, $key) {
+            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+        });
+
+        $this->assertEquals([$data[1], $data[2]], $results);
     }
 
     /**

@@ -421,8 +421,14 @@ class ArrayHelper
         $c = 0;
 
         foreach ($data as $key => $value) {
-            // Set Query results
-            if ($callback($value, $key)) {
+            // If use global function, send only value as argument.
+            if (is_string($callback)) {
+                $r = $callback($value);
+            } else {
+                $r = $callback($value, $key);
+            }
+
+            if ($r) {
                 if ($offset !== null && $offset > $i) {
                     continue;
                 }
@@ -454,6 +460,26 @@ class ArrayHelper
         $results = static::find($data, $callback, false, 0, 1);
 
         return count($results) ? $results[0] : null;
+    }
+
+    /**
+     * reject
+     *
+     * @param array    $data
+     * @param callable $callback
+     * @param bool     $keepKey
+     *
+     * @return  array
+     */
+    public static function reject(array $data, callable $callback, bool $keepKey = false)
+    {
+        return static::find($data, function (&$value, &$key) use ($callback) {
+            if (is_string($callback)) {
+                return !$callback($value);
+            }
+
+            return !$callback($value, $key);
+        }, $keepKey);
     }
 
     /**
