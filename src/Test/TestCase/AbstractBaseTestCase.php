@@ -8,6 +8,7 @@
 
 namespace Windwalker\Test\TestCase;
 
+use PHPUnit\Framework\TestCase;
 use Windwalker\Test\Helper\TestStringHelper;
 
 /**
@@ -15,7 +16,7 @@ use Windwalker\Test\Helper\TestStringHelper;
  *
  * @since  2.0
  */
-abstract class AbstractBaseTestCase extends \PHPUnit_Framework_TestCase
+abstract class AbstractBaseTestCase extends TestCase
 {
     /**
      * assertStringDataEquals
@@ -30,7 +31,7 @@ abstract class AbstractBaseTestCase extends \PHPUnit_Framework_TestCase
      *
      * @return  void
      */
-    public function assertStringDataEquals(
+    public static function assertStringDataEquals(
         $expected,
         $actual,
         $message = '',
@@ -39,7 +40,7 @@ abstract class AbstractBaseTestCase extends \PHPUnit_Framework_TestCase
         $canonicalize = false,
         $ignoreCase = false
     ) {
-        $this->assertEquals(
+        static::assertEquals(
             TestStringHelper::clean($expected),
             TestStringHelper::clean($actual),
             $message,
@@ -63,7 +64,7 @@ abstract class AbstractBaseTestCase extends \PHPUnit_Framework_TestCase
      *
      * @return  void
      */
-    public function assertStringSafeEquals(
+    public static function assertStringSafeEquals(
         $expected,
         $actual,
         $message = '',
@@ -72,7 +73,7 @@ abstract class AbstractBaseTestCase extends \PHPUnit_Framework_TestCase
         $canonicalize = false,
         $ignoreCase = false
     ) {
-        $this->assertEquals(
+        static::assertEquals(
             trim(TestStringHelper::removeCRLF($expected)),
             trim(TestStringHelper::removeCRLF($actual)),
             $message,
@@ -94,7 +95,7 @@ abstract class AbstractBaseTestCase extends \PHPUnit_Framework_TestCase
      *
      * @return  void
      */
-    public function assertExpectedException(
+    public static function assertExpectedException(
         callable $closure,
         $class = \Throwable::class,
         $msg = null,
@@ -107,20 +108,20 @@ abstract class AbstractBaseTestCase extends \PHPUnit_Framework_TestCase
 
         try {
             $closure();
-        } catch (\Throwable $e) {
-            $this->assertInstanceOf($class, $e, $message);
+        } catch (\Throwable $t) {
+            static::assertInstanceOf($class, $t, $message);
 
             if ($msg !== null) {
-                $this->assertStringStartsWith($msg, $e->getMessage(), $message);
+                static::assertStringStartsWith($msg, $t->getMessage(), $message);
             }
 
             if ($code !== null) {
-                $this->assertEquals($code, $e->getCode(), $message);
+                static::assertEquals($code, $t->getCode(), $message);
             }
 
             return;
         }
 
-        $this->fail('No exception caught.');
+        static::fail('No exception or throwable caught.');
     }
 }

@@ -9,7 +9,6 @@ declare(strict_types = 1);
 
 namespace Windwalker\Utilities\Test;
 
-use PHPUnit\Framework\TestCase;
 use Windwalker\Test\TestCase\AbstractBaseTestCase;
 use Windwalker\Utilities\ArrayHelper;
 
@@ -79,9 +78,127 @@ class ArrayHelperTest extends AbstractBaseTestCase
         ];
     }
 
-    public function testToObject()
+    /**
+     * testToObject
+     *
+     * @return  void
+     *
+     * @dataProvider providerTestToObject
+     */
+    public function testToObject($input, $expect, $message)
     {
-        self::markTestIncomplete();
+        self::assertEquals($expect, ArrayHelper::toObject($input), $message);
+    }
+
+    /**
+     * providerTestToObject
+     *
+     * @return  array
+     */
+    public function providerTestToObject()
+    {
+        return [
+            'single object' => [
+                [
+                    'integer' => 12,
+                    'float'   => 1.29999,
+                    'string'  => 'A Test String'
+                ],
+                (object)[
+                    'integer' => 12,
+                    'float'   => 1.29999,
+                    'string'  => 'A Test String'
+                ],
+                'Should turn array into single object'
+            ],
+            'multiple objects' => [
+                [
+                    'first'  => [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                    'second' => [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                    'third'  => [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                ],
+                (object) [
+                    'first'  => (object) [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                    'second' => (object) [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                    'third'  => (object) [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                ],
+                'Should turn multiple dimension array into nested objects'
+            ],
+            'single object with class' => [
+                [
+                    'integer' => 12,
+                    'float'   => 1.29999,
+                    'string'  => 'A Test String'
+                ],
+                (object) [
+                    'integer' => 12,
+                    'float'   => 1.29999,
+                    'string'  => 'A Test String'
+                ],
+                'Should turn array into single object'
+            ],
+            'multiple objects with class' => [
+                [
+                    'first'  => [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                    'second' => [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                    'third'  => [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                ],
+                (object) [
+                    'first'  => (object) [
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                    'second' => (object)[
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                    'third'  => (object)[
+                        'integer' => 12,
+                        'float'   => 1.29999,
+                        'string'  => 'A Test String'
+                    ],
+                ],
+                'Should turn multiple dimension array into nested objects'
+            ],
+        ];
     }
 
     /**
@@ -274,7 +391,7 @@ class ArrayHelperTest extends AbstractBaseTestCase
         $this->assertEquals('default', ArrayHelper::get($data, '', 'default'));
         $this->assertEquals('love', ArrayHelper::get($data, 'pos1/sunflower', null, '/'));
         $this->assertEquals($data['array'], ArrayHelper::get($data, 'array'));
-        $this->assertNull(ArrayHelper::get($data, 'not.exists'));
+        $this->assertNull(ArrayHelper::get($data, ['not', 'exists']));
 
         $data = (object) [
             'flower' => 'sakura',
@@ -568,63 +685,618 @@ class ArrayHelperTest extends AbstractBaseTestCase
         $this->assertNull($result);
     }
 
-    public function testPluck()
-    {
-        self::markTestIncomplete();
-    }
-
+    /**
+     * testTakeout
+     *
+     * @return  void
+     */
     public function testTakeout()
     {
-        self::markTestIncomplete();
+        $array = [
+            'one' => 1, 'two' => 2, 'three' => 3
+        ];
+
+        self::assertEquals(2, ArrayHelper::takeout($array, 'two'));
+        self::assertEquals(['one' => 1, 'three' => 3], $array);
+
+        $array = [
+            'one' => 1, 'two' => ['two' => 2, 'three' => 3]
+        ];
+
+        self::assertEquals(2, ArrayHelper::takeout($array, 'two.two'));
+        self::assertEquals(['one' => 1, 'two' => ['three' => 3]], $array);
+
+        $array = [
+            'one' => 1, 'two' => 2, 'three' => 3
+        ];
+
+        self::assertEquals('default', ArrayHelper::takeout($array, 'foo', 'default'));
+        self::assertEquals(['one' => 1, 'two' => 2, 'three' => 3], $array);
+
+        $array = (object) [
+            'one' => 1, 'two' => 2, 'three' => 3
+        ];
+
+        self::assertEquals(2, ArrayHelper::takeout($array, 'two'));
     }
 
-    public function testSort()
+    /**
+     * testSort
+     *
+     * @param $data
+     * @param $expected
+     * @param $condition
+     * @param $descending
+     *
+     * @return  void
+     *
+     * @dataProvider providerTestSort
+     */
+    public function testSort($data, $expected, $condition, $descending)
     {
-        self::markTestIncomplete();
+        $return = ArrayHelper::sort($data, $condition, $descending);
+
+        self::assertEquals($expected, array_values($return));
     }
 
-    public function testSortRecursive()
+    /**
+     * providerTestSort
+     *
+     * @return  array
+     */
+    public function providerTestSort()
     {
-        self::markTestIncomplete();
+        return [
+            'simple array' => [
+                [
+                    ['name' => 'Car', 'price' => 200],
+                    ['name' => 'Bike', 'price' => 100],
+                    ['name' => 'Motor', 'price' => 150],
+                ],
+                [
+                    ['name' => 'Bike', 'price' => 100],
+                    ['name' => 'Motor', 'price' => 150],
+                    ['name' => 'Car', 'price' => 200],
+                ],
+                'price',
+                false
+            ],
+            'simple array use callback' => [
+                [
+                    ['name' => 'Car', 'price' => 200],
+                    ['name' => 'Bike', 'price' => 100],
+                    ['name' => 'Motor', 'price' => 150],
+                ],
+                [
+                    ['name' => 'Car', 'price' => 200],
+                    ['name' => 'Motor', 'price' => 150],
+                    ['name' => 'Bike', 'price' => 100],
+                ],
+                function ($item, $key) {
+                    return $item['price'];
+                },
+                true
+            ],
+            'simple objects' => [
+                [
+                    (object) ['name' => 'Car', 'price' => 200],
+                    (object) ['name' => 'Bike', 'price' => 100],
+                    (object) ['name' => 'Motor', 'price' => 150],
+                ],
+                [
+                    (object) ['name' => 'Bike', 'price' => 100],
+                    (object) ['name' => 'Motor', 'price' => 150],
+                    (object) ['name' => 'Car', 'price' => 200],
+                ],
+                'price',
+                false
+            ],
+            'simple objects use callback' => [
+                [
+                    (object) ['name' => 'Bike', 'price' => 100],
+                    (object) ['name' => 'Car', 'price' => 200],
+                    (object) ['name' => 'Motor', 'price' => 150],
+                ],
+                [
+                    (object) ['name' => 'Car', 'price' => 200],
+                    (object) ['name' => 'Bike', 'price' => 100],
+                    (object) ['name' => 'Motor', 'price' => 150],
+                ],
+                function ($item, $key) {
+                    return strlen($item->name);
+                },
+                false
+            ],
+        ];
     }
 
-    public function testInvert()
+    /**
+     * testInvert
+     *
+     * @param $data
+     * @param $expected
+     *
+     * @return  void
+     *
+     * @dataProvider providerTestInvert
+     */
+    public function testInvert($data, $expected)
     {
-        self::markTestIncomplete();
+        self::assertEquals($expected, ArrayHelper::invert($data));
     }
 
+    /**
+     * providerTestInvert
+     *
+     * @return  array
+     */
+    public function providerTestInvert()
+    {
+        return [
+            'Case 1' => [
+                [
+                    'Sakura' => ['1000', '1500', '1750'],
+                    'Olive' => ['3000', '4000', '5000', '6000']
+                ],
+                [
+                    '1000' => 'Sakura',
+                    '1500' => 'Sakura',
+                    '1750' => 'Sakura',
+                    '3000' => 'Olive',
+                    '4000' => 'Olive',
+                    '5000' => 'Olive',
+                    '6000' => 'Olive'
+                ]
+            ],
+            'Case 2' => [
+                [
+                    'Sakura' => [1000, 1500, 1750],
+                    'Olive' => [2750, 3000, 4000, 5000, 6000],
+                    'Sunflower' => [2000, 2500],
+                    'Unspecified' => []
+                ],
+                [
+                    '1000' => 'Sakura',
+                    '1500' => 'Sakura',
+                    '1750' => 'Sakura',
+                    '2750' => 'Olive',
+                    '3000' => 'Olive',
+                    '4000' => 'Olive',
+                    '5000' => 'Olive',
+                    '6000' => 'Olive',
+                    '2000' => 'Sunflower',
+                    '2500' => 'Sunflower'
+                ]
+            ],
+            'Case 3' => [
+                [
+                    'Sakura' => [1000, 1500, 1750],
+                    'valueNotAnArray' => 2750,
+                    'withNonScalarValue' => [2000, [1000 , 3000]]
+                ],
+                [
+                    '1000' => 'Sakura',
+                    '1500' => 'Sakura',
+                    '1750' => 'Sakura',
+                    '2000' => 'withNonScalarValue'
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * testIsAssociative
+     *
+     * @return  void
+     */
     public function testIsAssociative()
     {
-        self::markTestIncomplete();
+        self::assertTrue(ArrayHelper::isAssociative(['foo' => 'bar', 'baz']));
+        self::assertFalse(ArrayHelper::isAssociative(['bar', 'baz']));
+        self::assertTrue(ArrayHelper::isAssociative([2 => 'bar', 1 => 'baz']));
     }
 
-    public function testGroup()
+    /**
+     * testGroup
+     *
+     * @param $source
+     * @param $key
+     * @param $expected
+     * @param $forceArray
+     *
+     * @dataProvider  providerTestGroup
+     */
+    public function testGroup($source, $key, $expected, $forceArray)
     {
-        self::markTestIncomplete();
+        self::assertEquals($expected, ArrayHelper::group($source, $key, $forceArray));
     }
 
+    /**
+     * providerTestGroup
+     *
+     * @return  array
+     */
+    public function providerTestGroup()
+    {
+        return [
+            'A scalar array' => [
+                // Source
+                [
+                    1 => 'a',
+                    2 => 'b',
+                    3 => 'b',
+                    4 => 'c',
+                    5 => 'a',
+                    6 => 'a',
+                ],
+                // Key
+                null,
+                // Expected
+                [
+                    'a' => [1, 5, 6],
+                    'b' => [2, 3],
+                    'c' => 4,
+                ],
+                false
+            ],
+            'A scalar array force child array' => [
+                // Source
+                [
+                    1 => 'a',
+                    2 => 'b',
+                    3 => 'b',
+                    4 => 'c',
+                    5 => 'a',
+                    6 => 'a',
+                ],
+                // Key
+                null,
+                // Expected
+                [
+                    'a' => [1, 5, 6],
+                    'b' => [2, 3],
+                    'c' => [4],
+                ],
+                true
+            ],
+            'An array of associative arrays' => [
+                // Source
+                [
+                    1 => ['id' => 41, 'title' => 'boo'],
+                    2 => ['id' => 42, 'title' => 'boo'],
+                    3 => ['title' => 'boo'],
+                    4 => ['id' => 42, 'title' => 'boo'],
+                    5 => ['id' => 43, 'title' => 'boo'],
+                ],
+                // Key
+                'id',
+                // Expected
+                [
+                    41 => ['id' => 41, 'title' => 'boo'],
+                    42 => [
+                        ['id' => 42, 'title' => 'boo'],
+                        ['id' => 42, 'title' => 'boo'],
+                    ],
+                    43 => ['id' => 43, 'title' => 'boo'],
+                ],
+                false
+            ],
+            'An array of associative arrays force child array' => [
+                // Source
+                [
+                    1 => ['id' => 41, 'title' => 'boo'],
+                    2 => ['id' => 42, 'title' => 'boo'],
+                    3 => ['title' => 'boo'],
+                    4 => ['id' => 42, 'title' => 'boo'],
+                    5 => ['id' => 43, 'title' => 'boo'],
+                ],
+                // Key
+                'id',
+                // Expected
+                [
+                    41 => [['id' => 41, 'title' => 'boo']],
+                    42 => [
+                        ['id' => 42, 'title' => 'boo'],
+                        ['id' => 42, 'title' => 'boo'],
+                    ],
+                    43 => [['id' => 43, 'title' => 'boo']],
+                ],
+                true
+            ],
+            'An array of objects' => [
+                // Source
+                [
+                    1 => (object) ['id' => 41, 'title' => 'boo'],
+                    2 => (object) ['id' => 42, 'title' => 'boo'],
+                    3 => (object) ['title' => 'boo'],
+                    4 => (object) ['id' => 42, 'title' => 'boo'],
+                    5 => (object) ['id' => 43, 'title' => 'boo'],
+                ],
+                // Key
+                'id',
+                // Expected
+                [
+                    41 => (object) ['id' => 41, 'title' => 'boo'],
+                    42 => [
+                        (object) ['id' => 42, 'title' => 'boo'],
+                        (object) ['id' => 42, 'title' => 'boo'],
+                    ],
+                    43 => (object) ['id' => 43, 'title' => 'boo'],
+                ],
+                false
+            ],
+        ];
+    }
+
+    /**
+     * testUnique
+     *
+     * @return  void
+     */
     public function testUnique()
     {
-        self::markTestIncomplete();
+        $array = [
+            [1, 2, 3, [4]],
+            [2, 2, 3, [4]],
+            [3, 2, 3, [4]],
+            [2, 2, 3, [4]],
+            [3, 2, 3, [4]],
+        ];
+
+        $expected = [
+            [1, 2, 3, [4]],
+            [2, 2, 3, [4]],
+            [3, 2, 3, [4]],
+        ];
+
+        self::assertEquals($expected, ArrayHelper::unique($array));
     }
 
-    public function testMerge()
+    /**
+     * testMerge
+     *
+     * @return  void
+     */
+    public function testMergeRecursive()
     {
-        self::markTestIncomplete();
+        $data1 = [
+            'green' => 'Hulk',
+            'red'   => 'empty',
+            'human' => [
+                'dark'  => 'empty',
+                'black' => [
+                    'male'      => 'empty',
+                    'female'    => 'empty',
+                    'no-gender' => 'empty',
+                ],
+            ]
+        ];
+
+        $data2 = [
+            'ai'    => 'Jarvis',
+            'agent' => 'Phil Coulson',
+            'red'   => [
+                'left'  => 'Pepper',
+                'right' => 'Iron Man',
+            ],
+            'human' => [
+                'dark'  => 'Nick Fury',
+                'black' => [
+                    'female' => 'Black Widow',
+                    'male'   => 'Loki',
+                ],
+            ]
+        ];
+
+        $data3 = [
+            'ai' => 'Ultron'
+        ];
+
+        $expected = [
+            'ai'    => 'Jarvis',
+            'agent' => 'Phil Coulson',
+            'green' => 'Hulk',
+            'red'   => [
+                'left'  => 'Pepper',
+                'right' => 'Iron Man',
+            ],
+            'human' => [
+                'dark'  => 'Nick Fury',
+                'black' => [
+                    'male'      => 'Loki',
+                    'female'    => 'Black Widow',
+                    'no-gender' => 'empty',
+                ],
+            ],
+        ];
+
+        $this->assertEquals($expected, ArrayHelper::mergeRecursive($data1, $data2));
+
+        $expected['ai'] = 'Ultron';
+
+        $this->assertEquals($expected, ArrayHelper::mergeRecursive($data1, $data2, $data3));
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        ArrayHelper::mergeRecursive('', 123);
     }
 
+    /**
+     * testDump
+     *
+     * @return  void
+     */
     public function testDump()
     {
-        self::markTestIncomplete();
+        $data = [
+            1,
+            2,
+            'foo' => 'bar',
+            (object) ['baz' => 'yoo'],
+            new \ArrayObject(['flower' => 'sakura', 'fruit' => 'apple']),
+            ['max' => ['level' => ['test' => ['no' => 'show']]]],
+            new class {
+                protected $foo = 'bar';
+                private $baz = 'yoo';
+                public $flower = 'sakura';
+                public static $car = 'toyota';
+            }
+        ];
+
+        $expected = <<<OUT
+Array
+(
+    [0] => 1
+    [1] => 2
+    [foo] => bar
+    [2] => stdClass Object
+        (
+            [baz] => yoo
+        )
+
+    [3] => ArrayObject Object
+        (
+            [flower] => sakura
+            [fruit] => apple
+        )
+
+    [4] => Array
+        (
+            [max] => Array
+                (
+                    [level] => Array
+                        *MAX LEVEL*
+
+                )
+
+        )
+
+    [5] => class@anonymous Object
+        (
+            [foo:protected] => bar
+            [baz:class@anonymous:private] => yoo
+            [flower] => sakura
+            [car:static] => toyota
+        )
+
+)
+OUT;
+
+        self::assertStringSafeEquals($expected, ArrayHelper::dump($data, 4));
     }
 
-    public function testMatch()
+    /**
+     * testShow
+     *
+     * @return  void
+     */
+    public function testShow()
     {
-        self::markTestIncomplete();
+        $data = [
+            'test',
+            1, 2,
+            ['foo' => 'bar'],
+            ['max' => ['level' => ['test' => ['no' => 'show']]]],
+            4
+        ];
+
+        $expected = <<<OUT
+[Value 1]
+test
+
+[Value 2]
+1
+
+[Value 3]
+2
+
+[Value 4]
+Array
+(
+    [foo] => bar
+)
+
+
+[Value 5]
+Array
+(
+    [max] => Array
+        (
+            [level] => Array
+                (
+                    [test] => Array
+                        *MAX LEVEL*
+
+                )
+
+        )
+
+)
+OUT;
+
+        self::assertStringSafeEquals($expected, ArrayHelper::show(...$data));
+        self::assertStringSafeEquals('string', ArrayHelper::show('string'));
+
+        ArrayHelper::$sapi = 'web';
+
+        self::assertStringSafeEquals('<pre>string</pre>', ArrayHelper::show('string'));
+
+        ArrayHelper::$sapi = PHP_SAPI;
     }
 
+    /**
+     * testMap
+     *
+     * @return  void
+     */
     public function testMap()
     {
-        self::markTestIncomplete();
+        $data = [
+            'green' => 'Hulk',
+            'red'   => [
+                'left'  => 'Pepper',
+            ],
+            'human' => [
+                'dark'  => 'Nick Fury',
+                'black' => [
+                    'male' => 'Loki',
+                ],
+            ],
+        ];
+
+        $expected = [
+            'green' => 'Hulk #',
+            'red'   => [
+                'left'  => 'Pepper #',
+            ],
+            'human' => [
+                'dark'  => 'Nick Fury #',
+                'black' => [
+                    'male' => 'Loki #',
+                ],
+            ],
+        ];
+
+        $expected2 = [
+            'green@' => 'Hulk #',
+            'red'   => [
+                'left@'  => 'Pepper #',
+            ],
+            'human' => [
+                'dark@'  => 'Nick Fury #',
+                'black' => [
+                    'male@' => 'Loki #',
+                ],
+            ],
+        ];
+
+        self::assertEquals($expected, ArrayHelper::map($data, function ($value, $key) {
+            return $value . ' #';
+        }, true));
+
+        self::assertEquals($expected2, ArrayHelper::map($data, function ($value, &$key) {
+            $key .= '@';
+            return $value . ' #';
+        }, true));
     }
 }

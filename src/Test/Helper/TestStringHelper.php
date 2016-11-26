@@ -5,6 +5,7 @@
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT. All rights reserved.
  * @license    GNU Lesser General Public License version 3 or later.
  */
+declare(strict_types = 1);
 
 namespace Windwalker\Test\Helper;
 
@@ -25,7 +26,7 @@ class TestStringHelper
      *
      * @return  string
      */
-    public static function clean($string)
+    public static function clean(string $string) : string
     {
         $string = preg_replace('/\s\s+/', ' ', $string);
 
@@ -39,7 +40,7 @@ class TestStringHelper
      *
      * @return  string
      */
-    public static function removeCRLF($string)
+    public static function removeCRLF(string $string) : string
     {
         return str_replace("\r\n", "\n", $string);
     }
@@ -52,9 +53,9 @@ class TestStringHelper
      *
      * @return  string
      */
-    public static function quote($string, $quote = array('"', '"'))
+    public static function quote($string, $quote = ['"', '"']) : string
     {
-        $quote = (array)$quote;
+        $quote = (array) $quote;
 
         if (empty($quote[1])) {
             $quote[1] = $quote[0];
