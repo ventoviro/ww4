@@ -611,6 +611,20 @@ class ArrayHelper
     }
 
     /**
+     * Is a value an array or array accessible.
+     *
+     * @param   mixed  $array
+     *
+     * @return  bool
+     *
+     * @since  4.0
+     */
+    public static function accessible($array) : bool
+    {
+        return is_array($array) || $array instanceof \ArrayAccess;
+    }
+
+    /**
      * Re-group an array to create a reverse lookup of an array of scalars, arrays or objects.
      *
      * @param array  $array      The source array data.

@@ -937,6 +937,39 @@ class ArrayHelperTest extends AbstractBaseTestCase
     }
 
     /**
+     * testAccessible
+     *
+     * @return  void
+     */
+    public function testAccessible()
+    {
+        self::assertTrue(ArrayHelper::accessible([]));
+        self::assertTrue(ArrayHelper::accessible(new \ArrayObject()));
+
+        $array = new class implements \ArrayAccess {
+            public function offsetExists($offset)
+            {
+            }
+
+            public function offsetGet($offset)
+            {
+            }
+
+            public function offsetSet($offset, $value)
+            {
+            }
+
+            public function offsetUnset($offset)
+            {
+            }
+        };
+
+        self::assertTrue(ArrayHelper::accessible($array));
+        self::assertFalse(ArrayHelper::accessible(new \EmptyIterator()));
+        self::assertFalse(ArrayHelper::accessible(new \stdClass()));
+    }
+
+    /**
      * testGroup
      *
      * @param $source
