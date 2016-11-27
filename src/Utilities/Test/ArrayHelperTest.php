@@ -779,7 +779,7 @@ class ArrayHelperTest extends TestCase
     {
         $return = ArrayHelper::sort($data, $condition, $descending);
 
-        self::assertEquals($expected, array_values($return));
+        self::assertEquals($expected, $return);
     }
 
     /**
@@ -797,23 +797,23 @@ class ArrayHelperTest extends TestCase
                     ['name' => 'Motor', 'price' => 150],
                 ],
                 [
-                    ['name' => 'Bike', 'price' => 100],
-                    ['name' => 'Motor', 'price' => 150],
-                    ['name' => 'Car', 'price' => 200],
+                    1 => ['name' => 'Bike', 'price' => 100],
+                    2 => ['name' => 'Motor', 'price' => 150],
+                    0 => ['name' => 'Car', 'price' => 200],
                 ],
                 'price',
                 false
             ],
             'simple array use callback' => [
                 [
-                    ['name' => 'Car', 'price' => 200],
-                    ['name' => 'Bike', 'price' => 100],
-                    ['name' => 'Motor', 'price' => 150],
+                    2 => ['name' => 'Car', 'price' => 200],
+                    3 => ['name' => 'Bike', 'price' => 100],
+                    4 => ['name' => 'Motor', 'price' => 150],
                 ],
                 [
-                    ['name' => 'Car', 'price' => 200],
-                    ['name' => 'Motor', 'price' => 150],
-                    ['name' => 'Bike', 'price' => 100],
+                    2 => ['name' => 'Car', 'price' => 200],
+                    4 => ['name' => 'Motor', 'price' => 150],
+                    3 => ['name' => 'Bike', 'price' => 100],
                 ],
                 function ($item, $key) {
                     return $item['price'];
@@ -827,9 +827,9 @@ class ArrayHelperTest extends TestCase
                     (object) ['name' => 'Motor', 'price' => 150],
                 ],
                 [
-                    (object) ['name' => 'Bike', 'price' => 100],
-                    (object) ['name' => 'Motor', 'price' => 150],
-                    (object) ['name' => 'Car', 'price' => 200],
+                    1 => (object) ['name' => 'Bike', 'price' => 100],
+                    2 => (object) ['name' => 'Motor', 'price' => 150],
+                    0 => (object) ['name' => 'Car', 'price' => 200],
                 ],
                 'price',
                 false
@@ -841,9 +841,9 @@ class ArrayHelperTest extends TestCase
                     (object) ['name' => 'Motor', 'price' => 150],
                 ],
                 [
-                    (object) ['name' => 'Car', 'price' => 200],
-                    (object) ['name' => 'Bike', 'price' => 100],
-                    (object) ['name' => 'Motor', 'price' => 150],
+                    1 => (object) ['name' => 'Car', 'price' => 200],
+                    0 => (object) ['name' => 'Bike', 'price' => 100],
+                    2 => (object) ['name' => 'Motor', 'price' => 150],
                 ],
                 function ($item, $key) {
                     return strlen($item->name);

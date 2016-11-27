@@ -536,7 +536,7 @@ class ArrayHelper
         $descending ? arsort($results, $options) : asort($results, $options);
 
         // Get origin data from items
-        foreach (array_keys($results) as $key => $value) {
+        foreach ($results as $key => $value) {
             $results[$key] = $data[$key];
         }
 
