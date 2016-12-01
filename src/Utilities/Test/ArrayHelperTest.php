@@ -421,6 +421,11 @@ class ArrayHelperTest extends TestCase
         $this->assertNull(ArrayHelper::get($data, 'not.exists'));
     }
 
+    /**
+     * testSet
+     *
+     * @return  void
+     */
     public function testSet()
     {
         $data = array();
@@ -924,6 +929,44 @@ class ArrayHelperTest extends TestCase
                     '2000' => 'withNonScalarValue'
                 ]
             ]
+        ];
+    }
+
+    /**
+     * Method to test pivot().
+     *
+     * @param array $data
+     * @param array $expected
+     *
+     * @return void
+     *
+     * @dataProvider providerTestPivot
+     */
+    public function testPivot($data, $expected)
+    {
+        $this->assertEquals($expected, ArrayHelper::pivot($data));
+    }
+
+    /**
+     * seedTestTranspose
+     *
+     * @return array
+     */
+    public function providerTestPivot()
+    {
+        return [
+            [
+                // data
+                [
+                    'Jones'  => [123, 223],
+                    'Arthur' => ['Lancelot', 'Jessica']
+                ],
+                // expected
+                [
+                    ['Jones' => 123, 'Arthur' => 'Lancelot'],
+                    ['Jones' => 223, 'Arthur' => 'Jessica'],
+                ],
+            ],
         ];
     }
 

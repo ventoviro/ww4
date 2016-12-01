@@ -17,8 +17,7 @@ if (!function_exists('show')) {
      *
      * @return  void
      */
-    // TODO: Use void return type after 7.1 available.
-    function show(...$args)
+    function show(...$args) : void
     {
         echo \Windwalker\Utilities\ArrayHelper::show(...$args);
     }

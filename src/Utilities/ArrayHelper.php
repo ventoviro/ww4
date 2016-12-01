@@ -16,9 +16,8 @@ namespace Windwalker\Utilities;
  */
 class ArrayHelper
 {
-    // TODO: Add visibility after PHP 7.1 available
-    const SORT_ASC = false;
-    const SORT_DESC = true;
+    public const SORT_ASC = false;
+    public const SORT_DESC = true;
 
     /**
      * SAPI mocck name to support test.
@@ -93,7 +92,7 @@ class ArrayHelper
      *
      * @since 4.0
      */
-    public static function has($array, $key, string $delimiter = '.') : bool
+    public static function has($array, string $key, string $delimiter = '.') : bool
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -189,15 +188,12 @@ class ArrayHelper
         $dataTmp = $data;
 
         foreach ($nodes as $arg) {
-            if ($dataTmp instanceof \ArrayAccess && isset($dataTmp[$arg])) {
+            if (static::accessible($dataTmp) && isset($dataTmp[$arg])) {
                 // Check arrayAccess value exists
                 $dataTmp = $dataTmp[$arg];
             } elseif (is_object($dataTmp) && isset($dataTmp->$arg)) {
                 // Check object value exists
                 $dataTmp = $dataTmp->$arg;
-            } elseif (is_array($dataTmp) && isset($dataTmp[$arg])) {
-                // Check object value exists
-                $dataTmp = $dataTmp[$arg];
             } else {
                 return $default;
             }
@@ -296,6 +292,7 @@ class ArrayHelper
             return $data;
         }
 
+        $node     = null;
         $previous = null;
         $dataTmp  = &$data;
 
@@ -471,7 +468,7 @@ class ArrayHelper
      *
      * @return  array
      */
-    public static function reject(array $data, callable $callback, bool $keepKey = false)
+    public static function reject(array $data, callable $callback, bool $keepKey = false) : array
     {
         return static::find($data, function (&$value, &$key) use ($callback) {
             if (is_string($callback)) {
@@ -490,7 +487,7 @@ class ArrayHelper
      * @param mixed        $default
      * @param string       $delimiter
      *
-     * @return  mixed
+     * @return  array|object
      */
     public static function takeout(&$data, $key, $default = null, string $delimiter = '.')
     {
@@ -570,7 +567,7 @@ class ArrayHelper
      *
      * @since   2.0
      */
-    public static function invert(array $array)
+    public static function invert(array $array) : array
     {
         $return = [];
 
@@ -588,6 +585,48 @@ class ArrayHelper
         }
 
         return $return;
+    }
+
+    /**
+     * Pivot Array, separate by key.
+     * From:
+     *         [value] => Array
+     *             (
+     *                 [0] => aaa
+     *                 [1] => bbb
+     *             )
+     *         [text] => Array
+     *             (
+     *                 [0] => aaa
+     *                 [1] => bbb
+     *             )
+     *  To:
+     *         [0] => Array
+     *             (
+     *                 [value] => aaa
+     *                 [text] => aaa
+     *             )
+     *         [1] => Array
+     *             (
+     *                 [value] => bbb
+     *                 [text] => bbb
+     *             )
+     *
+     * @param   array $array An array with two level.
+     *
+     * @return  array An pivoted array.
+     */
+    public static function pivot(array $array) : array
+    {
+        $result = [];
+
+        foreach (array_keys($array) as $i => $key) {
+            foreach ((array) $array[$key] as $key2 => $value) {
+                $result[$key2][$key] = $value;
+            }
+        }
+
+        return $result;
     }
 
     /**
