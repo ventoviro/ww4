@@ -7,5 +7,7 @@
 vendor/*
 composer.lock
 
+/coverage
+
 # Test #
 phpunit.xml
