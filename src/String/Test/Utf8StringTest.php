@@ -439,11 +439,10 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestTranscode()
+    public function seedTestConvertEncoding()
     {
         return [
-            ['Åbc Öde €2.0', 'UTF-8', 'ISO-8859-1', "\xc5bc \xd6de EUR2.0"],
-            [['Åbc Öde €2.0'], 'UTF-8', 'ISO-8859-1', null],
+            ['Åbc Öde €2.0', 'UTF-8', 'ISO-8859-15', "\xc5bc \xd6de \xA42.0"]
         ];
     }
 
@@ -938,7 +937,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      */
     public function testTranscode($source, $from_encoding, $to_encoding, $expect)
     {
-        $actual = Utf8String::transcode($source, $from_encoding, $to_encoding);
+        $actual = Utf8String::convertEncoding($source, $from_encoding, $to_encoding);
         $this->assertEquals($expect, $actual);
     }
 

@@ -506,8 +506,8 @@ abstract class Utf8String
      * Transcode a string.
      *
      * @param   string $source        The string to transcode.
-     * @param   string $from_encoding The source encoding.
-     * @param   string $to_encoding   The target encoding.
+     * @param   string $from The source encoding.
+     * @param   string $to   The target encoding.
      *
      * @return  mixed  The transcoded string, or null if the source was not a string.
      *
@@ -515,22 +515,13 @@ abstract class Utf8String
      *
      * @since   2.0
      */
-    public static function transcode($source, $from_encoding, $to_encoding)
+    public static function convertEncoding(string $source, string $from, string $to)
     {
-        if (is_string($source)) {
-            $function = function_exists('mb_iconv') ? 'mb_iconv' : 'iconv';
-
-            switch (ICONV_IMPL) {
-                case 'glibc':
-                    return @$function($from_encoding, $to_encoding . '//TRANSLIT,IGNORE', $source);
-
-                case 'libiconv':
-                default:
-                    return $function($from_encoding, $to_encoding . '//IGNORE//TRANSLIT', $source);
-            }
+        if ($source === '') {
+            return $source;
         }
 
-        return null;
+        return mb_convert_encoding($source, $to, $from);
     }
 
     /**
