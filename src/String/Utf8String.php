@@ -26,7 +26,6 @@ namespace Windwalker\String;
  * @method  static  string strrichr($haystack, $needle, $part = false, $encoding = null)
  * @method  static  int    strripos($haystack, $needle, $offset = 0, $encoding = null)
  * @method  static  string strstr($haystack, $needle, $part = false, $encoding = null)
- * @method  static  int    substr_count($haystack, $needle, $encoding = null)
  * @method  static  string chr($code, $encoding = null)
  * @method  static  string ord($s, $encoding = null)
  * @method  static  string parse_str($encoded_string, array &$result)
@@ -40,6 +39,9 @@ namespace Windwalker\String;
  */
 abstract class Utf8String
 {
+    public const CASE_SENSITIVE = true;
+    public const CASE_INSENSITIVE = false;
+
     /**
      * Tests whether a string contains only 7bit ASCII bytes.
      * You might use this to conditionally check whether a string
@@ -332,7 +334,7 @@ abstract class Utf8String
      * @see     http://www.php.net/substr_replace
      * @since   2.0
      */
-    public static function substr_replace($str, $repl, $start, $length = null, $encoding = null)
+    public static function substr_replace($str, $repl, $start, $length = null, $encoding = null) : string
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -500,6 +502,32 @@ abstract class Utf8String
 
             return $leadingws . $ucword;
         }, $str);
+    }
+
+    /**
+     * substr_count
+     *
+     * @param string      $string
+     * @param string      $search
+     * @param bool        $caseSensitive
+     * @param string|null $encoding
+     *
+     * @return  int
+     */
+    public static function substr_count(
+        string $string,
+        string $search,
+        bool $caseSensitive = true,
+        string $encoding = null
+    ) : int {
+        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+
+        if (!$caseSensitive) {
+            $string = static::strtoupper($string);
+            $search = static::strtoupper($search);
+        }
+
+        return mb_substr_count($string, $search, $encoding);
     }
 
     /**

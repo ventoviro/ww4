@@ -923,6 +923,40 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * testSubstr_count
+     *
+     * @param $string
+     * @param $search
+     * @param $expected
+     * @param $caseSensitive
+     *
+     * @dataProvider substr_countProvider
+     */
+    public function testSubstr_count($string, $search, $expected, $caseSensitive)
+    {
+        self::assertEquals($expected, Utf8String::substr_count($string, $search, $caseSensitive));
+    }
+
+    /**
+     * substr_countProvider
+     *
+     * @return  array
+     */
+    public function substr_countProvider()
+    {
+        return [
+            ['FooBarFlowerSakura', 'Flower', 1, Utf8String::CASE_SENSITIVE],
+            ['FooBarFlowerSakura', 'o', 3, Utf8String::CASE_SENSITIVE],
+            ['FooOOooo', 'o', 5, Utf8String::CASE_SENSITIVE],
+            ['FooOOooo', 'o', 7, Utf8String::CASE_INSENSITIVE],
+            ['FÒÔòôòô', 'ô', 2, Utf8String::CASE_SENSITIVE],
+            ['FÒÔòôòô', 'ô', 3, Utf8String::CASE_INSENSITIVE],
+            ['объектов на карте с', 'б', 1, Utf8String::CASE_SENSITIVE],
+            ['庭院深深深幾許', '深', 3, Utf8String::CASE_SENSITIVE]
+        ];
+    }
+
+    /**
      * Test...
      *
      * @param   string $source        @todo
