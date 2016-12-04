@@ -5,7 +5,7 @@
  * @copyright  Copyright (C) 2016 LYRASOFT.
  * @license    Please see LICENSE file.
  */
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Windwalker\Utilities;
 
@@ -29,12 +29,12 @@ class ArrayHelper
     /**
      * Utility function to convert all types to an array.
      *
-     * @param   mixed  $data       The data to convert.
-     * @param   bool   $recursive  Recursive if data is nested.
+     * @param   mixed $data      The data to convert.
+     * @param   bool  $recursive Recursive if data is nested.
      *
      * @return  array  The converted array.
      */
-    public static function toArray($data, bool $recursive = false) : array
+    public static function toArray($data, bool $recursive = false): array
     {
         // Ensure the input data is an array.
         if ($data instanceof \Traversable) {
@@ -42,7 +42,7 @@ class ArrayHelper
         } elseif (is_object($data)) {
             $data = get_object_vars($data);
         } else {
-            $data = (array) $data;
+            $data = (array)$data;
         }
 
         if ($recursive) {
@@ -59,8 +59,8 @@ class ArrayHelper
     /**
      * Utility function to map an array to a stdClass object.
      *
-     * @param   array   $array  The array to map.
-     * @param   string  $class  Name of the class to create
+     * @param   array  $array The array to map.
+     * @param   string $class Name of the class to create
      *
      * @return  object  The object mapped from the given array
      *
@@ -92,7 +92,7 @@ class ArrayHelper
      *
      * @since 4.0
      */
-    public static function has($array, string $key, string $delimiter = '.') : bool
+    public static function has($array, string $key, string $delimiter = '.'): bool
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -150,17 +150,17 @@ class ArrayHelper
      *
      * @return  array
      */
-    private static function getPathNodes($path, string $delimiter = '.') : array
+    private static function getPathNodes($path, string $delimiter = '.'): array
     {
         if (is_array($path)) {
             return $path;
         }
 
-        if ($path && strpos((string) $path, $delimiter) === false) {
+        if ($path && strpos((string)$path, $delimiter) === false) {
             return [$path];
         }
 
-        return array_values(array_filter(explode($delimiter, (string) $path), 'strlen'));
+        return array_values(array_filter(explode($delimiter, (string)$path), 'strlen'));
     }
 
     /**
@@ -333,7 +333,7 @@ class ArrayHelper
      *
      * @return  array
      */
-    public static function collapse($data) : array
+    public static function collapse($data): array
     {
         return array_values(static::flatten($data, '.', 2));
     }
@@ -348,7 +348,7 @@ class ArrayHelper
      *
      * @return array
      */
-    public static function flatten($array, string $delimiter = '.', int $depth = 0, string $prefix = '') : array
+    public static function flatten($array, string $delimiter = '.', int $depth = 0, string $prefix = ''): array
     {
         $temp = [];
 
@@ -356,7 +356,7 @@ class ArrayHelper
             $key = $prefix ? $prefix . $delimiter . $k : $k;
 
             if (($depth === 0 || $depth > 1) && (is_object($v) || is_array($v))) {
-                $temp[] = static::flatten($v, $delimiter, $depth === 0 ? $depth : $depth - 1, (string) $key);
+                $temp[] = static::flatten($v, $delimiter, $depth === 0 ? $depth : $depth - 1, (string)$key);
             } else {
                 $temp[] = [$key => $v];
             }
@@ -412,10 +412,10 @@ class ArrayHelper
         bool $keepKey = false,
         int $offset = null,
         int $limit = null
-    ) : array {
+    ): array {
         $results = [];
-        $i = 0;
-        $c = 0;
+        $i       = 0;
+        $c       = 0;
 
         foreach ($data as $key => $value) {
             // If use global function, send only value as argument.
@@ -468,7 +468,7 @@ class ArrayHelper
      *
      * @return  array
      */
-    public static function reject(array $data, callable $callback, bool $keepKey = false) : array
+    public static function reject(array $data, callable $callback, bool $keepKey = false): array
     {
         return static::find($data, function (&$value, &$key) use ($callback) {
             if (is_string($callback)) {
@@ -514,7 +514,7 @@ class ArrayHelper
      *
      * @since   4.0
      */
-    public static function sort(array $data, $condition, bool $descending = false, int $options = SORT_REGULAR) : array
+    public static function sort(array $data, $condition, bool $descending = false, int $options = SORT_REGULAR): array
     {
         $results = [];
 
@@ -561,13 +561,13 @@ class ArrayHelper
      *     '6000' => 'Used'
      * );
      *
-     * @param   array  $array  The source array.
+     * @param   array $array The source array.
      *
      * @return  array  The inverted array.
      *
      * @since   2.0
      */
-    public static function invert(array $array) : array
+    public static function invert(array $array): array
     {
         $return = [];
 
@@ -616,12 +616,12 @@ class ArrayHelper
      *
      * @return  array An pivoted array.
      */
-    public static function pivot(array $array) : array
+    public static function pivot(array $array): array
     {
         $result = [];
 
         foreach (array_keys($array) as $i => $key) {
-            foreach ((array) $array[$key] as $key2 => $value) {
+            foreach ((array)$array[$key] as $key2 => $value) {
                 $result[$key2][$key] = $value;
             }
         }
@@ -632,13 +632,13 @@ class ArrayHelper
     /**
      * Method to determine if an array is an associative array.
      *
-     * @param   array  $array  An array to test.
+     * @param   array $array An array to test.
      *
      * @return  boolean  True if the array is an associative array.
      *
      * @since   2.0
      */
-    public static function isAssociative(array $array) : bool
+    public static function isAssociative(array $array): bool
     {
         foreach (array_keys($array) as $k => $v) {
             if ($k !== $v) {
@@ -652,13 +652,13 @@ class ArrayHelper
     /**
      * Is a value an array or array accessible.
      *
-     * @param   mixed  $array
+     * @param   mixed $array
      *
      * @return  bool
      *
      * @since  4.0
      */
-    public static function accessible($array) : bool
+    public static function accessible($array): bool
     {
         return is_array($array) || $array instanceof \ArrayAccess;
     }
@@ -675,7 +675,7 @@ class ArrayHelper
      *
      * @since  2.0
      */
-    public static function group(array $array, $key = null, bool $forceArray = false) : array
+    public static function group(array $array, $key = null, bool $forceArray = false): array
     {
         $results  = [];
         $hasArray = [];
@@ -699,7 +699,7 @@ class ArrayHelper
             if (!isset($results[$resultKey])) {
                 // Force first element in array.
                 if ($forceArray) {
-                    $results[$resultKey]   = [$resultValue];
+                    $results[$resultKey]  = [$resultValue];
                     $hasArray[$resultKey] = true;
                 } else {
                     // Keep first element single.
@@ -727,14 +727,14 @@ class ArrayHelper
     /**
      * Multidimensional array safe unique test
      *
-     * @param   array  $array  The array to make unique.
+     * @param   array $array The array to make unique.
      *
      * @return  array
      *
      * @see     http://php.net/manual/en/function.array-unique.php
      * @since   2.0
      */
-    public static function unique(array $array) : array
+    public static function unique(array $array): array
     {
         $array = array_map('serialize', $array);
         $array = array_unique($array);
@@ -746,15 +746,15 @@ class ArrayHelper
     /**
      * Merge array recursively.
      *
-     * @param   array   $array1  Array 1 to be merge.
-     * @param   array   ...$args Array more to be merge.
+     * @param   array $array1  Array 1 to be merge.
+     * @param   array ...$args Array more to be merge.
      *
      * @return  array Merged array.
      * @throws \InvalidArgumentException
      *
      * @since   4.0
      */
-    public static function mergeRecursive($array1, ...$args) : array
+    public static function mergeRecursive($array1, ...$args): array
     {
         $result = $array1;
 
@@ -785,7 +785,7 @@ class ArrayHelper
      *
      * @since   2.0
      */
-    public static function dump($data, int $depth = 5) : string
+    public static function dump($data, int $depth = 5): string
     {
         static $innerLevel = 1;
         static $tabLevel = 1;
@@ -872,7 +872,7 @@ class ArrayHelper
             $output = $data;
         }
 
-        return (string) $output;
+        return (string)$output;
     }
 
     /**
@@ -882,15 +882,15 @@ class ArrayHelper
      *
      * @return  string
      */
-    public static function show(...$args) : string
+    public static function show(...$args): string
     {
         $output = '';
-        $last = array_pop($args);
+        $last   = array_pop($args);
 
         if (is_int($last)) {
             $level = $last;
         } else {
-            $level = 5;
+            $level  = 5;
             $args[] = $last;
         }
 

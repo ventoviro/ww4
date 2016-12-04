@@ -442,7 +442,8 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
     public function seedTestConvertEncoding()
     {
         return [
-            ['Åbc Öde €2.0', 'UTF-8', 'ISO-8859-15', "\xc5bc \xd6de \xA42.0"]
+            ['Åbc Öde €2.0', 'UTF-8', 'ISO-8859-15', "\xc5bc \xd6de \xA42.0"],
+            ['', 'UTF-8', 'ISO-8859-15', '']
         ];
     }
 
@@ -462,6 +463,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
             ["foo\xF7bar", false],
             ['george Мога Ž Ψυχοφθόρα ฉันกินกระจกได้ 我能吞下玻璃而不伤身体 ', true],
             ["\xFF ABC", false],
+            ["\xFa ABC", false],
             ["0xfffd ABC", true],
             ['', true]
         ];
@@ -966,10 +968,10 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestTranscode
+     * @dataProvider  seedTestConvertEncoding
      * @since         2.0
      */
-    public function testTranscode($source, $from_encoding, $to_encoding, $expect)
+    public function testConvertEncoding($source, $from_encoding, $to_encoding, $expect)
     {
         $actual = Utf8String::convertEncoding($source, $from_encoding, $to_encoding);
         $this->assertEquals($expect, $actual);

@@ -14,26 +14,26 @@ namespace Windwalker\String;
  * Wraps the phputf8 library
  * All functions assume the validity of utf-8 strings.
  *
- * @method  static  int    strpos($str, $search, $offset = 0, $encoding = null)
- * @method  static  int    strrpos($str, $search, $offset = 0, $encoding = null)
- * @method  static  string substr($str, $offset, $length = null, $encoding = null)
- * @method  static  string strtolower($str, $encoding = null)
- * @method  static  string strtoupper($str, $encoding = null)
- * @method  static  int    strlen($str, $encoding = null)
- * @method  static  string stristr($str, $search, $encoding = null)
- * @method  static  mixed  stripos($haystack, $needle, $offset = 0, $encoding = null)
- * @method  static  string strrchr($haystack, $needle, $part = false, $encoding = null)
- * @method  static  string strrichr($haystack, $needle, $part = false, $encoding = null)
- * @method  static  int    strripos($haystack, $needle, $offset = 0, $encoding = null)
- * @method  static  string strstr($haystack, $needle, $part = false, $encoding = null)
- * @method  static  string chr($code, $encoding = null)
- * @method  static  string ord($s, $encoding = null)
- * @method  static  string parse_str($encoded_string, array &$result)
- * @method  static  string convert_case($s, $mode, $encoding = null)
- * @method  static  string detect_encoding($str, $encodingList = null, $strict = false)
- * @method  static  mixed  detect_order($encodingList = null)
- * @method  static  string ereg_replace($pattern, $replacement, $string, $option = "msr")
- * @method  static  string eregi_replace($pattern, $replacement, $string, $option = "msr")
+ * @method  static int    strpos($str, $search, $offset = 0, $encoding = null)
+ * @method  static int    strrpos($str, $search, $offset = 0, $encoding = null)
+ * @method  static string substr($str, $offset, $length = null, $encoding = null)
+ * @method  static string strtolower($str, $encoding = null)
+ * @method  static string strtoupper($str, $encoding = null)
+ * @method  static int    strlen($str, $encoding = null)
+ * @method  static string stristr($str, $search, $encoding = null)
+ * @method  static mixed  stripos($haystack, $needle, $offset = 0, $encoding = null)
+ * @method  static string strrchr($haystack, $needle, $part = false, $encoding = null)
+ * @method  static string strrichr($haystack, $needle, $part = false, $encoding = null)
+ * @method  static int    strripos($haystack, $needle, $offset = 0, $encoding = null)
+ * @method  static string strstr($haystack, $needle, $part = false, $encoding = null)
+ * @method  static string chr($code, $encoding = null)
+ * @method  static string ord($s, $encoding = null)
+ * @method  static string parse_str($encoded_string, array &$result)
+ * @method  static string convert_case($s, $mode, $encoding = null)
+ * @method  static string detect_encoding($str, $encodingList = null, $strict = false)
+ * @method  static mixed  detect_order($encodingList = null)
+ * @method  static string ereg_replace($pattern, $replacement, $string, $option = "msr")
+ * @method  static string eregi_replace($pattern, $replacement, $string, $option = "msr")
  *
  * @since  2.0
  */
@@ -129,7 +129,7 @@ abstract class Utf8String
                 $mlen = strlen($matches[0]);
                 $lstr = substr($lstr, $mlen);
 
-                $str  = substr_replace($str, $replace, $matched + strlen($matches[1]), $slen);
+                $str = substr_replace($str, $replace, $matched + strlen($matches[1]), $slen);
                 $matched += $mlen + $lendif;
                 $i++;
             }
@@ -169,11 +169,12 @@ abstract class Utf8String
         if ($length === 1) {
             return preg_split("//u", $string, -1, PREG_SPLIT_NO_EMPTY);
         } elseif ($length > 1) {
-            $return_value = [];
+            $return_value  = [];
             $string_length = static::strlen($string, $encoding);
             for ($i = 0; $i < $string_length; $i += $length) {
                 $return_value[] = static::substr($string, $i, $length, $encoding);
             }
+
             return $return_value;
         } else {
             return false;
@@ -205,8 +206,8 @@ abstract class Utf8String
     /**
      * A case sensitive string comparison
      *
-     * @param   string $str1   string 1 to compare
-     * @param   string $str2   string 2 to compare
+     * @param   string $str1 string 1 to compare
+     * @param   string $str2 string 2 to compare
      *
      * @return  integer  < 0 if str1 is less than str2; > 0 if str1 is greater than str2, and 0 if they are equal.
      *
@@ -297,7 +298,7 @@ abstract class Utf8String
         int $start = 0,
         int $length = null,
         string $encoding = null
-    ) : int {
+    ): int {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
         $mask = preg_replace('!([\\\\\\-\\]\\[/^])!', '\\\${1}', $mask);
@@ -334,7 +335,7 @@ abstract class Utf8String
      * @see     http://www.php.net/substr_replace
      * @since   2.0
      */
-    public static function substr_replace($str, $repl, $start, $length = null, $encoding = null) : string
+    public static function substr_replace($str, $repl, $start, $length = null, $encoding = null): string
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -519,7 +520,7 @@ abstract class Utf8String
         string $search,
         bool $caseSensitive = true,
         string $encoding = null
-    ) : int {
+    ): int {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
         if (!$caseSensitive) {
@@ -533,9 +534,9 @@ abstract class Utf8String
     /**
      * Transcode a string.
      *
-     * @param   string $source        The string to transcode.
-     * @param   string $from The source encoding.
-     * @param   string $to   The target encoding.
+     * @param   string $source The string to transcode.
+     * @param   string $from   The source encoding.
+     * @param   string $to     The target encoding.
      *
      * @return  mixed  The transcoded string, or null if the source was not a string.
      *
@@ -654,7 +655,9 @@ abstract class Utf8String
                             // Codepoints outside the Unicode range are illegal
                             ($mUcs4 > 0x10FFFF)
                         ) {
+                            // @codeCoverageIgnoreStart
                             return false;
+                            // @codeCoverageIgnoreEnd
                         }
 
                         //initialize UTF8 cache
