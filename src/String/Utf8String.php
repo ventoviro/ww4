@@ -28,12 +28,12 @@ namespace Windwalker\String;
  * @method  static string strstr($haystack, $needle, $part = false, $encoding = null)
  * @method  static string chr($code, $encoding = null)
  * @method  static string ord($s, $encoding = null)
- * @method  static string parse_str($encoded_string, array &$result)
- * @method  static string convert_case($s, $mode, $encoding = null)
- * @method  static string detect_encoding($str, $encodingList = null, $strict = false)
- * @method  static mixed  detect_order($encodingList = null)
- * @method  static string ereg_replace($pattern, $replacement, $string, $option = "msr")
- * @method  static string eregi_replace($pattern, $replacement, $string, $option = "msr")
+ * @method  static string parseStr($encoded_string, array &$result)
+ * @method  static string convertCase($s, $mode, $encoding = null)
+ * @method  static string detectEncoding($str, $encodingList = null, $strict = false)
+ * @method  static mixed  detectOrder($encodingList = null)
+ * @method  static string eregReplace($pattern, $replacement, $string, $option = "msr")
+ * @method  static string eregiReplace($pattern, $replacement, $string, $option = "msr")
  *
  * @since  2.0
  */
@@ -83,7 +83,9 @@ abstract class Utf8String
      */
     public static function __callStatic($name, $args)
     {
-        $function = 'mb_' . $name;
+        $underscoreName = trim(strtolower(preg_replace('#([A-Z])#', '_$1', $name)));
+
+        $function = 'mb_' . $underscoreName;
 
         if (function_exists($function)) {
             return $function(...$args);
@@ -335,7 +337,7 @@ abstract class Utf8String
      * @see     http://www.php.net/substr_replace
      * @since   2.0
      */
-    public static function substr_replace($str, $repl, $start, $length = null, $encoding = null): string
+    public static function substrReplace($str, $repl, $start, $length = null, $encoding = null): string
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -499,7 +501,7 @@ abstract class Utf8String
         return preg_replace_callback($pattern, function ($matches) use ($encoding) {
             $leadingws = $matches[2];
             $ucfirst   = static::strtoupper($matches[3], $encoding);
-            $ucword    = static::substr_replace(ltrim($matches[0]), $ucfirst, 0, 1);
+            $ucword    = static::substrReplace(ltrim($matches[0]), $ucfirst, 0, 1);
 
             return $leadingws . $ucword;
         }, $str);
@@ -515,7 +517,7 @@ abstract class Utf8String
      *
      * @return  int
      */
-    public static function substr_count(
+    public static function substrCount(
         string $string,
         string $search,
         bool $caseSensitive = true,
@@ -567,7 +569,7 @@ abstract class Utf8String
      * @see     compliant
      * @since   2.0
      */
-    public static function isValid($str)
+    public static function isUtf8($str)
     {
         $mState = 0;     // cached expected number of octets after the current octet
         // until the beginning of the next UTF8 character sequence
@@ -693,7 +695,7 @@ abstract class Utf8String
      *
      * @return  boolean  TRUE if string is valid UTF-8
      *
-     * @see     isValid
+     * @see     isUtf8
      * @see     http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php#54805
      * @since   2.0
      */

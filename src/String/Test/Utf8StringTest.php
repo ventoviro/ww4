@@ -50,7 +50,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestIs_ascii()
+    public function isAsciiProvider()
     {
         return array(
             array('ascii', true),
@@ -70,7 +70,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrpos()
+    public function strposProvider()
     {
         return array(
             array(3, 'missing', 'sing', 0),
@@ -326,7 +326,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestSubstr_replace()
+    public function substrReplaceProvider()
     {
         return [
             ['321 Broadway Avenue', '321 Main Street', 'Broadway Avenue', 4, null],
@@ -519,7 +519,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  void
      *
-     * @dataProvider  seedTestIs_ascii
+     * @dataProvider  isAsciiProvider
      * @since         2.0
      */
     public function testIsAscii($string, $expected)
@@ -540,7 +540,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  void
      *
-     * @dataProvider  seedTestStrpos
+     * @dataProvider  strposProvider
      * @since         2.0
      */
     public function testStrpos($expect, $haystack, $needle, $offset = 0)
@@ -810,12 +810,12 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestSubstr_replace
+     * @dataProvider  substrReplaceProvider
      * @since         2.0
      */
-    public function testSubstr_replace($expect, $string, $replacement, $start, $length)
+    public function testSubstrReplace($expect, $string, $replacement, $start, $length)
     {
-        $actual = Utf8String::substr_replace($string, $replacement, $start, $length);
+        $actual = Utf8String::substrReplace($string, $replacement, $start, $length);
         $this->assertEquals($expect, $actual);
     }
 
@@ -936,7 +936,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      */
     public function testSubstr_count($string, $search, $expected, $caseSensitive)
     {
-        self::assertEquals($expected, Utf8String::substr_count($string, $search, $caseSensitive));
+        self::assertEquals($expected, Utf8String::substrCount($string, $search, $caseSensitive));
     }
 
     /**
@@ -990,7 +990,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      */
     public function testValid($string, $expect)
     {
-        $actual = Utf8String::isValid($string);
+        $actual = Utf8String::isUtf8($string);
         $this->assertEquals($expect, $actual);
     }
 

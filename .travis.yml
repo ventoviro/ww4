@@ -3,7 +3,7 @@ language: php
 sudo: true
 
 php:
-  - hhvm-3.12
+  - hhvm-3.15
   - 7.1
 
 #addons:
