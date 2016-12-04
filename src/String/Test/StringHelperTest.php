@@ -106,54 +106,201 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    public function testContainsAll()
+    /**
+     * testEndsWith
+     *
+     * @return  void
+     *
+     * @dataProvider endsWithProvider
+     */
+    public function testEndsWith($string, $search, $caseSensitive, $expected)
     {
-        self::markTestIncomplete();
+        self::assertSame($expected, StringHelper::endsWith($string, $search, $caseSensitive));
     }
 
-    public function testContainsAny()
+    /**
+     * endsWithProvider
+     *
+     * @return  array
+     */
+    public function endsWithProvider()
     {
-        self::markTestIncomplete();
+        return [
+            ['Foo', 'oo', StringHelper::CASE_SENSITIVE, true],
+            ['Foo', 'Oo', StringHelper::CASE_SENSITIVE, false],
+            ['Foo', 'Oo', StringHelper::CASE_INSENSITIVE, true],
+            ['Foo', 'ooooo', StringHelper::CASE_SENSITIVE, false],
+            ['Foo', 'uv', StringHelper::CASE_SENSITIVE, false],
+            ['黃河入海流', '入海流', StringHelper::CASE_SENSITIVE, true],
+            ['黃河入海流', '入海流', StringHelper::CASE_INSENSITIVE, true],
+            ['黃河入海流', '依山盡', StringHelper::CASE_SENSITIVE, false],
+            ['FÒÔbà', 'ôbà', StringHelper::CASE_SENSITIVE, false],
+            ['FÒÔbà', 'ôbà', StringHelper::CASE_INSENSITIVE, true],
+        ];
     }
 
-    public function testCount()
+    /**
+     * testStartsWith
+     *
+     * @param string $string
+     * @param string $search
+     * @param bool   $caseSensitive
+     * @param bool   $expected
+     *
+     * @dataProvider estartsWithProvider
+     */
+    public function testStartsWith(string $string, string $search, bool $caseSensitive, bool $expected)
     {
-        self::markTestIncomplete();
+        self::assertSame($expected, StringHelper::startsWith($string, $search, $caseSensitive));
     }
 
-    public function testCountSubstr()
+    /**
+     * endsWithProvider
+     *
+     * @return  array
+     */
+    public function estartsWithProvider()
     {
-        self::markTestIncomplete();
+        return [
+            ['Foo', 'Fo', StringHelper::CASE_SENSITIVE, true],
+            ['Foo', 'fo', StringHelper::CASE_SENSITIVE, false],
+            ['Foo', 'fo', StringHelper::CASE_INSENSITIVE, true],
+            ['Foo', 'foooo', StringHelper::CASE_SENSITIVE, false],
+            ['Foo', 'uv', StringHelper::CASE_SENSITIVE, false],
+            ['黃河入海流', '黃河', StringHelper::CASE_SENSITIVE, true],
+            ['黃河入海流', '黃河', StringHelper::CASE_INSENSITIVE, true],
+            ['黃河入海流', '依山盡', StringHelper::CASE_SENSITIVE, false],
+            ['FÒÔbà', 'fò', StringHelper::CASE_SENSITIVE, false],
+            ['FÒÔbà', 'fò', StringHelper::CASE_INSENSITIVE, true],
+        ];
     }
 
-    public function testEndsWith()
+    /**
+     * testEnsureLeft
+     *
+     * @param string $string
+     * @param string $search
+     * @param string $expected
+     *
+     * @dataProvider ensureLeftProvider
+     */
+    public function testEnsureLeft(string $string, string $search, string $expected)
     {
-        self::markTestIncomplete();
+        self::assertSame($expected, StringHelper::ensureLeft($string, $search));
     }
 
-    public function testEnsureLeft()
+    /**
+     * ensureLeftProvider
+     *
+     * @return  array
+     */
+    public function ensureLeftProvider()
     {
-        self::markTestIncomplete();
+        return [
+            ['FlowerSakura', 'Flower', 'FlowerSakura'],
+            ['Sakura', 'Flower', 'FlowerSakura'],
+            ['FlowerSakura', 'flower', 'flowerFlowerSakura'],
+            ['黃河入海流', '黃河', '黃河入海流'],
+            ['入海流', '黃河', '黃河入海流'],
+            ['FÒÔbà', 'FÒÔ', 'FÒÔbà'],
+            ['FÒÔbà', 'fòô', 'fòôFÒÔbà']
+        ];
     }
 
-    public function testEnsureRight()
+    /**
+     * testEnsureRight
+     *
+     * @param string $string
+     * @param string $search
+     * @param string $expected
+     *
+     * @return  void
+     *
+     * @dataProvider ensureRightProvider
+     */
+    public function testEnsureRight(string $string, string $search, string $expected)
     {
-        self::markTestIncomplete();
+        self::assertSame($expected, StringHelper::ensureRight($string, $search));
     }
 
-    public function testFirst()
+    /**
+     * ensureRightProvider
+     *
+     * @return  array
+     */
+    public function ensureRightProvider()
     {
-        self::markTestIncomplete();
+        return [
+            ['FlowerSakura', 'Sakura', 'FlowerSakura'],
+            ['Flower', 'Sakura', 'FlowerSakura'],
+            ['FlowerSakura', 'sakura', 'FlowerSakurasakura'],
+            ['黃河入海流', '海流', '黃河入海流'],
+            ['黃河入', '海流', '黃河入海流'],
+            ['FÒÔbà', 'Ôbà', 'FÒÔbà'],
+            ['FÒÔbà', 'ôbà', 'FÒÔbàôbà']
+        ];
     }
 
-    public function testHasLowerCase()
+    /**
+     * testHasLowerCase
+     *
+     * @param string $string
+     * @param bool   $expected
+     *
+     * @return  void
+     *
+     * @dataProvider hasLowerCaseProvider
+     */
+    public function testHasLowerCase(string $string, bool $expected)
     {
-        self::markTestIncomplete();
+        self::assertSame($expected, StringHelper::hasLowerCase($string));
     }
 
-    public function testHasUpperCase()
+    /**
+     * hasLowerCaseProvider
+     *
+     * @return  array
+     */
+    public function hasLowerCaseProvider()
     {
-        self::markTestIncomplete();
+        return [
+            ['Foo', true],
+            ['FOO', false],
+            ['FÒô', true],
+            ['FÒÔ', false],
+            ['白日依山盡', false]
+        ];
+    }
+
+    /**
+     * testHasUpperCase
+     *
+     * @param string $string
+     * @param bool   $expected
+     *
+     * @return  void
+     *
+     * @dataProvider hasUpperCaseProvider
+     */
+    public function testHasUpperCase(string $string, bool $expected)
+    {
+        self::assertSame($expected, StringHelper::hasUpperCase($string));
+    }
+
+    /**
+     * hasUpperCaseProvider
+     *
+     * @return  array
+     */
+    public function hasUpperCaseProvider()
+    {
+        return [
+            ['Foo', true],
+            ['foo', false],
+            ['FÒô', true],
+            ['fòô', false],
+            ['白日依山盡', false]
+        ];
     }
 
     public function testInsert()
@@ -232,11 +379,6 @@ class StringHelperTest extends TestCase
     }
 
     public function testShuffle()
-    {
-        self::markTestIncomplete();
-    }
-
-    public function testStartsWith()
     {
         self::markTestIncomplete();
     }
