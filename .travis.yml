@@ -1,6 +1,8 @@
 language: php
 
 sudo: true
+dist: trusty
+group: edge
 
 php:
   - hhvm-3.15
