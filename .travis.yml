@@ -16,6 +16,8 @@ php:
 
 before_install:
   - composer self-update
+  - echo ${TRAVIS_PHP_VERSION}
+  - if [ "${TRAVIS_PHP_VERSION}" = "hhvm-3.15" ]; then phpenv config-add build/config/hhvm.ini fi
 #  - sh -e build/travis/scripts/apt-get.sh
 #  - sh -e build/travis/scripts/apache2-vhost.sh
 #  - sh -e build/travis/scripts/apache2-configure.sh
