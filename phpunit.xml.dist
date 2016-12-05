@@ -18,9 +18,19 @@
 		<!--<const name="WINDWALKER_TEST_DB_DSN_MSSQL"      value="host=localhost;port=1521;dbname=windwalker_test;user=root;pass=ut1234;prefix=ww_" />-->
 		<!--<const name="WINDWALKER_TEST_DB_DSN_SQLITE"     value="host=localhost;dbname=windwalker_test;user=root;pass=ut1234;prefix=ww_" />-->
 	</php>
+
 	<testsuites>
 		<testsuite name="Unit">
 			<directory>src/*/Test</directory>
 		</testsuite>
 	</testsuites>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">src</directory>
+            <exclude>
+                <directory suffix=".php">src/*/Test</directory>
+            </exclude>
+        </whitelist>
+    </filter>
 </phpunit>
