@@ -5,12 +5,12 @@ dist: trusty
 group: edge
 
 php:
+  - 7.1
   - hhvm-3.15
 
 matrix:
   allow_failures:
-    - php: hhvm
-
+    - php: hhvm-3.15
 
 #addons:
 #  postgresql: "9.3"
