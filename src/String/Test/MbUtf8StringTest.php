@@ -5,9 +5,11 @@
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT Taiwan, Inc. All rights reserved.
  * @license    GNU Lesser General Public License version 3 or later.
  */
+declare(strict_types = 1);
 
-namespace Windwalker\Utilities\Test;
+namespace Windwalker\String\Test;
 
+use PHPUnit\Framework\TestCase;
 use \Windwalker\String\Utf8String;
 
 /**
@@ -15,34 +17,8 @@ use \Windwalker\String\Utf8String;
  *
  * @since 2.0
  */
-class Utf8StringTest extends \PHPUnit_Framework_TestCase
+class MbUtf8StringTest extends TestCase
 {
-    /**
-     * @var    String
-     * @since  2.0
-     */
-    protected $object;
-
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     *
-     * @return void
-     */
-    protected function setUp()
-    {
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     *
-     * @return void
-     */
-    protected function tearDown()
-    {
-    }
-
     /**
      * Test...
      *
@@ -52,15 +28,15 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      */
     public function isAsciiProvider()
     {
-        return array(
-            array('ascii', true),
-            array('1024', true),
-            array('#$#@$%', true),
-            array('áÑ', false),
-            array('ÿ©', false),
-            array('¡¾', false),
-            array('÷™', false),
-        );
+        return [
+            ['ascii', true],
+            ['1024', true],
+            ['#$#@$%', true],
+            ['áÑ', false],
+            ['ÿ©', false],
+            ['¡¾', false],
+            ['÷™', false],
+        ];
     }
 
     /**
@@ -72,16 +48,16 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      */
     public function strposProvider()
     {
-        return array(
-            array(3, 'missing', 'sing', 0),
-            array(false, 'missing', 'sting', 0),
-            array(4, 'missing', 'ing', 0),
-            array(10, ' объектов на карте с', 'на карте', 0),
-            array(0, 'на карте с', 'на карте', 0, 0),
-            array(false, 'на карте с', 'на каррте', 0),
-            array(false, 'на карте с', 'на карте', 2),
-            array(3, 'missing', 'sing', 0)
-        );
+        return [
+            [3, 'missing', 'sing', 0],
+            [false, 'missing', 'sting', 0],
+            [4, 'missing', 'ing', 0],
+            [10, ' объектов на карте с', 'на карте', 0],
+            [0, 'на карте с', 'на карте', 0, 0],
+            [false, 'на карте с', 'на каррте', 0],
+            [false, 'на карте с', 'на карте', 2],
+            [3, 'missing', 'sing', 0]
+        ];
     }
 
     /**
@@ -91,17 +67,17 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestGetStrrpos()
+    public function strrposProvider()
     {
-        return array(
-            array(3, 'missing', 'sing', 0),
-            array(false, 'missing', 'sting', 0),
-            array(4, 'missing', 'ing', 0),
-            array(10, ' объектов на карте с', 'на карте', 0),
-            array(0, 'на карте с', 'на карте', 0),
-            array(false, 'на карте с', 'на каррте', 0),
-            array(3, 'на карте с', 'карт', 2)
-        );
+        return [
+            [3, 'missing', 'sing', 0],
+            [false, 'missing', 'sting', 0],
+            [4, 'missing', 'ing', 0],
+            [10, ' объектов на карте с', 'на карте', 0],
+            [0, 'на карте с', 'на карте', 0],
+            [false, 'на карте с', 'на каррте', 0],
+            [3, 'на карте с', 'карт', 2]
+        ];
     }
 
     /**
@@ -111,15 +87,15 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestSubstr()
+    public function substrProvider()
     {
-        return array(
-            array('issauga', 'Mississauga', 4, null),
-            array('на карте с', ' объектов на карте с', 10, null),
-            array('на ка', ' объектов на карте с', 10, 5),
-            array('те с', ' объектов на карте с', -4, null),
-            array(false, ' объектов на карте с', 99, null)
-        );
+        return [
+            ['issauga', 'Mississauga', 4, null],
+            ['на карте с', ' объектов на карте с', 10, null],
+            ['на ка', ' объектов на карте с', 10, 5],
+            ['те с', ' объектов на карте с', -4, null],
+            [false, ' объектов на карте с', 99, null]
+        ];
     }
 
     /**
@@ -129,11 +105,14 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrtolower()
+    public function strtolowerProvider()
     {
-        return array(
-            array('Windwalker! Rocks', 'windwalker! rocks')
-        );
+        return [
+            ['Windwalker! Rocks', 'windwalker! rocks'],
+            ['FÒÔbàř', 'fòôbàř'],
+            ['fòôbàř', 'fòôbàř'],
+            ['白日依山盡', '白日依山盡']
+        ];
     }
 
     /**
@@ -143,11 +122,14 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrtoupper()
+    public function strtoupperProvider()
     {
-        return array(
-            array('Windwalker! Rocks', 'WINDWALKER! ROCKS')
-        );
+        return [
+            ['Windwalker! Rocks', 'WINDWALKER! ROCKS'],
+            ['FÒÔbàř', 'FÒÔBÀŘ'],
+            ['FÒÔBÀŘ', 'FÒÔBÀŘ'],
+            ['白日依山盡', '白日依山盡']
+        ];
     }
 
     /**
@@ -157,11 +139,11 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrlen()
+    public function strlenProvider()
     {
-        return array(
-            array('Windwalker! Rocks', 17)
-        );
+        return [
+            ['Windwalker! Rocks', 17]
+        ];
     }
 
     /**
@@ -171,7 +153,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStr_ireplace()
+    public function strIreplaceProvider()
     {
         return [
             ['Pig', 'cow', 'the pig jumped', null, 'the cow jumped'],
@@ -198,7 +180,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStr_split()
+    public function strSplitProvider()
     {
         return [
             ['string', 1, ['s', 't', 'r', 'i', 'n', 'g']],
@@ -216,7 +198,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrcasecmp()
+    public function strcasecmpProvider()
     {
         return [
             ['THIS IS STRING1', 'this is string1', 0],
@@ -234,7 +216,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrcmp()
+    public function strcmpProvider()
     {
         return [
             ['THIS IS STRING1', 'this is string1', -1],
@@ -252,7 +234,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrcspn()
+    public function strcspnProvider()
     {
         return [
             ['subject <a> string <a>', '<>', 0, null, 8],
@@ -270,7 +252,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStristr()
+    public function stristrProvider()
     {
         return [
             ['haystack', 'needle', false],
@@ -286,11 +268,12 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrrev()
+    public function strrevProvider()
     {
         return [
             ['abc def', 'fed cba'],
-            ['Би шил', 'лиш иБ']
+            ['Би шил', 'лиш иБ'],
+            ['白日依山盡', '盡山依日白']
         ];
     }
 
@@ -301,7 +284,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestStrspn()
+    public function strspnProvider()
     {
         return [
             ['A321 Main Street', '0123456789', 1, 2, 2],
@@ -343,7 +326,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestLtrim()
+    public function ltrimProvider()
     {
         return [
             ['   abc def', null, 'abc def'],
@@ -363,7 +346,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestRtrim()
+    public function rtrimProvider()
     {
         return [
             ['abc def   ', null, 'abc def'],
@@ -383,7 +366,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestTrim()
+    public function trimProvider()
     {
         return [
             ['  abc def   ', null, 'abc def'],
@@ -403,14 +386,30 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestUcfirst()
+    public function ucfirstProvider()
     {
         return [
-            ['george', null, null, 'George'],
-            ['мога', null, null, 'Мога'],
-            ['ψυχοφθόρα', null, null, 'Ψυχοφθόρα'],
-            ['', null, null, ''],
-            ['ψ', null, null, 'Ψ'],
+            ['george', 'George'],
+            ['мога', 'Мога'],
+            ['ψυχοφθόρα', 'Ψυχοφθόρα'],
+            ['', ''],
+            ['ψ', 'Ψ'],
+        ];
+    }
+
+    /**
+     * lcfirstProvider
+     *
+     * @return  array
+     */
+    public function lcfirstProvider()
+    {
+        return [
+            ['GEORGE', 'gEORGE'],
+            ['МОГА', 'мОГА'],
+            ['ΨΥΧΟΦΘΌΡΑ', 'ψΥΧΟΦΘΌΡΑ'],
+            ['', ''],
+            ['Ψ', 'ψ'],
         ];
     }
 
@@ -421,7 +420,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestUcwords()
+    public function ucwordsProvider()
     {
         return [
             ['george washington', 'George Washington'],
@@ -439,7 +438,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestConvertEncoding()
+    public function convertEncodingProvider()
     {
         return [
             ['Åbc Öde €2.0', 'UTF-8', 'ISO-8859-15', "\xc5bc \xd6de \xA42.0"],
@@ -454,7 +453,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestValid()
+    public function isUtf8Provider()
     {
         return [
             ["\xCF\xB0", true],
@@ -476,7 +475,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestUnicodeToUtf8()
+    public function unicodeToUtf8Provider()
     {
         return [
             ["\u0422\u0435\u0441\u0442 \u0441\u0438\u0441\u0442\u0435\u043c\u044b", "Тест системы"],
@@ -491,7 +490,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @since   2.0
      */
-    public function seedTestUnicodeToUtf16()
+    public function unicodeToUtf16Provider()
     {
         return [
             ["\u0422\u0435\u0441\u0442 \u0441\u0438\u0441\u0442\u0435\u043c\u044b", "Тест системы"],
@@ -559,7 +558,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestGetStrrpos
+     * @dataProvider  strrposProvider
      * @since         2.0
      */
     public function testStrrpos($expect, $haystack, $needle, $offset = 0)
@@ -578,7 +577,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestSubstr
+     * @dataProvider  substrProvider
      * @since         2.0
      */
     public function testSubstr($expect, $string, $start, $length = null)
@@ -595,7 +594,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStrtolower
+     * @dataProvider  strtolowerProvider
      * @since         2.0
      */
     public function testStrtolower($string, $expect)
@@ -612,7 +611,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStrtoupper
+     * @dataProvider  strtoupperProvider
      * @since         2.0
      */
     public function testStrtoupper($string, $expect)
@@ -629,7 +628,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStrlen
+     * @dataProvider  strlenProvider
      * @since         2.0
      */
     public function testStrlen($string, $expect)
@@ -649,12 +648,12 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStr_ireplace
+     * @dataProvider  strIreplaceProvider
      * @since         2.0
      */
     public function testStr_ireplace($search, $replace, $subject, $count, $expect)
     {
-        $actual = Utf8String::str_ireplace($search, $replace, $subject, $count);
+        $actual = Utf8String::strIreplace($search, $replace, $subject, $count);
         $this->assertEquals($expect, $actual);
     }
 
@@ -667,12 +666,12 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStr_split
+     * @dataProvider  strSplitProvider
      * @since         2.0
      */
     public function testStr_split($string, $split_length, $expect)
     {
-        $actual = Utf8String::str_split($string, $split_length);
+        $actual = Utf8String::strSplit($string, $split_length);
         $this->assertEquals($expect, $actual);
     }
 
@@ -686,7 +685,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStrcasecmp
+     * @dataProvider  strcasecmpProvider
      * @since         2.0
      */
     public function testStrcasecmp($string1, $string2, $expect)
@@ -710,7 +709,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStrcmp
+     * @dataProvider  strcmpProvider
      * @since         2.0
      */
     public function testStrcmp($string1, $string2, $expect)
@@ -735,7 +734,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStrcspn
+     * @dataProvider  strcspnProvider
      * @since         2.0
      */
     public function testStrcspn($haystack, $needles, $start, $len, $expect)
@@ -753,7 +752,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStristr
+     * @dataProvider  stristrProvider
      * @since         2.0
      */
     public function testStristr($haystack, $needle, $expect)
@@ -770,7 +769,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStrrev
+     * @dataProvider  strrevProvider
      * @since         2.0
      */
     public function testStrrev($string, $expect)
@@ -790,7 +789,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestStrspn
+     * @dataProvider  strspnProvider
      * @since         2.0
      */
     public function testStrspn($subject, $mask, $start, $length, $expect)
@@ -828,7 +827,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestLtrim
+     * @dataProvider  ltrimProvider
      * @since         2.0
      */
     public function testLtrim($string, $charlist, $expect)
@@ -851,7 +850,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestRtrim
+     * @dataProvider  rtrimProvider
      * @since         2.0
      */
     public function testRtrim($string, $charlist, $expect)
@@ -874,7 +873,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestTrim
+     * @dataProvider  trimProvider
      * @since         2.0
      */
     public function testTrim($string, $charlist, $expect)
@@ -892,18 +891,32 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      * Test...
      *
      * @param   string $string       @todo
-     * @param   string $delimiter    @todo
-     * @param   string $newDelimiter @todo
      * @param   string $expect       @todo
      *
      * @return  array
      *
-     * @dataProvider  seedTestUcfirst
+     * @dataProvider  ucfirstProvider
      * @since         2.0
      */
-    public function testUcfirst($string, $delimiter, $newDelimiter, $expect)
+    public function testUcfirst($string, $expect)
     {
-        $actual = Utf8String::ucfirst($string, $delimiter, $newDelimiter);
+        $actual = Utf8String::ucfirst($string);
+        $this->assertEquals($expect, $actual);
+    }
+
+    /**
+     * testLcfirst
+     *
+     * @param string $string
+     * @param string $expect
+     *
+     * @return  void
+     *
+     * @dataProvider  lcfirstProvider
+     */
+    public function testLcfirst($string, $expect)
+    {
+        $actual = Utf8String::lcfirst($string);
         $this->assertEquals($expect, $actual);
     }
 
@@ -915,7 +928,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestUcwords
+     * @dataProvider  ucwordsProvider
      * @since         2.0
      */
     public function testUcwords($string, $expect)
@@ -932,9 +945,9 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      * @param $expected
      * @param $caseSensitive
      *
-     * @dataProvider substr_countProvider
+     * @dataProvider substrCountProvider
      */
-    public function testSubstr_count($string, $search, $expected, $caseSensitive)
+    public function testSubstrCount($string, $search, $expected, $caseSensitive)
     {
         self::assertEquals($expected, Utf8String::substrCount($string, $search, $caseSensitive));
     }
@@ -944,7 +957,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      */
-    public function substr_countProvider()
+    public function substrCountProvider()
     {
         return [
             ['FooBarFlowerSakura', 'Flower', 1, Utf8String::CASE_SENSITIVE],
@@ -968,7 +981,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestConvertEncoding
+     * @dataProvider  convertEncodingProvider
      * @since         2.0
      */
     public function testConvertEncoding($source, $from_encoding, $to_encoding, $expect)
@@ -985,7 +998,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestValid
+     * @dataProvider  isUtf8Provider
      * @since         2.0
      */
     public function testValid($string, $expect)
@@ -1003,7 +1016,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      * @return  array
      *
 
-     * @dataProvider  seedTestUnicodeToUtf8
+     * @dataProvider  unicodeToUtf8Provider
      * @since         2.0
      */
     public function testUnicodeToUtf8($string, $expect)
@@ -1020,7 +1033,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestUnicodeToUtf16
+     * @dataProvider  unicodeToUtf16Provider
      * @since         2.0
      */
     public function testUnicodeToUtf16($string, $expect)
@@ -1037,7 +1050,7 @@ class Utf8StringTest extends \PHPUnit_Framework_TestCase
      *
      * @return  array
      *
-     * @dataProvider  seedTestValid
+     * @dataProvider  isUtf8Provider
      * @since         2.0
      */
     public function testCompliant($string, $expect)

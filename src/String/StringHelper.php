@@ -19,16 +19,27 @@ class StringHelper
     public const CASE_SENSITIVE = true;
     public const CASE_INSENSITIVE = false;
 
+    public const ENCODING_DEFAULT_ISO = 'ISO-8859-1';
+    public const ENCODING_UTF8 = 'UTF-8';
+    public const ENCODING_US_ASCII = 'US-ASCII';
+
     /**
      * at
      *
      * @param string $string
      * @param int    $pos
+     * @param string $encoding
      *
-     * @return  string
+     * @return string
      */
-    public static function getChar(string $string, int $pos)
+    public static function getChar(string $string, int $pos, string $encoding = null): string
     {
+        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+
+        if (Utf8String::strlen($string, $encoding) < abs($pos)) {
+            return '';
+        }
+
         return Utf8String::substr($string, $pos, 1);
     }
 
@@ -545,6 +556,29 @@ class StringHelper
         $rightStr = Utf8String::substr(str_repeat($substring, (int) ceil($right / $padLength)), 0, $right, $encoding);
 
         return $leftStr . $string . $rightStr;
+    }
+
+    /**
+     * removeChar
+     *
+     * @param string      $string
+     * @param int         $offset
+     * @param int|null    $length
+     * @param string|null $encoding
+     *
+     * @return  string
+     */
+    public static function removeChar(string $string, int $offset, int $length = null, string $encoding = null): string
+    {
+        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+
+        if (Utf8String::strlen($string, $encoding) < abs($offset)) {
+            return $string;
+        }
+
+        $length = $length === null ? 1 : $length;
+
+        return Utf8String::substrReplace($string, '', $offset, $length, $encoding);
     }
 
     /**

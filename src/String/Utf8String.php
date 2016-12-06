@@ -14,26 +14,26 @@ namespace Windwalker\String;
  * Wraps the phputf8 library
  * All functions assume the validity of utf-8 strings.
  *
- * @method  static int    strpos($str, $search, $offset = 0, $encoding = null)
- * @method  static int    strrpos($str, $search, $offset = 0, $encoding = null)
- * @method  static string substr($str, $offset, $length = null, $encoding = null)
- * @method  static string strtolower($str, $encoding = null)
- * @method  static string strtoupper($str, $encoding = null)
- * @method  static int    strlen($str, $encoding = null)
- * @method  static string stristr($str, $search, $encoding = null)
- * @method  static mixed  stripos($haystack, $needle, $offset = 0, $encoding = null)
- * @method  static string strrchr($haystack, $needle, $part = false, $encoding = null)
- * @method  static string strrichr($haystack, $needle, $part = false, $encoding = null)
- * @method  static int    strripos($haystack, $needle, $offset = 0, $encoding = null)
- * @method  static string strstr($haystack, $needle, $part = false, $encoding = null)
- * @method  static string chr($code, $encoding = null)
- * @method  static string ord($s, $encoding = null)
- * @method  static string parseStr($encoded_string, array &$result)
- * @method  static string convertCase($s, $mode, $encoding = null)
- * @method  static string detectEncoding($str, $encodingList = null, $strict = false)
+ * @method  static int    strpos(string $str, string $search, int $offset = 0, string $encoding = null)
+ * @method  static int    strrpos(string $str, string $search, int $offset = 0, string $encoding = null)
+ * @method  static string substr(string $str, $offset, int $length = null, string $encoding = null)
+ * @method  static string strtolower(string $str, string $encoding = null)
+ * @method  static string strtoupper(string $str, string $encoding = null)
+ * @method  static int    strlen(string $str, string $encoding = null)
+ * @method  static string stristr(string $str, string $search, string $encoding = null)
+ * @method  static mixed  stripos(string $haystack, string $needle, int $offset = 0, string $encoding = null)
+ * @method  static string strrchr(string $haystack, string $needle, $part = false, string $encoding = null)
+ * @method  static string strrichr(string $haystack, string $needle, $part = false, string $encoding = null)
+ * @method  static int    strripos(string $haystack, string $needle, int $offset = 0, string $encoding = null)
+ * @method  static string strstr(string $haystack, string $needle, $part = false, string $encoding = null)
+ * @method  static string chr(string $code, string $encoding = null)
+ * @method  static string ord(string $s, string $encoding = null)
+ * @method  static string parseStr(string $encoded_string, array &$result)
+ * @method  static string convertCase(string $s, $mode, string $encoding = null)
+ * @method  static string detectEncoding(string $str, $encodingList = null, bool $strict = false)
  * @method  static mixed  detectOrder($encodingList = null)
- * @method  static string eregReplace($pattern, $replacement, $string, $option = "msr")
- * @method  static string eregiReplace($pattern, $replacement, $string, $option = "msr")
+ * @method  static string eregReplace(string $pattern, string $replacement, string $string, string $option = "msr")
+ * @method  static string eregiReplace(string $pattern, string $replacement, string $string, string $option = "msr")
  *
  * @since  2.0
  */
@@ -41,6 +41,10 @@ abstract class Utf8String
 {
     public const CASE_SENSITIVE = true;
     public const CASE_INSENSITIVE = false;
+
+    public const ENCODING_DEFAULT_ISO = 'ISO-8859-1';
+    public const ENCODING_UTF8 = 'UTF-8';
+    public const ENCODING_US_ASCII = 'US-ASCII';
 
     /**
      * Tests whether a string contains only 7bit ASCII bytes.
@@ -105,7 +109,7 @@ abstract class Utf8String
      *
      * @return  mixed
      */
-    public static function str_ireplace($search, $replace, $str, int $count = null, string $encoding = null)
+    public static function strIreplace($search, $replace, string $str, int $count = null, string $encoding = null)
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -141,12 +145,12 @@ abstract class Utf8String
             foreach (array_keys($search) as $k) {
                 if (is_array($replace)) {
                     if (array_key_exists($k, $replace)) {
-                        $str = static::str_ireplace($search[$k], $replace[$k], $str, $count, $encoding);
+                        $str = static::strIreplace($search[$k], $replace[$k], $str, $count, $encoding);
                     } else {
-                        $str = static::str_ireplace($search[$k], '', $str, $count, $encoding);
+                        $str = static::strIreplace($search[$k], '', $str, $count, $encoding);
                     }
                 } else {
-                    $str = static::str_ireplace($search[$k], $replace, $str, $count, $encoding);
+                    $str = static::strIreplace($search[$k], $replace, $str, $count, $encoding);
                 }
             }
 
@@ -164,7 +168,7 @@ abstract class Utf8String
      *
      * @return  array|bool
      */
-    public static function str_split($string, int $length = 1, $encoding = null)
+    public static function strSplit(string $string, int $length = 1, string $encoding = null)
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -189,16 +193,13 @@ abstract class Utf8String
      *
      * @param   string $str1   string 1 to compare
      * @param   string $str2   string 2 to compare
-     * @param   mixed  $locale The locale used by strcoll or false to use classical comparison
      *
      * @return  integer   < 0 if str1 is less than str2; > 0 if str1 is greater than str2, and 0 if they are equal.
      *
      * @see     http://www.php.net/strcasecmp
-     * @see     http://www.php.net/strcoll
-     * @see     http://www.php.net/setlocale
      * @since   2.0
      */
-    public static function strcasecmp($str1, $str2, $encoding = null)
+    public static function strcasecmp(string $str1, string $str2, string $encoding = null): int
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -215,7 +216,7 @@ abstract class Utf8String
      *
      * @since   2.0
      */
-    public static function strcmp($str1, $str2)
+    public static function strcmp(string $str1, string $str2): int
     {
         return strcmp($str1, $str2);
     }
@@ -273,7 +274,7 @@ abstract class Utf8String
      * @see     http://www.php.net/strrev
      * @since   2.0
      */
-    public static function strrev(string $str)
+    public static function strrev(string $str): string
     {
         preg_match_all('/./us', $str, $matches);
 
@@ -369,7 +370,7 @@ abstract class Utf8String
      * @see     http://www.php.net/ltrim
      * @since   2.0
      */
-    public static function ltrim(string $str, string $charlist = null)
+    public static function ltrim(string $str, string $charlist = null): string
     {
         if ($charlist === null) {
             return ltrim($str);
@@ -400,7 +401,7 @@ abstract class Utf8String
      * @see     http://www.php.net/rtrim
      * @since   2.0
      */
-    public static function rtrim(string $str, string $charlist = null)
+    public static function rtrim(string $str, string $charlist = null): string
     {
         if ($charlist === null) {
             return rtrim($str);
@@ -431,7 +432,7 @@ abstract class Utf8String
      * @see     http://www.php.net/trim
      * @since   2.0
      */
-    public static function trim(string $str, string $charlist = null)
+    public static function trim(string $str, string $charlist = null): string
     {
         if ($charlist === null) {
             return trim($str);
@@ -450,7 +451,6 @@ abstract class Utf8String
      *
      * @param   string $str          String to be processed
      * @param   string $delimiter    The words delimiter (null means do not split the string)
-     * @param   string $newDelimiter The new words delimiter (null means equal to $delimiter)
      *
      * @return  string  If $delimiter is null, return the string with first character as upper case (if applicable)
      *                  else consider the string of words separated by the delimiter, apply the ucfirst to each words
@@ -459,7 +459,7 @@ abstract class Utf8String
      * @see     http://www.php.net/ucfirst
      * @since   2.0
      */
-    public static function ucfirst($str, $encoding = null)
+    public static function ucfirst(string $str, string $encoding = null): string
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -479,6 +479,33 @@ abstract class Utf8String
     }
 
     /**
+     * lcfirst
+     *
+     * @param string      $str
+     * @param string|null $encoding
+     *
+     * @return  string
+     */
+    public static function lcfirst(string $str, string $encoding = null): string
+    {
+        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+
+        switch (static::strlen($str, $encoding)) {
+            case 0:
+                return '';
+                break;
+            case 1:
+                return static::strtolower($str, $encoding);
+                break;
+            default:
+                preg_match('/^(.{1})(.*)$/us', $str, $matches);
+
+                return static::strtolower($matches[1], $encoding) . $matches[2];
+                break;
+        }
+    }
+
+    /**
      * UTF-8 aware alternative to ucwords
      * Uppercase the first character of each word in a string
      *
@@ -489,7 +516,7 @@ abstract class Utf8String
      * @see     http://www.php.net/ucwords
      * @since   2.0
      */
-    public static function ucwords($str, $encoding = null)
+    public static function ucwords(string $str, string $encoding = null): string
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -540,13 +567,13 @@ abstract class Utf8String
      * @param   string $from   The source encoding.
      * @param   string $to     The target encoding.
      *
-     * @return  mixed  The transcoded string, or null if the source was not a string.
+     * @return  string  The transcoded string.
      *
      * @link    https://bugs.php.net/bug.php?id=48147
      *
      * @since   2.0
      */
-    public static function convertEncoding(string $source, string $from, string $to)
+    public static function convertEncoding(string $source, string $from, string $to): string
     {
         if ($source === '') {
             return $source;
@@ -569,7 +596,7 @@ abstract class Utf8String
      * @see     compliant
      * @since   2.0
      */
-    public static function isUtf8($str)
+    public static function isUtf8(string $str): bool
     {
         $mState = 0;     // cached expected number of octets after the current octet
         // until the beginning of the next UTF8 character sequence
@@ -699,7 +726,7 @@ abstract class Utf8String
      * @see     http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php#54805
      * @since   2.0
      */
-    public static function compliant($str)
+    public static function compliant(string $str): bool
     {
         if ($str === '') {
             return true;
@@ -721,7 +748,7 @@ abstract class Utf8String
      *
      * @since   2.0
      */
-    public static function unicodeToUtf8($str)
+    public static function unicodeToUtf8(string $str): string
     {
         return preg_replace_callback(
             '/\\\\u([0-9a-fA-F]{4})/',
@@ -741,7 +768,7 @@ abstract class Utf8String
      *
      * @since   2.0
      */
-    public static function unicodeToUtf16($str)
+    public static function unicodeToUtf16(string $str): string
     {
         return preg_replace_callback(
             '/\\\\u([0-9a-fA-F]{4})/',
@@ -762,11 +789,11 @@ abstract class Utf8String
      *
      * @since  4.0
      */
-    public static function shuffle(string $string, string $encoding = null)
+    public static function shuffle(string $string, string $encoding = null): string
     {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
-        $chars = static::str_split($string, 1, $encoding);
+        $chars = static::strSplit($string, 1, $encoding);
 
         shuffle($chars);
 

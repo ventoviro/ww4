@@ -4,6 +4,9 @@
 !/.travis.yml
 !/.editorconfig
 
+# System #
+/tmp
+
 # Composer #
 vendor/*
 composer.lock

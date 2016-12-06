@@ -22,12 +22,32 @@ class StringHelperTest extends TestCase
     /**
      * testGetChar
      *
-     * @return  void
+     * @param int    $pos
+     * @param string $expected
+     *
+     * @dataProvider getCharProvider
      */
-    public function testGetChar()
+    public function testGetChar(int $pos, string $expected)
     {
-        self::assertEquals('ô', StringHelper::getChar('fòôbàř', 2));
-        self::assertEquals('依', StringHelper::getChar('白日依山盡', 2));
+        self::assertEquals($expected, StringHelper::getChar('白日依山盡', $pos));
+    }
+
+    /**
+     * getCharProvider
+     *
+     * @return  array
+     */
+    public function getCharProvider()
+    {
+        return [
+            [0, '白'],
+            [3, '山'],
+            [10, ''],
+            [-1, '盡'],
+            [-2, '山'],
+            [-5, '白'],
+            [-16, ''],
+        ];
     }
 
     /**
@@ -678,6 +698,41 @@ class StringHelperTest extends TestCase
             ['fòôbàř', '¬ø', 9, 'fòôbàř¬ø¬'],
             ['fòôbàř', '¬øÿ', 11, 'fòôbàř¬øÿ¬ø'],
             ['妳好', '嗨', 5, '妳好嗨嗨嗨']
+        ];
+    }
+
+    /**
+     * testRemove
+     *
+     * @param string $string
+     * @param int    $offset
+     * @param string $expected
+     *
+     * @return  void
+     *
+     * @dataProvider removeProvider
+     */
+    public function testRemoveChar(string $string, int $offset, string $expected)
+    {
+        self::assertEquals($expected, StringHelper::removeChar($string, $offset));
+    }
+
+    /**
+     * removeProvider
+     *
+     * @return  array
+     */
+    public function removeProvider()
+    {
+        return [
+            ['Foobar', 3, 'Fooar'],
+            ['桃之夭夭', 0, '之夭夭'],
+            ['下筆千言', 2, '下筆言'],
+            ['白日依山盡', -2, '白日依盡'],
+            ['白日依山盡', -5, '日依山盡'],
+            ['白日依山盡', 5, '白日依山盡'],
+            ['下筆千言', 6, '下筆千言'],
+            ['下筆千言', -8, '下筆千言'],
         ];
     }
 
