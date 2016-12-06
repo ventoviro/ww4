@@ -661,7 +661,7 @@ class MbUtf8StringTest extends TestCase
      * Test...
      *
      * @param   string $string       @todo
-     * @param   string $split_length @todo
+     * @param   int    $split_length @todo
      * @param   string $expect       @todo
      *
      * @return  array

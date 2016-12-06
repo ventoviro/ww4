@@ -424,7 +424,9 @@ class StringObjectTest extends TestCase
     /**
      * testCompare
      *
-     * @return  void
+     * @param string $str1
+     * @param string $str2
+     * @param int    $expected
      *
      * @dataProvider \Windwalker\String\Test\MbUtf8StringTest::strcmpProvider
      */
@@ -432,13 +434,21 @@ class StringObjectTest extends TestCase
     {
         $s = new StringObject($str1);
 
-        self::assertEquals($expected, $s->compare($str2));
+        $actual = $s->compare($str2);
+
+        if ($actual !== 0) {
+            $actual /= abs($actual);
+        }
+
+        self::assertEquals($expected, $actual);
     }
 
     /**
      * testCompare
      *
-     * @return  void
+     * @param string $str1
+     * @param string $str2
+     * @param int    $expected
      *
      * @dataProvider \Windwalker\String\Test\MbUtf8StringTest::strcasecmpProvider
      */
@@ -446,7 +456,13 @@ class StringObjectTest extends TestCase
     {
         $s = new StringObject($str1);
 
-        self::assertEquals($expected, $s->compare($str2, false));
+        $actual = $s->compare($str2, false);
+
+        if ($actual !== 0) {
+            $actual /= abs($actual);
+        }
+
+        self::assertEquals($expected, $actual);
     }
 
     /**
