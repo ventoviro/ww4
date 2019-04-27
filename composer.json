@@ -29,6 +29,7 @@
             "Windwalker\\": "src/"
         },
         "files": [
+            "src/String/functions.php",
             "src/Utilities/functions.php"
         ]
     },

@@ -1,16 +1,8 @@
 language: php
 
-sudo: true
-dist: trusty
-group: edge
-
 php:
-  - 7.1
-  - hhvm-3.15
-
-matrix:
-  allow_failures:
-    - php: hhvm-3.15
+  - '7.1'
+  - '7.2'
 
 #addons:
 #  postgresql: "9.3"
@@ -18,15 +10,13 @@ matrix:
 #services:
 #  - memcached # will start memcached
 
-before_install:
-  - composer self-update
+#before_install:
 #  - sh -e build/travis/scripts/apt-get.sh
 #  - sh -e build/travis/scripts/apache2-vhost.sh
 #  - sh -e build/travis/scripts/apache2-configure.sh
 
 before_script:
   - composer install --ignore-platform-reqs --no-interaction
-  - if [[ ${TRAVIS_PHP_VERSION} == "hhvm-3.15" ]]; then cat build/config/hhvm.ini >> /etc/hhvm/php.ini; fi
 #  - phpenv rehash
 
 script:
