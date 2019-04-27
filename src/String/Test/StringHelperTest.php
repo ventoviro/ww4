@@ -989,4 +989,58 @@ class StringHelperTest extends TestCase
             ['白日依山盡 黃河入海流', 4, '白日依山...', '...'],
         ];
     }
+
+    /**
+     * testMap
+     *
+     * @return  void
+     */
+    public function testMap()
+    {
+        $actual = StringHelper::map('Foo/Bar/Yoo', function ($char, $key) {
+            return $char === '/' ? '_' : $char;
+        });
+
+        self::assertEquals('Foo_Bar_Yoo', (string) $actual);
+
+        $actual = StringHelper::map('Foo/Bar/Yoo', 'strtoupper');
+
+        self::assertEquals('FOO/BAR/YOO', (string) $actual);
+    }
+
+    /**
+     * testFilter
+     *
+     * @return  void
+     */
+    public function testFilter()
+    {
+        $actual = StringHelper::filter('Foo/Bar/Yoo', function ($char, $key) {
+            return $char !== '/';
+        });
+
+        self::assertEquals('FooBarYoo', (string) $actual);
+
+        $actual = StringHelper::filter('Foo1Bar2Yoo', 'is_numeric');
+
+        self::assertEquals('12', (string) $actual);
+    }
+
+    /**
+     * testReject
+     *
+     * @return  void
+     */
+    public function testReject()
+    {
+        $actual = StringHelper::reject('Foo/Bar/Yoo', function ($char, $key) {
+            return $char === '/';
+        });
+
+        self::assertEquals('FooBarYoo', (string) $actual);
+
+        $actual = StringHelper::reject('Foo1Bar2Yoo', 'is_numeric');
+
+        self::assertEquals('FooBarYoo', (string) $actual);
+    }
 }

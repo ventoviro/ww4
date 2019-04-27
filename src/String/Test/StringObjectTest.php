@@ -32,6 +32,46 @@ class StringObjectTest extends TestCase
     }
 
     /**
+     * testFunctionCreate
+     *
+     * @return  void
+     */
+    public function testFunctionCreate()
+    {
+        $s = str('白日依山盡', StringObject::ENCODING_US_ASCII);
+
+        self::assertInstanceOf(StringObject::class, $s);
+        self::assertEquals('白日依山盡', $s->getString());
+        self::assertEquals(StringObject::ENCODING_US_ASCII, $s->getEncoding());
+    }
+
+    /**
+     * testStaticCreate
+     *
+     * @return  void
+     */
+    public function testStaticCreate()
+    {
+        $s = StringObject::create('白日依山盡', StringObject::ENCODING_US_ASCII);
+
+        self::assertInstanceOf(StringObject::class, $s);
+        self::assertEquals('白日依山盡', $s->getString());
+        self::assertEquals(StringObject::ENCODING_US_ASCII, $s->getEncoding());
+
+        $ss = StringObject::fromArray(['A', 'B', 'C']);
+
+        self::assertTrue(is_array($ss));
+
+        foreach ($ss as &$sv) {
+            self::assertInstanceOf(StringObject::class, $sv);
+
+            $sv = $sv->__toString();
+        }
+
+        self::assertEquals(['A', 'B', 'C'], $ss);
+    }
+
+    /**
      * testStringAccess
      *
      * @return  void
@@ -74,11 +114,13 @@ class StringObjectTest extends TestCase
      */
     public function testCallProxy()
     {
+        // Test return bool
         self::assertEquals(
             StringHelper::endsWith('FooBar', 'bar', false, StringHelper::ENCODING_UTF8),
             (new StringObject('FooBar', StringObject::ENCODING_UTF8))->endsWith('bar', false)
         );
 
+        // Test return string
         self::assertEquals(
             StringHelper::slice('白日依山盡', 1, 3, StringHelper::ENCODING_UTF8),
             (new StringObject('白日依山盡', StringObject::ENCODING_UTF8))->slice(1, 3)
@@ -406,7 +448,7 @@ class StringObjectTest extends TestCase
     }
 
     /**
-     * testSplit
+     * testChop
      *
      * @param string $string
      * @param int    $length
@@ -414,11 +456,11 @@ class StringObjectTest extends TestCase
      *
      * @dataProvider \Windwalker\String\Test\MbUtf8StringTest::strSplitProvider
      */
-    public function testSplit(string $string, int $length, $expected)
+    public function testChop(string $string, int $length, $expected)
     {
         $s = new StringObject($string);
 
-        self::assertEquals($expected, $s->split($length));
+        self::assertEquals($expected, $s->chop($length));
     }
 
     /**
@@ -644,10 +686,126 @@ class StringObjectTest extends TestCase
     public function testSubstrCount(string $string, string $search, int $expected, bool $caseSensitive)
     {
         $s = new StringObject($string);
-        $s2 = $s->substrCount($search, $caseSensitive);
+
+        self::assertEquals($expected, $s->substrCount($search, $caseSensitive));
+    }
+
+    /**
+     * testIndexOf
+     *
+     * @param string $string
+     * @param string $search
+     * @param int    $expected
+     *
+     * @return  void
+     *
+     * @dataProvider indexOfProvider
+     */
+    public function testIndexOf(string $string, string $search, $expected)
+    {
+        $s = new StringObject($string);
+
+        self::assertSame($expected, $s->indexOf($search));
+    }
+
+    /**
+     * indexOfProvider
+     *
+     * @return  array
+     */
+    public function indexOfProvider()
+    {
+        return [
+            ['FooBar', 'B', 3],
+            ['FooBar', 'asd', false],
+            ['山巔一寺一壺酒', '一寺', 2],
+            ['山巔一寺一壺酒', '一', 2],
+            ['山巔一寺一壺酒', '山', 0],
+            ['山巔一寺一壺酒', '舞扇舞', false],
+        ];
+    }
+
+    /**
+     * testIndexOf
+     *
+     * @param string $string
+     * @param string $search
+     * @param int    $expected
+     *
+     * @return  void
+     *
+     * @dataProvider indexOfLastProvider
+     */
+    public function testIndexOfLast(string $string, string $search, $expected)
+    {
+        $s = new StringObject($string);
+
+        self::assertSame($expected, $s->indexOfLast($search));
+    }
+
+    /**
+     * indexOfProvider
+     *
+     * @return  array
+     */
+    public function indexOfLastProvider()
+    {
+        return [
+            ['FooBarBaz', 'B', 6],
+            ['FooBarBaz', 'asd', false],
+            ['山巔一寺一壺酒', '一寺', 2],
+            ['山巔一寺一壺酒', '一', 4],
+            ['山巔一寺一壺酒', '酒', 6],
+            ['山巔一寺一壺酒', '舞扇舞', false],
+        ];
+    }
+
+    /**
+     * testExplode
+     *
+     * @param string $string
+     * @param string $delimiter
+     * @param array  $expected
+     *
+     * @return  void
+     *
+     * @dataProvider explodeProvider
+     */
+    public function testExplode(string $string, string $delimiter, array $expected)
+    {
+        $s = new StringObject($string);
+
+        self::assertEquals($expected, $s->explode($delimiter));
+    }
+
+    /**
+     * explodeProvider
+     *
+     * @return  array
+     */
+    public function explodeProvider()
+    {
+        return [
+            ['Foo/Bar/Yoo', '/', ['Foo', 'Bar', 'Yoo']],
+            ['山巔一寺一壺酒', '一', ['山巔', '寺', '壺酒']],
+        ];
+    }
+
+    /**
+     * testApply
+     *
+     * @return  void
+     */
+    public function testApply()
+    {
+        $s = new StringObject('FooBar');
+
+        $s2 = $s->apply(function ($string) {
+            return strtoupper($string);
+        });
 
         self::assertInstanceOf(StringObject::class, $s2);
         self::assertNotSame($s, $s2);
-        self::assertEquals($expected, (string) $s2);
+        self::assertEquals('FOOBAR', (string) $s2);
     }
 }

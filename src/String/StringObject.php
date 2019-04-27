@@ -21,13 +21,13 @@ use Windwalker\Utilities\Classes\StringableInterface;
  * @method StringObject getChar(int $pos)
  * @method StringObject between(string $start, string $end, int $offset = 0)
  * @method StringObject collapseWhitespaces(string $string)
- * @method StringObject contains(string $search, bool $caseSensitive = true)
- * @method StringObject endsWith(string $search, bool $caseSensitive = true)
- * @method StringObject startsWith(string $target, bool $caseSensitive = true)
+ * @method bool         contains(string $search, bool $caseSensitive = true)
+ * @method bool         endsWith(string $search, bool $caseSensitive = true)
+ * @method bool         startsWith(string $target, bool $caseSensitive = true)
  * @method StringObject ensureLeft(string $search)
  * @method StringObject ensureRight(string $search)
- * @method StringObject hasLowerCase()
- * @method StringObject hasUpperCase()
+ * @method bool         hasLowerCase()
+ * @method bool         hasUpperCase()
  * @method StringObject match(string $pattern, string $option = 'msr')
  * @method StringObject insert(string $insert, int $position)
  * @method bool         isLowerCase()
@@ -48,6 +48,9 @@ use Windwalker\Utilities\Classes\StringableInterface;
  * @method StringObject surround($substring = ['"', '"'])
  * @method StringObject toggleCase()
  * @method StringObject truncate(int $length, string $suffix = '', bool $wordBreak = true)
+ * @method StringObject map(callable $callback)
+ * @method StringObject filter(callable $callback)
+ * @method StringObject reject(callable $callback)
  *
  * @since  __DEPLOY_VERSION__
  */
@@ -76,6 +79,36 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      * @var  string
      */
     protected $encoding = null;
+
+    /**
+     * create
+     *
+     * @param string      $string
+     * @param null|string $encoding
+     *
+     * @return  static
+     */
+    public static function create(string $string = '', ?string $encoding = self::ENCODING_UTF8)
+    {
+        return new static($string, $encoding);
+    }
+
+    /**
+     * fromArray
+     *
+     * @param array       $strings
+     * @param null|string $encoding
+     *
+     * @return  static[]
+     */
+    public static function fromArray(array $strings, ?string $encoding = self::ENCODING_UTF8): array
+    {
+        foreach ($strings as $k => $string) {
+            $strings[$k] = static::create($string, $encoding);
+        }
+
+        return $strings;
+    }
 
     /**
      * StringObject constructor.
@@ -161,7 +194,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->split());
+        return new \ArrayIterator($this->chop());
     }
 
     /**
@@ -355,7 +388,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @return  array|bool
      */
-    public function split($length = 1)
+    public function chop($length = 1)
     {
         return Utf8String::strSplit($this->string, $length, $this->encoding);
     }
@@ -384,7 +417,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @return  int
      */
-    public function compare(string $compare, bool $caseSensitive = true)
+    public function compare(string $compare, bool $caseSensitive = true): int
     {
         if ($caseSensitive) {
             return Utf8String::strcmp($this->string, $compare);
@@ -505,12 +538,63 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      * @param string $search
      * @param bool   $caseSensitive
      *
+     * @return  int
+     */
+    public function substrCount(string $search, bool $caseSensitive = true): int
+    {
+        return Utf8String::substrCount($this->string, $search, $caseSensitive, $this->encoding);
+    }
+
+    /**
+     * indexOf
+     *
+     * @param string $search
+     *
+     * @return  int|bool
+     */
+    public function indexOf(string $search)
+    {
+        return Utf8String::strpos($this->string, $search, 0, $this->encoding);
+    }
+
+    /**
+     * indexOf
+     *
+     * @param string $search
+     *
+     * @return  int|bool
+     */
+    public function indexOfLast(string $search)
+    {
+        return Utf8String::strrpos($this->string, $search, 0, $this->encoding);
+    }
+
+    /**
+     * explode
+     *
+     * @param string   $delimiter
+     * @param int|null $limit
+     *
+     * @return  array
+     */
+    public function explode(string $delimiter, int $limit = null): array
+    {
+        $limit = $limit === null ? PHP_INT_MAX : $limit;
+
+        return explode($delimiter, $this->string, $limit);
+    }
+
+    /**
+     * apply
+     *
+     * @param callable $callback
+     *
      * @return  static
      */
-    public function substrCount(string $search, bool $caseSensitive = true)
+    public function apply(callable $callback)
     {
-        return $this->cloneInstance(function (StringObject $new) use ($search, $caseSensitive) {
-            $new->string = Utf8String::substrCount($new->string, $search, $caseSensitive, $this->encoding);
+        return $this->cloneInstance(function ($new) use ($callback) {
+            $new->string = $callback($new->string);
         });
     }
 }

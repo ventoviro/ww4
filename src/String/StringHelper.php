@@ -752,7 +752,7 @@ class StringHelper
         int $length,
         string $suffix = '',
         bool $wordBreak = true,
-        string $encoding = null
+        ?string $encoding = null
     ): string {
         $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
 
@@ -768,5 +768,73 @@ class StringHelper
         }
 
         return $result . $suffix;
+    }
+
+    /**
+     * map
+     *
+     * @param string      $string
+     * @param callable    $callback
+     * @param string|null $encoding
+     *
+     * @return  string
+     */
+    public static function map(string $string, callable $callback, string $encoding = null): string
+    {
+        $result = [];
+
+        foreach (Utf8String::strSplit($string, 1, $encoding) as $key => $char) {
+            if ($callback instanceof \Closure) {
+                $result[] = $callback($char, $key);
+            } else {
+                $result[] = $callback($char);
+            }
+        }
+
+        return implode('', $result);
+    }
+
+    /**
+     * filter
+     *
+     * @param string      $string
+     * @param callable    $callback
+     * @param string|null $encoding
+     *
+     * @return  string
+     */
+    public static function filter(string $string, callable $callback, string $encoding = null): string
+    {
+        return static::map($string, function ($char, &$key) use ($callback) {
+            if ($callback instanceof \Closure) {
+                $result = $callback($char, $key);
+            } else {
+                $result = $callback($char);
+            }
+
+            return $result ? $char : '';
+        }, $encoding);
+    }
+
+    /**
+     * reject
+     *
+     * @param string      $string
+     * @param callable    $callback
+     * @param string|null $encoding
+     *
+     * @return  string
+     */
+    public static function reject(string $string, callable $callback, string $encoding = null): string
+    {
+        return static::filter($string, function ($char, &$key) use ($callback) {
+            if ($callback instanceof \Closure) {
+                $result = $callback($char, $key);
+            } else {
+                $result = $callback($char);
+            }
+
+            return !$result;
+        }, $encoding);
     }
 }

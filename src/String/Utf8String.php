@@ -14,8 +14,8 @@ namespace Windwalker\String;
  * Wraps the phputf8 library
  * All functions assume the validity of utf-8 strings.
  *
- * @method  static int    strpos(string $str, string $search, int $offset = 0, string $encoding = null)
- * @method  static int    strrpos(string $str, string $search, int $offset = 0, string $encoding = null)
+ * @method  static int|bool strpos(string $str, string $search, int $offset = 0, string $encoding = null)
+ * @method  static int|bool strrpos(string $str, string $search, int $offset = 0, string $encoding = null)
  * @method  static string substr(string $str, $offset, int $length = null, string $encoding = null)
  * @method  static string strtolower(string $str, string $encoding = null)
  * @method  static string strtoupper(string $str, string $encoding = null)
@@ -142,7 +142,9 @@ abstract class Utf8String
 
             return $str;
         } else {
-            foreach (array_keys($search) as $k) {
+            $keys = array_keys($search);
+
+            foreach ($keys as $k) {
                 if (is_array($replace)) {
                     if (array_key_exists($k, $replace)) {
                         $str = static::strIreplace($search[$k], $replace[$k], $str, $count, $encoding);
