@@ -608,7 +608,7 @@ abstract class Utf8String
         $len = strlen($str);
 
         for ($i = 0; $i < $len; $i++) {
-            $in = ord($str{$i});
+            $in = ord($str[$i]);
             if ($mState === 0) {
                 // When mState is zero we expect either a US-ASCII character or a
                 // multi-octet sequence.

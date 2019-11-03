@@ -1,8 +1,7 @@
 language: php
 
 php:
-  - '7.1'
-  - '7.2'
+  - 7.4snapshot
 
 #addons:
 #  postgresql: "9.3"
@@ -10,14 +9,15 @@ php:
 #services:
 #  - memcached # will start memcached
 
-#before_install:
+before_install:
+  - composer global require phpunit/phpunit
 #  - sh -e build/travis/scripts/apt-get.sh
 #  - sh -e build/travis/scripts/apache2-vhost.sh
 #  - sh -e build/travis/scripts/apache2-configure.sh
 
 before_script:
-  - composer install --ignore-platform-reqs --no-interaction
+  - composer install
 #  - phpenv rehash
 
 script:
-  - phpunit --configuration phpunit.travis.xml
+  - /home/travis/.config/composer/vendor/bin/phpunit --configuration phpunit.travis.xml

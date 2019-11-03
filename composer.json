@@ -11,18 +11,18 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
+        "php": ">=7.4",
         "psr/log": "~1.0",
         "psr/http-message": "~1.0",
         "psr/cache": "~1.0",
         "psr/link": "~1.0"
     },
     "require-dev": {
-        "mockery/mockery": "0.9.*"
+        "mockery/mockery": "^1.0"
     },
     "suggest": {
-        "symfony/yaml": "Install ~3.0 if you require YAML support.",
-        "php-http/httplug": "Install ~1.0 if you require HttpClient as HttpPlug implementation."
+        "symfony/yaml": "Install ~4.0 if you require YAML support.",
+        "php-http/httplug": "Install ~2.0 if you require HttpClient as HttpPlug implementation."
     },
     "autoload": {
         "psr-4": {
@@ -35,7 +35,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "3.x-dev"
+            "dev-master": "4.x-dev"
         }
     },
     "provide":           {
