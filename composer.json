@@ -27,11 +27,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Windwalker\\": "src/"
+            "Windwalker\\": "packages/"
         },
         "files": [
-            "src/String/functions.php",
-            "src/Utilities/functions.php"
+            "packages/string/src/functions.php",
+            "packages/utilities/src/functions.php"
         ]
     },
     "extra": {
