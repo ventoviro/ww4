@@ -10,7 +10,7 @@ declare(strict_types = 1);
 namespace Windwalker\String\Test;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\String\StringHelper;
+use Windwalker\String\Str;
 use Windwalker\String\StringObject;
 use Windwalker\String\Utf8String;
 
@@ -116,18 +116,18 @@ class StringObjectTest extends TestCase
     {
         // Test return bool
         self::assertEquals(
-            StringHelper::endsWith('FooBar', 'bar', false, StringHelper::ENCODING_UTF8),
+            Str::endsWith('FooBar', 'bar', false, Str::ENCODING_UTF8),
             (new StringObject('FooBar', StringObject::ENCODING_UTF8))->endsWith('bar', false)
         );
 
         // Test return string
         self::assertEquals(
-            StringHelper::slice('白日依山盡', 1, 3, StringHelper::ENCODING_UTF8),
+            Str::slice('白日依山盡', 1, 3, Str::ENCODING_UTF8),
             (new StringObject('白日依山盡', StringObject::ENCODING_UTF8))->slice(1, 3)
         );
 
         self::assertEquals(
-            StringHelper::slice('白日依山盡', 1, 3, StringHelper::ENCODING_DEFAULT_ISO),
+            Str::slice('白日依山盡', 1, 3, Str::ENCODING_DEFAULT_ISO),
             (new StringObject('白日依山盡', StringObject::ENCODING_DEFAULT_ISO))->slice(1, 3)
         );
 

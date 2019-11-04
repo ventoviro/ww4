@@ -11,198 +11,16 @@ namespace Windwalker\Utilities\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Test\Traits\BaseAssertionTrait;
-use Windwalker\Utilities\ArrayHelper;
+use Windwalker\Utilities\Arr;
 
 /**
  * The ArrayHelperTest class.
  *
  * @since  __DEPLOY_VERSION__
  */
-class ArrayHelperTest extends TestCase
+class ArrTest extends TestCase
 {
     use BaseAssertionTrait;
-
-    /**
-     * testToArray
-     *
-     * @param $input
-     * @param $recursive
-     * @param $expect
-     *
-     * @return  void
-     *
-     * @dataProvider  providerTestToArray
-     */
-    public function testToArray($input, $recursive, $expect)
-    {
-        $this->assertEquals($expect, ArrayHelper::toArray($input, $recursive));
-    }
-
-    /**
-     * Data provider for object inputs
-     *
-     * @return  array
-     *
-     * @since   2.0
-     */
-    public function providerTestToArray()
-    {
-        return [
-            'string' => [
-                'foo',
-                false,
-                ['foo']
-            ],
-            'array' => [
-                ['foo'],
-                false,
-                ['foo']
-            ],
-            'array_recursive' => [
-                [
-                    'foo' => [
-                    (object) ['bar' => 'bar'],
-                    (object) ['baz' => 'baz']
-                    ]
-                ],
-                true,
-                [
-                    'foo' => [
-                    ['bar' => 'bar'],
-                    ['baz' => 'baz']
-                    ]
-                ]
-            ],
-            'iterator' => [
-                ['foo' => new \ArrayIterator(['bar' => 'baz'])],
-                true,
-                ['foo' => ['bar' => 'baz']]
-            ]
-        ];
-    }
-
-    /**
-     * testToObject
-     *
-     * @return  void
-     *
-     * @dataProvider providerTestToObject
-     */
-    public function testToObject($input, $expect, $message)
-    {
-        self::assertEquals($expect, ArrayHelper::toObject($input), $message);
-    }
-
-    /**
-     * providerTestToObject
-     *
-     * @return  array
-     */
-    public function providerTestToObject()
-    {
-        return [
-            'single object' => [
-                [
-                    'integer' => 12,
-                    'float'   => 1.29999,
-                    'string'  => 'A Test String'
-                ],
-                (object)[
-                    'integer' => 12,
-                    'float'   => 1.29999,
-                    'string'  => 'A Test String'
-                ],
-                'Should turn array into single object'
-            ],
-            'multiple objects' => [
-                [
-                    'first'  => [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                    'second' => [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                    'third'  => [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                ],
-                (object) [
-                    'first'  => (object) [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                    'second' => (object) [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                    'third'  => (object) [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                ],
-                'Should turn multiple dimension array into nested objects'
-            ],
-            'single object with class' => [
-                [
-                    'integer' => 12,
-                    'float'   => 1.29999,
-                    'string'  => 'A Test String'
-                ],
-                (object) [
-                    'integer' => 12,
-                    'float'   => 1.29999,
-                    'string'  => 'A Test String'
-                ],
-                'Should turn array into single object'
-            ],
-            'multiple objects with class' => [
-                [
-                    'first'  => [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                    'second' => [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                    'third'  => [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                ],
-                (object) [
-                    'first'  => (object) [
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                    'second' => (object)[
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                    'third'  => (object)[
-                        'integer' => 12,
-                        'float'   => 1.29999,
-                        'string'  => 'A Test String'
-                    ],
-                ],
-                'Should turn multiple dimension array into nested objects'
-            ],
-        ];
-    }
 
     /**
      * testDef
@@ -218,7 +36,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testDef($array, $key, $value, $expected)
     {
-        self::assertEquals($expected, $return = ArrayHelper::def($array, $key, $value));
+        self::assertEquals($expected, $return = Arr::def($array, $key, $value));
 
         if (is_object($array)) {
             self::assertSame($array, $return);
@@ -268,12 +86,12 @@ class ArrayHelperTest extends TestCase
      */
     public function testHas()
     {
-        self::assertTrue(ArrayHelper::has(['foo' => 'bar'], 'foo'));
-        self::assertFalse(ArrayHelper::has(['foo' => 'bar'], 'yoo'));
-        self::assertTrue(ArrayHelper::has(['foo' => ['bar' => 'yoo']], 'foo.bar'));
-        self::assertTrue(ArrayHelper::has(['foo' => new \ArrayObject(['bar' => 'yoo'])], 'foo.bar'));
-        self::assertTrue(ArrayHelper::has(['foo' => ['bar' => 'yoo']], 'foo/bar', '/'));
-        self::assertFalse(ArrayHelper::has(['foo' => ['bar' => 'yoo']], ''));
+        self::assertTrue(Arr::has(['foo' => 'bar'], 'foo'));
+        self::assertFalse(Arr::has(['foo' => 'bar'], 'yoo'));
+        self::assertTrue(Arr::has(['foo' => ['bar' => 'yoo']], 'foo.bar'));
+        self::assertTrue(Arr::has(['foo' => new \ArrayObject(['bar' => 'yoo'])], 'foo.bar'));
+        self::assertTrue(Arr::has(['foo' => ['bar' => 'yoo']], 'foo/bar', '/'));
+        self::assertFalse(Arr::has(['foo' => ['bar' => 'yoo']], ''));
     }
 
     /**
@@ -289,7 +107,7 @@ class ArrayHelperTest extends TestCase
             [7, 8, 9],
         ];
 
-        self::assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9], ArrayHelper::collapse($array));
+        self::assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9], Arr::collapse($array));
 
         $array = [
             (object) [1, 2, 3],
@@ -299,7 +117,7 @@ class ArrayHelperTest extends TestCase
             [7, 8, 9],
         ];
 
-        self::assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9], ArrayHelper::collapse($array));
+        self::assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9], Arr::collapse($array));
     }
 
     /**
@@ -323,28 +141,28 @@ class ArrayHelperTest extends TestCase
             ]
         ];
 
-        $flatted = ArrayHelper::flatten($array);
+        $flatted = Arr::flatten($array);
 
         $this->assertEquals($flatted['pos1.sunflower'], 'love');
 
-        $flatted = ArrayHelper::flatten($array, '/');
+        $flatted = Arr::flatten($array, '/');
 
         $this->assertEquals($flatted['pos1/sunflower'], 'love');
 
         // Test depth
-        $flatted = ArrayHelper::flatten($array, '/', 0);
+        $flatted = Arr::flatten($array, '/', 0);
 
         $this->assertEquals($flatted['pos2/pos3/0'], 'olive');
 
-        $flatted = ArrayHelper::flatten($array, '/', 1);
+        $flatted = Arr::flatten($array, '/', 1);
 
         $this->assertEquals($flatted['pos2']['pos3'], ['olive']);
 
-        $flatted = ArrayHelper::flatten($array, '/', 2);
+        $flatted = Arr::flatten($array, '/', 2);
 
         $this->assertEquals($flatted['pos2/pos3'], ['olive']);
 
-        $flatted = ArrayHelper::flatten($array, '/', 3);
+        $flatted = Arr::flatten($array, '/', 3);
 
         $this->assertEquals($flatted['pos2/pos3/0'], 'olive');
 
@@ -362,7 +180,7 @@ class ArrayHelperTest extends TestCase
             'Samsung.0' => ['name' => 'Galaxy S7', 'brand' => 'Samsung'],
         ];
 
-        $this->assertEquals($expected, ArrayHelper::flatten($array, '.', 2));
+        $this->assertEquals($expected, Arr::flatten($array, '.', 2));
     }
 
     /**
@@ -388,13 +206,13 @@ class ArrayHelperTest extends TestCase
             ]
         ];
 
-        $this->assertEquals('sakura', ArrayHelper::get($data, 'flower'));
-        $this->assertEquals('love', ArrayHelper::get($data, 'pos1.sunflower'));
-        $this->assertEquals('default', ArrayHelper::get($data, 'pos1.notexists', 'default'));
-        $this->assertEquals('default', ArrayHelper::get($data, '', 'default'));
-        $this->assertEquals('love', ArrayHelper::get($data, 'pos1/sunflower', null, '/'));
-        $this->assertEquals($data['array'], ArrayHelper::get($data, 'array'));
-        $this->assertNull(ArrayHelper::get($data, ['not', 'exists']));
+        $this->assertEquals('sakura', Arr::get($data, 'flower'));
+        $this->assertEquals('love', Arr::get($data, 'pos1.sunflower'));
+        $this->assertEquals('default', Arr::get($data, 'pos1.notexists', 'default'));
+        $this->assertEquals('default', Arr::get($data, '', 'default'));
+        $this->assertEquals('love', Arr::get($data, 'pos1/sunflower', null, '/'));
+        $this->assertEquals($data['array'], Arr::get($data, 'array'));
+        $this->assertNull(Arr::get($data, ['not', 'exists']));
 
         $data = (object) [
             'flower' => 'sakura',
@@ -412,13 +230,13 @@ class ArrayHelperTest extends TestCase
             ]
         ];
 
-        $this->assertEquals('sakura', ArrayHelper::get($data, 'flower'));
-        $this->assertEquals('love', ArrayHelper::get($data, 'pos1.sunflower'));
-        $this->assertEquals('default', ArrayHelper::get($data, 'pos1.notexists', 'default'));
-        $this->assertEquals('elegant', ArrayHelper::get($data, 'pos2.cornflower'));
-        $this->assertEquals('love', ArrayHelper::get($data, 'pos1/sunflower', null, '/'));
-        $this->assertEquals($data->array, ArrayHelper::get($data, 'array'));
-        $this->assertNull(ArrayHelper::get($data, 'not.exists'));
+        $this->assertEquals('sakura', Arr::get($data, 'flower'));
+        $this->assertEquals('love', Arr::get($data, 'pos1.sunflower'));
+        $this->assertEquals('default', Arr::get($data, 'pos1.notexists', 'default'));
+        $this->assertEquals('elegant', Arr::get($data, 'pos2.cornflower'));
+        $this->assertEquals('love', Arr::get($data, 'pos1/sunflower', null, '/'));
+        $this->assertEquals($data->array, Arr::get($data, 'array'));
+        $this->assertNull(Arr::get($data, 'not.exists'));
     }
 
     /**
@@ -431,35 +249,35 @@ class ArrayHelperTest extends TestCase
         $data = array();
 
         // One level
-        $return = ArrayHelper::set($data, 'flower', 'sakura');
+        $return = Arr::set($data, 'flower', 'sakura');
 
         $this->assertEquals('sakura', $return['flower']);
 
         // Multi-level
-        $return = ArrayHelper::set($data, 'foo.bar', 'test');
+        $return = Arr::set($data, 'foo.bar', 'test');
 
         $this->assertEquals('test', $return['foo']['bar']);
 
         // Separator
-        $return = ArrayHelper::set($data, 'foo/bar', 'play', '/');
+        $return = Arr::set($data, 'foo/bar', 'play', '/');
 
         $this->assertEquals('play', $return['foo']['bar']);
 
         // Type
-        $return = ArrayHelper::set($data, 'cloud/fly', 'bird', '/', 'stdClass');
+        $return = Arr::set($data, 'cloud/fly', 'bird', '/', 'stdClass');
 
         $this->assertEquals('bird', $return['cloud']->fly);
 
         // False
-        ArrayHelper::set($data, '', 'goo');
+        Arr::set($data, '', 'goo');
 
         // Fix path
-        $return = ArrayHelper::set($data, 'double..separators', 'value');
+        $return = Arr::set($data, 'double..separators', 'value');
 
         $this->assertEquals('value', $return['double']['separators']);
 
         $this->assertExpectedException(function () use ($data) {
-            ArrayHelper::set($data, 'a.b', 'c', '.', 'Non\Exists\Class');
+            Arr::set($data, 'a.b', 'c', '.', 'Non\Exists\Class');
         }, \InvalidArgumentException::class, 'Type or class: Non\Exists\Class not exists');
     }
 
@@ -475,7 +293,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testRemove($array, $expected, $offset, $separator)
     {
-        $actual = ArrayHelper::remove($array, $offset, $separator);
+        $actual = Arr::remove($array, $offset, $separator);
 
         self::assertEquals($expected, $actual);
 
@@ -555,7 +373,7 @@ class ArrayHelperTest extends TestCase
      *
      * @return  void
      */
-    public function testKeep()
+    public function testOnly()
     {
         $array = [
             'Lycoris' => 'energetic',
@@ -566,27 +384,27 @@ class ArrayHelperTest extends TestCase
 
         self::assertEquals(
             ['Lycoris' => 'energetic', 'Zinnia' => 'robust'],
-            ArrayHelper::keep($array, ['Lycoris', 'Zinnia'])
+            Arr::only($array, ['Lycoris', 'Zinnia'])
         );
 
         self::assertEquals(
             ['Lycoris' => 'energetic'],
-            ArrayHelper::keep($array, ['Lycoris'])
+            Arr::only($array, ['Lycoris'])
         );
 
         self::assertEquals(
             (object) ['Lycoris' => 'energetic', 'Zinnia' => 'robust'],
-            ArrayHelper::keep((object) $array, ['Lycoris', 'Zinnia'])
+            Arr::only((object) $array, ['Lycoris', 'Zinnia'])
         );
 
         self::assertEquals(
             (object) ['Lycoris' => 'energetic'],
-            ArrayHelper::keep((object) $array, ['Lycoris'])
+            Arr::only((object) $array, ['Lycoris'])
         );
 
         $this->expectException(\InvalidArgumentException::class);
 
-        ArrayHelper::keep('string', ['test']);
+        Arr::only('string', ['test']);
     }
 
     /**
@@ -619,14 +437,14 @@ class ArrayHelperTest extends TestCase
             ],
         ];
 
-        $results = ArrayHelper::find($data, function ($value, $key) {
+        $results = Arr::find($data, function ($value, $key) {
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         });
 
         $this->assertEquals([$data[0], $data[3]], $results);
 
         // Keep key
-        $results = ArrayHelper::find($data, function ($value, &$key) {
+        $results = Arr::find($data, function ($value, &$key) {
             $key++;
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         }, true);
@@ -634,7 +452,7 @@ class ArrayHelperTest extends TestCase
         $this->assertEquals([1 => $data[0], 4 => $data[3]], $results);
 
         // Offset limit
-        $results = ArrayHelper::find($data, function ($value, &$key) {
+        $results = Arr::find($data, function ($value, &$key) {
             $key++;
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         }, false, 0, 1);
@@ -642,7 +460,7 @@ class ArrayHelperTest extends TestCase
         $this->assertEquals([$data[0]], $results);
 
         // Offset limit
-        $results = ArrayHelper::find($data, function ($value, &$key) {
+        $results = Arr::find($data, function ($value, &$key) {
             $key++;
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         }, false, 1, 1);
@@ -650,7 +468,7 @@ class ArrayHelperTest extends TestCase
         $this->assertEquals([$data[3]], $results);
 
         // Test global function
-        self::assertEquals(['foo' => 'bar'], ArrayHelper::find(['foo' => 'bar', 'baz' => ''], 'strlen', true));
+        self::assertEquals(['foo' => 'bar'], Arr::find(['foo' => 'bar', 'baz' => ''], 'strlen', true));
     }
 
     /**
@@ -683,13 +501,13 @@ class ArrayHelperTest extends TestCase
             ],
         ];
 
-        $result = ArrayHelper::findFirst($data, function ($value, $key) {
+        $result = Arr::findFirst($data, function ($value, $key) {
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         });
 
         $this->assertEquals($data[0], $result);
 
-        $result = ArrayHelper::findFirst($data, function ($value, $key) {
+        $result = Arr::findFirst($data, function ($value, $key) {
             return $value['title'] === 'No exists';
         });
 
@@ -726,7 +544,7 @@ class ArrayHelperTest extends TestCase
             ],
         ];
 
-        $results = ArrayHelper::reject($data, function ($value, $key) {
+        $results = Arr::reject($data, function ($value, $key) {
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         });
 
@@ -744,28 +562,28 @@ class ArrayHelperTest extends TestCase
             'one' => 1, 'two' => 2, 'three' => 3
         ];
 
-        self::assertEquals(2, ArrayHelper::takeout($array, 'two'));
+        self::assertEquals(2, Arr::takeout($array, 'two'));
         self::assertEquals(['one' => 1, 'three' => 3], $array);
 
         $array = [
             'one' => 1, 'two' => ['two' => 2, 'three' => 3]
         ];
 
-        self::assertEquals(2, ArrayHelper::takeout($array, 'two.two'));
+        self::assertEquals(2, Arr::takeout($array, 'two.two'));
         self::assertEquals(['one' => 1, 'two' => ['three' => 3]], $array);
 
         $array = [
             'one' => 1, 'two' => 2, 'three' => 3
         ];
 
-        self::assertEquals('default', ArrayHelper::takeout($array, 'foo', 'default'));
+        self::assertEquals('default', Arr::takeout($array, 'foo', 'default'));
         self::assertEquals(['one' => 1, 'two' => 2, 'three' => 3], $array);
 
         $array = (object) [
             'one' => 1, 'two' => 2, 'three' => 3
         ];
 
-        self::assertEquals(2, ArrayHelper::takeout($array, 'two'));
+        self::assertEquals(2, Arr::takeout($array, 'two'));
     }
 
     /**
@@ -782,7 +600,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testSort($data, $expected, $condition, $descending)
     {
-        $return = ArrayHelper::sort($data, $condition, $descending);
+        $return = Arr::sort($data, $condition, $descending);
 
         self::assertEquals($expected, $return);
     }
@@ -870,7 +688,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testInvert($data, $expected)
     {
-        self::assertEquals($expected, ArrayHelper::invert($data));
+        self::assertEquals($expected, Arr::invert($data));
     }
 
     /**
@@ -933,53 +751,15 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
-     * Method to test pivot().
-     *
-     * @param array $data
-     * @param array $expected
-     *
-     * @return void
-     *
-     * @dataProvider providerTestPivot
-     */
-    public function testPivot($data, $expected)
-    {
-        $this->assertEquals($expected, ArrayHelper::pivot($data));
-    }
-
-    /**
-     * seedTestTranspose
-     *
-     * @return array
-     */
-    public function providerTestPivot()
-    {
-        return [
-            [
-                // data
-                [
-                    'Jones'  => [123, 223],
-                    'Arthur' => ['Lancelot', 'Jessica']
-                ],
-                // expected
-                [
-                    ['Jones' => 123, 'Arthur' => 'Lancelot'],
-                    ['Jones' => 223, 'Arthur' => 'Jessica'],
-                ],
-            ],
-        ];
-    }
-
-    /**
      * testIsAssociative
      *
      * @return  void
      */
     public function testIsAssociative()
     {
-        self::assertTrue(ArrayHelper::isAssociative(['foo' => 'bar', 'baz']));
-        self::assertFalse(ArrayHelper::isAssociative(['bar', 'baz']));
-        self::assertTrue(ArrayHelper::isAssociative([2 => 'bar', 1 => 'baz']));
+        self::assertTrue(Arr::isAssociative(['foo' => 'bar', 'baz']));
+        self::assertFalse(Arr::isAssociative(['bar', 'baz']));
+        self::assertTrue(Arr::isAssociative([2 => 'bar', 1 => 'baz']));
     }
 
     /**
@@ -989,8 +769,8 @@ class ArrayHelperTest extends TestCase
      */
     public function testAccessible()
     {
-        self::assertTrue(ArrayHelper::accessible([]));
-        self::assertTrue(ArrayHelper::accessible(new \ArrayObject()));
+        self::assertTrue(Arr::accessible([]));
+        self::assertTrue(Arr::accessible(new \ArrayObject()));
 
         $array = new class implements \ArrayAccess {
             public function offsetExists($offset)
@@ -1010,9 +790,9 @@ class ArrayHelperTest extends TestCase
             }
         };
 
-        self::assertTrue(ArrayHelper::accessible($array));
-        self::assertFalse(ArrayHelper::accessible(new \EmptyIterator()));
-        self::assertFalse(ArrayHelper::accessible(new \stdClass()));
+        self::assertTrue(Arr::accessible($array));
+        self::assertFalse(Arr::accessible(new \EmptyIterator()));
+        self::assertFalse(Arr::accessible(new \stdClass()));
     }
 
     /**
@@ -1027,7 +807,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testGroup($source, $key, $expected, $forceArray)
     {
-        self::assertEquals($expected, ArrayHelper::group($source, $key, $forceArray));
+        self::assertEquals($expected, Arr::group($source, $key, $forceArray));
     }
 
     /**
@@ -1168,7 +948,7 @@ class ArrayHelperTest extends TestCase
             [3, 2, 3, [4]],
         ];
 
-        self::assertEquals($expected, ArrayHelper::unique($array));
+        self::assertEquals($expected, Arr::unique($array));
     }
 
     /**
@@ -1229,15 +1009,15 @@ class ArrayHelperTest extends TestCase
             ],
         ];
 
-        $this->assertEquals($expected, ArrayHelper::mergeRecursive($data1, $data2));
+        $this->assertEquals($expected, Arr::mergeRecursive($data1, $data2));
 
         $expected['ai'] = 'Ultron';
 
-        $this->assertEquals($expected, ArrayHelper::mergeRecursive($data1, $data2, $data3));
+        $this->assertEquals($expected, Arr::mergeRecursive($data1, $data2, $data3));
 
         $this->expectException(\InvalidArgumentException::class);
 
-        ArrayHelper::mergeRecursive('', 123);
+        Arr::mergeRecursive('', 123);
     }
 
     /**
@@ -1299,7 +1079,7 @@ Array
 )
 OUT;
 
-        self::assertStringSafeEquals($expected, ArrayHelper::dump($data, 4));
+        self::assertStringSafeEquals($expected, Arr::dump($data, 4));
     }
 
     /**
@@ -1351,14 +1131,14 @@ Array
 )
 OUT;
 
-        self::assertStringSafeEquals($expected, ArrayHelper::show(...$data));
-        self::assertStringSafeEquals('string', ArrayHelper::show('string'));
+        self::assertStringSafeEquals($expected, Arr::show(...$data));
+        self::assertStringSafeEquals('string', Arr::show('string'));
 
-        ArrayHelper::$sapi = 'web';
+        Arr::$sapi = 'web';
 
-        self::assertStringSafeEquals('<pre>string</pre>', ArrayHelper::show('string'));
+        self::assertStringSafeEquals('<pre>string</pre>', Arr::show('string'));
 
-        ArrayHelper::$sapi = PHP_SAPI;
+        Arr::$sapi = PHP_SAPI;
     }
 
     /**
@@ -1407,11 +1187,11 @@ OUT;
             ],
         ];
 
-        self::assertEquals($expected, ArrayHelper::map($data, function ($value, $key) {
+        self::assertEquals($expected, Arr::map($data, function ($value, $key) {
             return $value . ' #';
         }, true));
 
-        self::assertEquals($expected2, ArrayHelper::map($data, function ($value, &$key) {
+        self::assertEquals($expected2, Arr::map($data, function ($value, &$key) {
             $key .= '@';
             return $value . ' #';
         }, true));

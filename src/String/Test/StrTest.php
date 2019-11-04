@@ -10,14 +10,14 @@ declare(strict_types = 1);
 namespace Windwalker\String\Test;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\String\StringHelper;
+use Windwalker\String\Str;
 
 /**
  * The StringHelperTest class.
  *
  * @since  {DEPLOY_VERSION}
  */
-class StringHelperTest extends TestCase
+class StrTest extends TestCase
 {
     /**
      * testGetChar
@@ -29,7 +29,7 @@ class StringHelperTest extends TestCase
      */
     public function testGetChar(int $pos, string $expected)
     {
-        self::assertEquals($expected, StringHelper::getChar('白日依山盡', $pos));
+        self::assertEquals($expected, Str::getChar('白日依山盡', $pos));
     }
 
     /**
@@ -64,7 +64,7 @@ class StringHelperTest extends TestCase
      */
     public function testBetween($string, $expected, $left, $right, $offset = 0)
     {
-        self::assertEquals($expected, StringHelper::between($string, $left, $right, $offset));
+        self::assertEquals($expected, Str::between($string, $left, $right, $offset));
     }
 
     /**
@@ -92,9 +92,9 @@ class StringHelperTest extends TestCase
      */
     public function testCollapseWhitespace()
     {
-        self::assertEquals('foo bar yoo', StringHelper::collapseWhitespaces('foo  bar    yoo'));
-        self::assertEquals('foo bar yoo', StringHelper::collapseWhitespaces('  foo  bar yoo '));
-        self::assertEquals('foo bar yoo', StringHelper::collapseWhitespaces("  foo\n \r bar\n\r\n yoo \n"));
+        self::assertEquals('foo bar yoo', Str::collapseWhitespaces('foo  bar    yoo'));
+        self::assertEquals('foo bar yoo', Str::collapseWhitespaces('  foo  bar yoo '));
+        self::assertEquals('foo bar yoo', Str::collapseWhitespaces("  foo\n \r bar\n\r\n yoo \n"));
     }
 
     /**
@@ -109,7 +109,7 @@ class StringHelperTest extends TestCase
      */
     public function testContains($expected, $string, $search, $caseSensitive = true)
     {
-        self::assertSame($expected, StringHelper::contains($string, $search, $caseSensitive));
+        self::assertSame($expected, Str::contains($string, $search, $caseSensitive));
     }
 
     /**
@@ -140,7 +140,7 @@ class StringHelperTest extends TestCase
      */
     public function testEndsWith($string, $search, $caseSensitive, $expected)
     {
-        self::assertSame($expected, StringHelper::endsWith($string, $search, $caseSensitive));
+        self::assertSame($expected, Str::endsWith($string, $search, $caseSensitive));
     }
 
     /**
@@ -151,16 +151,16 @@ class StringHelperTest extends TestCase
     public function endsWithProvider()
     {
         return [
-            ['Foo', 'oo', StringHelper::CASE_SENSITIVE, true],
-            ['Foo', 'Oo', StringHelper::CASE_SENSITIVE, false],
-            ['Foo', 'Oo', StringHelper::CASE_INSENSITIVE, true],
-            ['Foo', 'ooooo', StringHelper::CASE_SENSITIVE, false],
-            ['Foo', 'uv', StringHelper::CASE_SENSITIVE, false],
-            ['黃河入海流', '入海流', StringHelper::CASE_SENSITIVE, true],
-            ['黃河入海流', '入海流', StringHelper::CASE_INSENSITIVE, true],
-            ['黃河入海流', '依山盡', StringHelper::CASE_SENSITIVE, false],
-            ['FÒÔbà', 'ôbà', StringHelper::CASE_SENSITIVE, false],
-            ['FÒÔbà', 'ôbà', StringHelper::CASE_INSENSITIVE, true],
+            ['Foo', 'oo', Str::CASE_SENSITIVE, true],
+            ['Foo', 'Oo', Str::CASE_SENSITIVE, false],
+            ['Foo', 'Oo', Str::CASE_INSENSITIVE, true],
+            ['Foo', 'ooooo', Str::CASE_SENSITIVE, false],
+            ['Foo', 'uv', Str::CASE_SENSITIVE, false],
+            ['黃河入海流', '入海流', Str::CASE_SENSITIVE, true],
+            ['黃河入海流', '入海流', Str::CASE_INSENSITIVE, true],
+            ['黃河入海流', '依山盡', Str::CASE_SENSITIVE, false],
+            ['FÒÔbà', 'ôbà', Str::CASE_SENSITIVE, false],
+            ['FÒÔbà', 'ôbà', Str::CASE_INSENSITIVE, true],
         ];
     }
 
@@ -176,7 +176,7 @@ class StringHelperTest extends TestCase
      */
     public function testStartsWith(string $string, string $search, bool $caseSensitive, bool $expected)
     {
-        self::assertSame($expected, StringHelper::startsWith($string, $search, $caseSensitive));
+        self::assertSame($expected, Str::startsWith($string, $search, $caseSensitive));
     }
 
     /**
@@ -187,16 +187,16 @@ class StringHelperTest extends TestCase
     public function estartsWithProvider()
     {
         return [
-            ['Foo', 'Fo', StringHelper::CASE_SENSITIVE, true],
-            ['Foo', 'fo', StringHelper::CASE_SENSITIVE, false],
-            ['Foo', 'fo', StringHelper::CASE_INSENSITIVE, true],
-            ['Foo', 'foooo', StringHelper::CASE_SENSITIVE, false],
-            ['Foo', 'uv', StringHelper::CASE_SENSITIVE, false],
-            ['黃河入海流', '黃河', StringHelper::CASE_SENSITIVE, true],
-            ['黃河入海流', '黃河', StringHelper::CASE_INSENSITIVE, true],
-            ['黃河入海流', '依山盡', StringHelper::CASE_SENSITIVE, false],
-            ['FÒÔbà', 'fò', StringHelper::CASE_SENSITIVE, false],
-            ['FÒÔbà', 'fò', StringHelper::CASE_INSENSITIVE, true],
+            ['Foo', 'Fo', Str::CASE_SENSITIVE, true],
+            ['Foo', 'fo', Str::CASE_SENSITIVE, false],
+            ['Foo', 'fo', Str::CASE_INSENSITIVE, true],
+            ['Foo', 'foooo', Str::CASE_SENSITIVE, false],
+            ['Foo', 'uv', Str::CASE_SENSITIVE, false],
+            ['黃河入海流', '黃河', Str::CASE_SENSITIVE, true],
+            ['黃河入海流', '黃河', Str::CASE_INSENSITIVE, true],
+            ['黃河入海流', '依山盡', Str::CASE_SENSITIVE, false],
+            ['FÒÔbà', 'fò', Str::CASE_SENSITIVE, false],
+            ['FÒÔbà', 'fò', Str::CASE_INSENSITIVE, true],
         ];
     }
 
@@ -211,7 +211,7 @@ class StringHelperTest extends TestCase
      */
     public function testEnsureLeft(string $string, string $search, string $expected)
     {
-        self::assertSame($expected, StringHelper::ensureLeft($string, $search));
+        self::assertSame($expected, Str::ensureLeft($string, $search));
     }
 
     /**
@@ -245,7 +245,7 @@ class StringHelperTest extends TestCase
      */
     public function testEnsureRight(string $string, string $search, string $expected)
     {
-        self::assertSame($expected, StringHelper::ensureRight($string, $search));
+        self::assertSame($expected, Str::ensureRight($string, $search));
     }
 
     /**
@@ -278,7 +278,7 @@ class StringHelperTest extends TestCase
      */
     public function testHasLowerCase(string $string, bool $expected)
     {
-        self::assertSame($expected, StringHelper::hasLowerCase($string));
+        self::assertSame($expected, Str::hasLowerCase($string));
     }
 
     /**
@@ -309,7 +309,7 @@ class StringHelperTest extends TestCase
      */
     public function testHasUpperCase(string $string, bool $expected)
     {
-        self::assertSame($expected, StringHelper::hasUpperCase($string));
+        self::assertSame($expected, Str::hasUpperCase($string));
     }
 
     /**
@@ -342,7 +342,7 @@ class StringHelperTest extends TestCase
      */
     public function testInsert(string $string, string $insert, int $position, string $expected)
     {
-        self::assertEquals($expected, StringHelper::insert($string, $insert, $position));
+        self::assertEquals($expected, Str::insert($string, $insert, $position));
     }
 
     /**
@@ -372,7 +372,7 @@ class StringHelperTest extends TestCase
      */
     public function testIsLowerCase(string $string, bool $expected)
     {
-        self::assertSame($expected, StringHelper::isLowerCase($string));
+        self::assertSame($expected, Str::isLowerCase($string));
     }
 
     /**
@@ -401,7 +401,7 @@ class StringHelperTest extends TestCase
      */
     public function testIsUpperCase(string $string, bool $expected)
     {
-        self::assertSame($expected, StringHelper::isUpperCase($string));
+        self::assertSame($expected, Str::isUpperCase($string));
     }
 
     /**
@@ -433,7 +433,7 @@ class StringHelperTest extends TestCase
      */
     public function testFirst(string $string, int $length, string $expected)
     {
-        self::assertEquals($expected, StringHelper::first($string, $length));
+        self::assertEquals($expected, Str::first($string, $length));
     }
 
     /**
@@ -470,7 +470,7 @@ class StringHelperTest extends TestCase
      */
     public function testLast(string $string, int $length, string $expected)
     {
-        self::assertEquals($expected, StringHelper::last($string, $length));
+        self::assertEquals($expected, Str::last($string, $length));
     }
 
     /**
@@ -503,7 +503,7 @@ class StringHelperTest extends TestCase
      */
     public function testIntersectLeft(string $string1, string $string2, string $expected)
     {
-        self::assertEquals($expected, StringHelper::intersectLeft($string1, $string2));
+        self::assertEquals($expected, Str::intersectLeft($string1, $string2));
     }
 
     /**
@@ -539,7 +539,7 @@ class StringHelperTest extends TestCase
      */
     public function testIntersectRight(string $string1, string $string2, string $expected)
     {
-        self::assertEquals($expected, StringHelper::intersectRight($string1, $string2));
+        self::assertEquals($expected, Str::intersectRight($string1, $string2));
     }
 
     /**
@@ -575,7 +575,7 @@ class StringHelperTest extends TestCase
      */
     public function testIntersect(string $string1, string $string2, string $expected)
     {
-        self::assertEquals($expected, StringHelper::intersect($string1, $string2));
+        self::assertEquals($expected, Str::intersect($string1, $string2));
     }
 
     /**
@@ -610,7 +610,7 @@ class StringHelperTest extends TestCase
      */
     public function testPad(string $string, string $substring, int $length, string $expected)
     {
-        self::assertEquals($expected, StringHelper::pad($string, $length, $substring));
+        self::assertEquals($expected, Str::pad($string, $length, $substring));
     }
 
     /**
@@ -645,7 +645,7 @@ class StringHelperTest extends TestCase
      */
     public function testPadLeft(string $string, string $substring, int $length, string $expected)
     {
-        self::assertEquals($expected, StringHelper::padLeft($string, $length, $substring));
+        self::assertEquals($expected, Str::padLeft($string, $length, $substring));
     }
 
     /**
@@ -680,7 +680,7 @@ class StringHelperTest extends TestCase
      */
     public function testPadRight(string $string, string $substring, int $length, string $expected)
     {
-        self::assertEquals($expected, StringHelper::padRight($string, $length, $substring));
+        self::assertEquals($expected, Str::padRight($string, $length, $substring));
     }
 
     /**
@@ -714,7 +714,7 @@ class StringHelperTest extends TestCase
      */
     public function testRemoveChar(string $string, int $offset, string $expected)
     {
-        self::assertEquals($expected, StringHelper::removeChar($string, $offset));
+        self::assertEquals($expected, Str::removeChar($string, $offset));
     }
 
     /**
@@ -749,7 +749,7 @@ class StringHelperTest extends TestCase
      */
     public function testRemoveLeft($string, $search, $expected)
     {
-        self::assertEquals($expected, StringHelper::removeLeft($string, $search));
+        self::assertEquals($expected, Str::removeLeft($string, $search));
     }
 
     /**
@@ -780,7 +780,7 @@ class StringHelperTest extends TestCase
      */
     public function testRemoveRight($string, $search, $expected)
     {
-        self::assertEquals($expected, StringHelper::removeRight($string, $search));
+        self::assertEquals($expected, Str::removeRight($string, $search));
     }
 
     /**
@@ -814,7 +814,7 @@ class StringHelperTest extends TestCase
      */
     public function testSlice(string $string, int $start, int $end = null, string $expected = '')
     {
-        self::assertEquals($expected, StringHelper::slice($string, $start, $end));
+        self::assertEquals($expected, Str::slice($string, $start, $end));
     }
 
     /**
@@ -855,7 +855,7 @@ class StringHelperTest extends TestCase
      */
     public function testSubstring(string $string, int $start, int $end = null, string $expected = '')
     {
-        self::assertEquals($expected, StringHelper::substring($string, $start, $end));
+        self::assertEquals($expected, Str::substring($string, $start, $end));
     }
 
     /**
@@ -896,9 +896,9 @@ class StringHelperTest extends TestCase
     public function testSurround(string $string, string $expected, $substring = null)
     {
         if ($substring === null) {
-            self::assertEquals($expected, StringHelper::surround($string));
+            self::assertEquals($expected, Str::surround($string));
         } else {
-            self::assertEquals($expected, StringHelper::surround($string, $substring));
+            self::assertEquals($expected, Str::surround($string, $substring));
         }
     }
 
@@ -929,7 +929,7 @@ class StringHelperTest extends TestCase
      */
     public function testToggleCase(string $string, string $expected)
     {
-        self::assertEquals($expected, StringHelper::toggleCase($string));
+        self::assertEquals($expected, Str::toggleCase($string));
     }
 
     /**
@@ -966,7 +966,7 @@ class StringHelperTest extends TestCase
         string $suffix = '',
         bool $wordBreak = true
     ) {
-        self::assertEquals($expected, StringHelper::truncate($string, $length, $suffix, $wordBreak));
+        self::assertEquals($expected, Str::truncate($string, $length, $suffix, $wordBreak));
     }
 
     /**
@@ -997,13 +997,13 @@ class StringHelperTest extends TestCase
      */
     public function testMap()
     {
-        $actual = StringHelper::map('Foo/Bar/Yoo', function ($char, $key) {
+        $actual = Str::map('Foo/Bar/Yoo', function ($char, $key) {
             return $char === '/' ? '_' : $char;
         });
 
         self::assertEquals('Foo_Bar_Yoo', (string) $actual);
 
-        $actual = StringHelper::map('Foo/Bar/Yoo', 'strtoupper');
+        $actual = Str::map('Foo/Bar/Yoo', 'strtoupper');
 
         self::assertEquals('FOO/BAR/YOO', (string) $actual);
     }
@@ -1015,13 +1015,13 @@ class StringHelperTest extends TestCase
      */
     public function testFilter()
     {
-        $actual = StringHelper::filter('Foo/Bar/Yoo', function ($char, $key) {
+        $actual = Str::filter('Foo/Bar/Yoo', function ($char, $key) {
             return $char !== '/';
         });
 
         self::assertEquals('FooBarYoo', (string) $actual);
 
-        $actual = StringHelper::filter('Foo1Bar2Yoo', 'is_numeric');
+        $actual = Str::filter('Foo1Bar2Yoo', 'is_numeric');
 
         self::assertEquals('12', (string) $actual);
     }
@@ -1033,13 +1033,13 @@ class StringHelperTest extends TestCase
      */
     public function testReject()
     {
-        $actual = StringHelper::reject('Foo/Bar/Yoo', function ($char, $key) {
+        $actual = Str::reject('Foo/Bar/Yoo', function ($char, $key) {
             return $char === '/';
         });
 
         self::assertEquals('FooBarYoo', (string) $actual);
 
-        $actual = StringHelper::reject('Foo1Bar2Yoo', 'is_numeric');
+        $actual = Str::reject('Foo1Bar2Yoo', 'is_numeric');
 
         self::assertEquals('FooBarYoo', (string) $actual);
     }

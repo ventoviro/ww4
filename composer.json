@@ -18,7 +18,8 @@
         "psr/link": "~1.0"
     },
     "require-dev": {
-        "mockery/mockery": "^1.0"
+        "mockery/mockery": "^1.0",
+        "symfony/var-dumper": "^4.3"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",

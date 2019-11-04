@@ -19,6 +19,6 @@ if (!function_exists('show')) {
      */
     function show(...$args) : void
     {
-        echo \Windwalker\Utilities\ArrayHelper::show(...$args);
+        echo \Windwalker\Utilities\Arr::show(...$args);
     }
 }

@@ -1,98 +1,48 @@
-<?php
+<?php declare(strict_types=1);
+
 /**
  * Part of ww4 project.
  *
  * @copyright  Copyright (C) 2016 LYRASOFT.
  * @license    Please see LICENSE file.
  */
-declare(strict_types = 1);
 
 namespace Windwalker\Utilities;
+
+use Windwalker\Utilities\Classes\PreventInitialTrait;
 
 /**
  * The ArrayHelper class
  *
  * @since  2.0
  */
-class ArrayHelper
+abstract class Arr
 {
+    use PreventInitialTrait;
+
     public const SORT_ASC = false;
+
     public const SORT_DESC = true;
 
     /**
-     * SAPI mocck name to support test.
+     * SAPI mock name to support test.
      *
      * @var  string
      */
-    public static $sapi = PHP_SAPI;
-
-    /**
-     * Utility function to convert all types to an array.
-     *
-     * @param   mixed $data      The data to convert.
-     * @param   bool  $recursive Recursive if data is nested.
-     *
-     * @return  array  The converted array.
-     */
-    public static function toArray($data, bool $recursive = false): array
-    {
-        // Ensure the input data is an array.
-        if ($data instanceof \Traversable) {
-            $data = iterator_to_array($data);
-        } elseif (is_object($data)) {
-            $data = get_object_vars($data);
-        } else {
-            $data = (array)$data;
-        }
-
-        if ($recursive) {
-            foreach ($data as &$value) {
-                if (is_array($value) || is_object($value)) {
-                    $value = static::toArray($value, $recursive);
-                }
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * Utility function to map an array to a stdClass object.
-     *
-     * @param   array  $array The array to map.
-     * @param   string $class Name of the class to create
-     *
-     * @return  object  The object mapped from the given array
-     *
-     * @since   2.0
-     */
-    public static function toObject(array $array, string $class = 'stdClass')
-    {
-        $obj = new $class;
-
-        foreach ($array as $k => $v) {
-            if (is_array($v)) {
-                $obj->$k = static::toObject($v, $class);
-            } else {
-                $obj->$k = $v;
-            }
-        }
-
-        return $obj;
-    }
+    public static string $sapi = PHP_SAPI;
 
     /**
      * Check a key exists in object or array. The key can be a path separated by dots.
      *
-     * @param array|object $array     Object or array to check.
-     * @param string       $key       The key path name.
-     * @param string       $delimiter The separator to split paths.
+     * @param  array|object  $array      Object or array to check.
+     * @param  string        $key        The key path name.
+     * @param  string        $delimiter  The separator to split paths.
      *
      * @return  bool
      *
      * @since 4.0
      */
-    public static function has($array, string $key, string $delimiter = '.'): bool
+    public static function has($array, $key, $delimiter = '.')
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -123,17 +73,17 @@ class ArrayHelper
     /**
      * Set a default value to array or object if not exists. Key can be a path separated by dots.
      *
-     * @param array|object $array     Object or array to set default value.
-     * @param string       $key       Key path name.
-     * @param mixed        $value     Value to set if not exists.
-     * @param string       $delimiter Separator to split paths.
+     * @param  array|object  $array      Object or array to set default value.
+     * @param  string        $key        Key path name.
+     * @param  mixed         $value      Value to set if not exists.
+     * @param  string        $delimiter  Separator to split paths.
      *
      * @return  array|object
      * @throws \InvalidArgumentException
      *
      * @since 4.0
      */
-    public static function def($array, $key, $value, string $delimiter = '.')
+    public static function def($array, $key, $value, $delimiter = '.')
     {
         if (static::has($array, $key, $delimiter)) {
             return $array;
@@ -145,22 +95,22 @@ class ArrayHelper
     /**
      * getPathNodes
      *
-     * @param string|array $path
-     * @param string       $delimiter
+     * @param  string|array  $path
+     * @param  string        $delimiter
      *
      * @return  array
      */
-    private static function getPathNodes($path, string $delimiter = '.'): array
+    private static function getPathNodes($path, $delimiter = '.')
     {
         if (is_array($path)) {
             return $path;
         }
 
-        if ($path && strpos((string)$path, $delimiter) === false) {
+        if ($path && strpos((string) $path, $delimiter) === false) {
             return [$path];
         }
 
-        return array_values(array_filter(explode($delimiter, (string)$path), 'strlen'));
+        return array_values(array_filter(explode($delimiter, (string) $path), 'strlen'));
     }
 
     /**
@@ -168,16 +118,16 @@ class ArrayHelper
      *
      * Example: `ArrayHelper::get($array, 'foo.bar.yoo')` equals to $array['foo']['bar']['yoo'].
      *
-     * @param mixed  $data      An array or object to get value.
-     * @param string $key       The key path.
-     * @param mixed  $default   The default value if not exists.
-     * @param string $delimiter Separator of paths.
+     * @param  mixed   $data       An array or object to get value.
+     * @param  string  $key        The key path.
+     * @param  mixed   $default    The default value if not exists.
+     * @param  string  $delimiter  Separator of paths.
      *
      * @return mixed Found value, null if not exists.
      *
      * @since   2.0
      */
-    public static function get($data, $key, $default = null, string $delimiter = '.')
+    public static function get($data, $key, $default = null, $delimiter = '.')
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -205,18 +155,18 @@ class ArrayHelper
     /**
      * Set value into array or object. The key can be path type.
      *
-     * @param mixed  $data      An array or object to set data.
-     * @param string $key       Path name separate by dot.
-     * @param mixed  $value     Value to set into array or object.
-     * @param string $delimiter Separator to split path.
-     * @param string $storeType The new store data type, default is `array`. you can set object class name.
+     * @param  mixed   $data       An array or object to set data.
+     * @param  string  $key        Path name separate by dot.
+     * @param  mixed   $value      Value to set into array or object.
+     * @param  string  $delimiter  Separator to split path.
+     * @param  string  $storeType  The new store data type, default is `array`. you can set object class name.
      *
      * @return  array|object
      * @throws \InvalidArgumentException
      *
      * @since   2.0
      */
-    public static function set($data, $key, $value, string $delimiter = '.', string $storeType = 'array')
+    public static function set($data, $key, $value, $delimiter = '.', $storeType = 'array')
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -227,19 +177,19 @@ class ArrayHelper
         /**
          * A closure as inner function to create data store.
          *
-         * @param string $type Type name.
+         * @param  string  $type  Type name.
          *
          * @return  array
          *
          * @throws \InvalidArgumentException
          */
-        $createStore = function (string $type) {
+        $createStore = function ($type) {
             if (strtolower($type) === 'array') {
-                return array();
+                return [];
             }
 
             if (class_exists($type)) {
-                return new $type;
+                return new $type();
             }
 
             throw new \InvalidArgumentException(sprintf('Type or class: %s not exists', $type));
@@ -278,13 +228,13 @@ class ArrayHelper
     /**
      * Remove a value from array or object. The key can be a path separated by dots.
      *
-     * @param array|object $data      Object or array to remove value.
-     * @param string       $key       The key path name.
-     * @param string       $delimiter The separator to split paths.
+     * @param  array|object  $data       Object or array to remove value.
+     * @param  string        $key        The key path name.
+     * @param  string        $delimiter  The separator to split paths.
      *
      * @return  array|object
      */
-    public static function remove($data, $key, string $delimiter = '.')
+    public static function remove($data, $key, $delimiter = '.')
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -329,11 +279,11 @@ class ArrayHelper
     /**
      * Collapse array to one dimension
      *
-     * @param   array|object $data
+     * @param  array|object  $data
      *
      * @return  array
      */
-    public static function collapse($data): array
+    public static function collapse($data)
     {
         return array_values(static::flatten($data, '.', 2));
     }
@@ -341,22 +291,22 @@ class ArrayHelper
     /**
      * Method to recursively convert data to one dimension array.
      *
-     * @param   array|object $array     The array or object to convert.
-     * @param   string       $delimiter The key path delimiter.
-     * @param   int          $depth     Only flatten limited depth, 0 means on limit.
-     * @param   string       $prefix    Last level key prefix.
+     * @param  array|object  $array      The array or object to convert.
+     * @param  string        $delimiter  The key path delimiter.
+     * @param  int           $depth      Only flatten limited depth, 0 means on limit.
+     * @param  string        $prefix     Last level key prefix.
      *
      * @return array
      */
-    public static function flatten($array, string $delimiter = '.', int $depth = 0, string $prefix = ''): array
+    public static function flatten($array, $delimiter = '.', $depth = 0, $prefix = null)
     {
         $temp = [];
 
-        foreach (static::toArray($array, false) as $k => $v) {
-            $key = $prefix ? $prefix . $delimiter . $k : $k;
+        foreach (TypeCast::toArray($array, false) as $k => $v) {
+            $key = $prefix !== null ? $prefix . $delimiter . $k : $k;
 
             if (($depth === 0 || $depth > 1) && (is_object($v) || is_array($v))) {
-                $temp[] = static::flatten($v, $delimiter, $depth === 0 ? $depth : $depth - 1, (string)$key);
+                $temp[] = static::flatten($v, $delimiter, $depth === 0 ? $depth : $depth - 1, (string) $key);
             } else {
                 $temp[] = [$key => $v];
             }
@@ -364,19 +314,23 @@ class ArrayHelper
 
         // Prevent resource-greedy loop.
         // @see https://github.com/dseguy/clearPHP/blob/master/rules/no-array_merge-in-loop.md
-        return array_merge(...$temp);
+        if (count($temp)) {
+            return array_merge(...$temp);
+        }
+
+        return [];
     }
 
     /**
      * keep
      *
-     * @param array|object $data
-     * @param array        $fields
+     * @param  array|object  $data
+     * @param  array         $fields
      *
      * @return  array|object
      * @throws \InvalidArgumentException
      */
-    public static function keep($data, array $fields)
+    public static function only($data, array $fields)
     {
         if (is_array($data)) {
             return array_intersect_key($data, array_flip($fields));
@@ -398,24 +352,21 @@ class ArrayHelper
     /**
      * find
      *
-     * @param array    $data
-     * @param callable $callback
-     * @param bool     $keepKey
-     * @param int      $offset
-     * @param int      $limit
+     * @param  array     $data
+     * @param  callable  $callback
+     * @param  bool      $keepKey
+     * @param  int       $offset
+     * @param  int       $limit
      *
      * @return array
      */
-    public static function find(
-        array $data,
-        callable $callback,
-        bool $keepKey = false,
-        int $offset = null,
-        int $limit = null
-    ): array {
+    public static function find(array $data, callable $callback = null, $keepKey = false, $offset = null, $limit = null)
+    {
         $results = [];
         $i       = 0;
         $c       = 0;
+
+        $callback = null === $callback ? 'is_null' : $callback;
 
         foreach ($data as $key => $value) {
             // If use global function, send only value as argument.
@@ -447,12 +398,12 @@ class ArrayHelper
     /**
      * findFirst
      *
-     * @param array    $data
-     * @param callable $callback
+     * @param  array     $data
+     * @param  callable  $callback
      *
      * @return  mixed
      */
-    public static function findFirst(array $data, callable $callback)
+    public static function findFirst(array $data, callable $callback = null)
     {
         $results = static::find($data, $callback, false, 0, 1);
 
@@ -462,34 +413,38 @@ class ArrayHelper
     /**
      * reject
      *
-     * @param array    $data
-     * @param callable $callback
-     * @param bool     $keepKey
+     * @param  array     $data
+     * @param  callable  $callback
+     * @param  bool      $keepKey
      *
      * @return  array
      */
-    public static function reject(array $data, callable $callback, bool $keepKey = false): array
+    public static function reject(array $data, callable $callback, $keepKey = false)
     {
-        return static::find($data, function (&$value, &$key) use ($callback) {
-            if (is_string($callback)) {
-                return !$callback($value);
-            }
+        return static::find(
+            $data,
+            function (&$value, &$key) use ($callback) {
+                if (is_string($callback)) {
+                    return !$callback($value);
+                }
 
-            return !$callback($value, $key);
-        }, $keepKey);
+                return !$callback($value, $key);
+            },
+            $keepKey
+        );
     }
 
     /**
      * takeout
      *
-     * @param array|object $data
-     * @param string       $key
-     * @param mixed        $default
-     * @param string       $delimiter
+     * @param  array|object  $data
+     * @param  string        $key
+     * @param  mixed         $default
+     * @param  string        $delimiter
      *
-     * @return  array|object
+     * @return  mixed
      */
-    public static function takeout(&$data, $key, $default = null, string $delimiter = '.')
+    public static function takeout(&$data, $key, $default = null, $delimiter = '.')
     {
         if (!static::has($data, $key, $delimiter)) {
             return $default;
@@ -505,16 +460,16 @@ class ArrayHelper
     /**
      * sort
      *
-     * @param array           $data
-     * @param callable|string $condition
-     * @param bool            $descending
-     * @param int             $options
+     * @param  array            $data
+     * @param  callable|string  $condition
+     * @param  bool             $descending
+     * @param  int              $options
      *
      * @return  array
      *
      * @since   4.0
      */
-    public static function sort(array $data, $condition, bool $descending = false, int $options = SORT_REGULAR): array
+    public static function sort(array $data, $condition, $descending = false, $options = SORT_REGULAR)
     {
         $results = [];
 
@@ -561,13 +516,13 @@ class ArrayHelper
      *     '6000' => 'Used'
      * );
      *
-     * @param   array $array The source array.
+     * @param  array  $array  The source array.
      *
      * @return  array  The inverted array.
      *
      * @since   2.0
      */
-    public static function invert(array $array): array
+    public static function invert(array $array)
     {
         $return = [];
 
@@ -588,57 +543,15 @@ class ArrayHelper
     }
 
     /**
-     * Pivot Array, separate by key.
-     * From:
-     *         [value] => Array
-     *             (
-     *                 [0] => aaa
-     *                 [1] => bbb
-     *             )
-     *         [text] => Array
-     *             (
-     *                 [0] => aaa
-     *                 [1] => bbb
-     *             )
-     *  To:
-     *         [0] => Array
-     *             (
-     *                 [value] => aaa
-     *                 [text] => aaa
-     *             )
-     *         [1] => Array
-     *             (
-     *                 [value] => bbb
-     *                 [text] => bbb
-     *             )
-     *
-     * @param   array $array An array with two level.
-     *
-     * @return  array An pivoted array.
-     */
-    public static function pivot(array $array): array
-    {
-        $result = [];
-
-        foreach (array_keys($array) as $i => $key) {
-            foreach ((array)$array[$key] as $key2 => $value) {
-                $result[$key2][$key] = $value;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
      * Method to determine if an array is an associative array.
      *
-     * @param   array $array An array to test.
+     * @param  array  $array  An array to test.
      *
      * @return  boolean  True if the array is an associative array.
      *
      * @since   2.0
      */
-    public static function isAssociative(array $array): bool
+    public static function isAssociative(array $array)
     {
         foreach (array_keys($array) as $k => $v) {
             if ($k !== $v) {
@@ -652,13 +565,13 @@ class ArrayHelper
     /**
      * Is a value an array or array accessible.
      *
-     * @param   mixed $array
+     * @param  mixed  $array
      *
      * @return  bool
      *
      * @since  4.0
      */
-    public static function accessible($array): bool
+    public static function accessible($array)
     {
         return is_array($array) || $array instanceof \ArrayAccess;
     }
@@ -666,16 +579,16 @@ class ArrayHelper
     /**
      * Re-group an array to create a reverse lookup of an array of scalars, arrays or objects.
      *
-     * @param array  $array      The source array data.
-     * @param string $key        Where the elements of the source array are objects or arrays, the key to pivot on.
-     * @param bool   $forceArray Force child element always array.
+     * @param  array   $array       The source array data.
+     * @param  string  $key         Where the elements of the source array are objects or arrays, the key to pivot on.
+     * @param  bool    $forceArray  Force child element always array.
      *
      * @return array An array of arrays grouped either on the value of the keys,
      *               or an individual key of an object or array.
      *
      * @since  2.0
      */
-    public static function group(array $array, $key = null, bool $forceArray = false): array
+    public static function group(array $array, $key = null, $forceArray = false)
     {
         $results  = [];
         $hasArray = [];
@@ -725,16 +638,39 @@ class ArrayHelper
     }
 
     /**
+     * mapWithKeys
+     *
+     * @param  iterable  $array
+     * @param  callable  $handler
+     *
+     * @return  array
+     *
+     * @since  3.5.12
+     */
+    public static function mapWithKeys(iterable $array, callable $handler): array
+    {
+        $new = [];
+
+        foreach ($array as $k => $v) {
+            $r = $handler($v, $k);
+
+            $new[] = $r;
+        }
+
+        return array_replace(...$new);
+    }
+
+    /**
      * Multidimensional array safe unique test
      *
-     * @param   array $array The array to make unique.
+     * @param  array  $array  The array to make unique.
      *
      * @return  array
      *
      * @see     http://php.net/manual/en/function.array-unique.php
      * @since   2.0
      */
-    public static function unique(array $array): array
+    public static function unique(array $array)
     {
         $array = array_map('serialize', $array);
         $array = array_unique($array);
@@ -746,17 +682,20 @@ class ArrayHelper
     /**
      * Merge array recursively.
      *
-     * @param   array $array1  Array 1 to be merge.
-     * @param   array ...$args Array more to be merge.
+     * @param  array  $array1   Array 1 to be merge.
+     * @param  array  ...$args  Array more to be merge.
      *
      * @return  array Merged array.
      * @throws \InvalidArgumentException
      *
      * @since   4.0
      */
-    public static function mergeRecursive($array1, ...$args): array
+    public static function mergeRecursive($array1)
     {
         $result = $array1;
+
+        $args = func_get_args();
+        array_shift($args);
 
         foreach ($args as $i => $array) {
             if (!is_array($array)) {
@@ -778,14 +717,14 @@ class ArrayHelper
     /**
      * Recursive dump variables and limit by level.
      *
-     * @param   mixed $data  The variable you want to dump.
-     * @param   int   $depth The level number to limit recursive loop.
+     * @param  mixed  $data   The variable you want to dump.
+     * @param  int    $depth  The level number to limit recursive loop.
      *
      * @return  string  Dumped data.
      *
      * @since   2.0
      */
-    public static function dump($data, int $depth = 5): string
+    public static function dump($data, $depth = 5)
     {
         static $innerLevel = 1;
         static $tabLevel = 1;
@@ -864,7 +803,6 @@ class ArrayHelper
                 }
 
                 $output .= "\n{$quoteTabes})\n";
-
             } else {
                 $output .= "\n{$quoteTabes}*MAX LEVEL*\n";
             }
@@ -872,18 +810,20 @@ class ArrayHelper
             $output = $data;
         }
 
-        return (string)$output;
+        return (string) $output;
     }
 
     /**
      * show
      *
-     * @param array ...$args
+     * @param  array  ...$args
      *
      * @return  string
      */
-    public static function show(...$args): string
+    public static function show($arg)
     {
+        $args = func_get_args();
+
         $output = '';
         $last   = array_pop($args);
 
@@ -902,7 +842,7 @@ class ArrayHelper
 
         // Dump Multiple values
         if (count($args) > 1) {
-            $prints = array();
+            $prints = [];
 
             $i = 1;
 
@@ -927,13 +867,13 @@ class ArrayHelper
     /**
      * map
      *
-     * @param array    $array
-     * @param callable $callback
-     * @param bool     $recursive
+     * @param  array     $array
+     * @param  callable  $callback
+     * @param  bool      $recursive
      *
      * @return  array
      */
-    public static function map(array $array, callable $callback, bool $recursive = false)
+    public static function map(array $array, callable $callback, $recursive = false)
     {
         $results = [];
 
@@ -947,4 +887,60 @@ class ArrayHelper
 
         return $results;
     }
+
+    // /**
+    //  * Find value from array.
+    //  *
+    //  * @param  mixed         $array
+    //  * @param  string|array  $field
+    //  * @param  string|null   $operator
+    //  * @param  mixed         $value
+    //  * @param  bool          $strict
+    //  * @param  bool          $keepKey
+    //  *
+    //  * @return  array
+    //  *
+    //  * @since  3.5.1
+    //  */
+    // public static function where(
+    //     $array,
+    //     $field,
+    //     ?string $operator = null,
+    //     $value = null,
+    //     bool $strict = false,
+    //     bool $keepKey = false
+    // ): array {
+    //     if (is_string($field)) {
+    //         $operator = $operator === '=' ? '' : $operator;
+    //
+    //         $query = [$field . rtrim(' ' . $operator) => $value];
+    //     } elseif (is_array($field)) {
+    //         $query = $field;
+    //     } else {
+    //         throw new \InvalidArgumentException('Where query must br array or string.');
+    //     }
+    //
+    //     return ArrayHelper::query($array, $query, $strict, $keepKey);
+    // }
+    //
+    // /**
+    //  * Query a two-dimensional array values to get second level array.
+    //  *
+    //  * @param  array           $array         An array to query.
+    //  * @param  array|callable  $queries       Query strings or callback, may contain Comparison Operators: '>', '>=',
+    //  *                                        '<', '<='. Example: array(
+    //  *                                        'id'          => 6,   // Get all elements where id=6
+    //  *                                        'published >' => 0    // Get all elements where published>0
+    //  *                                        );
+    //  * @param  boolean         $strict        Use strict to compare equals.
+    //  * @param  boolean         $keepKey       Keep origin array keys.
+    //  *
+    //  * @return  array  An new two-dimensional array queried.
+    //  *
+    //  * @since   3.5.1
+    //  */
+    // public static function query($array, $queries = [], bool $strict = false, bool $keepKey = false): array
+    // {
+    //     return ArrayHelper::query($array, $queries, $strict, $keepKey);
+    // }
 }

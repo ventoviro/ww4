@@ -14,7 +14,7 @@ namespace Windwalker\String;
  *
  * @since  __DEPLOY_VERSION__
  */
-class StringHelper
+class Str
 {
     public const CASE_SENSITIVE = true;
     public const CASE_INSENSITIVE = false;

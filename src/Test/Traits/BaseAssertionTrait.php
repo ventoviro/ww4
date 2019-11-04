@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types = 1);
+
 /**
  * Part of ww4 project.
  *
  * @copyright  Copyright (C) 2016 {ORGANIZATION}. All rights reserved.
  * @license    GNU General Public License version 2 or later.
  */
-declare(strict_types = 1);
 
 namespace Windwalker\Test\Traits;
 
@@ -24,30 +24,18 @@ trait BaseAssertionTrait
      * @param string $expected
      * @param string $actual
      * @param string $message
-     * @param int    $delta
-     * @param int    $maxDepth
-     * @param bool   $canonicalize
-     * @param bool   $ignoreCase
      *
      * @return  void
      */
     public static function assertStringDataEquals(
         $expected,
         $actual,
-        $message = '',
-        $delta = 0,
-        $maxDepth = 10,
-        $canonicalize = false,
-        $ignoreCase = false
-    ) {
+        string $message = ''
+    ): void {
         static::assertEquals(
             TestStringHelper::clean($expected),
             TestStringHelper::clean($actual),
             $message,
-            $delta,
-            $maxDepth,
-            $canonicalize,
-            $ignoreCase
         );
     }
 
@@ -57,30 +45,18 @@ trait BaseAssertionTrait
      * @param string $expected
      * @param string $actual
      * @param string $message
-     * @param int    $delta
-     * @param int    $maxDepth
-     * @param bool   $canonicalize
-     * @param bool   $ignoreCase
      *
      * @return  void
      */
     public static function assertStringSafeEquals(
         $expected,
         $actual,
-        $message = '',
-        $delta = 0,
-        $maxDepth = 10,
-        $canonicalize = false,
-        $ignoreCase = false
-    ) {
+        string $message = ''
+    ): void {
         static::assertEquals(
             trim(TestStringHelper::removeCRLF($expected)),
             trim(TestStringHelper::removeCRLF($actual)),
             $message,
-            $delta,
-            $maxDepth,
-            $canonicalize,
-            $ignoreCase
         );
     }
 
@@ -101,7 +77,7 @@ trait BaseAssertionTrait
         $msg = null,
         $code = null,
         $message = ''
-    ) {
+    ): void {
         if (is_object($class)) {
             $class = get_class($class);
         }

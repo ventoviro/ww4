@@ -16,7 +16,7 @@ use Windwalker\Utilities\Classes\StringableInterface;
 /**
  * The StringObject class.
  *
- * @see  StringHelper
+ * @see  Str
  *
  * @method StringObject getChar(int $pos)
  * @method StringObject between(string $start, string $end, int $offset = 0)
@@ -135,7 +135,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      */
     public function __call(string $name, array $args)
     {
-        $class = StringHelper::class;
+        $class = Str::class;
 
         if (is_callable([$class, $name])) {
             return $this->callProxy($class, $name, $args);
@@ -269,7 +269,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
             return;
         }
 
-        $this->string = StringHelper::removeChar($this->string, $offset, 1, $this->encoding);
+        $this->string = Str::removeChar($this->string, $offset, 1, $this->encoding);
     }
 
     /**
