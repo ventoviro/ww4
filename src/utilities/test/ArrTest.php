@@ -34,7 +34,7 @@ class ArrTest extends TestCase
      *
      * @dataProvider providerTestDef
      */
-    public function testDef($array, $key, $value, $expected)
+    public function testDef($array, $key, $value, $expected): void
     {
         self::assertEquals($expected, $return = Arr::def($array, $key, $value));
 
@@ -89,9 +89,10 @@ class ArrTest extends TestCase
         self::assertTrue(Arr::has(['foo' => 'bar'], 'foo'));
         self::assertFalse(Arr::has(['foo' => 'bar'], 'yoo'));
         self::assertTrue(Arr::has(['foo' => ['bar' => 'yoo']], 'foo.bar'));
+        self::assertFalse(Arr::has(['foo' => ['bar' => 'yoo']], ''));
         self::assertTrue(Arr::has(['foo' => new \ArrayObject(['bar' => 'yoo'])], 'foo.bar'));
         self::assertTrue(Arr::has(['foo' => ['bar' => 'yoo']], 'foo/bar', '/'));
-        self::assertFalse(Arr::has(['foo' => ['bar' => 'yoo']], ''));
+        self::assertTrue(Arr::has(['foo' => ['bar' => 'yoo']], 'foo'));
     }
 
     /**
@@ -99,7 +100,7 @@ class ArrTest extends TestCase
      *
      * @return  void
      */
-    public function testCollapse()
+    public function testCollapse(): void
     {
         $array = [
             [1, 2, 3],
@@ -125,7 +126,7 @@ class ArrTest extends TestCase
      *
      * @return  void
      */
-    public function testFlatten()
+    public function testFlatten(): void
     {
         $array = [
             'flower' => 'sakura',
@@ -212,7 +213,6 @@ class ArrTest extends TestCase
         $this->assertEquals('default', Arr::get($data, '', 'default'));
         $this->assertEquals('love', Arr::get($data, 'pos1/sunflower', null, '/'));
         $this->assertEquals($data['array'], Arr::get($data, 'array'));
-        $this->assertNull(Arr::get($data, ['not', 'exists']));
 
         $data = (object) [
             'flower' => 'sakura',
@@ -293,13 +293,13 @@ class ArrTest extends TestCase
      */
     public function testRemove($array, $expected, $offset, $separator)
     {
-        $actual = Arr::remove($array, $offset, $separator);
+        $actual = Arr::remove($array, (string) $offset, $separator);
 
         self::assertEquals($expected, $actual);
 
         if (is_object($array)) {
             self::assertSame($array, $actual);
-            self::assertTrue(is_object($actual));
+            self::assertIsObject($actual);
         }
     }
 
@@ -769,8 +769,8 @@ class ArrTest extends TestCase
      */
     public function testAccessible()
     {
-        self::assertTrue(Arr::accessible([]));
-        self::assertTrue(Arr::accessible(new \ArrayObject()));
+        self::assertTrue(Arr::isAccessible([]));
+        self::assertTrue(Arr::isAccessible(new \ArrayObject()));
 
         $array = new class implements \ArrayAccess {
             public function offsetExists($offset)
@@ -790,9 +790,9 @@ class ArrTest extends TestCase
             }
         };
 
-        self::assertTrue(Arr::accessible($array));
-        self::assertFalse(Arr::accessible(new \EmptyIterator()));
-        self::assertFalse(Arr::accessible(new \stdClass()));
+        self::assertTrue(Arr::isAccessible($array));
+        self::assertFalse(Arr::isAccessible(new \EmptyIterator()));
+        self::assertFalse(Arr::isAccessible(new \stdClass()));
     }
 
     /**

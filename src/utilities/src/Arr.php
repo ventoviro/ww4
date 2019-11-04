@@ -34,7 +34,7 @@ abstract class Arr
     /**
      * Check a key exists in object or array. The key can be a path separated by dots.
      *
-     * @param  array|object  $array      Object or array to check.
+     * @param  array|object  $source     Object or array to check.
      * @param  string        $key        The key path name.
      * @param  string        $delimiter  The separator to split paths.
      *
@@ -42,7 +42,7 @@ abstract class Arr
      *
      * @since 4.0
      */
-    public static function has($array, $key, $delimiter = '.')
+    public static function has($source, string $key, string $delimiter = '.'): bool
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -50,21 +50,21 @@ abstract class Arr
             return false;
         }
 
-        $dataTmp = $array;
+        $key = array_shift($nodes);
+        $value = null;
 
-        foreach ($nodes as $arg) {
-            if (is_object($dataTmp) && property_exists($dataTmp, $arg)) {
-                // Check object value exists
-                $dataTmp = $dataTmp->$arg;
-            } elseif ($dataTmp instanceof \ArrayAccess && isset($dataTmp[$arg])) {
-                // Check arrayAccess value exists
-                $dataTmp = $dataTmp[$arg];
-            } elseif (is_array($dataTmp) && array_key_exists($arg, $dataTmp)) {
-                // Check object value exists
-                $dataTmp = $dataTmp[$arg];
-            } else {
-                return false;
-            }
+        if ($source instanceof \ArrayAccess && isset($source[$key])) {
+            $value = $source[$key];
+        } elseif (is_array($source) && array_key_exists($key, $source)) {
+            $value = $source[$key];
+        } elseif (is_object($source) && property_exists($source, $key)) {
+            $value = $source->$key;
+        } else {
+            return false;
+        }
+
+        if ($nodes !== [] && (is_array($value) || is_object($value))) {
+            return static::has($value, implode($delimiter, $nodes));
         }
 
         return true;
@@ -83,7 +83,7 @@ abstract class Arr
      *
      * @since 4.0
      */
-    public static function def($array, $key, $value, $delimiter = '.')
+    public static function def($array, string $key, $value, string $delimiter = '.')
     {
         if (static::has($array, $key, $delimiter)) {
             return $array;
@@ -100,7 +100,7 @@ abstract class Arr
      *
      * @return  array
      */
-    private static function getPathNodes($path, $delimiter = '.')
+    private static function getPathNodes(string $path, string $delimiter = '.'): array
     {
         if (is_array($path)) {
             return $path;
@@ -127,7 +127,7 @@ abstract class Arr
      *
      * @since   2.0
      */
-    public static function get($data, $key, $default = null, $delimiter = '.')
+    public static function get($data, string $key, $default = null, string $delimiter = '.')
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -138,7 +138,7 @@ abstract class Arr
         $dataTmp = $data;
 
         foreach ($nodes as $arg) {
-            if (static::accessible($dataTmp) && isset($dataTmp[$arg])) {
+            if (static::isAccessible($dataTmp) && isset($dataTmp[$arg])) {
                 // Check arrayAccess value exists
                 $dataTmp = $dataTmp[$arg];
             } elseif (is_object($dataTmp) && isset($dataTmp->$arg)) {
@@ -166,7 +166,7 @@ abstract class Arr
      *
      * @since   2.0
      */
-    public static function set($data, $key, $value, $delimiter = '.', $storeType = 'array')
+    public static function set($data, string $key, $value, string $delimiter = '.', string $storeType = 'array')
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -183,7 +183,7 @@ abstract class Arr
          *
          * @throws \InvalidArgumentException
          */
-        $createStore = function ($type) {
+        $createStore = static function ($type) {
             if (strtolower($type) === 'array') {
                 return [];
             }
@@ -234,7 +234,7 @@ abstract class Arr
      *
      * @return  array|object
      */
-    public static function remove($data, $key, $delimiter = '.')
+    public static function remove($data, string $key, $delimiter = '.')
     {
         $nodes = static::getPathNodes($key, $delimiter);
 
@@ -283,7 +283,7 @@ abstract class Arr
      *
      * @return  array
      */
-    public static function collapse($data)
+    public static function collapse($data): array
     {
         return array_values(static::flatten($data, '.', 2));
     }
@@ -298,7 +298,7 @@ abstract class Arr
      *
      * @return array
      */
-    public static function flatten($array, $delimiter = '.', $depth = 0, $prefix = null)
+    public static function flatten($array, string $delimiter = '.', int $depth = 0, ?string $prefix = null): array
     {
         $temp = [];
 
@@ -334,7 +334,9 @@ abstract class Arr
     {
         if (is_array($data)) {
             return array_intersect_key($data, array_flip($fields));
-        } elseif (is_object($data)) {
+        }
+
+        if (is_object($data)) {
             $keeps = array_keys(array_diff_key(get_object_vars($data), array_flip($fields)));
 
             foreach ($keeps as $key) {
@@ -360,13 +362,18 @@ abstract class Arr
      *
      * @return array
      */
-    public static function find(array $data, callable $callback = null, $keepKey = false, $offset = null, $limit = null)
-    {
+    public static function find(
+        array $data,
+        callable $callback = null,
+        bool $keepKey = false,
+        ?int $offset = null,
+        ?int $limit = null
+    ): array {
         $results = [];
         $i       = 0;
         $c       = 0;
 
-        $callback = null === $callback ? 'is_null' : $callback;
+        $callback ??= 'is_null';
 
         foreach ($data as $key => $value) {
             // If use global function, send only value as argument.
@@ -419,11 +426,11 @@ abstract class Arr
      *
      * @return  array
      */
-    public static function reject(array $data, callable $callback, $keepKey = false)
+    public static function reject(array $data, callable $callback, bool $keepKey = false): array
     {
         return static::find(
             $data,
-            function (&$value, &$key) use ($callback) {
+            static function (&$value, &$key) use ($callback) {
                 if (is_string($callback)) {
                     return !$callback($value);
                 }
@@ -444,7 +451,7 @@ abstract class Arr
      *
      * @return  mixed
      */
-    public static function takeout(&$data, $key, $default = null, $delimiter = '.')
+    public static function takeout(&$data, string $key, $default = null, string $delimiter = '.')
     {
         if (!static::has($data, $key, $delimiter)) {
             return $default;
@@ -469,12 +476,12 @@ abstract class Arr
      *
      * @since   4.0
      */
-    public static function sort(array $data, $condition, $descending = false, $options = SORT_REGULAR)
+    public static function sort(array $data, $condition, bool $descending = false, int $options = SORT_REGULAR): array
     {
         $results = [];
 
         // If condition is string, we just use this as key name to get sort data from items.
-        $callback = is_callable($condition) ? $condition : function ($item) use ($condition) {
+        $callback = is_callable($condition) ? $condition : static function ($item) use ($condition) {
             // We don't know child item is array or object, use getter to get it.
             return static::get($item, $condition);
         };
@@ -551,7 +558,7 @@ abstract class Arr
      *
      * @since   2.0
      */
-    public static function isAssociative(array $array)
+    public static function isAssociative(array $array): bool
     {
         foreach (array_keys($array) as $k => $v) {
             if ($k !== $v) {
@@ -571,7 +578,7 @@ abstract class Arr
      *
      * @since  4.0
      */
-    public static function accessible($array)
+    public static function isAccessible($array): bool
     {
         return is_array($array) || $array instanceof \ArrayAccess;
     }
@@ -588,7 +595,7 @@ abstract class Arr
      *
      * @since  2.0
      */
-    public static function group(array $array, $key = null, $forceArray = false)
+    public static function group(array $array, ?string $key = null, $forceArray = false): array
     {
         $results  = [];
         $hasArray = [];
@@ -670,7 +677,7 @@ abstract class Arr
      * @see     http://php.net/manual/en/function.array-unique.php
      * @since   2.0
      */
-    public static function unique(array $array)
+    public static function unique(array $array): array
     {
         $array = array_map('serialize', $array);
         $array = array_unique($array);
@@ -682,20 +689,14 @@ abstract class Arr
     /**
      * Merge array recursively.
      *
-     * @param  array  $array1   Array 1 to be merge.
-     * @param  array  ...$args  Array more to be merge.
+     * @param  array  ...$args
      *
      * @return  array Merged array.
-     * @throws \InvalidArgumentException
-     *
      * @since   4.0
      */
-    public static function mergeRecursive($array1)
+    public static function mergeRecursive(...$args): array
     {
-        $result = $array1;
-
-        $args = func_get_args();
-        array_shift($args);
+        $result = [];
 
         foreach ($args as $i => $array) {
             if (!is_array($array)) {
@@ -724,7 +725,7 @@ abstract class Arr
      *
      * @since   2.0
      */
-    public static function dump($data, $depth = 5)
+    public static function dump($data, int $depth = 5): string
     {
         static $innerLevel = 1;
         static $tabLevel = 1;
@@ -820,10 +821,8 @@ abstract class Arr
      *
      * @return  string
      */
-    public static function show($arg)
+    public static function show(...$args): string
     {
-        $args = func_get_args();
-
         $output = '';
         $last   = array_pop($args);
 
@@ -862,30 +861,6 @@ abstract class Arr
         }
 
         return $output;
-    }
-
-    /**
-     * map
-     *
-     * @param  array     $array
-     * @param  callable  $callback
-     * @param  bool      $recursive
-     *
-     * @return  array
-     */
-    public static function map(array $array, callable $callback, $recursive = false)
-    {
-        $results = [];
-
-        foreach ($array as $key => &$value) {
-            if ($recursive && is_array($value)) {
-                $results[$key] = static::map($value, $callback, $recursive);
-            } else {
-                $results[$key] = $callback($value, $key);
-            }
-        }
-
-        return $results;
     }
 
     // /**
