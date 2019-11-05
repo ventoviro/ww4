@@ -16,7 +16,7 @@
 	</php>
 	<testsuites>
 		<testsuite name="Unit">
-			<directory>src/*/Test</directory>
+			<directory>src/*/test</directory>
 		</testsuite>
 	</testsuites>
 
@@ -24,12 +24,12 @@
 		<whitelist processUncoveredFilesFromWhitelist="true">
 			<directory suffix=".php">src</directory>
 			<exclude>
-				<directory suffix=".php">src/*/Test</directory>
+				<directory suffix=".php">src/*/test</directory>
 			</exclude>
 		</whitelist>
 	</filter>
 
-<!--	<logging>-->
-<!--		<log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>-->
-<!--	</logging>-->
+	<logging>
+		<log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
+	</logging>
 </phpunit>
