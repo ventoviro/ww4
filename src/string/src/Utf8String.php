@@ -87,7 +87,7 @@ abstract class Utf8String
      */
     public static function __callStatic($name, $args)
     {
-        $underscoreName = trim(strtolower(preg_replace('#([A-Z])#', '_$1', $name)));
+        $underscoreName = strtolower(trim(preg_replace('#([A-Z])#', '_$1', $name)));
 
         $function = 'mb_' . $underscoreName;
 
@@ -330,19 +330,20 @@ abstract class Utf8String
      * UTF-8 aware substr_replace
      * Replace text within a portion of a string
      *
-     * @param   string  $str    The haystack
-     * @param   string  $repl   The replacement string
-     * @param   integer $start  Start
-     * @param   integer $length Length (optional)
+     * @param  string       $str     The haystack
+     * @param  string       $repl    The replacement string
+     * @param  integer      $start   Start
+     * @param  integer      $length  Length (optional)
+     * @param  string|null  $encoding
      *
      * @return  string
      *
      * @see     http://www.php.net/substr_replace
      * @since   2.0
      */
-    public static function substrReplace($str, $repl, $start, $length = null, $encoding = null): string
+    public static function substrReplace($str, $repl, $start, $length = null, ?string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding = $encoding ?? mb_internal_encoding();
 
         preg_match_all('/./us', $str, $ar);
         preg_match_all('/./us', $repl, $rar);
@@ -463,7 +464,7 @@ abstract class Utf8String
      */
     public static function ucfirst(string $str, string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding = $encoding ?? mb_internal_encoding();
 
         switch (static::strlen($str, $encoding)) {
             case 0:
@@ -511,7 +512,8 @@ abstract class Utf8String
      * UTF-8 aware alternative to ucwords
      * Uppercase the first character of each word in a string
      *
-     * @param   string $str String to be processed
+     * @param  string       $str  String to be processed
+     * @param  string|null  $encoding
      *
      * @return  string  String with first char of each word uppercase
      *
@@ -520,20 +522,7 @@ abstract class Utf8String
      */
     public static function ucwords(string $str, string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
-
-        // Note: [\x0c\x09\x0b\x0a\x0d\x20] matches;
-        // form feeds, horizontal tabs, vertical tabs, linefeeds and carriage returns
-        // This corresponds to the definition of a "word" defined at http://www.php.net/ucwords
-        $pattern = '/(^|([\x0c\x09\x0b\x0a\x0d\x20]+))([^\x0c\x09\x0b\x0a\x0d\x20]{1})[^\x0c\x09\x0b\x0a\x0d\x20]*/u';
-
-        return preg_replace_callback($pattern, function ($matches) use ($encoding) {
-            $leadingws = $matches[2];
-            $ucfirst   = static::strtoupper($matches[3], $encoding);
-            $ucword    = static::substrReplace(ltrim($matches[0]), $ucfirst, 0, 1);
-
-            return $leadingws . $ucword;
-        }, $str);
+        return mb_convert_case($str, MB_CASE_TITLE, $encoding ?? mb_internal_encoding());
     }
 
     /**

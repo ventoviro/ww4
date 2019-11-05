@@ -350,6 +350,35 @@ abstract class Arr
     }
 
     /**
+     * except
+     *
+     * @param  array|object  $data
+     * @param  array         $fields
+     *
+     * @return  array|object
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function except($data, array $fields)
+    {
+        if (is_array($data)) {
+            return array_diff_key($data, array_flip($fields));
+        }
+
+        if (is_object($data)) {
+            foreach ($fields as $key) {
+                if (property_exists($data, $key)) {
+                    unset($data->$key);
+                }
+            }
+
+            return $data;
+        }
+
+        throw new \InvalidArgumentException('Argument 1 not array or object');
+    }
+
+    /**
      * find
      *
      * @param  array     $data

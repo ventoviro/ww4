@@ -407,6 +407,48 @@ class ArrTest extends TestCase
         Arr::only('string', ['test']);
     }
 
+    public function testExcept(): void
+    {
+        $array = [
+            'Lycoris' => 'energetic',
+            'Sunflower' => 'worship',
+            'Zinnia' => 'robust',
+            'Lily' => 'love',
+        ];
+
+        self::assertEquals(
+            ['Lycoris' => 'energetic', 'Zinnia' => 'robust'],
+            Arr::except($array, ['Sunflower', 'Lily'])
+        );
+
+        self::assertEquals(
+            [
+                'Sunflower' => 'worship',
+                'Zinnia' => 'robust',
+                'Lily' => 'love',
+            ],
+            Arr::except($array, ['Lycoris'])
+        );
+
+        self::assertEquals(
+            (object) ['Lycoris' => 'energetic', 'Zinnia' => 'robust'],
+            Arr::except((object) $array, ['Sunflower', 'Lily'])
+        );
+
+        self::assertEquals(
+            (object) [
+                'Sunflower' => 'worship',
+                'Zinnia' => 'robust',
+                'Lily' => 'love',
+            ],
+            Arr::except((object) $array, ['Lycoris'])
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        Arr::except('string', ['test']);
+    }
+
     /**
      * testFind
      *
