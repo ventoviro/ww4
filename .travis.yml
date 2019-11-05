@@ -20,5 +20,4 @@ before_script:
 #  - phpenv rehash
 
 script:
-  - xdebug-enable
   - /home/travis/.config/composer/vendor/bin/phpunit --configuration phpunit.travis.xml

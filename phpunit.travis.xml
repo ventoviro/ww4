@@ -29,7 +29,7 @@
 		</whitelist>
 	</filter>
 
-	<logging>
-		<log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
-	</logging>
+<!--	<logging>-->
+<!--		<log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>-->
+<!--	</logging>-->
 </phpunit>
