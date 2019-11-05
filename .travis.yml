@@ -17,7 +17,8 @@ before_install:
 
 before_script:
   - composer install
+  - xdebug-enable
 #  - phpenv rehash
 
 script:
-  - /home/travis/.config/composer/vendor/bin/phpunit --configuration phpunit.travis.xml --coverage-text
+  - /home/travis/.config/composer/vendor/bin/phpunit --configuration phpunit.travis.xml
