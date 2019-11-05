@@ -75,20 +75,21 @@ abstract class TypeCast
     /**
      * Utility function to map an array to a stdClass object.
      *
-     * @param  array   $array  The array to map.
-     * @param  string  $class  Name of the class to create
+     * @param  array   $array     The array to map.
+     * @param  bool    $recursive Recursive.
+     * @param  string  $class     Name of the class to create
      *
      * @return  object  The object mapped from the given array
      *
      * @since   2.0
      */
-    public static function toObject(array $array, $class = \stdClass::class)
+    public static function toObject(array $array, bool $recursive = false, string $class = \stdClass::class)
     {
         $obj = new $class();
 
         foreach ($array as $k => $v) {
-            if (is_array($v)) {
-                $obj->$k = static::toObject($v, $class);
+            if (is_array($v) && $recursive) {
+                $obj->$k = static::toObject($v, $recursive, $class);
             } else {
                 $obj->$k = $v;
             }

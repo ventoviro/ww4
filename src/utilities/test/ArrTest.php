@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types = 1);
+
 /**
  * Part of ww4 project.
  *
  * @copyright  Copyright (C) 2016 LYRASOFT.
  * @license    Please see LICENSE file.
  */
-declare(strict_types = 1);
 
 namespace Windwalker\Utilities\Test;
 
@@ -14,7 +14,7 @@ use Windwalker\Test\Traits\BaseAssertionTrait;
 use Windwalker\Utilities\Arr;
 
 /**
- * The ArrayHelperTest class.
+ * The ArrTest class.
  *
  * @since  __DEPLOY_VERSION__
  */
@@ -796,138 +796,6 @@ class ArrTest extends TestCase
     }
 
     /**
-     * testGroup
-     *
-     * @param $source
-     * @param $key
-     * @param $expected
-     * @param $forceArray
-     *
-     * @dataProvider  providerTestGroup
-     */
-    public function testGroup($source, $key, $expected, $forceArray)
-    {
-        self::assertEquals($expected, Arr::group($source, $key, $forceArray));
-    }
-
-    /**
-     * providerTestGroup
-     *
-     * @return  array
-     */
-    public function providerTestGroup()
-    {
-        return [
-            'A scalar array' => [
-                // Source
-                [
-                    1 => 'a',
-                    2 => 'b',
-                    3 => 'b',
-                    4 => 'c',
-                    5 => 'a',
-                    6 => 'a',
-                ],
-                // Key
-                null,
-                // Expected
-                [
-                    'a' => [1, 5, 6],
-                    'b' => [2, 3],
-                    'c' => 4,
-                ],
-                false
-            ],
-            'A scalar array force child array' => [
-                // Source
-                [
-                    1 => 'a',
-                    2 => 'b',
-                    3 => 'b',
-                    4 => 'c',
-                    5 => 'a',
-                    6 => 'a',
-                ],
-                // Key
-                null,
-                // Expected
-                [
-                    'a' => [1, 5, 6],
-                    'b' => [2, 3],
-                    'c' => [4],
-                ],
-                true
-            ],
-            'An array of associative arrays' => [
-                // Source
-                [
-                    1 => ['id' => 41, 'title' => 'boo'],
-                    2 => ['id' => 42, 'title' => 'boo'],
-                    3 => ['title' => 'boo'],
-                    4 => ['id' => 42, 'title' => 'boo'],
-                    5 => ['id' => 43, 'title' => 'boo'],
-                ],
-                // Key
-                'id',
-                // Expected
-                [
-                    41 => ['id' => 41, 'title' => 'boo'],
-                    42 => [
-                        ['id' => 42, 'title' => 'boo'],
-                        ['id' => 42, 'title' => 'boo'],
-                    ],
-                    43 => ['id' => 43, 'title' => 'boo'],
-                ],
-                false
-            ],
-            'An array of associative arrays force child array' => [
-                // Source
-                [
-                    1 => ['id' => 41, 'title' => 'boo'],
-                    2 => ['id' => 42, 'title' => 'boo'],
-                    3 => ['title' => 'boo'],
-                    4 => ['id' => 42, 'title' => 'boo'],
-                    5 => ['id' => 43, 'title' => 'boo'],
-                ],
-                // Key
-                'id',
-                // Expected
-                [
-                    41 => [['id' => 41, 'title' => 'boo']],
-                    42 => [
-                        ['id' => 42, 'title' => 'boo'],
-                        ['id' => 42, 'title' => 'boo'],
-                    ],
-                    43 => [['id' => 43, 'title' => 'boo']],
-                ],
-                true
-            ],
-            'An array of objects' => [
-                // Source
-                [
-                    1 => (object) ['id' => 41, 'title' => 'boo'],
-                    2 => (object) ['id' => 42, 'title' => 'boo'],
-                    3 => (object) ['title' => 'boo'],
-                    4 => (object) ['id' => 42, 'title' => 'boo'],
-                    5 => (object) ['id' => 43, 'title' => 'boo'],
-                ],
-                // Key
-                'id',
-                // Expected
-                [
-                    41 => (object) ['id' => 41, 'title' => 'boo'],
-                    42 => [
-                        (object) ['id' => 42, 'title' => 'boo'],
-                        (object) ['id' => 42, 'title' => 'boo'],
-                    ],
-                    43 => (object) ['id' => 43, 'title' => 'boo'],
-                ],
-                false
-            ],
-        ];
-    }
-
-    /**
      * testUnique
      *
      * @return  void
@@ -1082,118 +950,208 @@ OUT;
         self::assertStringSafeEquals($expected, Arr::dump($data, 4));
     }
 
-    /**
-     * testShow
-     *
-     * @return  void
-     */
-    public function testShow()
+    public function testMapWithKey(): void
     {
-        $data = [
-            'test',
-            1, 2,
-            ['foo' => 'bar'],
-            ['max' => ['level' => ['test' => ['no' => 'show']]]],
-            4
+        $src = [
+            'A' => [
+                'name' => 'Captain America',
+                'id' => 1,
+            ],
+            'B' => [
+                'name' => 'Luke Cage',
+                'id' => 2,
+            ],
+            'C' => [
+                'name' => 'Thor',
+                'id' => 3,
+            ],
         ];
 
-        $expected = <<<OUT
-[Value 1]
-test
+        $expected = [
+            1 => 'Captain America',
+            2 => 'Luke Cage',
+            3 => 'Thor',
+        ];
 
-[Value 2]
-1
-
-[Value 3]
-2
-
-[Value 4]
-Array
-(
-    [foo] => bar
-)
-
-
-[Value 5]
-Array
-(
-    [max] => Array
-        (
-            [level] => Array
-                (
-                    [test] => Array
-                        *MAX LEVEL*
-
-                )
-
-        )
-
-)
-OUT;
-
-        self::assertStringSafeEquals($expected, Arr::show(...$data));
-        self::assertStringSafeEquals('string', Arr::show('string'));
-
-        Arr::$sapi = 'web';
-
-        self::assertStringSafeEquals('<pre>string</pre>', Arr::show('string'));
-
-        Arr::$sapi = PHP_SAPI;
+        self::assertEquals($expected, Arr::mapWithKeys($src, fn (array $item) => [$item['id'] => $item['name']]));
     }
 
-    /**
-     * testMap
-     *
-     * @return  void
-     */
-    public function testMap()
+    public static function testWhere(): void
     {
         $data = [
+            [
+                'id' => 1,
+                'title' => 'Julius Caesar',
+                'data' => (object) ['foo' => 'bar'],
+            ],
+            [
+                'id' => 2,
+                'title' => 'Macbeth',
+                'data' => [],
+            ],
+            [
+                'id' => 3,
+                'title' => 'Othello',
+                'data' => 123,
+            ],
+            [
+                'id' => 4,
+                'title' => 'Hamlet',
+                'data' => true,
+            ],
+        ];
+
+        self::assertEquals([$data[1]], Arr::where($data, 'title', '=', 'Macbeth'));
+    }
+
+    public function testQuery(): void
+    {
+        $data = [
+            [
+                'id' => 1,
+                'title' => 'Julius Caesar',
+                'data' => (object) ['foo' => 'bar'],
+            ],
+            [
+                'id' => 2,
+                'title' => 'Macbeth',
+                'data' => [],
+            ],
+            [
+                'id' => 3,
+                'title' => 'Othello',
+                'data' => 123,
+            ],
+            [
+                'id' => 4,
+                'title' => 'Hamlet',
+                'data' => true,
+            ],
+        ];
+
+        // Test id equals
+        $this->assertEquals([$data[1]], Arr::query($data, ['id' => 2]));
+
+        // Test strict equals
+        $this->assertEquals([$data[0], $data[2], $data[3]], Arr::query($data, ['data' => true], false));
+        $this->assertEquals([$data[3]], Arr::query($data, ['data' => true], true));
+
+        // Test id GT
+        $this->assertEquals([$data[1], $data[2], $data[3]], Arr::query($data, ['id >' => 1]));
+
+        // Test id GTE
+        $this->assertEquals([$data[1], $data[2], $data[3]], Arr::query($data, ['id >=' => 2]));
+
+        // Test id LT
+        $this->assertEquals([$data[0], $data[1]], Arr::query($data, ['id <' => 3]));
+
+        // Test id LTE
+        $this->assertEquals([$data[0], $data[1]], Arr::query($data, ['id <=' => 2]));
+
+        // Test in array
+        $this->assertEquals([$data[0], $data[2]], Arr::query($data, ['id' => [1, 3]]));
+
+        // Test array equals
+        $this->assertEquals([$data[0]], Arr::query($data, ['id' => 1, 'title' => 'Julius Caesar']));
+
+        // Test object equals
+        $object = new \stdClass();
+        $object->foo = 'bar';
+        $this->assertEquals([$data[0], $data[3]], Arr::query($data, ['data' => $object]));
+
+        // Test object strict equals
+        $this->assertEquals([$data[0]], Arr::query($data, ['data' => $data[0]['data']], true));
+
+        // Test Keep Key
+        $this->assertEquals(
+            [1 => $data[1], 2 => $data[2], 3 => $data[3]],
+            Arr::query($data, ['id >=' => 2], false, true)
+        );
+    }
+
+    public function testQueryWithCallback(): void
+    {
+        $data = [
+            [
+                'id' => 1,
+                'title' => 'Julius Caesar',
+                'data' => (object) ['foo' => 'bar'],
+            ],
+            [
+                'id' => 2,
+                'title' => 'Macbeth',
+                'data' => [],
+            ],
+            [
+                'id' => 3,
+                'title' => 'Othello',
+                'data' => 123,
+            ],
+            [
+                'id' => 4,
+                'title' => 'Hamlet',
+                'data' => true,
+            ],
+        ];
+
+        $results = Arr::query(
+            $data,
+            static fn ($key, $value) => $value['title'] === 'Julius Caesar' || $value['id'] == 4
+        );
+
+        $this->assertEquals([$data[0], $data[3]], $results);
+    }
+
+    public function testMatch(): void
+    {
+        $data = [
+            'id' => 1,
+            'title' => 'Julius Caesar',
+            'data' => (object) ['foo' => 'bar'],
+        ];
+
+        $this->assertTrue(Arr::match($data, ['id' => 1]));
+        $this->assertTrue(Arr::match($data, ['id' => [1, 2, 3]]));
+        $this->assertTrue(Arr::match($data, ['id' => 1, 'title' => 'Julius Caesar']));
+        $this->assertFalse(Arr::match($data, ['id' => 5]));
+        $this->assertFalse(Arr::match($data, ['id' => 1, 'title' => 'Hamlet']));
+    }
+
+    public function testFilterRecursive(): void
+    {
+        $src = [
+            'ai'    => 'Jarvis',
+            'agent' => 'Phil Coulson',
             'green' => 'Hulk',
             'red'   => [
                 'left'  => 'Pepper',
+                'right' => 'Iron Man',
             ],
             'human' => [
                 'dark'  => 'Nick Fury',
                 'black' => [
-                    'male' => 'Loki',
+                    'male'      => 'Loki',
+                    'female'    => 'Black Widow',
+                    'no-gender' => 'empty',
                 ],
             ],
         ];
 
         $expected = [
-            'green' => 'Hulk #',
-            'red'   => [
-                'left'  => 'Pepper #',
-            ],
-            'human' => [
-                'dark'  => 'Nick Fury #',
-                'black' => [
-                    'male' => 'Loki #',
+            'ai' => 'Jarvis',
+            'red' =>
+                [
+                    'right' => 'Iron Man',
                 ],
-            ],
+            'human' =>
+                [
+                    'black' =>
+                        [
+                            'female' => 'Black Widow',
+                        ],
+                ],
         ];
 
-        $expected2 = [
-            'green@' => 'Hulk #',
-            'red'   => [
-                'left@'  => 'Pepper #',
-            ],
-            'human' => [
-                'dark@'  => 'Nick Fury #',
-                'black' => [
-                    'male@' => 'Loki #',
-                ],
-            ],
-        ];
-
-        self::assertEquals($expected, Arr::map($data, function ($value, $key) {
-            return $value . ' #';
-        }, true));
-
-        self::assertEquals($expected2, Arr::map($data, function ($value, &$key) {
-            $key .= '@';
-            return $value . ' #';
-        }, true));
+        self::assertEquals($expected, Arr::filterRecursive($src, fn ($v) => strpos($v, 'a') !== false));
     }
 }

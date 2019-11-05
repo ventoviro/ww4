@@ -10,6 +10,8 @@
 namespace Windwalker\Utilities;
 
 use Windwalker\Utilities\Classes\PreventInitialTrait;
+use Windwalker\Utilities\Dumper\VarDumper;
+use function Windwalker\count;
 
 /**
  * The ArrayHelper class
@@ -20,16 +22,12 @@ abstract class Arr
 {
     use PreventInitialTrait;
 
-    public const SORT_ASC = false;
-
-    public const SORT_DESC = true;
-
     /**
-     * SAPI mock name to support test.
+     * Output mock to support test.
      *
-     * @var  string
+     * @var  resource
      */
-    public static string $sapi = PHP_SAPI;
+    public static $output;
 
     /**
      * Check a key exists in object or array. The key can be a path separated by dots.
@@ -50,7 +48,7 @@ abstract class Arr
             return false;
         }
 
-        $key = array_shift($nodes);
+        $key   = array_shift($nodes);
         $value = null;
 
         if ($source instanceof \ArrayAccess && isset($source[$key])) {
@@ -584,67 +582,6 @@ abstract class Arr
     }
 
     /**
-     * Re-group an array to create a reverse lookup of an array of scalars, arrays or objects.
-     *
-     * @param  array   $array       The source array data.
-     * @param  string  $key         Where the elements of the source array are objects or arrays, the key to pivot on.
-     * @param  bool    $forceArray  Force child element always array.
-     *
-     * @return array An array of arrays grouped either on the value of the keys,
-     *               or an individual key of an object or array.
-     *
-     * @since  2.0
-     */
-    public static function group(array $array, ?string $key = null, $forceArray = false): array
-    {
-        $results  = [];
-        $hasArray = [];
-
-        foreach ($array as $index => $value) {
-            // List value
-            if (is_array($value) || is_object($value)) {
-                if (!static::has($value, $key)) {
-                    continue;
-                }
-
-                $resultKey   = static::get($value, $key);
-                $resultValue = $array[$index];
-            } else {
-                // Scalar value.
-                $resultKey   = $value;
-                $resultValue = $index;
-            }
-
-            // First set value if not exists.
-            if (!isset($results[$resultKey])) {
-                // Force first element in array.
-                if ($forceArray) {
-                    $results[$resultKey]  = [$resultValue];
-                    $hasArray[$resultKey] = true;
-                } else {
-                    // Keep first element single.
-                    $results[$resultKey] = $resultValue;
-                }
-            } elseif (!$forceArray && empty($hasArray[$resultKey])) {
-                // If first element is sngle, now add second element as an array.
-                $results[$resultKey] = [
-                    $results[$resultKey],
-                    $resultValue,
-                ];
-
-                $hasArray[$resultKey] = true;
-            } else {
-                // Now always push new elements.
-                $results[$resultKey][] = $resultValue;
-            }
-        }
-
-        unset($hasArray);
-
-        return $results;
-    }
-
-    /**
      * mapWithKeys
      *
      * @param  iterable  $array
@@ -815,28 +752,213 @@ abstract class Arr
     }
 
     /**
-     * show
+     * Find value from array.
      *
-     * @param  array  ...$args
+     * @param  mixed         $array
+     * @param  string|array  $field
+     * @param  string|null   $operator
+     * @param  mixed         $value
+     * @param  bool          $strict
+     * @param  bool          $keepKey
      *
-     * @return  string
+     * @return  array
+     *
+     * @since  3.5.1
      */
-    public static function show(...$args): string
-    {
-        $output = '';
-        $last   = array_pop($args);
+    public static function where(
+        $array,
+        $field,
+        ?string $operator = null,
+        $value = null,
+        bool $strict = false,
+        bool $keepKey = false
+    ): array {
+        if (is_string($field)) {
+            $operator = $operator === '=' ? '' : $operator;
 
-        if (is_int($last)) {
-            $level = $last;
+            $query = [$field . rtrim(' ' . $operator) => $value];
+        } elseif (is_array($field)) {
+            $query = $field;
         } else {
-            $level  = 5;
-            $args[] = $last;
+            throw new \InvalidArgumentException('Where query must br array or string.');
         }
 
-        $output .= "\n\n";
+        return static::query($array, $query, $strict, $keepKey);
+    }
 
-        if (static::$sapi !== 'cli') {
-            $output .= '<pre>';
+    /**
+     * Query a two-dimensional array values to get second level array.
+     *
+     * @param  array|object    $array         An array to query.
+     * @param  array|callable  $queries       Query strings or callback, may contain Comparison Operators: '>', '>=',
+     *                                        '<', '<='. Example: array(
+     *                                        'id'          => 6,   // Get all elements where id=6
+     *                                        'published >' => 0    // Get all elements where published>0
+     *                                        );
+     * @param  boolean         $strict        Use strict to compare equals.
+     * @param  boolean         $keepKey       Keep origin array keys.
+     *
+     * @return  array|object  An new two-dimensional array queried.
+     *
+     * @since   2.0
+     */
+    public static function query($array, $queries = [], bool $strict = false, bool $keepKey = false)
+    {
+        $array   = TypeCast::toArray($array, false);
+        $results = [];
+
+        // If queries is callback, we run this logic to compare values.
+        $callback = is_callable($queries) ? $queries : false;
+
+        // Visit Array
+        foreach ($array as $key => $value) {
+            if ($callback) {
+                $match = $callback($key, TypeCast::toArray($value), $strict);
+            } else {
+                $match = static::match(TypeCast::toArray($value), $queries, $strict);
+            }
+
+            // Set Query results
+            if ($match) {
+                if ($keepKey) {
+                    $results[$key] = $value;
+                } else {
+                    $results[] = $value;
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Query a two-dimensional array values to get second level array, return only first.
+     *
+     * @param  array|object    $array         An array to query.
+     * @param  array|callable  $queries       Query strings or callback, may contain Comparison Operators: '>', '>=',
+     *                                        '<', '<='. Example: array(
+     *                                        'id'          => 6,   // Get all elements where id=6
+     *                                        'published >' => 0    // Get all elements where published>0
+     *                                        );
+     * @param  boolean         $strict        Use strict to compare equals.
+     *
+     * @return  mixed|null
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function queryFirst($array, $queries = [], bool $strict = false)
+    {
+        $result = static::query($array, $queries, $strict, false);
+
+        return $result[0] ?? null;
+    }
+
+    /**
+     * Check an array match our query.
+     *
+     * @param  array    $array    An array to query.
+     * @param  array    $queries  Query strings or callback, may contain Comparison Operators: '>', '>=', '<', '<='.
+     * @param  boolean  $strict   Use strict to compare equals.
+     *
+     * @return  bool
+     */
+    public static function match($array, array $queries, bool $strict = false): bool
+    {
+        $results = [];
+
+        // Visit Query Rules
+        foreach ($queries as $key => $val) {
+            if (substr($key, -2) === '>=') {
+                $results[] = (static::get($array, trim(substr($key, 0, -2))) >= $val);
+            } elseif (substr($key, -2) === '<=') {
+                $results[] = (static::get($array, trim(substr($key, 0, -2))) <= $val);
+            } elseif (substr($key, -1) === '>') {
+                $results[] = (static::get($array, trim(substr($key, 0, -1))) > $val);
+            } elseif (substr($key, -1) === '<') {
+                $results[] = (static::get($array, trim(substr($key, 0, -1))) < $val);
+            } elseif (is_array($val)) {
+                $results[] = in_array(static::get($array, $key), $val, $strict);
+            } else {
+                if ($strict) {
+                    $results[] = static::get($array, $key) === $val;
+                } else {
+                    // Workaround for PHP object compare bug, see: https://bugs.php.net/bug.php?id=62976
+                    $compare1 = is_object(static::get($array, $key)) ? get_object_vars(
+                        static::get(
+                            $array,
+                            $key
+                        )
+                    ) : static::get($array, $key);
+                    $compare2 = is_object($val) ? get_object_vars($val) : $val;
+
+                    $results[] = ($compare1 == $compare2);
+                }
+            }
+        }
+
+        // Must all TRUE.
+        return !in_array(false, $results, true);
+    }
+
+    /**
+     * filterRecursive
+     *
+     * @param  array    $array
+     * @param  callable $callback
+     *
+     * @return  array
+     */
+    public static function filterRecursive($array, callable $callback): array
+    {
+        foreach ($array as $key => & $value) { // mind the reference
+            if (is_array($value)) {
+                $value = static::filterRecursive($value, $callback);
+            } else {
+                if ($callback !== null && !$callback($value, $key)) {
+                    unset($array[$key]);
+                } elseif (!(bool) $value) {
+                    unset($array[$key]);
+                }
+            }
+        }
+
+        unset($value);
+
+        return $array;
+    }
+
+    public static function show(...$args): void
+    {
+        if (is_resource(static::$output)) {
+            $output = static::$output;
+        } elseif (PHP_SAPI === 'cli' || defined('STDOUT')) {
+            $output = STDOUT;
+        } else {
+            $output = fopen('php://output', 'wb');
+        }
+
+        if (VarDumper::isSupported()) {
+            $dumper = [VarDumper::class, 'dump'];
+        } else {
+            $dumper = [static::class, 'dump'];
+        }
+
+        $level = 5;
+
+        if (count($args) > 1) {
+            $last = array_pop($args);
+
+            if (is_int($last)) {
+                $level = $last;
+            } else {
+                $args[] = $last;
+            }
+        }
+
+        fwrite($output, "\n\n");
+
+        if (PHP_SAPI !== 'cli') {
+            fwrite($output, '<pre>');
         }
 
         // Dump Multiple values
@@ -846,76 +968,18 @@ abstract class Arr
             $i = 1;
 
             foreach ($args as $arg) {
-                $prints[] = "[Value $i]\n" . static::dump($arg, $level);
+                $prints[] = '[Value ' . $i . "]\n" . $dumper($arg, $level);
                 $i++;
             }
 
-            $output .= implode("\n\n", $prints);
+            fwrite($output, implode("\n\n", $prints));
         } else {
             // Dump one value.
-            $output .= static::dump(array_shift($args), $level);
+            fwrite($output, $dumper($args[0], $level));
         }
 
-        if (static::$sapi !== 'cli') {
-            $output .= '</pre>';
+        if (PHP_SAPI !== 'cli') {
+            fwrite($output, '</pre>');
         }
-
-        return $output;
     }
-
-    // /**
-    //  * Find value from array.
-    //  *
-    //  * @param  mixed         $array
-    //  * @param  string|array  $field
-    //  * @param  string|null   $operator
-    //  * @param  mixed         $value
-    //  * @param  bool          $strict
-    //  * @param  bool          $keepKey
-    //  *
-    //  * @return  array
-    //  *
-    //  * @since  3.5.1
-    //  */
-    // public static function where(
-    //     $array,
-    //     $field,
-    //     ?string $operator = null,
-    //     $value = null,
-    //     bool $strict = false,
-    //     bool $keepKey = false
-    // ): array {
-    //     if (is_string($field)) {
-    //         $operator = $operator === '=' ? '' : $operator;
-    //
-    //         $query = [$field . rtrim(' ' . $operator) => $value];
-    //     } elseif (is_array($field)) {
-    //         $query = $field;
-    //     } else {
-    //         throw new \InvalidArgumentException('Where query must br array or string.');
-    //     }
-    //
-    //     return ArrayHelper::query($array, $query, $strict, $keepKey);
-    // }
-    //
-    // /**
-    //  * Query a two-dimensional array values to get second level array.
-    //  *
-    //  * @param  array           $array         An array to query.
-    //  * @param  array|callable  $queries       Query strings or callback, may contain Comparison Operators: '>', '>=',
-    //  *                                        '<', '<='. Example: array(
-    //  *                                        'id'          => 6,   // Get all elements where id=6
-    //  *                                        'published >' => 0    // Get all elements where published>0
-    //  *                                        );
-    //  * @param  boolean         $strict        Use strict to compare equals.
-    //  * @param  boolean         $keepKey       Keep origin array keys.
-    //  *
-    //  * @return  array  An new two-dimensional array queried.
-    //  *
-    //  * @since   3.5.1
-    //  */
-    // public static function query($array, $queries = [], bool $strict = false, bool $keepKey = false): array
-    // {
-    //     return ArrayHelper::query($array, $queries, $strict, $keepKey);
-    // }
 }
