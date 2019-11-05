@@ -17,8 +17,8 @@ before_install:
 
 before_script:
   - composer install
-  - xdebug-enable
 #  - phpenv rehash
 
 script:
+  - xdebug-enable
   - /home/travis/.config/composer/vendor/bin/phpunit --configuration phpunit.travis.xml
