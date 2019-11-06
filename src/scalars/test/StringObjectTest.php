@@ -7,11 +7,12 @@
  */
 declare(strict_types = 1);
 
-namespace Windwalker\Utilities\Test;
+namespace Windwalker\Scalars\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Scalars\StringObject;
 use Windwalker\Utilities\Str;
-use Windwalker\Utilities\StringObject;
+use Windwalker\Utilities\Test\MbstringTestTrait;
 use Windwalker\Utilities\Utf8String;
 use function Windwalker\str;
 
@@ -22,6 +23,8 @@ use function Windwalker\str;
  */
 class StringObjectTest extends TestCase
 {
+    use MbstringTestTrait;
+
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
@@ -454,7 +457,7 @@ class StringObjectTest extends TestCase
      * @param int    $length
      * @param array  $expected
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::strSplitProvider
+     * @dataProvider strSplitProvider
      */
     public function testChop(string $string, int $length, $expected)
     {
@@ -470,7 +473,7 @@ class StringObjectTest extends TestCase
      * @param string $str2
      * @param int    $expected
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::strcmpProvider
+     * @dataProvider strcmpProvider
      */
     public function testCompare(string $str1, string $str2, int $expected)
     {
@@ -492,7 +495,7 @@ class StringObjectTest extends TestCase
      * @param string $str2
      * @param int    $expected
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::strcasecmpProvider
+     * @dataProvider strcasecmpProvider
      */
     public function testCompareInsensitive(string $str1, string $str2, int $expected)
     {
@@ -513,7 +516,7 @@ class StringObjectTest extends TestCase
      * @param string $string
      * @param string $expected
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::strrevProvider
+     * @dataProvider strrevProvider
      */
     public function testReverse(string $string, string $expected)
     {
@@ -534,7 +537,7 @@ class StringObjectTest extends TestCase
      * @param int    $start
      * @param int    $offset
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::substrReplaceProvider
+     * @dataProvider substrReplaceProvider
      */
     public function testSubstrReplace(
         string $expected,
@@ -563,7 +566,7 @@ class StringObjectTest extends TestCase
      * @param null|string $charlist
      * @param string      $expected
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::ltrimProvider
+     * @dataProvider ltrimProvider
      */
     public function testTrimLeft(string $string, ?string $charlist, string $expected)
     {
@@ -584,7 +587,7 @@ class StringObjectTest extends TestCase
      *
      * @return  void
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::rtrimProvider
+     * @dataProvider rtrimProvider
      */
     public function testTrimRight(string $string, ?string $charlist, string $expected)
     {
@@ -605,7 +608,7 @@ class StringObjectTest extends TestCase
      *
      * @return  void
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::trimProvider
+     * @dataProvider trimProvider
      */
     public function testTrim(string $string, ?string $charlist, string $expected)
     {
@@ -623,7 +626,7 @@ class StringObjectTest extends TestCase
      * @param string $string
      * @param string $expected
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::ucfirstProvider
+     * @dataProvider ucfirstProvider
      */
     public function testUpperCaseFirst(string $string, string $expected)
     {
@@ -641,7 +644,7 @@ class StringObjectTest extends TestCase
      * @param string $string
      * @param string $expected
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::lcfirstProvider
+     * @dataProvider lcfirstProvider
      */
     public function testLowerCaseFirst(string $string, string $expected)
     {
@@ -661,7 +664,7 @@ class StringObjectTest extends TestCase
      *
      * @return  void
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::ucwordsProvider
+     * @dataProvider ucwordsProvider
      */
     public function testUpperCaseWords(string $string, string $expected)
     {
@@ -681,7 +684,7 @@ class StringObjectTest extends TestCase
      * @param int    $expected
      * @param bool   $caseSensitive
      *
-     * @dataProvider \Windwalker\Utilities\Test\MbUtf8StringTest::substrCountProvider
+     * @dataProvider substrCountProvider
      */
     public function testSubstrCount(string $string, string $search, int $expected, bool $caseSensitive)
     {

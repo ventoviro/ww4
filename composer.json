@@ -19,6 +19,7 @@
         "ext-json": "*"
     },
     "require-dev": {
+        "roave/security-advisories": "dev-master",
         "mockery/mockery": "^1.0",
         "symfony/var-dumper": "^4.3",
         "danielstjules/stringy": "^3.1"
@@ -29,12 +30,20 @@
     },
     "autoload": {
         "psr-4": {
+            "Windwalker\\Scalars\\": "src/scalars/src",
             "Windwalker\\Test\\": "src/test/src",
             "Windwalker\\Utilities\\": "src/utilities/src"
         },
         "files": [
             "src/functions.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Windwalker\\Scalars\\Test\\": "src/scalars/test",
+            "Windwalker\\Test\\Test\\": "src/test/test",
+            "Windwalker\\Utilities\\Test\\": "src/utilities/test"
+        }
     },
     "extra": {
         "branch-alias": {

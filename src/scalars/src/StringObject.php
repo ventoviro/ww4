@@ -1,17 +1,19 @@
-<?php
+<?php declare(strict_types = 1);
+
 /**
  * Part of ww4 project.
  *
  * @copyright  Copyright (C) 2016 LYRASOFT.
  * @license    Please see LICENSE file.
  */
-declare(strict_types = 1);
 
-namespace Windwalker\Utilities;
+namespace Windwalker\Scalars;
 
 use Traversable;
 use Windwalker\Utilities\Classes\ImmutableHelperTrait;
 use Windwalker\Utilities\Classes\StringableInterface;
+use Windwalker\Utilities\Str;
+use Windwalker\Utilities\Utf8String;
 
 /**
  * The StringObject class.
@@ -71,14 +73,14 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @var  string
      */
-    protected $string = '';
+    protected string $string = '';
 
     /**
      * Property encoding.
      *
      * @var  string
      */
-    protected $encoding = null;
+    protected ?string $encoding = null;
 
     /**
      * create
@@ -88,7 +90,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @return  static
      */
-    public static function create(string $string = '', ?string $encoding = self::ENCODING_UTF8)
+    public static function create(string $string = '', ?string $encoding = self::ENCODING_UTF8): StringObject
     {
         return new static($string, $encoding);
     }

@@ -213,4 +213,23 @@ class TypeCastTest extends TestCase
             ],
         ];
     }
+
+    public function testMapAs(): void
+    {
+        $src = [
+            [
+                1, 2, 3
+            ],
+            [
+                4, 5, 6
+            ]
+        ];
+
+        /** @var \ArrayObject[] $r */
+        $r = TypeCast::mapAs($src, \ArrayObject::class);
+
+        self::assertInstanceOf(\ArrayObject::class, $r[0]);
+        self::assertInstanceOf(\ArrayObject::class, $r[1]);
+        self::assertEquals([4, 5, 6], $r[1]->getArrayCopy());
+    }
 }

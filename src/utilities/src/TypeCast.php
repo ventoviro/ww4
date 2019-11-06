@@ -97,4 +97,27 @@ abstract class TypeCast
 
         return $obj;
     }
+
+    /**
+     * mapAs
+     *
+     * @param  array   $src
+     * @param  string  $typeOrClass
+     *
+     * @return  array
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function mapAs(array $src, string $typeOrClass): array
+    {
+        if ($typeOrClass === 'array') {
+            return array_map(static fn ($value) => (array) $value, $src);
+        }
+
+        if (class_exists($typeOrClass)) {
+            return array_map(static fn ($value) => new $typeOrClass($value), $src);
+        }
+
+        throw new \InvalidArgumentException(sprintf('Class %s not exists', $typeOrClass));
+    }
 }
