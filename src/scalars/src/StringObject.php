@@ -61,11 +61,12 @@ use function Windwalker\tap;
  *
  * @since  __DEPLOY_VERSION__
  */
-class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, StringableInterface
+class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, StringableInterface, ScalarsInterface
 {
     use ImmutableHelperTrait;
     use StringModifyTrait;
     use StringPositionTrait;
+    use ScalarsTrait;
 
     /**
      * We only provides 3 default encoding constants of PHP.
@@ -143,7 +144,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
             return $this->callProxy($maps[$name][0], $maps[$name][1], $args);
         }
 
-        throw new \BadMethodCallException(sprintf('Call to undefined method: %s::%s()', get_called_class(), $name));
+        throw new \BadMethodCallException(sprintf('Call to undefined method: %s::%s()', static::class, $name));
     }
 
     /**
@@ -295,7 +296,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      */
     public function count()
     {
-        return $this->length();
+        return (int) $this->length();
     }
 
     /**
@@ -359,11 +360,11 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     /**
      * length
      *
-     * @return  int
+     * @return  NumberObject
      */
-    public function length(): int
+    public function length(): NumberObject
     {
-        return Utf8String::strlen($this->string, $this->encoding);
+        return new NumberObject(Utf8String::strlen($this->string, $this->encoding));
     }
 
     /**
@@ -643,5 +644,22 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
         return tap(clone $this, static function (StringObject $new) use ($string) {
             $new->string = $string . $new->string;
         });
+    }
+
+    public function toNumber(): NumberObject
+    {
+        $num = (float) $this->string;
+
+        return new NumberObject($num);
+    }
+
+    public function toString(): StringObject
+    {
+        return clone $this;
+    }
+
+    public function toArray(): ArrayObject
+    {
+        return new ArrayObject([$this]);
     }
 }

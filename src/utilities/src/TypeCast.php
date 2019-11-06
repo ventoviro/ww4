@@ -111,7 +111,7 @@ abstract class TypeCast
     public static function mapAs(array $src, string $typeOrClass): array
     {
         if ($typeOrClass === 'array') {
-            return array_map(static fn ($value) => (array) $value, $src);
+            return array_map(static fn ($value) => TypeCast::toArray($value), $src);
         }
 
         if (class_exists($typeOrClass)) {
