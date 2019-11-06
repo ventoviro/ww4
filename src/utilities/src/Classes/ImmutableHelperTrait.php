@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types = 1);
+
 /**
  * Part of ww4 project.
  *
  * @copyright  Copyright (C) 2016 LYRASOFT.
  * @license    Please see LICENSE file.
  */
-declare(strict_types = 1);
 
 namespace Windwalker\Utilities\Classes;
 

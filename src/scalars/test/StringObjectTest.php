@@ -57,21 +57,8 @@ class StringObjectTest extends TestCase
     {
         $s = StringObject::create('白日依山盡', StringObject::ENCODING_US_ASCII);
 
-        self::assertInstanceOf(StringObject::class, $s);
         self::assertEquals('白日依山盡', $s->getString());
         self::assertEquals(StringObject::ENCODING_US_ASCII, $s->getEncoding());
-
-        $ss = StringObject::fromArray(['A', 'B', 'C']);
-
-        self::assertTrue(is_array($ss));
-
-        foreach ($ss as &$sv) {
-            self::assertInstanceOf(StringObject::class, $sv);
-
-            $sv = $sv->__toString();
-        }
-
-        self::assertEquals(['A', 'B', 'C'], $ss);
     }
 
     /**
@@ -810,5 +797,33 @@ class StringObjectTest extends TestCase
         self::assertInstanceOf(StringObject::class, $s2);
         self::assertNotSame($s, $s2);
         self::assertEquals('FOOBAR', (string) $s2);
+    }
+
+    public function testPipe()
+    {
+        $s = new StringObject('FooBar');
+
+        $s2 = $s->pipe(static fn (StringObject $str) => $str->toUpperCase());
+
+        self::assertNotSame($s, $s2);
+        self::assertEquals('FOOBAR', (string) $s2);
+    }
+
+    public function testAppend(): void
+    {
+        $str = str('foo');
+        $str2 = $str->append(' bar');
+
+        self::assertEquals('foo bar', (string) $str2);
+        self::assertNotSame($str, $str2);
+    }
+
+    public function testPrepend(): void
+    {
+        $str = str('foo');
+        $str2 = $str->prepend('bar ');
+
+        self::assertEquals('bar foo', (string) $str2);
+        self::assertNotSame($str, $str2);
     }
 }
