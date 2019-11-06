@@ -20,7 +20,7 @@ class ArrConverterTest extends TestCase
 {
     public function testFlipMatrix(): void
     {
-        $src = [
+        $src      = [
             'A' => [
                 'id1',
                 'Julius Caesar',
@@ -205,31 +205,86 @@ class ArrConverterTest extends TestCase
 
     public function testTranspose(): void
     {
-        self::markTestIncomplete();
-    }
+        $src = [
+            [
+                'value' => 'aaa',
+                'text' => 'aaa'
+            ],
+            [
+                'value' => 'bbb',
+                'text' => 'bbb'
+            ],
+            [
+                'value' => 'ccc',
+                'text' => 'ccc'
+            ],
+        ];
 
-    public function testPivotFromTwoDimension(): void
-    {
-        self::markTestIncomplete();
+        $expected = [
+            'value' => [
+                0 => 'aaa',
+                1 => 'bbb',
+                2 => 'ccc',
+            ],
+            'text' => [
+                0 => 'aaa',
+                1 => 'bbb',
+                2 => 'ccc',
+            ],
+        ];
+
+        self::assertEquals($expected, ArrConverter::transpose($src));
     }
 
     public function testGroupPrefix(): void
     {
-        self::markTestIncomplete();
-    }
+        $src = [
+            'id' => 123,
+            'title' => 'Hello',
+            'params_foo' => 'Foo',
+            'params_bar' => 'Bar',
+            'params_yoo' => 'Yoo',
+        ];
 
-    public function testPivotToTwoDimension(): void
-    {
-        self::markTestIncomplete();
+        $exp = [
+            'foo' => 'Foo',
+            'bar' => 'Bar',
+            'yoo' => 'Yoo',
+        ];
+
+        self::assertEquals($exp, ArrConverter::groupPrefix($src, 'params_'));
+        self::assertEquals($exp, ArrConverter::groupPrefix($src, 'params_', true));
+        self::assertEquals([
+            'id' => 123,
+            'title' => 'Hello',
+        ], $src);
     }
 
     public function testExtractPrefix(): void
     {
-        self::markTestIncomplete();
-    }
+        $item = [
+            'id' => 123,
+            'title' => 'Hello',
+        ];
 
-    public function testPivotBySort(): void
-    {
-        self::markTestIncomplete();
+        $src = [
+            'foo' => 'Foo',
+            'bar' => 'Bar',
+            'yoo' => 'Yoo',
+        ];
+
+        self::assertEquals([
+            'params_foo' => 'Foo',
+            'params_bar' => 'Bar',
+            'params_yoo' => 'Yoo',
+        ], ArrConverter::extractPrefix($src, 'params_'));
+
+        self::assertEquals([
+            'id' => 123,
+            'title' => 'Hello',
+            'params_foo' => 'Foo',
+            'params_bar' => 'Bar',
+            'params_yoo' => 'Yoo',
+        ], ArrConverter::extractPrefix($src, 'params_', $item));
     }
 }

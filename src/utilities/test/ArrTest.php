@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 /**
  * Part of ww4 project.
@@ -102,23 +102,37 @@ class ArrTest extends TestCase
      */
     public function testCollapse(): void
     {
-        $array = [
-            [1, 2, 3],
-            [4, 5, 6],
-            [7, 8, 9],
+        $src = [
+            'ai' => 'Jarvis',
+            'agent' => 'Phil Coulson',
+            'green' => 'Hulk',
+            'red' => [
+                'left' => 'Pepper',
+                'right' => 'Iron Man',
+            ],
+            'human' => [
+                'dark' => 'Nick Fury',
+                'black' => [
+                    'male' => 'Loki',
+                    'female' => 'Black Widow',
+                    'no-gender' => 'empty',
+                ],
+            ],
         ];
 
-        self::assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9], Arr::collapse($array));
-
-        $array = [
-            (object) [1, 2, 3],
-            4,
-            5,
-            6,
-            [7, 8, 9],
+        $exp = [
+            'ai' => 'Jarvis',
+            'agent' => 'Phil Coulson',
+            'green' => 'Hulk',
+            'left' => 'Pepper',
+            'right' => 'Iron Man',
+            'dark' => 'Nick Fury',
+            'male' => 'Loki',
+            'female' => 'Black Widow',
+            'no-gender' => 'empty',
         ];
 
-        self::assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9], Arr::collapse($array));
+        self::assertEquals($exp, Arr::collapse($src));
     }
 
     /**
@@ -246,7 +260,7 @@ class ArrTest extends TestCase
      */
     public function testSet()
     {
-        $data = array();
+        $data = [];
 
         // One level
         $return = Arr::set($data, 'flower', 'sakura');
@@ -488,6 +502,7 @@ class ArrTest extends TestCase
         // Keep key
         $results = Arr::find($data, function ($value, &$key) {
             $key++;
+
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         }, true);
 
@@ -496,6 +511,7 @@ class ArrTest extends TestCase
         // Offset limit
         $results = Arr::find($data, function ($value, &$key) {
             $key++;
+
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         }, false, 0, 1);
 
@@ -504,6 +520,7 @@ class ArrTest extends TestCase
         // Offset limit
         $results = Arr::find($data, function ($value, &$key) {
             $key++;
+
             return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
         }, false, 1, 1);
 
@@ -601,28 +618,35 @@ class ArrTest extends TestCase
     public function testTakeout()
     {
         $array = [
-            'one' => 1, 'two' => 2, 'three' => 3
+            'one' => 1,
+            'two' => 2,
+            'three' => 3
         ];
 
         self::assertEquals(2, Arr::takeout($array, 'two'));
         self::assertEquals(['one' => 1, 'three' => 3], $array);
 
         $array = [
-            'one' => 1, 'two' => ['two' => 2, 'three' => 3]
+            'one' => 1,
+            'two' => ['two' => 2, 'three' => 3]
         ];
 
         self::assertEquals(2, Arr::takeout($array, 'two.two'));
         self::assertEquals(['one' => 1, 'two' => ['three' => 3]], $array);
 
         $array = [
-            'one' => 1, 'two' => 2, 'three' => 3
+            'one' => 1,
+            'two' => 2,
+            'three' => 3
         ];
 
         self::assertEquals('default', Arr::takeout($array, 'foo', 'default'));
         self::assertEquals(['one' => 1, 'two' => 2, 'three' => 3], $array);
 
         $array = (object) [
-            'one' => 1, 'two' => 2, 'three' => 3
+            'one' => 1,
+            'two' => 2,
+            'three' => 3
         ];
 
         self::assertEquals(2, Arr::takeout($array, 'two'));
@@ -780,7 +804,7 @@ class ArrTest extends TestCase
                 [
                     'Sakura' => [1000, 1500, 1750],
                     'valueNotAnArray' => 2750,
-                    'withNonScalarValue' => [2000, [1000 , 3000]]
+                    'withNonScalarValue' => [2000, [1000, 3000]]
                 ],
                 [
                     '1000' => 'Sakura',
@@ -814,7 +838,8 @@ class ArrTest extends TestCase
         self::assertTrue(Arr::isAccessible([]));
         self::assertTrue(Arr::isAccessible(new \ArrayObject()));
 
-        $array = new class implements \ArrayAccess {
+        $array = new class implements \ArrayAccess
+        {
             public function offsetExists($offset)
             {
             }
@@ -870,29 +895,29 @@ class ArrTest extends TestCase
     {
         $data1 = [
             'green' => 'Hulk',
-            'red'   => 'empty',
+            'red' => 'empty',
             'human' => [
-                'dark'  => 'empty',
+                'dark' => 'empty',
                 'black' => [
-                    'male'      => 'empty',
-                    'female'    => 'empty',
+                    'male' => 'empty',
+                    'female' => 'empty',
                     'no-gender' => 'empty',
                 ],
             ]
         ];
 
         $data2 = [
-            'ai'    => 'Jarvis',
+            'ai' => 'Jarvis',
             'agent' => 'Phil Coulson',
-            'red'   => [
-                'left'  => 'Pepper',
+            'red' => [
+                'left' => 'Pepper',
                 'right' => 'Iron Man',
             ],
             'human' => [
-                'dark'  => 'Nick Fury',
+                'dark' => 'Nick Fury',
                 'black' => [
                     'female' => 'Black Widow',
-                    'male'   => 'Loki',
+                    'male' => 'Loki',
                 ],
             ]
         ];
@@ -902,18 +927,18 @@ class ArrTest extends TestCase
         ];
 
         $expected = [
-            'ai'    => 'Jarvis',
+            'ai' => 'Jarvis',
             'agent' => 'Phil Coulson',
             'green' => 'Hulk',
-            'red'   => [
-                'left'  => 'Pepper',
+            'red' => [
+                'left' => 'Pepper',
                 'right' => 'Iron Man',
             ],
             'human' => [
-                'dark'  => 'Nick Fury',
+                'dark' => 'Nick Fury',
                 'black' => [
-                    'male'      => 'Loki',
-                    'female'    => 'Black Widow',
+                    'male' => 'Loki',
+                    'female' => 'Black Widow',
                     'no-gender' => 'empty',
                 ],
             ],
@@ -944,10 +969,14 @@ class ArrTest extends TestCase
             (object) ['baz' => 'yoo'],
             new \ArrayObject(['flower' => 'sakura', 'fruit' => 'apple']),
             ['max' => ['level' => ['test' => ['no' => 'show']]]],
-            new class {
+            new class
+            {
                 protected $foo = 'bar';
+
                 private $baz = 'yoo';
+
                 public $flower = 'sakura';
+
                 public static $car = 'toyota';
             }
         ];
@@ -1097,7 +1126,7 @@ OUT;
         $this->assertEquals([$data[0]], Arr::query($data, ['id' => 1, 'title' => 'Julius Caesar']));
 
         // Test object equals
-        $object = new \stdClass();
+        $object      = new \stdClass();
         $object->foo = 'bar';
         $this->assertEquals([$data[0], $data[3]], Arr::query($data, ['data' => $object]));
 
@@ -1162,18 +1191,18 @@ OUT;
     public function testFilterRecursive(): void
     {
         $src = [
-            'ai'    => 'Jarvis',
+            'ai' => 'Jarvis',
             'agent' => 'Phil Coulson',
             'green' => 'Hulk',
-            'red'   => [
-                'left'  => 'Pepper',
+            'red' => [
+                'left' => 'Pepper',
                 'right' => 'Iron Man',
             ],
             'human' => [
-                'dark'  => 'Nick Fury',
+                'dark' => 'Nick Fury',
                 'black' => [
-                    'male'      => 'Loki',
-                    'female'    => 'Black Widow',
+                    'male' => 'Loki',
+                    'female' => 'Black Widow',
                     'no-gender' => 'empty',
                 ],
             ],
@@ -1195,5 +1224,68 @@ OUT;
         ];
 
         self::assertEquals($expected, Arr::filterRecursive($src, fn ($v) => strpos($v, 'a') !== false));
+    }
+
+    public function testMapRecursive(): void
+    {
+        $src = [
+            'ai' => 'Jarvis',
+            'agent' => 'Phil Coulson',
+            'green' => 'Hulk',
+            'red' => [
+                'left' => 'Pepper',
+                'right' => 'Iron Man',
+            ],
+            'human' => [
+                'dark' => 'Nick Fury',
+                'black' => [
+                    'male' => 'Loki',
+                    'female' => 'Black Widow',
+                    'no-gender' => 'empty',
+                ],
+            ],
+        ];
+
+        $expected = [
+            'ai' => 'JARVIS',
+            'agent' => 'PHIL COULSON',
+            'green' => 'HULK',
+            'red' => [
+                'left' => 'PEPPER',
+                'right' => 'IRON MAN',
+            ],
+            'human' => [
+                'dark' => 'NICK FURY',
+                'black' => [
+                    'male' => 'LOKI',
+                    'female' => 'BLACK WIDOW',
+                    'no-gender' => 'EMPTY',
+                ],
+            ],
+        ];
+
+        self::assertEquals($expected, Arr::mapRecursive($src, 'strtoupper'));
+
+        $src['human']['black'] = new \ArrayObject($src['human']['black']);
+
+        $expected = [
+            'ai' => 'Jarvis-ai',
+            'agent' => 'Phil Coulson-agent',
+            'green' => 'Hulk-green',
+            'red' => [
+                'left' => 'Pepper-left',
+                'right' => 'Iron Man-right',
+            ],
+            'human' => [
+                'dark' => 'Nick Fury-dark',
+                'black' => [
+                    'male' => 'Loki-male',
+                    'female' => 'Black Widow-female',
+                    'no-gender' => 'empty-no-gender',
+                ],
+            ],
+        ];
+
+        self::assertEquals($expected, Arr::mapRecursive($src, fn ($v, $k) => $v . '-' . $k, true, true));
     }
 }

@@ -67,68 +67,26 @@ class ArrConverter
     }
 
     /**
-     * Same as ArrayHelper::pivot().
-     * From:
-     *          [0] => Array
-     *             (
-     *                 [value] => aaa
-     *                 [text] => aaa
-     *             )
-     *         [1] => Array
-     *             (
-     *                 [value] => bbb
-     *                 [text] => bbb
-     *             )
-     * To:
-     *         [value] => Array
-     *             (
-     *                 [0] => aaa
-     *                 [1] => bbb
-     *             )
-     *         [text] => Array
-     *             (
-     *                 [0] => aaa
-     *                 [1] => bbb
-     *             )
+     * Pivot $origin['prefix_xxx'] to $result['prefix']['xxx'].
      *
-     * @param  array  $array  An array with two level.
-     *
-     * @return  array An pivoted array.
-     *
-     * @deprecated  Use transpose()
-     */
-    public static function pivotBySort(array $array): array
-    {
-        $new    = [];
-        $array2 = $array;
-        $first  = array_shift($array2);
-
-        foreach ($array as $k => $v) {
-            foreach ((array) $first as $k2 => $v2) {
-                $new[$k2][$k] = $array[$k][$k2];
-            }
-        }
-
-        return $new;
-    }
-
-    /**
-     * Pivot $origin['prefix_xxx'] to $target['prefix']['xxx'].
-     *
-     * @param  string  $prefix  A prefix text.
-     * @param  array   $origin  Origin array to pivot.
-     * @param  array   $target  A target array to store pivoted value.
+     * @param  array|object  $origin        Origin array to pivot.
+     * @param  string        $prefix        A prefix text.
+     * @param  bool          $removeOrigin  Remove origin value.
      *
      * @return  array  Pivoted array.
      */
-    public static function groupPrefix(string $prefix, $origin, $target = null)
+    public static function groupPrefix(&$origin, string $prefix, bool $removeOrigin = false): array
     {
-        $target = is_object($target) ? (object) $target : (array) $target;
+        $target = [];
 
         foreach ((array) $origin as $key => $row) {
             if (strpos($key, $prefix) === 0) {
                 $key2   = mb_substr($key, mb_strlen($prefix));
                 $target = Arr::set($target, $key2, $row);
+
+                if ($removeOrigin) {
+                    $origin = Arr::remove($origin, $key);
+                }
             }
         }
 
@@ -138,72 +96,25 @@ class ArrConverter
     /**
      * Pivot $origin['prefix']['xxx'] to $target['prefix_xxx'].
      *
-     * @param  string  $prefix  A prefix text.
-     * @param  array   $origin  Origin array to pivot.
-     * @param  array   $target  A target array to store pivoted value.
+     * @param  array|object  $origin  Origin array to pivot.
+     * @param  string        $prefix  A prefix text.
+     * @param  array|object  $target  A target array to store pivoted value.
      *
      * @return  array  Pivoted array.
      */
-    public static function extractPrefix(string $prefix, $origin, $target = null)
+    public static function extractPrefix($origin, string $prefix, $target = null)
     {
-        $target = is_object($target) ? (object) $target : (array) $target;
+        $target = is_object($target) ? $target : (array) $target;
 
         foreach ((array) $origin as $key => $val) {
             $key = $prefix . $key;
 
-            if (!Arr::get($target, $key)) {
+            if (!Arr::has($target, $key)) {
                 $target = Arr::set($target, $key, $val);
             }
         }
 
         return $target;
-    }
-
-    /**
-     * Pivot two-dimensional array to one-dimensional.
-     *
-     * @param  array|object &$array  A two-dimension array.
-     *
-     * @return  array  Pivoted array.
-     */
-    public static function pivotFromTwoDimension($array)
-    {
-        $new = [];
-
-        foreach ((array) $array as $val) {
-            if (is_array($val) || is_object($val)) {
-                foreach ((array) $val as $key => $val2) {
-                    $new = Arr::set($new, $key, $val2);
-                }
-            }
-        }
-
-        return $new;
-    }
-
-    /**
-     * Pivot one-dimensional array to two-dimensional array by a key list.
-     *
-     * @param  array|object &$array  Array to pivot.
-     * @param  array         $keys   The fields' key list.
-     *
-     * @return  array  Pivoted array.
-     */
-    public static function pivotToTwoDimension($array, array $keys = [])
-    {
-        $new = [];
-
-        foreach ($keys as $key) {
-            if (is_object($array)) {
-                $array2 = clone $array;
-            } else {
-                $array2 = $array;
-            }
-
-            $new = Arr::set($new, $key, $array2);
-        }
-
-        return $new;
     }
 
     /**

@@ -283,7 +283,13 @@ abstract class Arr
      */
     public static function collapse($data): array
     {
-        return array_values(static::flatten($data, '.', 2));
+        $result = [];
+
+        array_walk_recursive($data, static function ($v, $k) use (&$result) {
+            $result[$k] = $v;
+        });
+
+        return $result;
     }
 
     /**
@@ -650,6 +656,29 @@ abstract class Arr
         $array = array_map('unserialize', $array);
 
         return $array;
+    }
+
+    public static function mapRecursive(
+        array $array,
+        callable $callback,
+        bool $useKeys = false,
+        bool $loopIterable = false
+    ): array {
+        $result = [];
+
+        foreach ($array as $key => $item) {
+            if (is_array($item)) {
+                $item = static::mapRecursive($item, $callback, $useKeys, $loopIterable);
+            } elseif ($loopIterable && is_iterable($item)) {
+                $item = static::mapRecursive(iterator_to_array($item), $callback, $useKeys, $loopIterable);
+            } else {
+                $item = $callback($item, ...($useKeys ? [$key] : []));
+            }
+
+            $result[$key] = $item;
+        }
+
+        return $result;
     }
 
     /**
