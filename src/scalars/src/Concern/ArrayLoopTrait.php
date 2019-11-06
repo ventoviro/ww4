@@ -10,6 +10,8 @@
 namespace Windwalker\Scalars\Concern;
 
 use Windwalker\Scalars\ArrayObject;
+use Windwalker\Scalars\ScalarsFactory;
+use Windwalker\Scalars\StringObject;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\TypeCast;
 
@@ -26,13 +28,15 @@ trait ArrayLoopTrait
      * @param callable $callable
      * @param mixed    $initial
      *
-     * @return  mixed
+     * @return  ArrayObject|StringObject|mixed
      *
      * @since  3.5
      */
     public function reduce(callable $callable, $initial = null)
     {
-        return array_reduce($this->storage, $callable, $initial);
+        $result = array_reduce($this->storage, $callable, $initial);
+
+        return ScalarsFactory::fromNative($result);
     }
 
     /**
@@ -41,13 +45,17 @@ trait ArrayLoopTrait
      * @param callable $callable
      * @param mixed    $userdata
      *
-     * @return  bool
+     * @return  static
      *
      * @since  3.5
      */
-    public function walk(callable $callable, $userdata = null): bool
+    public function walk(callable $callable, $userdata = null)
     {
-        return array_walk($this->storage, $callable, $userdata);
+        $new = static::newInstance();
+
+        array_walk($new->storage, $callable, $userdata);
+
+        return $new;
     }
 
     /**
@@ -62,7 +70,11 @@ trait ArrayLoopTrait
      */
     public function walkRecursive(callable $callable, $userdata = null): bool
     {
-        return array_walk_recursive($this->storage, $callable, $userdata);
+        $new = static::newInstance();
+
+        array_walk_recursive($new->storage, $callable, $userdata);
+
+        return $new;
     }
 
     /**
@@ -137,7 +149,7 @@ trait ArrayLoopTrait
      */
     public function findFirst(callable $callback = null)
     {
-        return Arr::findFirst($this->storage, $callback);
+        return static::newInstance(Arr::findFirst($this->storage, $callback));
     }
 
     /**

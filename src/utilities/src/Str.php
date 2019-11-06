@@ -700,7 +700,7 @@ class Str
      *
      * @return  string
      */
-    public static function surround(string $string, $substring = ['"', '"']): string
+    public static function wrap(string $string, $substring = ['"', '"']): string
     {
         $substring = (array) $substring;
 

@@ -12,6 +12,7 @@ namespace Windwalker\Scalars;
 use Traversable;
 use Windwalker\Scalars\Concern\StringModifyTrait;
 use Windwalker\Scalars\Concern\StringPositionTrait;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Classes\ImmutableHelperTrait;
 use Windwalker\Utilities\Classes\StringableInterface;
 use Windwalker\Utilities\Str;
@@ -50,7 +51,7 @@ use function Windwalker\tap;
  * @method StringObject removeRight(string $search)
  * @method StringObject slice(int $start, int $end = null)
  * @method StringObject substring(int $start, int $end = null)
- * @method StringObject surround($substring = ['"', '"'])
+ * @method StringObject wrap($substring = ['"', '"'])
  * @method StringObject toggleCase()
  * @method StringObject truncate(int $length, string $suffix = '', bool $wordBreak = true)
  * @method StringObject map(callable $callback)
@@ -58,6 +59,9 @@ use function Windwalker\tap;
  * @method StringObject reject(callable $callback)
  * @method StringObject toUpperCase()
  * @method StringObject toLowerCase()
+ * @method int|bool     strpos(string $search)
+ * @method int|bool     strrpos(string $search)
+ * @method StringObject split(string $delimiter, ?int $limit = null)
  *
  * @since  __DEPLOY_VERSION__
  */
@@ -66,7 +70,6 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     use ImmutableHelperTrait;
     use StringModifyTrait;
     use StringPositionTrait;
-    use ScalarsTrait;
 
     /**
      * We only provides 3 default encoding constants of PHP.
@@ -138,6 +141,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
         $maps = [
             'toUpperCase' => [Utf8String::class, 'strtoupper'],
             'toLowerCase' => [Utf8String::class, 'strtolower'],
+            'split' => [$this, 'explode'],
         ];
 
         if ($maps[$name] ?? null) {
@@ -296,7 +300,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      */
     public function count()
     {
-        return (int) $this->length();
+        return $this->length();
     }
 
     /**
@@ -360,11 +364,11 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     /**
      * length
      *
-     * @return  NumberObject
+     * @return  int
      */
-    public function length(): NumberObject
+    public function length(): int
     {
-        return new NumberObject(Utf8String::strlen($this->string, $this->encoding));
+        return Utf8String::strlen($this->string, $this->encoding);
     }
 
     /**
@@ -372,11 +376,13 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @param int $length
      *
-     * @return  array|bool
+     * @return  ArrayObject
      */
     public function chop($length = 1)
     {
-        return Utf8String::strSplit($this->string, $length, $this->encoding);
+        ArgumentsAssert::assert($length >= 1, '%s $length must larger than 1, %s given', $length);
+
+        return new ArrayObject(Utf8String::strSplit($this->string, $length, $this->encoding) ?: []);
     }
 
     /**
@@ -536,11 +542,17 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @param string $search
      *
-     * @return  int|bool
+     * @return  int
      */
-    public function indexOf(string $search)
+    public function indexOf(string $search): int
     {
-        return Utf8String::strpos($this->string, $search, 0, $this->encoding);
+        $result = Utf8String::strpos($this->string, $search, 0, $this->encoding);
+
+        if ($result === false) {
+            return -1;
+        }
+
+        return $result;
     }
 
     /**
@@ -548,11 +560,18 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @param string $search
      *
-     * @return  int|bool
+     * @return  int
      */
-    public function indexOfLast(string $search)
+    public function indexOfLast(string $search): int
     {
-        return Utf8String::strrpos($this->string, $search, 0, $this->encoding);
+        $result = Utf8String::strrpos($this->string, $search, 0, $this->encoding);
+
+
+        if ($result === false) {
+            return -1;
+        }
+
+        return $result;
     }
 
     /**
@@ -561,13 +580,13 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      * @param string   $delimiter
      * @param int|null $limit
      *
-     * @return  array
+     * @return  ArrayObject
      */
-    public function explode(string $delimiter, int $limit = null): array
+    public function explode(string $delimiter, ?int $limit = null): ArrayObject
     {
         $limit ??= PHP_INT_MAX;
 
-        return explode($delimiter, $this->string, $limit);
+        return ArrayObject::explode($delimiter, $this->string, $limit);
     }
 
     /**
@@ -577,7 +596,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @return  static
      */
-    public function apply(callable $callback)
+    public function apply(callable $callback): self
     {
         return $this->cloneInstance(static function ($new) use ($callback) {
             $new->string = $callback($new->string);
@@ -623,7 +642,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function append($string): StringObject
+    public function append($string): self
     {
         return tap(clone $this, static function (StringObject $new) use ($string) {
             $new->string .= $string;
@@ -639,21 +658,14 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function prepend($string): StringObject
+    public function prepend($string): self
     {
         return tap(clone $this, static function (StringObject $new) use ($string) {
             $new->string = $string . $new->string;
         });
     }
 
-    public function toNumber(): NumberObject
-    {
-        $num = (float) $this->string;
-
-        return new NumberObject($num);
-    }
-
-    public function toString(): StringObject
+    public function toString(): self
     {
         return clone $this;
     }

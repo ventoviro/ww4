@@ -28,7 +28,6 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     use ArrayModifyTrait;
     use ArrayLoopTrait;
     use ArrayContentTrait;
-    use ScalarsTrait;
 
     protected array $storage = [];
 
@@ -40,6 +39,11 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     public function __construct($storage = [])
     {
         $this->bind($storage);
+    }
+
+    public static function explode(string $delimiter, string $string, ?int $limit = null): self
+    {
+        return new static(explode(...func_get_args()));
     }
 
     /**
@@ -100,7 +104,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @return  static
      */
-    protected static function newInstance($data = [])
+    protected static function newInstance($data = []): self
     {
         return new static($data);
     }
@@ -115,7 +119,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @since  3.5
      */
-    public function keys(?string $search = null, ?bool $strict = null)
+    public function keys(?string $search = null, ?bool $strict = null): self
     {
         if (func_get_args()['search'] ?? false) {
             return array_keys($this->storage, $search, (bool) $strict);
@@ -146,7 +150,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @return  static
      */
-    public function apply(callable $callback)
+    public function apply(callable $callback): self
     {
         return static::newInstance($callback(TypeCast::toArray($this)));
     }
@@ -156,7 +160,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @return  static
      */
-    public function values()
+    public function values(): self
     {
         return static::newInstance(array_values(TypeCast::toArray($this)));
     }
@@ -168,7 +172,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @return  static
      */
-    public function pipe(callable $callback)
+    public function pipe(callable $callback): self
     {
         return $callback($this);
     }
@@ -439,14 +443,9 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
         return $this->storage;
     }
 
-    public function toNumber(): NumberObject
-    {
-        throw new \TypeError('Collection cannot convert to number.');
-    }
-
     public function toString(): StringObject
     {
-        throw new \TypeError('Collection cannot convert to string.');
+        throw new \TypeError(static::class . ' cannot convert to string.');
     }
 
     public function toArray(): ArrayObject

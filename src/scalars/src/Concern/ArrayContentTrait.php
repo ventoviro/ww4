@@ -94,6 +94,6 @@ trait ArrayContentTrait
      */
     public function collapse(int $depth = 0)
     {
-        return $this->flatten('.', $depth)->values();
+        return static::newInstance(Arr::collapse($this->dump()));
     }
 }

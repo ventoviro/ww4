@@ -28,7 +28,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function combine($values): self
+    public function combine($values)
     {
         return static::newInstance(array_combine($this->storage, TypeCast::toArray($values)));
     }
@@ -42,7 +42,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function diff(...$args): self
+    public function diff(...$args)
     {
         $args = array_map([Arr::class, 'toArray'], $args);
 
@@ -58,7 +58,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function diffKeys(...$args): self
+    public function diffKeys(...$args)
     {
         $args = array_map([TypeCast::class, 'toArray'], $args);
 
@@ -76,7 +76,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function fill(int $start, int $num, $value): self
+    public function fill(int $start, int $num, $value)
     {
         return static::newInstance(array_fill($start, $num, $value));
     }
@@ -91,7 +91,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function fillKeys(array $keys, $value): self
+    public function fillKeys(array $keys, $value)
     {
         return static::newInstance(array_fill_keys($keys, $value));
     }
@@ -103,7 +103,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function flip(): self
+    public function flip()
     {
         return static::newInstance(array_flip($this->storage));
     }
@@ -117,7 +117,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function intersect(...$args): self
+    public function intersect(...$args)
     {
         $args = array_map([TypeCast::class, 'toArray'], $args);
 
@@ -133,7 +133,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function intersectKey(...$args): self
+    public function intersectKey(...$args)
     {
         $args = array_map([TypeCast::class, 'toArray'], $args);
 
@@ -149,7 +149,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function merge(...$args): self
+    public function merge(...$args)
     {
         $args = array_map([TypeCast::class, 'toArray'], $args);
 
@@ -165,7 +165,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function mergeRecursive(...$args): self
+    public function mergeRecursive(...$args)
     {
         return array_map([static::newInstance($this), 'bind'], $args);
     }
@@ -179,7 +179,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function rand(int $num = 1): self
+    public function rand(int $num = 1)
     {
         return static::newInstance(array_rand($this->storage, $num));
     }
@@ -195,7 +195,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public static function range($start, $end, $step = 1): self
+    public static function range($start, $end, $step = 1)
     {
         return static::newInstance(range($start, $end, $step));
     }

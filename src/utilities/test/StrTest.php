@@ -891,14 +891,14 @@ class StrTest extends TestCase
      *
      * @return  void
      *
-     * @dataProvider surroundProvider
+     * @dataProvider wrapProvider
      */
-    public function testSurround(string $string, string $expected, $substring = null)
+    public function testWrap(string $string, string $expected, $substring = null)
     {
         if ($substring === null) {
-            self::assertEquals($expected, Str::surround($string));
+            self::assertEquals($expected, Str::wrap($string));
         } else {
-            self::assertEquals($expected, Str::surround($string, $substring));
+            self::assertEquals($expected, Str::wrap($string, $substring));
         }
     }
 
@@ -907,7 +907,7 @@ class StrTest extends TestCase
      *
      * @return  array
      */
-    public function surroundProvider()
+    public function wrapProvider()
     {
         return [
             ['foo', '"foo"'],
@@ -997,9 +997,7 @@ class StrTest extends TestCase
      */
     public function testMap()
     {
-        $actual = Str::map('Foo/Bar/Yoo', function ($char, $key) {
-            return $char === '/' ? '_' : $char;
-        });
+        $actual = Str::map('Foo/Bar/Yoo', static fn ($char, $key) => $char === '/' ? '_' : $char);
 
         self::assertEquals('Foo_Bar_Yoo', (string) $actual);
 
@@ -1015,9 +1013,7 @@ class StrTest extends TestCase
      */
     public function testFilter()
     {
-        $actual = Str::filter('Foo/Bar/Yoo', function ($char, $key) {
-            return $char !== '/';
-        });
+        $actual = Str::filter('Foo/Bar/Yoo', static fn ($char, $key) => $char !== '/');
 
         self::assertEquals('FooBarYoo', (string) $actual);
 
@@ -1033,9 +1029,7 @@ class StrTest extends TestCase
      */
     public function testReject()
     {
-        $actual = Str::reject('Foo/Bar/Yoo', function ($char, $key) {
-            return $char === '/';
-        });
+        $actual = Str::reject('Foo/Bar/Yoo', static fn ($char, $key) => $char === '/');
 
         self::assertEquals('FooBarYoo', (string) $actual);
 

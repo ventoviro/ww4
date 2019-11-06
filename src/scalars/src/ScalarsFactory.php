@@ -14,7 +14,7 @@ namespace Windwalker\Scalars;
  *
  * @since  __DEPLOY_VERSION__
  */
-trait ScalarsTrait
+class ScalarsFactory
 {
     /**
      * fromNative
@@ -27,16 +27,12 @@ trait ScalarsTrait
      */
     public static function fromNative($value)
     {
-        if (is_int($value) || is_float($value)) {
-            return $value;
-        }
-
-        if (is_string($value)) {
-            return new StringObject($value);
-        }
-
         if (is_array($value)) {
             return new ArrayObject($value);
+        }
+
+        if (is_scalar($value)) {
+            return new StringObject($value);
         }
 
         return $value;

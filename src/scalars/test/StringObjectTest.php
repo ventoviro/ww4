@@ -765,7 +765,7 @@ class StringObjectTest extends TestCase
     {
         $s = new StringObject($string);
 
-        self::assertEquals($expected, $s->explode($delimiter));
+        self::assertEquals($expected, $s->explode($delimiter)->dump());
     }
 
     /**

@@ -7,16 +7,14 @@
  * @license    __LICENSE__
  */
 
-namespace Windwalker\Scalars;
+namespace Windwalker\Utilities\Assert;
 
 /**
- * Interface ScalarsInterface
+ * The ArgumentsAssert class.
  *
  * @since  __DEPLOY_VERSION__
  */
-interface ScalarsInterface
+class ArgumentsAssert extends TypeAssert
 {
-    public function toString(): StringObject;
-
-    public function toArray(): ArrayObject;
+    protected static string $exceptionClass = \InvalidArgumentException::class;
 }
