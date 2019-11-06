@@ -7,6 +7,5 @@
  * @license    __LICENSE__
  */
 
-include_once __DIR__ . '/string/src/functions.php';
 include_once __DIR__ . '/test/src/functions.php';
 include_once __DIR__ . '/utilities/src/functions.php';

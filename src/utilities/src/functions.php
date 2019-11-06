@@ -67,6 +67,9 @@ namespace {
 }
 
 namespace Windwalker {
+
+    use Windwalker\Utilities\StringObject;
+
     /**
      * Do some operation after value get.
      *
@@ -97,6 +100,19 @@ namespace Windwalker {
     function count($value, $mode = COUNT_NORMAL): int
     {
         return $value !== null ? \count($value, $mode) : 0;
+    }
+
+    /**
+     * str
+     *
+     * @param string      $string
+     * @param null|string $encoding
+     *
+     * @return  StringObject
+     */
+    function str($string = '', ?string $encoding = StringObject::ENCODING_UTF8): StringObject
+    {
+        return new StringObject((string) $string, $encoding);
     }
 
     /**

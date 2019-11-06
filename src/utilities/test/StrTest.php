@@ -7,10 +7,10 @@
  */
 declare(strict_types = 1);
 
-namespace Windwalker\String\Test;
+namespace Windwalker\Utilities\Test;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\String\Str;
+use Windwalker\Utilities\Str;
 
 /**
  * The StringHelperTest class.

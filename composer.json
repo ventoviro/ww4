@@ -29,7 +29,6 @@
     },
     "autoload": {
         "psr-4": {
-            "Windwalker\\String\\": "src/string/src",
             "Windwalker\\Test\\": "src/test/src",
             "Windwalker\\Utilities\\": "src/utilities/src"
         },

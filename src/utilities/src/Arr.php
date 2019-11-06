@@ -658,6 +658,18 @@ abstract class Arr
         return $array;
     }
 
+    /**
+     * mapRecursive
+     *
+     * @param  array     $array
+     * @param  callable  $callback
+     * @param  bool      $useKeys
+     * @param  bool      $loopIterable
+     *
+     * @return  array
+     *
+     * @since  __DEPLOY_VERSION__
+     */
     public static function mapRecursive(
         array $array,
         callable $callback,

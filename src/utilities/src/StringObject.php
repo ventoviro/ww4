@@ -7,7 +7,7 @@
  */
 declare(strict_types = 1);
 
-namespace Windwalker\String;
+namespace Windwalker\Utilities;
 
 use Traversable;
 use Windwalker\Utilities\Classes\ImmutableHelperTrait;

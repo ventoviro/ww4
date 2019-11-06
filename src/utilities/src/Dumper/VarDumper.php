@@ -12,7 +12,7 @@ use Symfony\Component\VarDumper\Caster\ReflectionCaster;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\CliDumper;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
-use Windwalker\String\Str;
+use Windwalker\Utilities\Str;
 
 /**
  * The VarDumper class.

@@ -1,16 +1,17 @@
 <?php
+
 /**
  * Part of Windwalker project Test files.
  *
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT Taiwan, Inc. All rights reserved.
  * @license    GNU Lesser General Public License version 3 or later.
  */
-declare(strict_types = 1);
+declare(strict_types=1);
 
-namespace Windwalker\String\Test;
+namespace Windwalker\Utilities\Test;
 
 use PHPUnit\Framework\TestCase;
-use \Windwalker\String\Utf8String;
+use Windwalker\Utilities\Utf8String;
 
 /**
  * Test class of String
@@ -513,8 +514,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string  $string   @todo
-     * @param   boolean $expected @todo
+     * @param  string   $string    @todo
+     * @param  boolean  $expected  @todo
      *
      * @return  void
      *
@@ -532,10 +533,10 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string  $expect   @todo
-     * @param   string  $haystack @todo
-     * @param   string  $needle   @todo
-     * @param   integer $offset   @todo
+     * @param  string   $expect    @todo
+     * @param  string   $haystack  @todo
+     * @param  string   $needle    @todo
+     * @param  integer  $offset    @todo
      *
      * @return  void
      *
@@ -551,10 +552,10 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string  $expect   @todo
-     * @param   string  $haystack @todo
-     * @param   string  $needle   @todo
-     * @param   integer $offset   @todo
+     * @param  string   $expect    @todo
+     * @param  string   $haystack  @todo
+     * @param  string   $needle    @todo
+     * @param  integer  $offset    @todo
      *
      * @return  array
      *
@@ -570,10 +571,10 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string   $expect @todo
-     * @param   string   $string @todo
-     * @param   string   $start  @todo
-     * @param   bool|int $length @todo
+     * @param  string    $expect  @todo
+     * @param  string    $string  @todo
+     * @param  string    $start   @todo
+     * @param  bool|int  $length  @todo
      *
      * @return  array
      *
@@ -589,8 +590,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -606,8 +607,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -623,8 +624,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -640,11 +641,11 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string  $search  @todo
-     * @param   string  $replace @todo
-     * @param   string  $subject @todo
-     * @param   integer $count   @todo
-     * @param   string  $expect  @todo
+     * @param  string   $search   @todo
+     * @param  string   $replace  @todo
+     * @param  string   $subject  @todo
+     * @param  integer  $count    @todo
+     * @param  string   $expect   @todo
      *
      * @return  array
      *
@@ -660,9 +661,9 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string       @todo
-     * @param   int    $split_length @todo
-     * @param   string $expect       @todo
+     * @param  string  $string        @todo
+     * @param  int     $split_length  @todo
+     * @param  string  $expect        @todo
      *
      * @return  array
      *
@@ -678,10 +679,10 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string1 @todo
-     * @param   string $string2 @todo
-     * @param   string $locale  @todo
-     * @param   string $expect  @todo
+     * @param  string  $string1  @todo
+     * @param  string  $string2  @todo
+     * @param  string  $locale   @todo
+     * @param  string  $expect   @todo
      *
      * @return  array
      *
@@ -702,10 +703,10 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string1 @todo
-     * @param   string $string2 @todo
-     * @param   string $locale  @todo
-     * @param   string $expect  @todo
+     * @param  string  $string1  @todo
+     * @param  string  $string2  @todo
+     * @param  string  $locale   @todo
+     * @param  string  $expect   @todo
      *
      * @return  array
      *
@@ -726,11 +727,11 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string  $haystack @todo
-     * @param   string  $needles  @todo
-     * @param   integer $start    @todo
-     * @param   integer $len      @todo
-     * @param   string  $expect   @todo
+     * @param  string   $haystack  @todo
+     * @param  string   $needles   @todo
+     * @param  integer  $start     @todo
+     * @param  integer  $len       @todo
+     * @param  string   $expect    @todo
      *
      * @return  array
      *
@@ -746,9 +747,9 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $haystack @todo
-     * @param   string $needle   @todo
-     * @param   string $expect   @todo
+     * @param  string  $haystack  @todo
+     * @param  string  $needle    @todo
+     * @param  string  $expect    @todo
      *
      * @return  array
      *
@@ -764,8 +765,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -781,11 +782,11 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string  $subject @todo
-     * @param   string  $mask    @todo
-     * @param   integer $start   @todo
-     * @param   integer $length  @todo
-     * @param   string  $expect  @todo
+     * @param  string   $subject  @todo
+     * @param  string   $mask     @todo
+     * @param  integer  $start    @todo
+     * @param  integer  $length   @todo
+     * @param  string   $expect   @todo
      *
      * @return  array
      *
@@ -801,11 +802,11 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string  $expect      @todo
-     * @param   string  $string      @todo
-     * @param   string  $replacement @todo
-     * @param   integer $start       @todo
-     * @param   integer $length      @todo
+     * @param  string   $expect       @todo
+     * @param  string   $string       @todo
+     * @param  string   $replacement  @todo
+     * @param  integer  $start        @todo
+     * @param  integer  $length       @todo
      *
      * @return  array
      *
@@ -821,9 +822,9 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string   @todo
-     * @param   string $charlist @todo
-     * @param   string $expect   @todo
+     * @param  string  $string    @todo
+     * @param  string  $charlist  @todo
+     * @param  string  $expect    @todo
      *
      * @return  array
      *
@@ -844,9 +845,9 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string   @todo
-     * @param   string $charlist @todo
-     * @param   string $expect   @todo
+     * @param  string  $string    @todo
+     * @param  string  $charlist  @todo
+     * @param  string  $expect    @todo
      *
      * @return  array
      *
@@ -867,9 +868,9 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string   @todo
-     * @param   string $charlist @todo
-     * @param   string $expect   @todo
+     * @param  string  $string    @todo
+     * @param  string  $charlist  @todo
+     * @param  string  $expect    @todo
      *
      * @return  array
      *
@@ -890,8 +891,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string       @todo
-     * @param   string $expect       @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -907,8 +908,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * testLcfirst
      *
-     * @param string $string
-     * @param string $expect
+     * @param  string  $string
+     * @param  string  $expect
      *
      * @return  void
      *
@@ -923,8 +924,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -974,10 +975,10 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $source        @todo
-     * @param   string $from_encoding @todo
-     * @param   string $to_encoding   @todo
-     * @param   string $expect        @todo
+     * @param  string  $source         @todo
+     * @param  string  $from_encoding  @todo
+     * @param  string  $to_encoding    @todo
+     * @param  string  $expect         @todo
      *
      * @return  array
      *
@@ -993,8 +994,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -1010,12 +1011,11 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
-
      * @dataProvider  unicodeToUtf8Provider
      * @since         2.0
      */
@@ -1028,8 +1028,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -1045,8 +1045,8 @@ class MbUtf8StringTest extends TestCase
     /**
      * Test...
      *
-     * @param   string $string @todo
-     * @param   string $expect @todo
+     * @param  string  $string  @todo
+     * @param  string  $expect  @todo
      *
      * @return  array
      *
@@ -1076,9 +1076,9 @@ class MbUtf8StringTest extends TestCase
         $len = mb_strlen($string);
 
         for ($i = 0; $i < $len; $i++) {
-            $char = mb_substr($string, $i, 1);
+            $char        = mb_substr($string, $i, 1);
             $countBefore = mb_substr_count($string, $char);
-            $countAfter = mb_substr_count($result, $char);
+            $countAfter  = mb_substr_count($result, $char);
 
             self::assertEquals($countBefore, $countAfter);
         }
@@ -1096,5 +1096,17 @@ class MbUtf8StringTest extends TestCase
             ['∂∆ ˚åß'],
             ['å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬']
         ];
+    }
+
+    public function testToAscii(): void
+    {
+        self::assertEquals([
+            1 => 70,
+            2 => 108,
+            3 => 111,
+            4 => 119,
+            5 => 101,
+            6 => 114,
+        ], Utf8String::toAscii('Flower'));
     }
 }
