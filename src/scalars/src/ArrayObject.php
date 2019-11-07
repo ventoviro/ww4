@@ -9,11 +9,20 @@
 
 namespace Windwalker\Scalars;
 
+use ArrayAccess;
+use ArrayIterator;
+use Countable;
+use InvalidArgumentException;
+use Iterator;
+use IteratorAggregate;
+use JsonSerializable;
+use TypeError;
 use Windwalker\Scalars\Concern\ArrayContentTrait;
 use Windwalker\Scalars\Concern\ArrayCreationTrait;
 use Windwalker\Scalars\Concern\ArrayLoopTrait;
 use Windwalker\Scalars\Concern\ArrayModifyTrait;
 use Windwalker\Scalars\Concern\ArraySortTrait;
+use Windwalker\Utilities\Contract\DumpableInterface;
 use Windwalker\Utilities\TypeCast;
 use function Windwalker\str;
 
@@ -22,7 +31,12 @@ use function Windwalker\str;
  *
  * @since  __DEPLOY_VERSION__
  */
-class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \JsonSerializable, ScalarsInterface
+class ArrayObject implements
+    DumpableInterface,
+    Countable,
+    ArrayAccess,
+    IteratorAggregate,
+    JsonSerializable
 {
     use ArraySortTrait;
     use ArrayCreationTrait;
@@ -170,7 +184,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      * @param  mixed  $key
      *
      * @return mixed
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function &__get($key)
     {
@@ -194,9 +208,11 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @param  bool  $recursive
      *
+     * @param  bool  $onlyDumpable
+     *
      * @return array
      */
-    public function dump(bool $recursive = false): array
+    public function dump(bool $recursive = false, bool $onlyDumpable = false): array
     {
         if (!$recursive) {
             return $this->storage;
@@ -309,11 +325,11 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * Create a new iterator from an ArrayObject instance
      *
-     * @return \Iterator
+     * @return Iterator
      */
-    public function getIterator()
+    public function getIterator(): Iterator
     {
-        return new \ArrayIterator($this->storage);
+        return new ArrayIterator($this->storage);
     }
 
     /**
@@ -323,7 +339,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @return bool
      */
-    public function offsetExists($key)
+    public function offsetExists($key): bool
     {
         return isset($this->storage[$key]);
     }
@@ -356,7 +372,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @return void
      */
-    public function offsetSet($key, $value)
+    public function offsetSet($key, $value): void
     {
         if ($key === null) {
             $this->storage[] = $value;
@@ -374,7 +390,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @return void
      */
-    public function offsetUnset($key)
+    public function offsetUnset($key): void
     {
         if ($this->offsetExists($key)) {
             unset($this->storage[$key]);
@@ -388,18 +404,8 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      *
      * @since  3.5.2
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->storage;
-    }
-
-    public function toString(): StringObject
-    {
-        throw new \TypeError(static::class . ' cannot convert to string.');
-    }
-
-    public function toArray(): ArrayObject
-    {
-        return clone $this;
     }
 }

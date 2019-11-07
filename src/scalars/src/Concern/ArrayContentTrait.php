@@ -9,6 +9,7 @@
 
 namespace Windwalker\Scalars\Concern;
 
+use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\TypeCast;
 
@@ -38,7 +39,7 @@ trait ArrayContentTrait
             return null;
         }
 
-        return $array[array_key_first($this->storage)] ?? null;
+        return $this->storage[array_key_first($this->storage)] ?? null;
     }
 
     /**
@@ -50,12 +51,10 @@ trait ArrayContentTrait
      */
     public function last(callable $conditions = null)
     {
-        $array = TypeCast::toArray($this);
-
         if ($conditions) {
             $prev = null;
 
-            foreach ($array as $key => $value) {
+            foreach ($this->storage as $key => $value) {
                 if ($conditions($value, $key)) {
                     $prev = $value;
                 }
@@ -64,7 +63,7 @@ trait ArrayContentTrait
             return $prev;
         }
 
-        return $array[array_key_last($array)] ?? null;
+        return $this->storage[array_key_last($this->storage)] ?? null;
     }
 
     /**
@@ -86,13 +85,11 @@ trait ArrayContentTrait
     /**
      * collapse
      *
-     * @param int $depth
-     *
      * @return  static
      *
      * @since  3.5.10
      */
-    public function collapse(int $depth = 0)
+    public function collapse()
     {
         return static::newInstance(Arr::collapse($this->dump()));
     }

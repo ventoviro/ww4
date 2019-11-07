@@ -9,6 +9,7 @@
 
 namespace Windwalker\Scalars\Concern;
 
+use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\TypeCast;
 
@@ -167,7 +168,9 @@ trait ArrayCreationTrait
      */
     public function mergeRecursive(...$args)
     {
-        return array_map([static::newInstance($this), 'bind'], $args);
+        $args = array_map(fn ($arg) => $arg instanceof ArrayObject ? $arg->dump() : $arg, $args);
+
+        return static::newInstance(Arr::mergeRecursive($this->storage, ...$args));
     }
 
     /**

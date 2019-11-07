@@ -65,7 +65,7 @@ use function Windwalker\tap;
  *
  * @since  __DEPLOY_VERSION__
  */
-class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, StringableInterface, ScalarsInterface
+class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, StringableInterface
 {
     use ImmutableHelperTrait;
     use StringModifyTrait;
@@ -663,15 +663,5 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
         return tap(clone $this, static function (StringObject $new) use ($string) {
             $new->string = $string . $new->string;
         });
-    }
-
-    public function toString(): self
-    {
-        return clone $this;
-    }
-
-    public function toArray(): ArrayObject
-    {
-        return new ArrayObject([$this]);
     }
 }

@@ -337,14 +337,6 @@ class ArrayObjectTest extends TestCase
         self::assertNull($this->instance[5]);
     }
 
-    public function testToArray(): void
-    {
-        $a = $this->instance->toArray();
-
-        self::assertEquals($a->dump(), $this->instance->dump());
-        self::assertNotSame($a, $this->instance);
-    }
-
     public function testApply(): void
     {
         $a = $this->instance->apply(fn (array $v) => array_reverse($v));
@@ -406,13 +398,6 @@ class ArrayObjectTest extends TestCase
         self::assertTrue(isset($this->instance[2]));
         self::assertTrue(isset($this->getAssoc()['foo']));
         self::assertFalse(isset($this->getAssoc()['hello']));
-    }
-
-    public function testToString(): void
-    {
-        $this->expectException(\TypeError::class);
-
-        $this->instance->toString();
     }
 
     public function testMagicIsset(): void

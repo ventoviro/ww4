@@ -24,12 +24,13 @@ abstract class TypeCast
     /**
      * Utility function to convert all types to an array.
      *
-     * @param  mixed  $data       The data to convert.
-     * @param  bool   $recursive  Recursive if data is nested.
+     * @param  mixed  $data          The data to convert.
+     * @param  bool   $recursive     Recursive if data is nested.
+     * @param  bool   $onlyDumpable  Objects only implements DumpableInterface will convert to array.
      *
      * @return  array  The converted array.
      */
-    public static function toArray($data, bool $recursive = false): array
+    public static function toArray($data, bool $recursive = false, bool $onlyDumpable = false): array
     {
         // Ensure the input data is an array.
         if ($data instanceof DumpableInterface) {
@@ -48,8 +49,14 @@ abstract class TypeCast
 
         if ($recursive) {
             foreach ($data as &$value) {
-                if (is_array($value) || is_object($value)) {
-                    $value = static::toArray($value, $recursive);
+                if (is_array($value)) {
+                    $value = static::toArray($value, $recursive, $onlyDumpable);
+                } elseif (is_object($value)) {
+                    if ($onlyDumpable && $value instanceof DumpableInterface) {
+                        $value = static::toArray($value, $recursive, $onlyDumpable);
+                    } elseif (!$onlyDumpable) {
+                        $value = static::toArray($value, $recursive, $onlyDumpable);
+                    }
                 }
             }
         }
@@ -82,9 +89,9 @@ abstract class TypeCast
     /**
      * Utility function to map an array to a stdClass object.
      *
-     * @param  array   $array     The array to map.
-     * @param  bool    $recursive Recursive.
-     * @param  string  $class     Name of the class to create
+     * @param  array   $array      The array to map.
+     * @param  bool    $recursive  Recursive.
+     * @param  string  $class      Name of the class to create
      *
      * @return  object  The object mapped from the given array
      *
