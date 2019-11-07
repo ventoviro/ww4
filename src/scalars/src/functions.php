@@ -9,6 +9,7 @@
 
 namespace Windwalker {
 
+    use Windwalker\Scalars\ArrayObject;
     use Windwalker\Scalars\StringObject;
 
     /**
@@ -22,5 +23,18 @@ namespace Windwalker {
     function str($string = '', ?string $encoding = StringObject::ENCODING_UTF8): StringObject
     {
         return new StringObject((string) $string, $encoding);
+    }
+
+    /**
+     * collect
+     *
+     * @param array  $data
+     *
+     * @return  ArrayObject
+     *
+     * @since  3.5
+     */
+    function arr($data = []): ArrayObject {
+        return new ArrayObject($data);
     }
 }

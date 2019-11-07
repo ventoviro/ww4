@@ -11,6 +11,8 @@ namespace Windwalker\Scalars\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\ArrayObject;
+use Windwalker\Scalars\StringObject;
+use function Windwalker\arr;
 
 /**
  * The ArrayObjectTest class.
@@ -84,94 +86,292 @@ class ArrayObjectTest extends TestCase
         self::assertEquals([1, 2, 3, 4, 'foo' => 'bar'], $this->instance->dump());
     }
 
-    public function testBind()
-    {
-
-    }
-
     public function testDump()
     {
+        self::assertEquals([1, 2, 3], $this->instance->dump());
 
+        // Recursive
+        $foo = arr([
+            clone $this->instance,
+            clone $this->instance,
+        ]);
+
+        self::assertEquals(
+            [
+                [1, 2, 3],
+                [1, 2, 3],
+            ],
+            $foo->dump(true)
+        );
     }
 
-    public function test__construct()
+    public function testConstruct(): void
     {
-
+        self::assertEquals([1, 2, 3], $this->instance->dump());
     }
 
-    public function testColumn()
+    /**
+     * testColumn
+     *
+     * @param  array       $src
+     * @param  string|int  $column
+     * @param  array       $except
+     * @param  string      $message
+     *
+     * @return  void
+     *
+     * @dataProvider providerTestColumn
+     */
+    public function testColumn(array $src, $column, array $except, string $message): void
     {
-
+        self::assertEquals($except, arr($src)->column($column)->dump(), $message);
     }
 
-    public function testIndexOf()
+    public function providerTestColumn(): array
     {
-
+        return [
+            'generic array' => [
+                [
+                    [1, 2, 3, 4, 5],
+                    [6, 7, 8, 9, 10],
+                    [11, 12, 13, 14, 15],
+                    [16, 17, 18, 19, 20],
+                ],
+                2,
+                [3, 8, 13, 18],
+                'Should get column #2',
+            ],
+            'associative array' => [
+                [
+                    [
+                        'one' => 1,
+                        'two' => 2,
+                        'three' => 3,
+                        'four' => 4,
+                        'five' => 5,
+                    ],
+                    [
+                        'one' => 6,
+                        'two' => 7,
+                        'three' => 8,
+                        'four' => 9,
+                        'five' => 10,
+                    ],
+                    [
+                        'one' => 11,
+                        'two' => 12,
+                        'three' => 13,
+                        'four' => 14,
+                        'five' => 15,
+                    ],
+                    [
+                        'one' => 16,
+                        'two' => 17,
+                        'three' => 18,
+                        'four' => 19,
+                        'five' => 20,
+                    ],
+                ],
+                'four',
+                [
+                    4,
+                    9,
+                    14,
+                    19,
+                ],
+                'Should get column \'four\'',
+            ],
+            'object array' => [
+                [
+                    (object) [
+                        'one' => 1,
+                        'two' => 2,
+                        'three' => 3,
+                        'four' => 4,
+                        'five' => 5,
+                    ],
+                    (object) [
+                        'one' => 6,
+                        'two' => 7,
+                        'three' => 8,
+                        'four' => 9,
+                        'five' => 10,
+                    ],
+                    (object) [
+                        'one' => 11,
+                        'two' => 12,
+                        'three' => 13,
+                        'four' => 14,
+                        'five' => 15,
+                    ],
+                    (object) [
+                        'one' => 16,
+                        'two' => 17,
+                        'three' => 18,
+                        'four' => 19,
+                        'five' => 20,
+                    ],
+                ],
+                'four',
+                [
+                    4,
+                    9,
+                    14,
+                    19,
+                ],
+                'Should get column \'four\'',
+            ]
+        ];
     }
 
-    public function testPipe()
+    public function testIndexOf(): void
     {
-
+        self::assertEquals(1, $this->instance->indexOf(2));
+        self::assertEquals(-1, $this->instance->indexOf(8));
     }
 
-    public function test__unset()
+    public function testPipe(): void
     {
+        $a = $this->instance->pipe(fn (ArrayObject $arr) => $arr->append(4));
 
+        self::assertEquals([1, 2, 3, 4], $a->dump());
     }
 
-    public function testOffsetUnset()
+    public function testUnset(): void
     {
+        unset($this->instance[1]);
 
+        self::assertEquals([1, 3], $this->instance->values()->dump());
+
+        $a = $this->getAssoc();
+
+        unset($a['flower']);
+
+        self::assertEquals(['foo' => 'bar'], $a->dump());
+
+        $a = $this->getAssoc();
+
+        unset($a->flower);
+
+        self::assertEquals(['foo' => 'bar'], $a->dump());
     }
 
-    public function testUnique()
+    public function testUnique(): void
     {
+        $a = arr([1, 2, 1, 2, 4, 5, 6, 5, 6, 3, 2, 4, 5])->unique();
 
+        self::assertEquals([
+            0 => 1,
+            1 => 2,
+            4 => 4,
+            5 => 5,
+            6 => 6,
+            9 => 3,
+        ], $a->dump());
+
+        $a = arr([
+            [1, 2],
+            [3, 4],
+            [1, 2]
+        ])->unique(SORT_REGULAR);
+
+        self::assertEquals([
+            [1, 2],
+            [3, 4],
+        ], $a->dump());
     }
 
-    public function testExplode()
+    public function testExplode(): void
     {
+        $a = ArrayObject::explode(',', '1,2,3');
 
+        self::assertEquals([1, 2, 3], $a->dump());
     }
 
-    public function testSum()
+    public function testSum(): void
     {
+        self::assertEquals(6, $this->instance->sum());
 
+        self::assertEquals(0, $this->getAssoc()->sum());
     }
 
-    public function testValues()
+    public function testValues(): void
     {
-
+        self::assertEquals(['bar', 'sakura'], $this->getAssoc()->values()->dump());
     }
 
-    public function testSearch()
+    /**
+     * testSearch
+     *
+     * @param  mixed  $exp
+     * @param  mixed $search
+     * @param  bool  $strict
+     *
+     * @return  void
+     *
+     * @dataProvider providerTestSearch
+     */
+    public function testSearch($exp, $search, bool $strict): void
     {
+        $a = arr([1, 2, 3, true, false, '', 0, null]);
 
+        self::assertEquals($exp, $a->search($search, $strict));
     }
 
-    public function testOffsetGet()
+    public function providerTestSearch(): array
     {
-
+        return [
+            [1, 2, false],
+            [0, true, false],
+            [3, true, true],
+            [4, false, true],
+            [4, null, false],
+            [7, null, true],
+        ];
     }
 
-    public function testToArray()
+    public function testOffsetGet(): void
     {
+        self::assertEquals(3, $this->instance[2]);
 
+        self::assertNull($this->instance[5]);
     }
 
-    public function testApply()
+    public function testToArray(): void
     {
+        $a = $this->instance->toArray();
 
+        self::assertEquals($a->dump(), $this->instance->dump());
+        self::assertNotSame($a, $this->instance);
     }
 
-    public function testImplode()
+    public function testApply(): void
     {
+        $a = $this->instance->apply(fn (array $v) => array_reverse($v));
 
+        self::assertEquals([3, 2, 1], $a->dump());
     }
 
-    public function testKeys()
+    public function testImplode(): void
     {
+        $str = $this->instance->implode(',');
 
+        self::assertEquals('1,2,3', (string) $str);
+    }
+
+    public function testKeys(): void
+    {
+        self::assertEquals([0, 1, 2], $this->instance->keys()->dump());
+        self::assertEquals(['foo', 'flower'], $this->getAssoc()->keys()->dump());
+
+        $array = arr(['blue', 'red', 'green', 'blue', 'blue']);
+
+        self::assertEquals([0, 3, 4], $array->keys('blue')->dump());
+
+        $array = arr([1, '1', 2, '2', 1, '1']);
+
+        self::assertEquals([0, 1, 4, 5], $array->keys(1)->dump());
+        self::assertEquals([0, 4], $array->keys(1, true)->dump());
     }
 
     public function testOffsetSet(): void
@@ -195,21 +395,30 @@ class ArrayObjectTest extends TestCase
 
     public function testMagicGet()
     {
+        $a = $this->getAssoc();
 
+        self::assertEquals('bar', $a->foo);
+        self::assertNull($a->hello);
     }
 
     public function testOffsetExists()
     {
-
+        self::assertTrue(isset($this->instance[2]));
+        self::assertTrue(isset($this->getAssoc()['foo']));
+        self::assertFalse(isset($this->getAssoc()['hello']));
     }
 
     public function testToString()
     {
+        $this->expectException(\TypeError::class);
 
+        $this->instance->toString();
     }
 
-    public function test__isset()
+    public function testMagicIsset()
     {
-
+        self::assertTrue(isset($this->instance->{2}));
+        self::assertTrue(isset($this->getAssoc()->foo));
+        self::assertFalse(isset($this->getAssoc()->hello));
     }
 }

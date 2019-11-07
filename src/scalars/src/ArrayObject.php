@@ -15,6 +15,7 @@ use Windwalker\Scalars\Concern\ArrayLoopTrait;
 use Windwalker\Scalars\Concern\ArrayModifyTrait;
 use Windwalker\Scalars\Concern\ArraySortTrait;
 use Windwalker\Utilities\TypeCast;
+use function Windwalker\str;
 
 /**
  * The ArrayObject class.
@@ -38,7 +39,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
      */
     public function __construct($storage = [])
     {
-        $this->bind($storage);
+        $this->storage = TypeCast::toArray($storage);
     }
 
     public static function explode(string $delimiter, string $string, ?int $limit = null): self
@@ -47,60 +48,9 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     }
 
     /**
-     * bind
-     *
-     * @param  array|object  $values
-     * @param  array         $ignores
-     * @param  bool          $replaceNulls
-     *
-     * @return  $this
-     *
-     * @since  __DEPLOY_VERSION__
-     */
-    public function bind($values, array $ignores = [], bool $replaceNulls = false)
-    {
-        if ($values === null) {
-            return $this;
-        }
-
-        // Check properties type.
-        if (!is_array($values) && !is_object($values)) {
-            throw new \InvalidArgumentException(sprintf('Please bind array or object, %s given.', gettype($values)));
-        }
-
-        // If is Traversable, get iterator.
-        if ($values instanceof \Traversable) {
-            $values = iterator_to_array($values);
-        } elseif ($values instanceof static) {
-            // If is object, convert it to array
-            $values = $values->dump();
-        } elseif (is_object($values)) {
-            // If is object, convert it to array
-            $values = get_object_vars($values);
-        }
-
-        // Bind the properties.
-        foreach ($values as $field => $value) {
-            if (in_array($field, $ignores)) {
-                continue;
-            }
-
-            // Check if the value is null and should be bound.
-            if ($value === null && !$replaceNulls) {
-                continue;
-            }
-
-            // Set the property.
-            $this->offsetSet($field, $value);
-        }
-
-        return $this;
-    }
-
-    /**
      * bindNewInstance
      *
-     * @param mixed $data
+     * @param  mixed  $data
      *
      * @return  static
      */
@@ -112,33 +62,33 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * keys
      *
-     * @param string|null $search
-     * @param bool|null   $strict
+     * @param  string|int|null  $search
+     * @param  bool|null        $strict
      *
      * @return  static
      *
      * @since  3.5
      */
-    public function keys(?string $search = null, ?bool $strict = null): self
+    public function keys($search = null, ?bool $strict = null): self
     {
-        if (func_get_args()['search'] ?? false) {
-            return array_keys($this->storage, $search, (bool) $strict);
+        if (func_get_args()[0] ?? false) {
+            return static::newInstance(array_keys($this->storage, $search, (bool) $strict));
         }
 
-        return new static(array_keys($this->storage));
+        return static::newInstance(array_keys($this->storage));
     }
 
     /**
      * column
      *
-     * @param string      $name
-     * @param string|null $key
+     * @param  string|int   $name
+     * @param  string|null  $key
      *
      * @return  static
      *
      * @since  3.5
      */
-    public function column(string $name, ?string $key = null): self
+    public function column($name, ?string $key = null): self
     {
         return new static(array_column($this->storage, $name, $key));
     }
@@ -146,7 +96,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * apply
      *
-     * @param callable $callback
+     * @param  callable  $callback
      *
      * @return  static
      */
@@ -168,7 +118,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * pipe
      *
-     * @param callable $callback
+     * @param  callable  $callback
      *
      * @return  static
      */
@@ -258,8 +208,8 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * search
      *
-     * @param mixed $value
-     * @param bool  $strict
+     * @param  mixed  $value
+     * @param  bool   $strict
      *
      * @return  false|int|string
      *
@@ -273,8 +223,8 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * indexOf
      *
-     * @param mixed $value
-     * @param bool  $strict
+     * @param  mixed  $value
+     * @param  bool   $strict
      *
      * @return  int
      *
@@ -302,7 +252,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * unique
      *
-     * @param int $sortFlags
+     * @param  int  $sortFlags
      *
      * @return  static
      *
@@ -316,8 +266,8 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * current
      *
-     * @param mixed $value
-     * @param bool  $strict
+     * @param  mixed  $value
+     * @param  bool   $strict
      *
      * @return  bool
      *
@@ -331,7 +281,7 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * keyExists
      *
-     * @param mixed $key
+     * @param  mixed  $key
      *
      * @return  bool
      *
@@ -345,15 +295,15 @@ class ArrayObject implements \Countable, \ArrayAccess, \IteratorAggregate, \Json
     /**
      * implode
      *
-     * @param string $glue
+     * @param  string  $glue
      *
-     * @return  string
+     * @return  StringObject
      *
      * @since  3.5.1
      */
-    public function implode(string $glue): string
+    public function implode(string $glue): StringObject
     {
-        return implode($glue, $this->storage);
+        return str(implode($glue, $this->storage));
     }
 
     /**

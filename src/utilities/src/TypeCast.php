@@ -10,6 +10,7 @@
 namespace Windwalker\Utilities;
 
 use Windwalker\Utilities\Classes\PreventInitialTrait;
+use Windwalker\Utilities\Contract\DumpableInterface;
 
 /**
  * The TypeCast class.
@@ -31,7 +32,13 @@ abstract class TypeCast
     public static function toArray($data, bool $recursive = false): array
     {
         // Ensure the input data is an array.
-        if ($data instanceof \Traversable) {
+        if ($data instanceof DumpableInterface) {
+            $data = $data->dump($recursive);
+
+            if ($recursive) {
+                return $data;
+            }
+        } elseif ($data instanceof \Traversable) {
             $data = iterator_to_array($data);
         } elseif (is_object($data)) {
             $data = get_object_vars($data);
