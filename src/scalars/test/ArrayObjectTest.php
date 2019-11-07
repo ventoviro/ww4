@@ -393,7 +393,7 @@ class ArrayObjectTest extends TestCase
         self::assertEquals([1, 2, 3, 'hello'], $a->dump());
     }
 
-    public function testMagicGet()
+    public function testMagicGet(): void
     {
         $a = $this->getAssoc();
 
@@ -401,21 +401,21 @@ class ArrayObjectTest extends TestCase
         self::assertNull($a->hello);
     }
 
-    public function testOffsetExists()
+    public function testOffsetExists(): void
     {
         self::assertTrue(isset($this->instance[2]));
         self::assertTrue(isset($this->getAssoc()['foo']));
         self::assertFalse(isset($this->getAssoc()['hello']));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $this->expectException(\TypeError::class);
 
         $this->instance->toString();
     }
 
-    public function testMagicIsset()
+    public function testMagicIsset(): void
     {
         self::assertTrue(isset($this->instance->{2}));
         self::assertTrue(isset($this->getAssoc()->foo));
