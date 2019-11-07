@@ -210,7 +210,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->chop());
+        return $this->chop()->values();
     }
 
     /**

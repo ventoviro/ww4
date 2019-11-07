@@ -450,7 +450,11 @@ class StringObjectTest extends TestCase
     {
         $s = new StringObject($string);
 
-        self::assertEquals($expected, $s->chop($length));
+        try {
+            self::assertEquals($expected, $s->chop($length)->dump());
+        } catch (\InvalidArgumentException $e) {
+            self::assertEquals(0, $length);
+        }
     }
 
     /**
@@ -707,11 +711,11 @@ class StringObjectTest extends TestCase
     {
         return [
             ['FooBar', 'B', 3],
-            ['FooBar', 'asd', false],
+            ['FooBar', 'asd', -1],
             ['山巔一寺一壺酒', '一寺', 2],
             ['山巔一寺一壺酒', '一', 2],
             ['山巔一寺一壺酒', '山', 0],
-            ['山巔一寺一壺酒', '舞扇舞', false],
+            ['山巔一寺一壺酒', '舞扇舞', -1],
         ];
     }
 
@@ -742,11 +746,11 @@ class StringObjectTest extends TestCase
     {
         return [
             ['FooBarBaz', 'B', 6],
-            ['FooBarBaz', 'asd', false],
+            ['FooBarBaz', 'asd', -1],
             ['山巔一寺一壺酒', '一寺', 2],
             ['山巔一寺一壺酒', '一', 4],
             ['山巔一寺一壺酒', '酒', 6],
-            ['山巔一寺一壺酒', '舞扇舞', false],
+            ['山巔一寺一壺酒', '舞扇舞', -1],
         ];
     }
 
