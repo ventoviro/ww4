@@ -408,4 +408,54 @@ class ArrayObject implements
     {
         return $this->storage;
     }
+
+    /**
+     * mapToArray
+     *
+     * @param  array  $args
+     *
+     * @return  array
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    protected static function mapUnwrap(array $args): array
+    {
+        return array_map(fn ($v) => $v instanceof static ? $v->dump() : $v, $args);
+    }
+
+    /**
+     * wrap
+     *
+     * @param mixed $value
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function wrap($value): self
+    {
+        if (!$value instanceof static) {
+            $value = new static($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * unwrap
+     *
+     * @param mixed $value
+     *
+     * @return  mixed
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function unwrap($value)
+    {
+        if ($value instanceof static) {
+            $value = $value->dump();
+        }
+
+        return $value;
+    }
 }

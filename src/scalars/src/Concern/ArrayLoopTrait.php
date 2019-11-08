@@ -64,13 +64,13 @@ trait ArrayLoopTrait
      * @param callable $callable
      * @param mixed    $userdata
      *
-     * @return  bool
+     * @return  static
      *
      * @since  3.5
      */
-    public function walkRecursive(callable $callable, $userdata = null): bool
+    public function walkRecursive(callable $callable, $userdata = null)
     {
-        $new = static::newInstance();
+        $new = static::newInstance($this->storage);
 
         array_walk_recursive($new->storage, $callable, $userdata);
 
@@ -149,7 +149,7 @@ trait ArrayLoopTrait
      */
     public function findFirst(callable $callback = null)
     {
-        return static::newInstance(Arr::findFirst($this->storage, $callback));
+        return Arr::findFirst($this->storage, $callback);
     }
 
     /**

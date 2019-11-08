@@ -128,6 +128,22 @@ abstract class TypeCast
             return array_map(static fn ($value) => TypeCast::toArray($value), $src);
         }
 
+        if ($typeOrClass === 'string') {
+            return array_map(static fn ($value) => (string) $value, $src);
+        }
+
+        if ($typeOrClass === 'int' || $typeOrClass === 'integer') {
+            return array_map(static fn ($value) => (int) $value, $src);
+        }
+
+        if ($typeOrClass === 'float' || $typeOrClass === 'double') {
+            return array_map(static fn ($value) => (float) $value, $src);
+        }
+
+        if ($typeOrClass === 'bool' || $typeOrClass === 'boolean') {
+            return array_map(static fn ($value) => (bool) $value, $src);
+        }
+
         if (class_exists($typeOrClass)) {
             return array_map(static fn ($value) => new $typeOrClass($value), $src);
         }

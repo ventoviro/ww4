@@ -55,7 +55,7 @@ class ArrayCreationTraitTest extends TestCase
                     'female' => 'empty',
                     'no-gender' => 'empty',
                 ],
-            ]
+            ],
         ]);
 
         $data2 = [
@@ -71,11 +71,11 @@ class ArrayCreationTraitTest extends TestCase
                     'female' => 'Black Widow',
                     'male' => 'Loki',
                 ],
-            ]
+            ],
         ];
 
         $data3 = arr([
-            'ai' => 'Ultron'
+            'ai' => 'Ultron',
         ]);
 
         $expected = [
@@ -109,52 +109,139 @@ class ArrayCreationTraitTest extends TestCase
 
     public function testFillKeys(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->instance->fillKeys(['foo', 'bar'], [1, 2, 3]);
+
+        self::assertEquals(
+            [
+                'foo' => [
+                    0 => 1,
+                    1 => 2,
+                    2 => 3,
+                ],
+                'bar' => [
+                    0 => 1,
+                    1 => 2,
+                    2 => 3,
+                ],
+            ],
+            $a->dump()
+        );
+        self::assertNotSame($a, $this->instance);
     }
 
     public function testDiff(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->instance->diff([3, 4, 5, 6]);
+
+        self::assertEquals(
+            [1, 2],
+            $a->dump()
+        );
+        self::assertNotSame($a, $this->instance);
     }
 
     public function testMerge(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $data1 = [
+            'green' => 'Hulk',
+            'red' => 'empty',
+            'human' => [
+                'dark' => 'empty',
+                'black' => [
+                    'male' => 'empty',
+                    'female' => 'empty',
+                    'no-gender' => 'empty',
+                ],
+            ]
+        ];
+
+        $data2 = [
+            'ai' => 'Jarvis',
+            'agent' => 'Phil Coulson',
+            'red' => [
+                'left' => 'Pepper',
+                'right' => 'Iron Man',
+            ],
+            'human' => [
+                'dark' => 'Nick Fury',
+                'black' => [
+                    'female' => 'Black Widow',
+                    'male' => 'Loki',
+                ],
+            ]
+        ];
+
+        self::assertEquals(
+            array_merge($data1, $data2),
+            arr($data1)->merge(arr($data2))->dump()
+        );
     }
 
     public function testFill(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = ArrayObject::fill(5, 3, 'Y');
+
+        self::assertEquals(
+            [
+                5 => 'Y',
+                6 => 'Y',
+                7 => 'Y',
+            ],
+            $a->dump()
+        );
     }
 
     public function testIntersectKey(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->getAssoc();
+
+        $b = arr(['flower' => 'Rose', 'animal' => 'bird']);
+
+        self::assertEquals(['flower' => 'sakura'], $a->intersectKey($b)->dump());
     }
 
     public function testIntersect(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->getAssoc();
+
+        $b = arr(['flower2' => 'sakura', 'animal' => 'bird']);
+
+        self::assertEquals(['flower' => 'sakura'], $a->intersect($b)->dump());
     }
 
     public function testRange(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = ArrayObject::range(1, 5);
+
+        self::assertEquals(range(1, 5), $a->dump());
     }
 
     public function testFlip(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->getAssoc();
+
+        self::assertEquals(
+            array_flip($a->dump()),
+            $a->flip()->dump()
+        );
     }
 
     public function testDiffKeys(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->getAssoc();
+
+        $b = arr(['flower' => 'Rose', 'animal' => 'bird']);
+
+        self::assertEquals(['foo' => 'bar'], $a->diffKeys($b)->dump());
     }
 
     public function testRand(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = arr(['A', 'B', 'C', 'D', 'E']);
+
+        $indexes = $a->rand(2);
+
+        self::assertEquals($indexes->intersect($a->keys())->dump(), $indexes->dump());
     }
 
     protected function setUp(): void
@@ -164,5 +251,10 @@ class ArrayCreationTraitTest extends TestCase
 
     protected function tearDown(): void
     {
+    }
+
+    protected function getAssoc(): ArrayObject
+    {
+        return new ArrayObject(['foo' => 'bar', 'flower' => 'sakura']);
     }
 }

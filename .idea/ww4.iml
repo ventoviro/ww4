@@ -5,6 +5,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src/scalars/src" isTestSource="false" packagePrefix="Windwalker\Scalars" />
       <sourceFolder url="file://$MODULE_DIR$/src/utilities/src" isTestSource="false" packagePrefix="Windwalker\Utilities" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/src" isTestSource="false" packagePrefix="Windwalker\Test" />
+      <sourceFolder url="file://$MODULE_DIR$/src/scalars/test" isTestSource="true" packagePrefix="Windwalker\Scalars\Test" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/utilities/test" isTestSource="true" packagePrefix="Windwalker\Utilities\Test" generated="true" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/brick/math" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/danielstjules/stringy" />

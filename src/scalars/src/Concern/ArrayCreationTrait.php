@@ -45,9 +45,7 @@ trait ArrayCreationTrait
      */
     public function diff(...$args)
     {
-        $args = array_map([Arr::class, 'toArray'], $args);
-
-        return static::newInstance(array_diff($this->storage, ...$args));
+        return static::newInstance(array_diff($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -77,7 +75,7 @@ trait ArrayCreationTrait
      *
      * @since  3.5
      */
-    public function fill(int $start, int $num, $value)
+    public static function fill(int $start, int $num, $value)
     {
         return static::newInstance(array_fill($start, $num, $value));
     }
@@ -120,9 +118,7 @@ trait ArrayCreationTrait
      */
     public function intersect(...$args)
     {
-        $args = array_map([TypeCast::class, 'toArray'], $args);
-
-        return static::newInstance(array_intersect($this->storage, ...$args));
+        return static::newInstance(array_intersect($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -136,9 +132,7 @@ trait ArrayCreationTrait
      */
     public function intersectKey(...$args)
     {
-        $args = array_map([TypeCast::class, 'toArray'], $args);
-
-        return static::newInstance(array_intersect_key($this->storage, ...$args));
+        return static::newInstance(array_intersect_key($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -152,9 +146,7 @@ trait ArrayCreationTrait
      */
     public function merge(...$args)
     {
-        $args = array_map([TypeCast::class, 'toArray'], $args);
-
-        return static::newInstance(array_merge($this->storage, ...$args));
+        return static::newInstance(array_merge($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
