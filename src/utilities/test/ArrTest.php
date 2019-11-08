@@ -12,6 +12,7 @@ namespace Windwalker\Utilities\Test;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Test\Traits\BaseAssertionTrait;
 use Windwalker\Utilities\Arr;
+use function Windwalker\where;
 
 /**
  * The ArrTest class.
@@ -1103,6 +1104,10 @@ OUT;
         // Test id equals
         $this->assertEquals([$data[1]], Arr::query($data, ['id' => 2]));
 
+        // Test compare wrapper
+        $this->assertEquals([$data[1]], Arr::query($data, [where('id', '=', 2)]));
+        $this->assertEquals([$data[1]], Arr::query($data, ['id' => fn ($v) => $v === 2]));
+
         // Test strict equals
         $this->assertEquals([$data[0], $data[2], $data[3]], Arr::query($data, ['data' => true], false));
         $this->assertEquals([$data[3]], Arr::query($data, ['data' => true], true));
@@ -1167,7 +1172,7 @@ OUT;
 
         $results = Arr::query(
             $data,
-            static fn ($key, $value) => $value['title'] === 'Julius Caesar' || $value['id'] == 4
+            static fn ($value, $key) => $value['title'] === 'Julius Caesar' || $value['id'] == 4
         );
 
         $this->assertEquals([$data[0], $data[3]], $results);

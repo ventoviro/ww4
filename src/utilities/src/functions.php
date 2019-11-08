@@ -68,7 +68,7 @@ namespace {
 
 namespace Windwalker {
 
-    use Windwalker\Scalars\StringObject;
+    use Windwalker\Utilities\Compare\WhereWrapper;
 
     /**
      * Do some operation after value get.
@@ -121,5 +121,36 @@ namespace Windwalker {
         }
 
         return $data;
+    }
+
+    /**
+     * iterator_keys
+     *
+     * @param  \Traversable  $iterable
+     *
+     * @return  array
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    function iterator_keys(\Traversable $iterable): array
+    {
+        return array_keys(iterator_to_array($iterable));
+    }
+
+    /**
+     * where
+     *
+     * @param  mixed   $var1
+     * @param  string  $operator
+     * @param  mixed   $var2
+     * @param  bool    $strict
+     *
+     * @return  WhereWrapper
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    function where($var1, string $operator, $var2, bool $strict = false): WhereWrapper
+    {
+        return new WhereWrapper($var1, $operator, $var2, $strict);
     }
 }

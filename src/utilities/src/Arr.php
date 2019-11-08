@@ -10,6 +10,7 @@
 namespace Windwalker\Utilities;
 
 use Windwalker\Utilities\Classes\PreventInitialTrait;
+use Windwalker\Utilities\Compare\WhereWrapper;
 use Windwalker\Utilities\Dumper\VarDumper;
 use function Windwalker\count;
 
@@ -883,7 +884,7 @@ abstract class Arr
         // Visit Array
         foreach ($array as $key => $value) {
             if ($callback) {
-                $match = $callback($key, TypeCast::toArray($value), $strict);
+                $match = $callback($value, $key, $strict);
             } else {
                 $match = static::match(TypeCast::toArray($value), $queries, $strict);
             }
@@ -938,7 +939,13 @@ abstract class Arr
 
         // Visit Query Rules
         foreach ($queries as $key => $val) {
-            if (substr($key, -2) === '>=') {
+            if ($val instanceof WhereWrapper) {
+                $val = (clone $val)->setVar1($array[$val->getVar1()]);
+
+                $results[] = $val();
+            } elseif (is_callable($val)) {
+                $results[] = $val($array[$key], $key);
+            } elseif (substr($key, -2) === '>=') {
                 $results[] = (static::get($array, trim(substr($key, 0, -2))) >= $val);
             } elseif (substr($key, -2) === '<=') {
                 $results[] = (static::get($array, trim(substr($key, 0, -2))) <= $val);

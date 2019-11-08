@@ -114,9 +114,9 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      * @param string      $string
      * @param null|string $encoding
      */
-    public function __construct(string $string = '', ?string $encoding = self::ENCODING_UTF8)
+    public function __construct($string = '', ?string $encoding = self::ENCODING_UTF8)
     {
-        $this->string   = $string;
+        $this->string   = (string) $string;
         $this->encoding = $encoding ?? static::ENCODING_UTF8;
     }
 
@@ -311,6 +311,16 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     public function __toString(): string
     {
         return (string) $this->string;
+    }
+
+    public function toInteger(): int
+    {
+        return (int) $this->string;
+    }
+
+    public function toFloat(): float
+    {
+        return (float) $this->string;
     }
 
     /**

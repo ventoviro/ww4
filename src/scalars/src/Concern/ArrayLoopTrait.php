@@ -51,7 +51,7 @@ trait ArrayLoopTrait
      */
     public function walk(callable $callable, $userdata = null)
     {
-        $new = static::newInstance();
+        $new = static::newInstance($this->storage);
 
         array_walk($new->storage, $callable, $userdata);
 

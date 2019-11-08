@@ -16,7 +16,6 @@ use InvalidArgumentException;
 use Iterator;
 use IteratorAggregate;
 use JsonSerializable;
-use TypeError;
 use Windwalker\Scalars\Concern\ArrayContentTrait;
 use Windwalker\Scalars\Concern\ArrayCreationTrait;
 use Windwalker\Scalars\Concern\ArrayLoopTrait;
@@ -426,7 +425,7 @@ class ArrayObject implements
     /**
      * wrap
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  static
      *
@@ -444,7 +443,7 @@ class ArrayObject implements
     /**
      * unwrap
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  mixed
      *
