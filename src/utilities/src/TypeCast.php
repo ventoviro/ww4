@@ -113,6 +113,37 @@ abstract class TypeCast
     }
 
     /**
+     * Convert all to string.
+     *
+     * @param mixed $data The data to convert.
+     * @param bool  $dump If is array or object, will dump it if this argument set to TRUE.
+     *
+     * @return  string
+     *
+     * @since  3.5
+     */
+    public static function toString($data, bool $dump = true): string
+    {
+        if (is_callable($data)) {
+            return static::toString($data());
+        }
+
+        if (is_stringable($data)) {
+            return (string) $data;
+        }
+
+        if (is_array($data)) {
+            $data = $dump ? Arr::dump($data) : 'Array()';
+        }
+
+        if (is_object($data)) {
+            $data = $dump ? Arr::dump($data) : sprintf('[Object %s]', get_class($data));
+        }
+
+        return (string) $data;
+    }
+
+    /**
      * mapAs
      *
      * @param  array   $src

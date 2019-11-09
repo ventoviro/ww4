@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 /**
  * Part of ww4 project.
@@ -9,20 +9,27 @@
 
 namespace Windwalker\Scalars;
 
+use ArrayAccess;
+use BadMethodCallException;
+use Closure;
+use Countable;
+use IteratorAggregate;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionObject;
+use ReflectionParameter;
 use Traversable;
+use Windwalker\Scalars\Concern\StringInflectorTrait;
 use Windwalker\Scalars\Concern\StringModifyTrait;
-use Windwalker\Scalars\Concern\StringPositionTrait;
-use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Classes\ImmutableHelperTrait;
 use Windwalker\Utilities\Classes\StringableInterface;
 use Windwalker\Utilities\Str;
 use Windwalker\Utilities\Utf8String;
-use function Windwalker\tap;
 
 /**
  * The StringObject class.
  *
- * @see  Str
+ * @see    Str
  *
  * @method StringObject getChar(int $pos)
  * @method StringObject between(string $start, string $end, int $offset = 0)
@@ -65,18 +72,20 @@ use function Windwalker\tap;
  *
  * @since  __DEPLOY_VERSION__
  */
-class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, StringableInterface
+class StringObject implements Countable, ArrayAccess, IteratorAggregate, StringableInterface
 {
     use ImmutableHelperTrait;
     use StringModifyTrait;
-    use StringPositionTrait;
+    use StringInflectorTrait;
 
     /**
      * We only provides 3 default encoding constants of PHP.
      * @see http://php.net/manual/en/xml.encoding.php
      */
     public const ENCODING_DEFAULT_ISO = 'ISO-8859-1';
+
     public const ENCODING_UTF8 = 'UTF-8';
+
     public const ENCODING_US_ASCII = 'US-ASCII';
 
     /**
@@ -94,10 +103,24 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     protected ?string $encoding = null;
 
     /**
+     * StringObject constructor.
+     *
+     * @see  http://php.net/manual/en/mbstring.supported-encodings.php
+     *
+     * @param  string       $string
+     * @param  null|string  $encoding
+     */
+    public function __construct($string = '', ?string $encoding = self::ENCODING_UTF8)
+    {
+        $this->string   = (string) $string;
+        $this->encoding = $encoding ?? static::ENCODING_UTF8;
+    }
+
+    /**
      * create
      *
-     * @param string      $string
-     * @param null|string $encoding
+     * @param  string       $string
+     * @param  null|string  $encoding
      *
      * @return  static
      */
@@ -107,28 +130,14 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     }
 
     /**
-     * StringObject constructor.
-     *
-     * @see  http://php.net/manual/en/mbstring.supported-encodings.php
-     *
-     * @param string      $string
-     * @param null|string $encoding
-     */
-    public function __construct($string = '', ?string $encoding = self::ENCODING_UTF8)
-    {
-        $this->string   = (string) $string;
-        $this->encoding = $encoding ?? static::ENCODING_UTF8;
-    }
-
-    /**
      * __call
      *
      * @param  string  $name
      * @param  array   $args
      *
      * @return  mixed
-     * @throws \BadMethodCallException
-     * @throws \ReflectionException
+     * @throws BadMethodCallException
+     * @throws ReflectionException
      */
     public function __call(string $name, array $args)
     {
@@ -148,7 +157,7 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
             return $this->callProxy($maps[$name][0], $maps[$name][1], $args);
         }
 
-        throw new \BadMethodCallException(sprintf('Call to undefined method: %s::%s()', static::class, $name));
+        throw new BadMethodCallException(sprintf('Call to undefined method: %s::%s()', static::class, $name));
     }
 
     /**
@@ -159,25 +168,25 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      * @param  array   $args
      *
      * @return  static
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function callProxy(string $class, string $method, array $args)
     {
         $new = $this->cloneInstance();
 
-        $closure = \Closure::fromCallable([$class, $method]);
+        $closure = Closure::fromCallable([$class, $method]);
 
         if (method_exists($class, $method)) {
-            $ref = new \ReflectionMethod($class, $method);
+            $ref = new ReflectionMethod($class, $method);
         } else {
-            $ref = (new \ReflectionObject($closure))->getMethod('__invoke');
+            $ref = (new ReflectionObject($closure))->getMethod('__invoke');
         }
 
         $params = $ref->getParameters();
 
         array_shift($params);
 
-        /** @var \ReflectionParameter $param */
+        /** @var ReflectionParameter $param */
         foreach (array_values($params) as $k => $param) {
             if (!array_key_exists($k, $args)) {
                 if ($param->getName() === 'encoding' && !isset($args[$k])) {
@@ -206,9 +215,8 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      * @link  http://php.net/manual/en/iteratoraggregate.getiterator.php
      * @return Traversable An instance of an object implementing <b>Iterator</b> or
      *        <b>Traversable</b>
-     * @since 5.0.0
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return $this->chop()->values();
     }
@@ -218,17 +226,16 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetexists.php
      *
-     * @param mixed $offset <p>
-     *                      An offset to check for.
-     *                      </p>
+     * @param  mixed  $offset  <p>
+     *                         An offset to check for.
+     *                         </p>
      *
      * @return boolean true on success or false on failure.
      * </p>
      * <p>
      * The return value will be casted to boolean if non-boolean was returned.
-     * @since 5.0.0
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         $offset = $offset >= 0 ? $offset : (int) abs($offset) - 1;
 
@@ -236,11 +243,21 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     }
 
     /**
+     * length
+     *
+     * @return  int
+     */
+    public function length(): int
+    {
+        return Utf8String::strlen($this->string, $this->encoding);
+    }
+
+    /**
      * Offset to retrieve
      *
-     * @param int $offset The offset to retrieve.
+     * @param  int  $offset  The offset to retrieve.
      *
-     * @return string Can return all value types.
+     * @return string|static Can return all value types.
      */
     public function offsetGet($offset)
     {
@@ -252,17 +269,12 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetset.php
      *
-     * @param mixed $offset <p>
-     *                      The offset to assign the value to.
-     *                      </p>
-     * @param mixed $string <p>
-     *                      The value to set.
-     *                      </p>
+     * @param  mixed  $offset  The offset to assign the value to.
+     * @param  mixed  $string  The value to set.
      *
      * @return void
-     * @since 5.0.0
      */
-    public function offsetSet($offset, $string)
+    public function offsetSet($offset, $string): void
     {
         $this->string = Utf8String::substrReplace($this->string, $string, $offset, 1, $this->encoding);
     }
@@ -272,14 +284,11 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetunset.php
      *
-     * @param mixed $offset <p>
-     *                      The offset to unset.
-     *                      </p>
+     * @param  mixed  $offset  The offset to unset.
      *
      * @return void
-     * @since 5.0.0
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         if ($this->length() < abs($offset)) {
             return;
@@ -293,12 +302,9 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
      *
      * @link  http://php.net/manual/en/countable.count.php
      * @return int The custom count as an integer.
-     *        </p>
-     *        <p>
-     *        The return value is cast to an integer.
-     * @since 5.1.0
+     *             The return value is cast to an integer.
      */
-    public function count()
+    public function count(): int
     {
         return $this->length();
     }
@@ -336,13 +342,13 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     /**
      * Method to set property encoding
      *
-     * @param   string $encoding
+     * @param  string  $encoding
      *
      * @return  static  Return self to support chaining.
      */
     public function withEncoding(string $encoding): self
     {
-        return $this->cloneInstance(function (StringObject $new) use ($encoding) {
+        return $this->cloneInstance(static function (StringObject $new) use ($encoding) {
             $new->encoding = $encoding;
         });
     }
@@ -360,185 +366,22 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     /**
      * Method to set property string
      *
-     * @param   string $string
+     * @param  string  $string
      *
      * @return  static  Return self to support chaining.
      */
     public function withString(string $string): self
     {
-        return $this->cloneInstance(function (StringObject $new) use ($string) {
+        return $this->cloneInstance(static function (StringObject $new) use ($string) {
             $new->string = $string;
-        });
-    }
-
-    /**
-     * length
-     *
-     * @return  int
-     */
-    public function length(): int
-    {
-        return Utf8String::strlen($this->string, $this->encoding);
-    }
-
-    /**
-     * split
-     *
-     * @param int $length
-     *
-     * @return  ArrayObject
-     */
-    public function chop($length = 1)
-    {
-        ArgumentsAssert::assert($length >= 1, '%s $length must larger than 1, %s given', $length);
-
-        return new ArrayObject(Utf8String::strSplit($this->string, $length, $this->encoding) ?: []);
-    }
-
-    /**
-     * replace
-     *
-     * @param array|string $search
-     * @param array|string $replacement
-     * @param int|null     $count
-     *
-     * @return  static
-     */
-    public function replace($search, $replacement, int &$count = null): self
-    {
-        return $this->cloneInstance(function (StringObject $new) use ($search, $replacement, &$count) {
-            $new->string = str_replace($search, $replacement, $new->string, $count);
-        });
-    }
-
-    /**
-     * compare
-     *
-     * @param string $compare
-     * @param bool   $caseSensitive
-     *
-     * @return  int
-     */
-    public function compare(string $compare, bool $caseSensitive = true): int
-    {
-        if ($caseSensitive) {
-            return Utf8String::strcmp($this->string, $compare);
-        }
-
-        return Utf8String::strcasecmp($this->string, $compare, $this->encoding);
-    }
-
-    /**
-     * reverse
-     *
-     * @return  static
-     */
-    public function reverse(): self
-    {
-        return $this->cloneInstance(function (StringObject $new) {
-            $new->string = Utf8String::strrev($new->string);
-        });
-    }
-
-    /**
-     * substrReplace
-     *
-     * @param string $replace
-     * @param int    $start
-     * @param int    $offset
-     *
-     * @return  static
-     */
-    public function substrReplace(string $replace, int $start, int $offset = null): self
-    {
-        return $this->cloneInstance(function (StringObject $new) use ($replace, $start, $offset) {
-            $new->string = Utf8String::substrReplace($new->string, $replace, $start, $offset, $this->encoding);
-        });
-    }
-
-    /**
-     * ltrim
-     *
-     * @param string|null $charlist
-     *
-     * @return  static
-     */
-    public function trimLeft(string $charlist = null): self
-    {
-        return $this->cloneInstance(function (StringObject $new) use ($charlist) {
-            $new->string = Utf8String::ltrim($new->string, $charlist);
-        });
-    }
-
-    /**
-     * rtrim
-     *
-     * @param string|null $charlist
-     *
-     * @return  static
-     */
-    public function trimRight(string $charlist = null): self
-    {
-        return $this->cloneInstance(function (StringObject $new) use ($charlist) {
-            $new->string = Utf8String::rtrim($new->string, $charlist);
-        });
-    }
-
-    /**
-     * trim
-     *
-     * @param string|null $charlist
-     *
-     * @return  static
-     */
-    public function trim(string $charlist = null): self
-    {
-        return $this->cloneInstance(function (StringObject $new) use ($charlist) {
-            $new->string = Utf8String::trim($new->string, $charlist);
-        });
-    }
-
-    /**
-     * ucfirst
-     *
-     * @return  static
-     */
-    public function upperCaseFirst(): self
-    {
-        return $this->cloneInstance(function (StringObject $new) {
-            $new->string = Utf8String::ucfirst($new->string, $this->encoding);
-        });
-    }
-
-    /**
-     * lcfirst
-     *
-     * @return  static
-     */
-    public function lowerCaseFirst(): self
-    {
-        return $this->cloneInstance(function (StringObject $new) {
-            $new->string = Utf8String::lcfirst($new->string, $this->encoding);
-        });
-    }
-
-    /**
-     * upperCaseWords
-     *
-     * @return  static
-     */
-    public function upperCaseWords(): self
-    {
-        return $this->cloneInstance(function (StringObject $new) {
-            $new->string = Utf8String::ucwords($new->string, $this->encoding);
         });
     }
 
     /**
      * substrCount
      *
-     * @param string $search
-     * @param bool   $caseSensitive
+     * @param  string  $search
+     * @param  bool    $caseSensitive
      *
      * @return  int
      */
@@ -548,9 +391,24 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     }
 
     /**
+     * explode
+     *
+     * @param  string    $delimiter
+     * @param  int|null  $limit
+     *
+     * @return  ArrayObject
+     */
+    public function explode(string $delimiter, ?int $limit = null): ArrayObject
+    {
+        $limit ??= PHP_INT_MAX;
+
+        return ArrayObject::explode($delimiter, $this->string, $limit);
+    }
+
+    /**
      * indexOf
      *
-     * @param string $search
+     * @param  string  $search
      *
      * @return  int
      */
@@ -568,14 +426,13 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     /**
      * indexOf
      *
-     * @param string $search
+     * @param  string  $search
      *
      * @return  int
      */
     public function indexOfLast(string $search): int
     {
         $result = Utf8String::strrpos($this->string, $search, 0, $this->encoding);
-
 
         if ($result === false) {
             return -1;
@@ -585,24 +442,9 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     }
 
     /**
-     * explode
-     *
-     * @param string   $delimiter
-     * @param int|null $limit
-     *
-     * @return  ArrayObject
-     */
-    public function explode(string $delimiter, ?int $limit = null): ArrayObject
-    {
-        $limit ??= PHP_INT_MAX;
-
-        return ArrayObject::explode($delimiter, $this->string, $limit);
-    }
-
-    /**
      * apply
      *
-     * @param callable $callback
+     * @param  callable  $callback
      *
      * @return  static
      */
@@ -625,53 +467,5 @@ class StringObject implements \Countable, \ArrayAccess, \IteratorAggregate, Stri
     public function pipe(callable $callback): self
     {
         return $callback($this);
-    }
-
-    /**
-     * clearHtml
-     *
-     * @param string|null $allowTags
-     *
-     * @return  static
-     *
-     * @since  3.5.13
-     */
-    public function stripHtmlTags(?string $allowTags = null): self
-    {
-        return $this->cloneInstance(static function (self $new) use ($allowTags) {
-            $new->string = strip_tags($new->string, $allowTags);
-        });
-    }
-
-    /**
-     * append
-     *
-     * @param string|StringObject $string
-     *
-     * @return  StringObject
-     *
-     * @since  __DEPLOY_VERSION__
-     */
-    public function append($string): self
-    {
-        return tap(clone $this, static function (StringObject $new) use ($string) {
-            $new->string .= $string;
-        });
-    }
-
-    /**
-     * prepend
-     *
-     * @param string|StringObject $string
-     *
-     * @return  StringObject
-     *
-     * @since  __DEPLOY_VERSION__
-     */
-    public function prepend($string): self
-    {
-        return tap(clone $this, static function (StringObject $new) use ($string) {
-            $new->string = $string . $new->string;
-        });
     }
 }

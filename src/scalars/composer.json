@@ -1,0 +1,32 @@
+{
+    "name": "windwalker/scalars",
+    "type": "windwalker-package",
+    "description": "Windwalker Scalars package",
+    "keywords": ["windwalker", "framework", "utilities"],
+    "homepage": "https://github.com/ventoviro/windwalker-scalars",
+    "license": "LGPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "windwalker/test": "~3.0",
+        "doctrine/inflector": "^1.3"
+    },
+    "suggest": {
+        "doctrine/inflector": "Install ~1.0 to use inflector."
+    },
+    "minimum-stability": "beta",
+    "autoload": {
+        "psr-4": {
+            "Windwalker\\Scalars\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "3.x-dev"
+        }
+    }
+}
