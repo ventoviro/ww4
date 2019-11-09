@@ -32,7 +32,7 @@ trait ArrayModifyTrait
      */
     public function pad(int $size, $value): self
     {
-        return static::newInstance(array_pad($this->storage, $size, $value));
+        return $this->newInstance(array_pad($this->storage, $size, $value));
     }
 
     /**
@@ -131,7 +131,7 @@ trait ArrayModifyTrait
         $new = $this->storage;
         array_push($new, ...$args);
 
-        return static::newInstance($new);
+        return $this->newInstance($new);
     }
 
     /**
@@ -148,7 +148,7 @@ trait ArrayModifyTrait
         $new = $this->storage;
         array_unshift($new, ...$args);
 
-        return static::newInstance($new);
+        return $this->newInstance($new);
     }
 
     /**
@@ -162,7 +162,7 @@ trait ArrayModifyTrait
      */
     public function removeLast($num = 1): self
     {
-        return static::newInstance($this->storage)->splice(0, -$num);
+        return (clone $this)->splice(0, -$num);
     }
 
     /**
@@ -176,7 +176,7 @@ trait ArrayModifyTrait
      */
     public function removeFirst($num = 1): self
     {
-        return static::newInstance($this->storage)->splice($num);
+        return (clone $this)->splice($num);
     }
 
     /**
@@ -190,7 +190,7 @@ trait ArrayModifyTrait
      */
     public function replace(...$args): self
     {
-        return static::newInstance(array_replace($this->storage, ...static::mapUnwrap($args)));
+        return $this->newInstance(array_replace($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -204,7 +204,7 @@ trait ArrayModifyTrait
      */
     public function replaceRecursive(...$args): self
     {
-        return static::newInstance(array_replace_recursive($this->storage, ...static::mapUnwrap($args)));
+        return $this->newInstance(array_replace_recursive($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -218,7 +218,7 @@ trait ArrayModifyTrait
      */
     public function reverse(bool $preserveKeys = false): self
     {
-        return static::newInstance(array_reverse($this->storage, $preserveKeys));
+        return $this->newInstance(array_reverse($this->storage, $preserveKeys));
     }
 
     /**
@@ -234,7 +234,7 @@ trait ArrayModifyTrait
      */
     public function slice(int $offset, ?int $length = null, bool $preserveKeys = false): self
     {
-        return static::newInstance(array_slice($this->storage, ...func_get_args()));
+        return $this->newInstance(array_slice($this->storage, ...func_get_args()));
     }
 
     /**
@@ -250,7 +250,7 @@ trait ArrayModifyTrait
      */
     public function splice(int $offset, ?int $length = null, $replacement = null): self
     {
-        return static::newInstance(array_splice($this->storage, ...func_get_args()));
+        return $this->newInstance(array_splice($this->storage, ...func_get_args()));
     }
 
     /**
@@ -265,7 +265,7 @@ trait ArrayModifyTrait
      */
     public function insertAfter(int $key, ...$args): self
     {
-        $new = static::newInstance($this->storage);
+        $new = clone $this;
 
         $new->splice($key + 1, 0, $args);
 
@@ -284,7 +284,7 @@ trait ArrayModifyTrait
      */
     public function insertBefore(int $key, $value): self
     {
-        $new = static::newInstance($this->storage);
+        $new = clone $this;
 
         $new->splice($key, 0, $value);
 
@@ -301,7 +301,7 @@ trait ArrayModifyTrait
      */
     public function only(array $fields)
     {
-        return static::newInstance(Arr::only($this->storage, $fields));
+        return $this->newInstance(Arr::only($this->storage, $fields));
     }
 
     /**
@@ -315,7 +315,7 @@ trait ArrayModifyTrait
      */
     public function except(array $fields)
     {
-        return static::newInstance(Arr::except($this->storage, $fields));
+        return $this->newInstance(Arr::except($this->storage, $fields));
     }
 
     /**
@@ -331,7 +331,7 @@ trait ArrayModifyTrait
 
         shuffle($new);
 
-        return static::newInstance($new);
+        return $this->newInstance($new);
     }
 
     /**
@@ -358,7 +358,7 @@ trait ArrayModifyTrait
      */
     public function chunk(int $size, bool $preserveKeys = false)
     {
-        return static::newInstance(array_chunk($this->storage, $size, $preserveKeys))
+        return $this->newInstance(array_chunk($this->storage, $size, $preserveKeys))
             ->wrapAll();
     }
 
@@ -374,7 +374,7 @@ trait ArrayModifyTrait
      */
     public function groupBy(string $column, int $type = Arr::GROUP_TYPE_ARRAY)
     {
-        return static::newInstance(Arr::group($this->dump(), $column, $type));
+        return $this->newInstance(Arr::group($this->dump(), $column, $type));
     }
 
     /**
@@ -386,6 +386,6 @@ trait ArrayModifyTrait
      */
     public function keyBy(string $field)
     {
-        return static::newInstance(Arr::group($this->dump(), $field, Arr::GROUP_TYPE_KEY_BY));
+        return $this->newInstance(Arr::group($this->dump(), $field, Arr::GROUP_TYPE_KEY_BY));
     }
 }

@@ -79,7 +79,7 @@ trait ArrayContentTrait
      */
     public function flatten(string $delimiter = '.', int $depth = 0, ?string $prefix = null)
     {
-        return static::newInstance(Arr::flatten($this->dump(), $delimiter, $depth, $prefix));
+        return $this->newInstance(Arr::flatten($this->dump(), $delimiter, $depth, $prefix));
     }
 
     /**
@@ -91,6 +91,6 @@ trait ArrayContentTrait
      */
     public function collapse()
     {
-        return static::newInstance(Arr::collapse($this->dump()));
+        return $this->newInstance(Arr::collapse($this->dump()));
     }
 }

@@ -54,7 +54,7 @@ trait ArrayLoopTrait
      */
     public function walk(callable $callable, $userdata = null)
     {
-        $new = static::newInstance($this->storage);
+        $new = clone $this;
 
         array_walk($new->storage, $callable, $userdata);
 
@@ -73,7 +73,7 @@ trait ArrayLoopTrait
      */
     public function walkRecursive(callable $callable, $userdata = null)
     {
-        $new = static::newInstance($this->storage);
+        $new = clone $this;
 
         array_walk_recursive($new->storage, $callable, $userdata);
 
@@ -119,7 +119,7 @@ trait ArrayLoopTrait
      */
     public function find(callable $callback, $keepKey = false, $offset = null, $limit = null)
     {
-        return static::newInstance(Arr::find($this->storage, $callback, $keepKey, $offset, $limit));
+        return $this->newInstance(Arr::find($this->storage, $callback, $keepKey, $offset, $limit));
     }
 
     /**
@@ -135,7 +135,7 @@ trait ArrayLoopTrait
      */
     public function query($queries = [], bool $strict = false, bool $keepKey = false)
     {
-        return static::newInstance(Arr::query($this->storage, $queries, $strict, $keepKey));
+        return $this->newInstance(Arr::query($this->storage, $queries, $strict, $keepKey));
     }
 
     /**
@@ -172,7 +172,7 @@ trait ArrayLoopTrait
      */
     public function reject(callable $callback, $keepKey = false)
     {
-        return static::newInstance(Arr::reject($this->storage, $callback, $keepKey));
+        return $this->newInstance(Arr::reject($this->storage, $callback, $keepKey));
     }
 
     /**
@@ -208,8 +208,8 @@ trait ArrayLoopTrait
         }
 
         return [
-            static::newInstance($true),
-            static::newInstance($false),
+            $this->newInstance($true),
+            $this->newInstance($false),
         ];
     }
 
@@ -226,7 +226,7 @@ trait ArrayLoopTrait
     public function map($callback, ...$args)
     {
         // Keep keys same as origin
-        return static::newInstance(array_map($callback, $this->storage, ...$args));
+        return $this->newInstance(array_map($callback, $this->storage, ...$args));
     }
 
     /**
@@ -252,7 +252,7 @@ trait ArrayLoopTrait
             }
 
             if (is_array($value) || $value instanceof static) {
-                return static::newInstance($value)->mapRecursive($callback, $useKeys, $loopIterable);
+                return $this->newInstance($value)->mapRecursive($callback, $useKeys, $loopIterable);
             }
 
             return $callback($value, $key);
@@ -271,7 +271,7 @@ trait ArrayLoopTrait
      */
     public function mapWithKeys(callable $handler, int $groupType = self::GROUP_TYPE_KEY_BY)
     {
-        return static::newInstance(Arr::mapWithKeys($this->storage, $handler, $groupType));
+        return $this->newInstance(Arr::mapWithKeys($this->storage, $handler, $groupType));
     }
 
     /**
@@ -285,7 +285,7 @@ trait ArrayLoopTrait
      */
     public function flatMap(callable $callback)
     {
-        return static::newInstance(Arr::flatMap($this->storage, $callback));
+        return $this->newInstance(Arr::flatMap($this->storage, $callback));
     }
 
     /**
@@ -299,6 +299,6 @@ trait ArrayLoopTrait
      */
     public function mapAs(string $class)
     {
-        return static::newInstance(TypeCast::mapAs($this->storage, $class));
+        return $this->newInstance(TypeCast::mapAs($this->storage, $class));
     }
 }

@@ -31,7 +31,7 @@ trait ArrayCreationTrait
      */
     public function combine($values)
     {
-        return static::newInstance(array_combine($this->storage, TypeCast::toArray($values)));
+        return $this->newInstance(array_combine($this->storage, TypeCast::toArray($values)));
     }
 
     /**
@@ -45,7 +45,7 @@ trait ArrayCreationTrait
      */
     public function diff(...$args)
     {
-        return static::newInstance(array_diff($this->storage, ...static::mapUnwrap($args)));
+        return $this->newInstance(array_diff($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -59,7 +59,7 @@ trait ArrayCreationTrait
      */
     public function diffKeys(...$args)
     {
-        return static::newInstance(array_diff_key($this->storage, ...static::mapUnwrap($args)));
+        return $this->newInstance(array_diff_key($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -75,7 +75,7 @@ trait ArrayCreationTrait
      */
     public static function fill(int $start, int $num, $value)
     {
-        return static::newInstance(array_fill($start, $num, $value));
+        return $this->newInstance(array_fill($start, $num, $value));
     }
 
     /**
@@ -90,7 +90,7 @@ trait ArrayCreationTrait
      */
     public function fillKeys(array $keys, $value)
     {
-        return static::newInstance(array_fill_keys($keys, $value));
+        return $this->newInstance(array_fill_keys($keys, $value));
     }
 
     /**
@@ -102,7 +102,7 @@ trait ArrayCreationTrait
      */
     public function flip()
     {
-        return static::newInstance(array_flip($this->storage));
+        return $this->newInstance(array_flip($this->storage));
     }
 
     /**
@@ -116,7 +116,7 @@ trait ArrayCreationTrait
      */
     public function intersect(...$args)
     {
-        return static::newInstance(array_intersect($this->storage, ...static::mapUnwrap($args)));
+        return $this->newInstance(array_intersect($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -130,7 +130,7 @@ trait ArrayCreationTrait
      */
     public function intersectKey(...$args)
     {
-        return static::newInstance(array_intersect_key($this->storage, ...static::mapUnwrap($args)));
+        return $this->newInstance(array_intersect_key($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -144,7 +144,7 @@ trait ArrayCreationTrait
      */
     public function merge(...$args)
     {
-        return static::newInstance(array_merge($this->storage, ...static::mapUnwrap($args)));
+        return $this->newInstance(array_merge($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -160,7 +160,7 @@ trait ArrayCreationTrait
     {
         $args = array_map(fn ($arg) => $arg instanceof ArrayObject ? $arg->dump() : $arg, $args);
 
-        return static::newInstance(Arr::mergeRecursive($this->storage, ...$args));
+        return $this->newInstance(Arr::mergeRecursive($this->storage, ...$args));
     }
 
     /**
@@ -174,7 +174,7 @@ trait ArrayCreationTrait
      */
     public function rand(int $num = 1)
     {
-        return static::newInstance(array_rand($this->storage, $num));
+        return $this->newInstance(array_rand($this->storage, $num));
     }
 
     /**
@@ -190,6 +190,6 @@ trait ArrayCreationTrait
      */
     public static function range($start, $end, $step = 1)
     {
-        return static::newInstance(range($start, $end, $step));
+        return $this->newInstance(range($start, $end, $step));
     }
 }

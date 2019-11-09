@@ -232,6 +232,6 @@ trait ArraySortTrait
             return 0;
         });
 
-        return static::newInstance($array);
+        return $this->newInstance($array);
     }
 }

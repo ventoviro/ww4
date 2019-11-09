@@ -59,30 +59,35 @@ class Structure extends Collection
     /**
      * Set value to this object.
      *
-     * @param  mixed  $key
-     * @param  mixed  $value
+     * @param  mixed   $key
+     * @param  mixed   $value
+     * @param  string  $delimiter
      *
-     * @return  static
+     * @return static
      */
-    public function set($key, $value)
+    public function set($key, $value, $delimiter = '.')
     {
+        Arr::set($key, $value, $delimiter);
+
+        return $this;
     }
 
     /**
      * Set value and immutable.
      *
-     * @param  mixed  $key
-     * @param  mixed  $value
+     * @param  mixed   $key
+     * @param  mixed   $value
+     * @param  string  $delimiter
      *
      * @return  $this
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function with($key, $value): Structure
+    public function with($key, $value, $delimiter = '.'): Structure
     {
         $new = clone $this;
 
-        $new->storage[$key] = $value;
+        Arr::set($key, $value, $delimiter);
 
         return $new;
     }
@@ -90,14 +95,15 @@ class Structure extends Collection
     /**
      * Set value default if not exists.
      *
-     * @param  mixed  $key
-     * @param  mixed  $default
+     * @param  mixed   $key
+     * @param  mixed   $default
+     * @param  string  $delimiter
      *
      * @return  static
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function def($key, $default)
+    public function def($key, $default, $delimiter = '.')
     {
         Arr::def($this->storage, $key, $default);
 
@@ -105,16 +111,38 @@ class Structure extends Collection
     }
 
     /**
+     * withDef
+     *
+     * @param  mixed   $key
+     * @param  mixed   $default
+     * @param  string  $delimiter
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function withDef($key, $default, $delimiter = '.')
+    {
+        $new = clone $this;
+
+        Arr::def($new->storage, $key, $default, $delimiter);
+
+        return $new;
+    }
+
+    /**
      * Check a key exists or not.
      *
-     * @param  mixed  $key
+     * @param  mixed   $key
+     * @param  string  $delimiter
      *
      * @return  mixed
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function has($key): bool
+    public function has($key, $delimiter = '.'): bool
     {
+        return Arr::has($this->storage, $key, $delimiter);
     }
 
     /**
@@ -142,7 +170,7 @@ class Structure extends Collection
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setFormatRegistry(FormatRegistry $formatRegistry): self
+    public function setFormatRegistry(FormatRegistry $formatRegistry)
     {
         $this->formatRegistry = $formatRegistry;
 

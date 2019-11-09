@@ -68,9 +68,13 @@ class ArrayObject implements AccessibleInterface
      *
      * @return  static
      */
-    protected static function newInstance($data = []): self
+    protected function newInstance($data = []): self
     {
-        return new static($data);
+        $new = clone $this;
+
+        $new->storage = $data;
+
+        return $new;
     }
 
     /**
@@ -85,7 +89,7 @@ class ArrayObject implements AccessibleInterface
      */
     public function with($key, $value): self
     {
-        $new = static::newInstance($this->storage);
+        $new = clone $this;
 
         $new->storage[$key] = $value;
 
@@ -104,7 +108,7 @@ class ArrayObject implements AccessibleInterface
      */
     public function withDef($key, $default)
     {
-        $new = static::newInstance($this->storage);
+        $new = clone $this;
 
         $new->storage[$key] ??= $default;
 
@@ -124,10 +128,10 @@ class ArrayObject implements AccessibleInterface
     public function keys($search = null, ?bool $strict = null): self
     {
         if (func_get_args()[0] ?? false) {
-            return static::newInstance(array_keys($this->storage, $search, (bool) $strict));
+            return $this->newInstance(array_keys($this->storage, $search, (bool) $strict));
         }
 
-        return static::newInstance(array_keys($this->storage));
+        return $this->newInstance(array_keys($this->storage));
     }
 
     /**
@@ -157,7 +161,7 @@ class ArrayObject implements AccessibleInterface
      */
     public function setColumn($name, $value): self
     {
-        return static::newInstance()->apply(function (array $storage) use ($name, $value) {
+        return $this->newInstance()->apply(function (array $storage) use ($name, $value) {
             foreach ($this->storage as $item) {
                 if (Arr::isAccessible($item)) {
                     $item[$name] = $value;
@@ -178,7 +182,7 @@ class ArrayObject implements AccessibleInterface
      */
     public function apply(callable $callback, ...$args): self
     {
-        return static::newInstance($callback(TypeCast::toArray($this), ...$args));
+        return $this->newInstance($callback(TypeCast::toArray($this), ...$args));
     }
 
     /**
@@ -188,7 +192,7 @@ class ArrayObject implements AccessibleInterface
      */
     public function values(): self
     {
-        return static::newInstance(array_values(TypeCast::toArray($this)));
+        return $this->newInstance(array_values(TypeCast::toArray($this)));
     }
 
     /**
