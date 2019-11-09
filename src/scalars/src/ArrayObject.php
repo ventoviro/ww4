@@ -74,6 +74,44 @@ class ArrayObject implements AccessibleInterface
     }
 
     /**
+     * Set value and immutable.
+     *
+     * @param mixed $key
+     * @param mixed $value
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function with($key, $value): self
+    {
+        $new = static::newInstance($this->storage);
+
+        $new->storage[$key] = $value;
+
+        return $new;
+    }
+
+    /**
+     * withDef
+     *
+     * @param mixed $key
+     * @param mixed $default
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function withDef($key, $default)
+    {
+        $new = static::newInstance($this->storage);
+
+        $new->storage[$key] ??= $default;
+
+        return $new;
+    }
+
+    /**
      * keys
      *
      * @param  string|int|null  $search

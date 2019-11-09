@@ -26,11 +26,10 @@ interface AccessibleInterface extends JsonSerializable, ArrayAccess, DumpableInt
      * Get value from this object.
      *
      * @param  string  $key
-     * @param  mixed   $default
      *
      * @return mixed
      */
-    public function get($key, $default = null);
+    public function &get($key);
 
     /**
      * Set value to this object.

@@ -26,13 +26,18 @@ trait AccessibleTrait
      * Get value from this object.
      *
      * @param  string  $key
-     * @param  mixed   $default
      *
      * @return mixed
      */
-    public function get($key, $default = null)
+    public function &get($key)
     {
-        return $this->offsetGet($key) ?? \Windwalker\value($default);
+        if (!$this->has($key)) {
+            return null;
+        }
+
+        $ret =& $this->storage[$key];
+
+        return $ret;
     }
 
     /**
@@ -45,7 +50,7 @@ trait AccessibleTrait
      */
     public function set($key, $value)
     {
-        $this->offsetSet($key, $value);
+        $this->storage[$key] = $value;
 
         return $this;
     }
@@ -78,7 +83,25 @@ trait AccessibleTrait
      */
     public function has($key): bool
     {
-        return $this->offsetExists($key);
+        return isset($this->storage[$key]);
+    }
+
+    /**
+     * remove
+     *
+     * @param mixed $key
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function remove($key)
+    {
+        if ($this->has($key)) {
+            unset($this->storage[$key]);
+        }
+
+        return $this;
     }
 
     /**
@@ -130,7 +153,7 @@ trait AccessibleTrait
      */
     public function offsetExists($key): bool
     {
-        return isset($this->storage[$key]);
+        return $this->has($key);
     }
 
     /**
@@ -142,15 +165,7 @@ trait AccessibleTrait
      */
     public function &offsetGet($key)
     {
-        $ret = null;
-
-        if (!$this->offsetExists($key)) {
-            return $ret;
-        }
-
-        $ret =& $this->storage[$key];
-
-        return $ret;
+        return $this->get($key);
     }
 
     /**
@@ -163,13 +178,7 @@ trait AccessibleTrait
      */
     public function offsetSet($key, $value): void
     {
-        if ($key === null) {
-            $this->storage[] = $value;
-
-            return;
-        }
-
-        $this->storage[$key] = $value;
+        $this->set($key, $value);
     }
 
     /**
@@ -181,9 +190,7 @@ trait AccessibleTrait
      */
     public function offsetUnset($key): void
     {
-        if ($this->offsetExists($key)) {
-            unset($this->storage[$key]);
-        }
+        $this->remove($key);
     }
 
     /**
@@ -208,7 +215,7 @@ trait AccessibleTrait
      */
     public function __set($key, $value)
     {
-        $this->offsetSet($key, $value);
+        $this->set($key, $value);
     }
 
     /**
@@ -220,7 +227,7 @@ trait AccessibleTrait
      */
     public function __isset($key)
     {
-        return $this->offsetExists($key);
+        return $this->has($key);
     }
 
     /**
@@ -232,7 +239,7 @@ trait AccessibleTrait
      */
     public function __unset($key)
     {
-        $this->offsetUnset($key);
+        $this->remove($key);
     }
 
     /**
