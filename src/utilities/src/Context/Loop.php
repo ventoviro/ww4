@@ -66,13 +66,6 @@ class Loop
         return $this;
     }
 
-    /**
-     * Method to get property Index
-     *
-     * @return  int
-     *
-     * @since  __DEPLOY_VERSION__
-     */
     public function index(): int
     {
         return $this->index;
@@ -90,25 +83,11 @@ class Loop
         return $this->key;
     }
 
-    /**
-     * Method to get property Length
-     *
-     * @return  int
-     *
-     * @since  __DEPLOY_VERSION__
-     */
     public function length(): int
     {
         return $this->length;
     }
 
-    /**
-     * Method to get property Parent
-     *
-     * @return  Loop|null
-     *
-     * @since  __DEPLOY_VERSION__
-     */
     public function parent(): ?Loop
     {
         return $this->parent;
@@ -125,13 +104,6 @@ class Loop
         return true;
     }
 
-    /**
-     * Method to get property Stop
-     *
-     * @return  bool
-     *
-     * @since  __DEPLOY_VERSION__
-     */
     public function isStop(): bool
     {
         return $this->stop;
