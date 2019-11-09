@@ -114,6 +114,29 @@ class ArrayObject implements
     }
 
     /**
+     * setColumn
+     *
+     * @param  string|int  $name
+     * @param  mixed       $value
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function setColumn($name, $value): self
+    {
+        return static::newInstance()->apply(function (array $storage) use ($name, $value) {
+            foreach ($this->storage as $item) {
+                if (Arr::isAccessible($item)) {
+                    $item[$name] = $value;
+                } elseif (is_object($item)) {
+                    $item->$name = $value;
+                }
+            }
+        });
+    }
+
+    /**
      * apply
      *
      * @param  callable  $callback
