@@ -21,6 +21,7 @@ use Windwalker\Scalars\Concern\ArraySortTrait;
 use Windwalker\Utilities\AccessibleInterface;
 use Windwalker\Utilities\AccessibleTrait;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
 use function Windwalker\str;
 
@@ -31,6 +32,7 @@ use function Windwalker\str;
  */
 class ArrayObject implements AccessibleInterface
 {
+    use MarcoableTrait;
     use AccessibleTrait;
     use ArraySortTrait;
     use ArrayCreationTrait;
