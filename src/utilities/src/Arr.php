@@ -109,6 +109,10 @@ abstract class Arr
      */
     private static function getPathNodes(string $path, string $delimiter = '.'): array
     {
+        if ($delimiter === '') {
+            return [$path];
+        }
+
         if (is_array($path)) {
             return $path;
         }
@@ -139,7 +143,7 @@ abstract class Arr
         $nodes = static::getPathNodes((string) $key, $delimiter);
 
         if (empty($nodes)) {
-            return $default;
+            return \Windwalker\value($default);
         }
 
         $dataTmp = $data;
@@ -954,9 +958,7 @@ abstract class Arr
         // Visit Query Rules
         foreach ($queries as $key => $val) {
             if ($val instanceof WhereWrapper) {
-                $val = (clone $val)->setVar1($array[$val->getVar1()]);
-
-                $results[] = $val();
+                $results[] = $val($array);
             } elseif (is_callable($val)) {
                 $results[] = $val($array[$key], $key);
             } elseif (substr($key, -2) === '>=') {

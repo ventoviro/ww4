@@ -43,6 +43,29 @@ interface AccessibleInterface extends JsonSerializable, ArrayAccess, DumpableInt
     public function set($key, $value);
 
     /**
+     * Set value default if not exists.
+     *
+     * @param mixed $key
+     * @param mixed $default
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function def($key, $default);
+
+    /**
+     * Check a key exists or not.
+     *
+     * @param mixed $key
+     *
+     * @return  mixed
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function has($key): bool;
+
+    /**
      * Creates a copy of storage.
      *
      * @param  bool  $recursive

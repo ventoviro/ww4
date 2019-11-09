@@ -69,6 +69,7 @@ namespace {
 namespace Windwalker {
 
     use Windwalker\Utilities\Compare\WhereWrapper;
+    use Windwalker\Utilities\Wrapper\ValueReference;
 
     /**
      * Do some operation after value get.
@@ -167,5 +168,20 @@ namespace Windwalker {
     function value($value, ...$args)
     {
         return $value instanceof \Closure ? $value(...$args) : $value;
+    }
+
+    /**
+     * ref
+     *
+     * @param  string       $path
+     * @param  string|null  $delimiter
+     *
+     * @return  ValueReference
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    function ref(string $path, ?string $delimiter = null): ValueReference
+    {
+        return new ValueReference($path, $delimiter);
     }
 }

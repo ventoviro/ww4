@@ -51,6 +51,37 @@ trait AccessibleTrait
     }
 
     /**
+     * Set value default if not exists.
+     *
+     * @param mixed $key
+     * @param mixed $default
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function def($key, $default)
+    {
+        $this->storage[$key] ??= $default;
+
+        return $this;
+    }
+
+    /**
+     * Check a key exists or not.
+     *
+     * @param mixed $key
+     *
+     * @return  mixed
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function has($key): bool
+    {
+        return $this->offsetExists($key);
+    }
+
+    /**
      * Creates a copy of storage.
      *
      * @param  bool  $recursive
@@ -99,7 +130,7 @@ trait AccessibleTrait
      */
     public function offsetExists($key): bool
     {
-        return array_key_exists($key, $this->storage);
+        return isset($this->storage[$key]);
     }
 
     /**

@@ -9,6 +9,7 @@
 
 namespace Windwalker\Utilities\Compare;
 
+use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
 
 /**
@@ -48,9 +49,23 @@ class WhereWrapper implements WrapperInterface
         $this->strict   = $strict;
     }
 
-    public function __invoke(): bool
+    /**
+     * __invoke
+     *
+     * @param  array|object  $src
+     *
+     * @return  bool
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function __invoke($src): bool
     {
-        return CompareHelper::compare($this->var1, $this->operator, $this->var2, $this->strict);
+        return CompareHelper::compare(
+            Arr::get($src, $this->var1, null, ''),
+            $this->operator,
+            $this->var2,
+            $this->strict
+        );
     }
 
     /**

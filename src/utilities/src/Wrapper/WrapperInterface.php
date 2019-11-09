@@ -19,9 +19,11 @@ interface WrapperInterface
     /**
      * Get wrapped value.
      *
+     * @param mixed $src
+     *
      * @return  mixed
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function __invoke();
+    public function __invoke($src);
 }
