@@ -11,7 +11,7 @@ namespace Windwalker\Scalars\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\ArrayObject;
-use Windwalker\Scalars\StringObject;
+use Windwalker\Utilities\Iterator\PriorityQueue;
 use function Windwalker\arr;
 
 /**
@@ -405,5 +405,20 @@ class ArrayObjectTest extends TestCase
         self::assertTrue(isset($this->instance->{2}));
         self::assertTrue(isset($this->getAssoc()->foo));
         self::assertFalse(isset($this->getAssoc()->hello));
+    }
+
+    public function testAs(): void
+    {
+        $a = arr([1, 2, 3])->as(PriorityQueue::class);
+
+        self::assertInstanceOf(
+            PriorityQueue::class,
+            $a
+        );
+
+        self::assertEquals(
+            [1, 2, 3],
+            $a->toArray()
+        );
     }
 }

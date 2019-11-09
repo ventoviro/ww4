@@ -9,7 +9,6 @@
 
 namespace Windwalker\Scalars\Concern;
 
-use Windwalker\Data\Traits\CollectionTrait;
 use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
 use function Windwalker\tap;
@@ -32,9 +31,11 @@ trait ArraySortTrait
      */
     public function ksort($flags = null)
     {
-        return tap(clone $this, function ($new) use ($flags) {
-            ksort($new->storage, $flags);
-        });
+        $new = clone $this;
+
+        ksort($new->storage, ...func_get_args());
+
+        return $new;
     }
 
     /**
@@ -48,9 +49,11 @@ trait ArraySortTrait
      */
     public function krsort($flags = null)
     {
-        return tap(clone $this, static function (ArrayObject $new) use ($flags) {
-            krsort($new->storage, $flags);
-        });
+        $new = clone $this;
+
+        krsort($new->storage, ...func_get_args());
+
+        return $new;
     }
 
     /**
@@ -64,9 +67,11 @@ trait ArraySortTrait
      */
     public function sort($flags = null)
     {
-        return tap(clone $this, static function (ArrayObject $new) use ($flags) {
-            sort($new->storage, $flags);
-        });
+        $new = clone $this;
+
+        sort($new->storage, ...func_get_args());
+
+        return $new;
     }
 
     /**
@@ -80,9 +85,11 @@ trait ArraySortTrait
      */
     public function rsort($flags = null)
     {
-        return tap(clone $this, static function (ArrayObject $new) use ($flags) {
-            rsort($new->storage, $flags);
-        });
+        $new = clone $this;
+
+        rsort($new->storage, ...func_get_args());
+
+        return $new;
     }
 
     /**
@@ -104,13 +111,15 @@ trait ArraySortTrait
      */
     public function natsort()
     {
-        return tap(clone $this, static function (ArrayObject $new) {
-            natsort($new->storage);
-        });
+        $new = clone $this;
+
+        natsort($new->storage);
+
+        return $new;
     }
 
     /**
-     * Sort the entries by value
+     * Sort an array and maintain index association.
      *
      * @param  int  $flags
      *
@@ -118,9 +127,27 @@ trait ArraySortTrait
      */
     public function asort($flags = null)
     {
-        return tap(clone $this, static function (ArrayObject $new) use ($flags) {
-            asort($new->storage, $flags);
-        });
+        $new = clone $this;
+
+        asort($new->storage, ...func_get_args());
+
+        return $new;
+    }
+
+    /**
+     * Sort an array in reverse order and maintain index association.
+     *
+     * @param  int  $flags
+     *
+     * @return static
+     */
+    public function arsort($flags = null)
+    {
+        $new = clone $this;
+
+        arsort($new->storage, ...func_get_args());
+
+        return $new;
     }
 
     /**
@@ -134,6 +161,20 @@ trait ArraySortTrait
     {
         return tap(clone $this, static function (ArrayObject $new) use ($function) {
             uasort($new->storage, $function);
+        });
+    }
+
+    /**
+     * Sort the entries with a user-defined comparison function and maintain key association
+     *
+     * @param  callable  $function
+     *
+     * @return static
+     */
+    public function usort($function)
+    {
+        return tap(clone $this, static function (ArrayObject $new) use ($function) {
+            usort($new->storage, $function);
         });
     }
 
@@ -156,17 +197,20 @@ trait ArraySortTrait
     /**
      * sortColumn
      *
-     * @param string $column
+     * @param  string  $column
+     * @param  bool    $keepKey
      *
      * @return  static
      *
      * @since  3.5.3
      */
-    public function sortColumn(string $column)
+    public function sortColumn(string $column, bool $keepKey = true)
     {
         $array = $this->dump();
 
-        usort($array, static function ($a, $b) use ($column) {
+        $handler = $keepKey ? 'uasort' : 'usort';
+
+        $handler($array, static function ($a, $b) use ($column) {
             $aValue = Arr::get($a, $column);
             $bValue = Arr::get($b, $column);
 

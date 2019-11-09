@@ -4,7 +4,7 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\String\Tests;
+namespace Windwalker\Utilities\Test;
 
 use Windwalker\Utilities\StrInflector;
 

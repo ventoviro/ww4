@@ -9,20 +9,18 @@
 
 namespace Windwalker\Scalars;
 
-use ArrayAccess;
 use ArrayIterator;
-use Countable;
 use InvalidArgumentException;
 use Iterator;
 use IteratorAggregate;
-use JsonSerializable;
 use Windwalker\Scalars\Concern\ArrayContentTrait;
 use Windwalker\Scalars\Concern\ArrayCreationTrait;
 use Windwalker\Scalars\Concern\ArrayLoopTrait;
 use Windwalker\Scalars\Concern\ArrayModifyTrait;
 use Windwalker\Scalars\Concern\ArraySortTrait;
+use Windwalker\Utilities\AccessibleInterface;
+use Windwalker\Utilities\AccessibleTrait;
 use Windwalker\Utilities\Arr;
-use Windwalker\Utilities\Contract\DumpableInterface;
 use Windwalker\Utilities\TypeCast;
 use function Windwalker\str;
 
@@ -31,13 +29,9 @@ use function Windwalker\str;
  *
  * @since  __DEPLOY_VERSION__
  */
-class ArrayObject implements
-    DumpableInterface,
-    Countable,
-    ArrayAccess,
-    IteratorAggregate,
-    JsonSerializable
+class ArrayObject implements AccessibleInterface
 {
+    use AccessibleTrait;
     use ArraySortTrait;
     use ArrayCreationTrait;
     use ArrayModifyTrait;
@@ -49,8 +43,6 @@ class ArrayObject implements
     public const GROUP_TYPE_KEY_BY = Arr::GROUP_TYPE_KEY_BY;
 
     public const GROUP_TYPE_MIX = Arr::GROUP_TYPE_MIX;
-
-    protected array $storage = [];
 
     /**
      * ArrayObject constructor.
@@ -140,12 +132,13 @@ class ArrayObject implements
      * apply
      *
      * @param  callable  $callback
+     * @param  array     $args
      *
      * @return  static
      */
-    public function apply(callable $callback): self
+    public function apply(callable $callback, ...$args): self
     {
-        return static::newInstance($callback(TypeCast::toArray($this)));
+        return static::newInstance($callback(TypeCast::toArray($this), ...$args));
     }
 
     /**
@@ -162,92 +155,13 @@ class ArrayObject implements
      * pipe
      *
      * @param  callable  $callback
+     * @param  array     $args
      *
      * @return  static
      */
-    public function pipe(callable $callback): self
+    public function pipe(callable $callback, ...$args): self
     {
-        return $callback($this);
-    }
-
-    /**
-     * Returns whether the requested key exists
-     *
-     * @param  mixed  $key
-     *
-     * @return boolean
-     */
-    public function __isset($key)
-    {
-        return $this->offsetExists($key);
-    }
-
-    /**
-     * Sets the value at the specified key to value
-     *
-     * @param  mixed  $key
-     * @param  mixed  $value
-     *
-     * @return void|mixed
-     */
-    public function __set($key, $value)
-    {
-        $this->offsetSet($key, $value);
-    }
-
-    /**
-     * Unsets the value at the specified key
-     *
-     * @param  mixed  $key
-     *
-     * @return void|mixed
-     */
-    public function __unset($key)
-    {
-        $this->offsetUnset($key);
-    }
-
-    /**
-     * Returns the value at the specified key by reference
-     *
-     * @param  mixed  $key
-     *
-     * @return mixed
-     * @throws InvalidArgumentException
-     */
-    public function &__get($key)
-    {
-        $ret =& $this->offsetGet($key);
-
-        return $ret;
-    }
-
-    /**
-     * Get the number of public properties in the ArrayObject
-     *
-     * @return int
-     */
-    public function count()
-    {
-        return count($this->storage);
-    }
-
-    /**
-     * Creates a copy of the ArrayObject.
-     *
-     * @param  bool  $recursive
-     *
-     * @param  bool  $onlyDumpable
-     *
-     * @return array
-     */
-    public function dump(bool $recursive = false, bool $onlyDumpable = false): array
-    {
-        if (!$recursive) {
-            return $this->storage;
-        }
-
-        return TypeCast::toArray($this->storage, true);
+        return $callback($this, ...$args);
     }
 
     /**
@@ -352,93 +266,6 @@ class ArrayObject implements
     }
 
     /**
-     * Create a new iterator from an ArrayObject instance
-     *
-     * @return Iterator
-     */
-    public function getIterator(): Iterator
-    {
-        return new ArrayIterator($this->storage);
-    }
-
-    /**
-     * Returns whether the requested key exists
-     *
-     * @param  mixed  $key
-     *
-     * @return bool
-     */
-    public function offsetExists($key): bool
-    {
-        return isset($this->storage[$key]);
-    }
-
-    /**
-     * Returns the value at the specified key
-     *
-     * @param  mixed  $key
-     *
-     * @return mixed
-     */
-    public function &offsetGet($key)
-    {
-        $ret = null;
-
-        if (!$this->offsetExists($key)) {
-            return $ret;
-        }
-
-        $ret =& $this->storage[$key];
-
-        return $ret;
-    }
-
-    /**
-     * Sets the value at the specified key to value
-     *
-     * @param  mixed  $key
-     * @param  mixed  $value
-     *
-     * @return void
-     */
-    public function offsetSet($key, $value): void
-    {
-        if ($key === null) {
-            $this->storage[] = $value;
-
-            return;
-        }
-
-        $this->storage[$key] = $value;
-    }
-
-    /**
-     * Unsets the value at the specified key
-     *
-     * @param  mixed  $key
-     *
-     * @return void
-     */
-    public function offsetUnset($key): void
-    {
-        if ($this->offsetExists($key)) {
-            unset($this->storage[$key]);
-        }
-    }
-
-    /**
-     * jsonSerialize
-     *
-     * @return  array
-     *
-     * @since  3.5.2
-     */
-    public function jsonSerialize(): array
-    {
-        return $this->storage;
-    }
-
-    /**
      * mapToArray
      *
      * @param  array  $args
@@ -495,7 +322,7 @@ class ArrayObject implements
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function wrapAll()
+    public function wrapAll(): self
     {
         return $this->mapAs(static::class);
     }
@@ -503,5 +330,15 @@ class ArrayObject implements
     public function as(string $class, ...$args)
     {
         return new $class($this->storage, ...$args);
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->storage === [];
+    }
+
+    public function notEmpty(): bool
+    {
+        return !$this->isEmpty();
     }
 }

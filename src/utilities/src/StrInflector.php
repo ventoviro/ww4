@@ -53,11 +53,11 @@ class StrInflector
      *
      * @param   string $word The singular word to pluralise.
      *
-     * @return  mixed  An inflected string, or false if no rule could be applied.
+     * @return  string  An inflected string, or false if no rule could be applied.
      *
      * @since  2.0
      */
-    public static function toPlural($word)
+    public static function toPlural($word): string
     {
         static::checkDependency();
 
@@ -69,11 +69,11 @@ class StrInflector
      *
      * @param   string $word The plural word to singularise.
      *
-     * @return  mixed  An inflected string, or false if no rule could be applied.
+     * @return  string  An inflected string, or false if no rule could be applied.
      *
      * @since  2.0
      */
-    public static function toSingular($word)
+    public static function toSingular($word): string
     {
         static::checkDependency();
 

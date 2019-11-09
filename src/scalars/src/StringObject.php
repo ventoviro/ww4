@@ -445,27 +445,27 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      * apply
      *
      * @param  callable  $callback
+     * @param  array     $args
      *
      * @return  static
      */
-    public function apply(callable $callback): self
+    public function apply(callable $callback, ...$args): self
     {
-        return $this->cloneInstance(static function ($new) use ($callback) {
-            $new->string = $callback($new->string);
-        });
+        return $this->cloneInstance(static fn ($new) => $new->string = $callback($new->string, ...$args));
     }
 
     /**
      * pipe
      *
      * @param  callable  $callback
+     * @param  array     $args
      *
      * @return  static
      *
      * @since  3.5.14
      */
-    public function pipe(callable $callback): self
+    public function pipe(callable $callback, ...$args): self
     {
-        return $callback($this);
+        return $callback($this, ...$args);
     }
 }

@@ -1268,4 +1268,20 @@ OUT;
 
         self::assertEquals($expected, Arr::mapRecursive($src, fn ($v, $k) => $v . '-' . $k, true, true));
     }
+
+    public function testFlatMap(): void
+    {
+        $a = [
+            ['name' => 'Sally'],
+            ['school' => 'Arkansas'],
+            ['age' => 28]
+        ];
+
+        $b = Arr::flatMap($a, fn ($values) => array_map('strtoupper', $values));
+
+        self::assertEquals(
+            ['name' => 'SALLY', 'school' => 'ARKANSAS', 'age' => '28'],
+            $b
+        );
+    }
 }

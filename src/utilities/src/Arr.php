@@ -9,6 +9,7 @@
 
 namespace Windwalker\Utilities;
 
+use Traversable;
 use Windwalker\Utilities\Classes\PreventInitialTrait;
 use Windwalker\Utilities\Compare\WhereWrapper;
 use Windwalker\Utilities\Dumper\VarDumper;
@@ -641,6 +642,35 @@ abstract class Arr
         $array = array_map('unserialize', $array);
 
         return $array;
+    }
+
+    /**
+     * flatMap
+     *
+     * @param  array|object  $array
+     * @param  callable      $callback
+     *
+     * @return  array
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function flatMap($array, callable $callback): array
+    {
+        $mapped = [];
+
+        foreach ($array as $key => $value) {
+            $result = $callback($value, $key, $array);
+
+            if (is_iterable($result)) {
+                foreach ($result as $k => $v) {
+                    $mapped[$k] = $v;
+                }
+            } elseif ($result !== null) {
+                $mapped[$key] = $result;
+            }
+        }
+
+        return $mapped;
     }
 
     /**

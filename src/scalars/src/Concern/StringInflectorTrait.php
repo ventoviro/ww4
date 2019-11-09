@@ -9,6 +9,7 @@
 
 namespace Windwalker\Scalars\Concern;
 
+use Windwalker\Scalars\StringObject;
 use Windwalker\Utilities\StrInflector;
 
 /**
@@ -28,13 +29,17 @@ trait StringInflectorTrait
         return StrInflector::isSingular($this->string);
     }
 
-    public function toPlural(): bool
+    public function toPlural(): StringObject
     {
-        return StrInflector::isPlural($this->string);
+        return $this->cloneInstance(function ($new) {
+            $new->string = StrInflector::toPlural($new->string);
+        });
     }
 
-    public function toSingular(): bool
+    public function toSingular(): StringObject
     {
-        return StrInflector::isSingular($this->string);
+        return $this->cloneInstance(function ($new) {
+            $new->string = StrInflector::toSingular($new->string);
+        });
     }
 }

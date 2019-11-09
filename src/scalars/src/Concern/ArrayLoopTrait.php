@@ -275,6 +275,20 @@ trait ArrayLoopTrait
     }
 
     /**
+     * flatMap
+     *
+     * @param  callable  $callback
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function flatMap(callable $callback)
+    {
+        return static::newInstance(Arr::flatMap($this->storage, $callback));
+    }
+
+    /**
      * mapAs
      *
      * @param  string  $class

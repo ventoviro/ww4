@@ -313,6 +313,22 @@ class ArrayLoopTraitTest extends TestCase
         );
     }
 
+    public function testFlatMap(): void
+    {
+        $a = arr([
+            ['name' => 'Sally'],
+            ['school' => 'Arkansas'],
+            ['age' => 28]
+        ]);
+
+        $b = $a->flatMap(fn ($values) => array_map('strtoupper', $values));
+
+        self::assertEquals(
+            ['name' => 'SALLY', 'school' => 'ARKANSAS', 'age' => '28'],
+            $b->dump()
+        );
+    }
+
     protected function setUp(): void
     {
         $this->instance = arr([1, 2, 3]);

@@ -1,10 +1,10 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 /**
  * Part of Windwalker project.
  *
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT. All rights reserved.
- * @license    GNU Lesser General Public License version 3 or later.
+ * @license    MIT
  */
 
 namespace {
@@ -15,11 +15,11 @@ namespace {
         /**
          * Dump Array or Object as tree node. If send multiple params in this method, this function will batch print it.
          *
-         * @param   mixed $args Array or Object to dump.
-         *
-         * @since   2.0
+         * @param  mixed  $args  Array or Object to dump.
          *
          * @return  void
+         * @since   2.0
+         *
          */
         function show(...$args)
         {
@@ -31,7 +31,7 @@ namespace {
         /**
          * is_stringable
          *
-         * @param mixed $var
+         * @param  mixed  $var
          *
          * @return  bool
          *
@@ -47,7 +47,7 @@ namespace {
         /**
          * is_json
          *
-         * @param mixed $string
+         * @param  mixed  $string
          *
          * @return  bool
          *
@@ -73,8 +73,8 @@ namespace Windwalker {
     /**
      * Do some operation after value get.
      *
-     * @param mixed    $value
-     * @param callable $callable
+     * @param  mixed     $value
+     * @param  callable  $callable
      *
      * @return  mixed
      *
@@ -82,9 +82,9 @@ namespace Windwalker {
      */
     function tap($value, callable $callable)
     {
-        $result = $callable($value);
+        $callable($value);
 
-        return $result ?? $value;
+        return $value;
     }
 
     /**
@@ -152,5 +152,20 @@ namespace Windwalker {
     function where($var1, string $operator, $var2, bool $strict = false): WhereWrapper
     {
         return new WhereWrapper($var1, $operator, $var2, $strict);
+    }
+
+    /**
+     * value
+     *
+     * @param  mixed|\Closure  $value
+     * @param  mixed           ...$args
+     *
+     * @return  mixed
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    function value($value, ...$args)
+    {
+        return $value instanceof \Closure ? $value(...$args) : $value;
     }
 }
