@@ -9,6 +9,8 @@
 
 namespace Windwalker\Utilities\Assert;
 
+use TypeError;
+
 /**
  * The Assert class.
  *
@@ -16,8 +18,22 @@ namespace Windwalker\Utilities\Assert;
  */
 class TypeAssert
 {
-    protected static string $exceptionClass = \AssertionError::class;
+    protected static string $exceptionClass = TypeError::class;
 
+    /**
+     * assert
+     *
+     * @param  bool|callable  $assertion
+     * @param  string         $message
+     * @param  mixed          $value
+     * @param  string|null    $caller
+     *
+     * @return  void
+     *
+     * @throws TypeError
+     *
+     * @since  __DEPLOY_VERSION__
+     */
     public static function assert($assertion, string $message, $value = null, ?string $caller = null): void
     {
         if (is_callable($assertion)) {

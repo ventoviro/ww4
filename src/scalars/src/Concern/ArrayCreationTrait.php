@@ -59,9 +59,7 @@ trait ArrayCreationTrait
      */
     public function diffKeys(...$args)
     {
-        $args = array_map([TypeCast::class, 'toArray'], $args);
-
-        return static::newInstance(array_diff_key($this->storage, ...$args));
+        return static::newInstance(array_diff_key($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**

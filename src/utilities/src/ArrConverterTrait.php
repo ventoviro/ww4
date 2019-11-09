@@ -8,19 +8,15 @@
 
 namespace Windwalker\Utilities;
 
+use Windwalker\Utilities\Assert\TypeAssert;
+
 /**
  * The ArrConverter class.
  *
  * @since  3.5
  */
-class ArrConverter
+trait ArrConverterTrait
 {
-    public const GROUP_TYPE_ARRAY = 1;
-
-    public const GROUP_TYPE_KEY_BY = 2;
-
-    public const GROUP_TYPE_MIX = 3;
-
     /**
      * Flip array key and value and make 2-dimensional array to 1-dimensional.
      *
@@ -170,12 +166,66 @@ class ArrConverter
             } elseif ($type === static::GROUP_TYPE_KEY_BY) {
                 $results[$resultKey] = $resultValue;
             } else {
-                // Now always push new elements.
+                // Now always push results elements.
                 $results[$resultKey][] = $resultValue;
             }
         }
 
         unset($hasArray);
+
+        return $results;
+    }
+
+    /**
+     * mapWithKeys
+     *
+     * @param  iterable  $array
+     * @param  callable  $handler
+     * @param  int       $type
+     *
+     * @return  array
+     *
+     * @since  3.5.12
+     */
+    public static function mapWithKeys(iterable $array, callable $handler, int $type = self::GROUP_TYPE_KEY_BY): array
+    {
+        $results = [];
+
+        foreach ($array as $k => $v) {
+            $r = $handler($v, $k);
+
+            TypeAssert::assert(
+                is_array($r),
+                'Return value of mapWithKey() should be array, got %2$s'
+            );
+
+            foreach ($r as $resultKey => $resultValue) {
+                // First set value if not exists.
+                if (!isset($results[$resultKey])) {
+                    // Force first element in array.
+                    if ($type === static::GROUP_TYPE_ARRAY) {
+                        $results[$resultKey]  = [$resultValue];
+                        $hasArray[$resultKey] = true;
+                    } else {
+                        // Keep first element single.
+                        $results[$resultKey] = $resultValue;
+                    }
+                } elseif ($type === static::GROUP_TYPE_MIX && empty($hasArray[$resultKey])) {
+                    // If first element is single, now add second element as an array.
+                    $results[$resultKey] = [
+                        $results[$resultKey],
+                        $resultValue,
+                    ];
+
+                    $hasArray[$resultKey] = true;
+                } elseif ($type === static::GROUP_TYPE_KEY_BY) {
+                    $results[$resultKey] = $resultValue;
+                } else {
+                    // Now always push results elements.
+                    $results[$resultKey][] = $resultValue;
+                }
+            }
+        }
 
         return $results;
     }

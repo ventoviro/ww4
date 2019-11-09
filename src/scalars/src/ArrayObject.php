@@ -21,6 +21,7 @@ use Windwalker\Scalars\Concern\ArrayCreationTrait;
 use Windwalker\Scalars\Concern\ArrayLoopTrait;
 use Windwalker\Scalars\Concern\ArrayModifyTrait;
 use Windwalker\Scalars\Concern\ArraySortTrait;
+use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Contract\DumpableInterface;
 use Windwalker\Utilities\TypeCast;
 use function Windwalker\str;
@@ -42,6 +43,12 @@ class ArrayObject implements
     use ArrayModifyTrait;
     use ArrayLoopTrait;
     use ArrayContentTrait;
+
+    public const GROUP_TYPE_ARRAY = Arr::GROUP_TYPE_ARRAY;
+
+    public const GROUP_TYPE_KEY_BY = Arr::GROUP_TYPE_KEY_BY;
+
+    public const GROUP_TYPE_MIX = Arr::GROUP_TYPE_MIX;
 
     protected array $storage = [];
 
@@ -456,5 +463,22 @@ class ArrayObject implements
         }
 
         return $value;
+    }
+
+    /**
+     * wrapChildren
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function wrapAll()
+    {
+        return $this->mapAs(static::class);
+    }
+
+    public function as(string $class, ...$args)
+    {
+        return new $class($this->storage, ...$args);
     }
 }

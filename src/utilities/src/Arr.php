@@ -22,6 +22,13 @@ use function Windwalker\count;
 abstract class Arr
 {
     use PreventInitialTrait;
+    use ArrConverterTrait;
+
+    public const GROUP_TYPE_ARRAY = 1;
+
+    public const GROUP_TYPE_KEY_BY = 2;
+
+    public const GROUP_TYPE_MIX = 3;
 
     /**
      * Output mock to support test.
@@ -34,16 +41,16 @@ abstract class Arr
      * Check a key exists in object or array. The key can be a path separated by dots.
      *
      * @param  array|object  $source     Object or array to check.
-     * @param  string        $key        The key path name.
+     * @param  string|int    $key        The key path name.
      * @param  string        $delimiter  The separator to split paths.
      *
      * @return  bool
      *
      * @since 4.0
      */
-    public static function has($source, string $key, string $delimiter = '.'): bool
+    public static function has($source, $key, string $delimiter = '.'): bool
     {
-        $nodes = static::getPathNodes($key, $delimiter);
+        $nodes = static::getPathNodes((string) $key, $delimiter);
 
         if (empty($nodes)) {
             return false;
@@ -117,18 +124,18 @@ abstract class Arr
      *
      * Example: `ArrayHelper::get($array, 'foo.bar.yoo')` equals to $array['foo']['bar']['yoo'].
      *
-     * @param  mixed   $data       An array or object to get value.
-     * @param  string  $key        The key path.
-     * @param  mixed   $default    The default value if not exists.
-     * @param  string  $delimiter  Separator of paths.
+     * @param  mixed       $data       An array or object to get value.
+     * @param  string|int  $key        The key path.
+     * @param  mixed       $default    The default value if not exists.
+     * @param  string      $delimiter  Separator of paths.
      *
      * @return mixed Found value, null if not exists.
      *
      * @since   2.0
      */
-    public static function get($data, string $key, $default = null, string $delimiter = '.')
+    public static function get($data, $key, $default = null, string $delimiter = '.')
     {
-        $nodes = static::getPathNodes($key, $delimiter);
+        $nodes = static::getPathNodes((string) $key, $delimiter);
 
         if (empty($nodes)) {
             return $default;
@@ -167,7 +174,7 @@ abstract class Arr
      */
     public static function set($data, string $key, $value, string $delimiter = '.', string $storeType = 'array')
     {
-        $nodes = static::getPathNodes($key, $delimiter);
+        $nodes = static::getPathNodes((string) $key, $delimiter);
 
         if (empty($nodes)) {
             return $data;
@@ -228,14 +235,14 @@ abstract class Arr
      * Remove a value from array or object. The key can be a path separated by dots.
      *
      * @param  array|object  $data       Object or array to remove value.
-     * @param  string        $key        The key path name.
+     * @param  string|int    $key        The key path name.
      * @param  string        $delimiter  The separator to split paths.
      *
      * @return  array|object
      */
-    public static function remove($data, string $key, $delimiter = '.')
+    public static function remove($data, $key, $delimiter = '.')
     {
-        $nodes = static::getPathNodes($key, $delimiter);
+        $nodes = static::getPathNodes((string) $key, $delimiter);
 
         if (!count($nodes)) {
             return $data;
@@ -479,13 +486,13 @@ abstract class Arr
      * takeout
      *
      * @param  array|object  $data
-     * @param  string        $key
+     * @param  string|int    $key
      * @param  mixed         $default
      * @param  string        $delimiter
      *
      * @return  mixed
      */
-    public static function takeout(&$data, string $key, $default = null, string $delimiter = '.')
+    public static function takeout(&$data, $key, $default = null, string $delimiter = '.')
     {
         if (!static::has($data, $key, $delimiter)) {
             return $default;
@@ -563,7 +570,7 @@ abstract class Arr
      *
      * @since   2.0
      */
-    public static function invert(array $array)
+    public static function invert(array $array): array
     {
         $return = [];
 
@@ -618,36 +625,13 @@ abstract class Arr
     }
 
     /**
-     * mapWithKeys
-     *
-     * @param  iterable  $array
-     * @param  callable  $handler
-     *
-     * @return  array
-     *
-     * @since  3.5.12
-     */
-    public static function mapWithKeys(iterable $array, callable $handler): array
-    {
-        $new = [];
-
-        foreach ($array as $k => $v) {
-            $r = $handler($v, $k);
-
-            $new[] = $r;
-        }
-
-        return array_replace(...$new);
-    }
-
-    /**
      * Multidimensional array safe unique test
      *
      * @param  array  $array  The array to make unique.
      *
      * @return  array
      *
-     * @see     http://php.net/manual/en/function.array-unique.php
+     * @see     https://www.php.net/manual/en/function.array-unique.php#97285
      * @since   2.0
      */
     public static function unique(array $array): array
@@ -980,8 +964,8 @@ abstract class Arr
     /**
      * filterRecursive
      *
-     * @param  array    $array
-     * @param  callable $callback
+     * @param  array     $array
+     * @param  callable  $callback
      *
      * @return  array
      */

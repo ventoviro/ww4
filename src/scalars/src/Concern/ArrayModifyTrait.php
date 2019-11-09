@@ -190,9 +190,7 @@ trait ArrayModifyTrait
      */
     public function replace(...$args): self
     {
-        $args = array_map([Arr::class, 'toArray'], $args);
-
-        return static::newInstance(array_replace($this->storage, ...$args));
+        return static::newInstance(array_replace($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -206,9 +204,7 @@ trait ArrayModifyTrait
      */
     public function replaceRecursive(...$args): self
     {
-        $args = TypeCast::mapAs($args, 'array');
-
-        return static::newInstance(array_replace_recursive($this->storage, ...$args));
+        return static::newInstance(array_replace_recursive($this->storage, ...static::mapUnwrap($args)));
     }
 
     /**
@@ -260,16 +256,20 @@ trait ArrayModifyTrait
     /**
      * insertAfter
      *
-     * @param int   $key
-     * @param mixed $value
+     * @param  int    $key
+     * @param  array  $args
      *
      * @return  static
      *
      * @since  3.5
      */
-    public function insertAfter(int $key, $value): self
+    public function insertAfter(int $key, ...$args): self
     {
-        return static::newInstance($this->storage)->splice($key + 1, 0, $value);
+        $new = static::newInstance($this->storage);
+
+        $new->splice($key + 1, 0, $args);
+
+        return $new;
     }
 
     /**
@@ -284,54 +284,38 @@ trait ArrayModifyTrait
      */
     public function insertBefore(int $key, $value): self
     {
-        return static::newInstance($this->storage)->splice($key, 0, $value);
+        $new = static::newInstance($this->storage);
+
+        $new->splice($key, 0, $value);
+
+        return $new;
     }
 
     /**
      * only
      *
-     * @param array|string $fields
+     * @param array $fields
      *
      *
      * @return  static
      */
-    public function only($fields)
+    public function only(array $fields)
     {
-        $fields = (array) $fields;
-
-        $new = static::newInstance();
-
-        foreach ($fields as $origin => $field) {
-            if (is_numeric($origin)) {
-                $new[$field] = $this[$field];
-            } else {
-                $new[$field] = $this[$origin];
-            }
-        }
-
-        return $new;
+        return static::newInstance(Arr::only($this->storage, $fields));
     }
 
     /**
      * except
      *
-     * @param array|string $fields
+     * @param array $fields
      *
      * @return  static
      *
      * @since  3.5.13
      */
-    public function except($fields)
+    public function except(array $fields)
     {
-        $fields = (array) $fields;
-
-        $new = static::newInstance();
-
-        foreach ($fields as $origin => $field) {
-            unset($new[$field]);
-        }
-
-        return $new;
+        return static::newInstance(Arr::except($this->storage, $fields));
     }
 
     /**
@@ -361,7 +345,7 @@ trait ArrayModifyTrait
      */
     public function takeout($key, $default = null, $delimiter = '.')
     {
-        return Arr::takeout($this, $key, $default, $delimiter);
+        return Arr::takeout($this->storage, $key, $default, $delimiter);
     }
 
     /**
@@ -372,28 +356,25 @@ trait ArrayModifyTrait
      *
      * @return  static
      */
-    public function chunk($size, $preserveKeys = null)
+    public function chunk(int $size, bool $preserveKeys = false)
     {
-        return static::newInstance(
-            array_map(
-                [$this, 'bindNewInstance'],
-                array_chunk(TypeCast::toArray($this), ...func_get_args())
-            )
-        );
+        return static::newInstance(array_chunk($this->storage, $size, $preserveKeys))
+            ->wrapAll();
     }
 
     /**
      * groupBy
      *
-     * @param string $column
+     * @param  string  $column
+     * @param  int     $type
      *
      * @return  static
      *
      * @since  3.5.3
      */
-    public function groupBy(string $column)
+    public function groupBy(string $column, int $type = Arr::GROUP_TYPE_ARRAY)
     {
-        return static::newInstance(Arr::group($this->dump(), $column, true));
+        return static::newInstance(Arr::group($this->dump(), $column, $type));
     }
 
     /**
@@ -405,6 +386,6 @@ trait ArrayModifyTrait
      */
     public function keyBy(string $field)
     {
-        return static::newInstance(Arr::group($this->dump(), $field));
+        return static::newInstance(Arr::group($this->dump(), $field, Arr::GROUP_TYPE_KEY_BY));
     }
 }

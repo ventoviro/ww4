@@ -13,6 +13,7 @@ use Windwalker\Scalars\ArrayObject;
 use Windwalker\Scalars\ScalarsFactory;
 use Windwalker\Scalars\StringObject;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Context\Loop;
 use Windwalker\Utilities\TypeCast;
 
 /**
@@ -22,6 +23,8 @@ use Windwalker\Utilities\TypeCast;
  */
 trait ArrayLoopTrait
 {
+    protected static ?Loop $currentLoop = null;
+
     /**
      * reduce
      *
@@ -86,13 +89,20 @@ trait ArrayLoopTrait
      */
     public function each(callable $callback)
     {
-        foreach ($this as $key => $value) {
-            $return = $callback($value, $key);
+        $i = 0;
+        static::$currentLoop = new Loop(count($this), $this->storage, static::$currentLoop);
 
-            if ($return === false) {
+        foreach ($this as $key => $value) {
+            $callback($value, $key, static::$currentLoop->loop($i, $key));
+
+            if (static::$currentLoop->isStop()) {
                 break;
             }
+
+            $i++;
         }
+
+        static::$currentLoop = static::$currentLoop->parent();
 
         return $this;
     }
@@ -222,36 +232,46 @@ trait ArrayLoopTrait
     /**
      * mapRecursive
      *
-     * @param callable $callback
-     * @param bool     $useKeys
+     * @param  callable  $callback
+     * @param  bool      $useKeys
+     * @param  bool      $loopIterable
      *
      * @return  static
      *
      * @since  3.5.8
      */
-    public function mapRecursive(callable $callback, $useKeys = false)
+    public function mapRecursive(callable $callback, bool $useKeys = false, bool $loopIterable = false)
     {
-        return $this->map(static function ($value) use ($callback, $useKeys) {
-            if (is_array($value) || is_object($value)) {
-                return (static::newInstance($value))->map($callback, $useKeys);
+        return $this->map(static function ($value, $key = null) use ($useKeys, $callback, $loopIterable) {
+            if (is_array($value)) {
+                return Arr::mapRecursive($value, $callback, $useKeys, $loopIterable);
             }
 
-            return $callback($value);
-        }, $useKeys);
+            if (is_iterable($value)) {
+                return Arr::mapRecursive(iterator_to_array($value), $callback, $useKeys, $loopIterable);
+            }
+
+            if (is_array($value) || $value instanceof static) {
+                return static::newInstance($value)->mapRecursive($callback, $useKeys, $loopIterable);
+            }
+
+            return $callback($value, $key);
+        }, ...($useKeys ? $this->keys() : []));
     }
 
     /**
      * mapWithKeys
      *
-     * @param callable $handler
+     * @param  callable  $handler
+     * @param  int       $groupType
      *
      * @return  static
      *
      * @since  3.5.12
      */
-    public function mapWithKeys(callable $handler)
+    public function mapWithKeys(callable $handler, int $groupType = self::GROUP_TYPE_KEY_BY)
     {
-        return static::newInstance(Arr::mapWithKeys($this->storage, $handler));
+        return static::newInstance(Arr::mapWithKeys($this->storage, $handler, $groupType));
     }
 
     /**

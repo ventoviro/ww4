@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @since  {DEPLOY_VERSION}
  */
-class ArrConverterTest extends TestCase
+class ArrConverterTraitTest extends TestCase
 {
     public function testFlipMatrix(): void
     {
@@ -49,7 +49,7 @@ class ArrConverterTest extends TestCase
             'Hamlet' => 'D',
         ];
 
-        self::assertEquals($expected, ArrConverter::flipMatrix($src));
+        self::assertEquals($expected, Arr::flipMatrix($src));
     }
 
     /**
@@ -64,7 +64,7 @@ class ArrConverterTest extends TestCase
      */
     public function testGroup($source, $key, $expected, int $type)
     {
-        self::assertEquals($expected, ArrConverter::group($source, $key, $type));
+        self::assertEquals($expected, Arr::group($source, $key, $type));
     }
 
     /**
@@ -93,7 +93,7 @@ class ArrConverterTest extends TestCase
                     'b' => [2, 3],
                     'c' => 4,
                 ],
-                ArrConverter::GROUP_TYPE_MIX
+                Arr::GROUP_TYPE_MIX,
             ],
             'A scalar array force child array' => [
                 // Source
@@ -113,7 +113,7 @@ class ArrConverterTest extends TestCase
                     'b' => [2, 3],
                     'c' => [4],
                 ],
-                ArrConverter::GROUP_TYPE_ARRAY
+                Arr::GROUP_TYPE_ARRAY,
             ],
             'An array of associative arrays' => [
                 // Source
@@ -135,7 +135,7 @@ class ArrConverterTest extends TestCase
                     ],
                     43 => ['id' => 43, 'title' => 'boo'],
                 ],
-                ArrConverter::GROUP_TYPE_MIX
+                Arr::GROUP_TYPE_MIX,
             ],
             'An array of associative arrays but use key by' => [
                 // Source
@@ -154,7 +154,7 @@ class ArrConverterTest extends TestCase
                     42 => ['id' => 42, 'title' => 'boo2'],
                     43 => ['id' => 43, 'title' => 'boo'],
                 ],
-                ArrConverter::GROUP_TYPE_KEY_BY
+                Arr::GROUP_TYPE_KEY_BY,
             ],
             'An array of associative arrays force child array' => [
                 // Source
@@ -176,7 +176,7 @@ class ArrConverterTest extends TestCase
                     ],
                     43 => [['id' => 43, 'title' => 'boo']],
                 ],
-                ArrConverter::GROUP_TYPE_ARRAY
+                Arr::GROUP_TYPE_ARRAY,
             ],
             'An array of objects' => [
                 // Source
@@ -198,7 +198,7 @@ class ArrConverterTest extends TestCase
                     ],
                     43 => (object) ['id' => 43, 'title' => 'boo'],
                 ],
-                ArrConverter::GROUP_TYPE_MIX
+                Arr::GROUP_TYPE_MIX,
             ],
         ];
     }
@@ -208,15 +208,15 @@ class ArrConverterTest extends TestCase
         $src = [
             [
                 'value' => 'aaa',
-                'text' => 'aaa'
+                'text' => 'aaa',
             ],
             [
                 'value' => 'bbb',
-                'text' => 'bbb'
+                'text' => 'bbb',
             ],
             [
                 'value' => 'ccc',
-                'text' => 'ccc'
+                'text' => 'ccc',
             ],
         ];
 
@@ -233,7 +233,7 @@ class ArrConverterTest extends TestCase
             ],
         ];
 
-        self::assertEquals($expected, ArrConverter::transpose($src));
+        self::assertEquals($expected, Arr::transpose($src));
     }
 
     public function testGroupPrefix(): void
@@ -252,8 +252,8 @@ class ArrConverterTest extends TestCase
             'yoo' => 'Yoo',
         ];
 
-        self::assertEquals($exp, ArrConverter::groupPrefix($src, 'params_'));
-        self::assertEquals($exp, ArrConverter::groupPrefix($src, 'params_', true));
+        self::assertEquals($exp, Arr::groupPrefix($src, 'params_'));
+        self::assertEquals($exp, Arr::groupPrefix($src, 'params_', true));
         self::assertEquals([
             'id' => 123,
             'title' => 'Hello',
@@ -277,7 +277,7 @@ class ArrConverterTest extends TestCase
             'params_foo' => 'Foo',
             'params_bar' => 'Bar',
             'params_yoo' => 'Yoo',
-        ], ArrConverter::extractPrefix($src, 'params_'));
+        ], Arr::extractPrefix($src, 'params_'));
 
         self::assertEquals([
             'id' => 123,
@@ -285,6 +285,35 @@ class ArrConverterTest extends TestCase
             'params_foo' => 'Foo',
             'params_bar' => 'Bar',
             'params_yoo' => 'Yoo',
-        ], ArrConverter::extractPrefix($src, 'params_', $item));
+        ], Arr::extractPrefix($src, 'params_', $item));
+    }
+
+    public function testMapWithKey(): void
+    {
+        $src = [
+            'A' => [
+                'name' => 'Captain America',
+                'id' => 1,
+            ],
+            'B' => [
+                'name' => 'Luke Cage',
+                'id' => 2,
+            ],
+            'C' => [
+                'name' => 'Thor',
+                'id' => 3,
+            ],
+        ];
+
+        $expected = [
+            1 => 'Captain America',
+            2 => 'Luke Cage',
+            3 => 'Thor',
+        ];
+
+        self::assertEquals(
+            $expected,
+            Arr::mapWithKeys($src, fn (array $item) => [$item['id'] => $item['name']])
+        );
     }
 }

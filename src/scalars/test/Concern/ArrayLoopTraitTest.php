@@ -11,7 +11,9 @@ namespace Windwalker\Scalars\Test\Concern;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\ArrayObject;
+use Windwalker\Scalars\StringObject;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Context\Loop;
 use function Windwalker\arr;
 use function Windwalker\where;
 
@@ -168,27 +170,147 @@ class ArrayLoopTraitTest extends TestCase
 
     public function testMapWithKeys(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->getAssoc()->mapWithKeys(fn ($v, $k) => [$v => $k]);
+
+        self::assertEquals(['bar' => 'foo', 'sakura' => 'flower'], $a->dump());
+
+        $src = arr([
+            1 => 'a',
+            2 => 'b',
+            3 => 'b',
+            4 => 'c',
+            5 => 'a',
+            6 => 'a',
+        ]);
+
+        $expected = [
+            'a' => [1, 5, 6],
+            'b' => [2, 3],
+            'c' => 4,
+        ];
+
+        self::assertEquals(
+            $expected,
+            $src->mapWithKeys(fn ($v, $k) => [$v => $k], $src::GROUP_TYPE_MIX)->dump()
+        );
     }
 
     public function testEach(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $r = [];
+        $this->instance->each(function ($v, $k) use (&$r) {
+            return $r[] = $k . '-' . $v;
+        });
+
+        self::assertEquals(
+            [
+                '0-1',
+                '1-2',
+                '2-3'
+            ],
+            $r
+        );
+
+        $r = [];
+        $this->instance->each(static function ($v, $k, Loop $loop) use (&$r) {
+            if ($v > 1) {
+                return $loop->stop();
+            }
+
+            return $r[] = $k . '-' . $v;
+        });
+
+        self::assertEquals(
+            [
+                '0-1',
+            ],
+            $r
+        );
+
+        $a = arr([
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+            [10, 11, 12],
+        ])->wrapAll();
+
+        $r = [];
+
+        $a->each(function (ArrayObject $v, $k, $l) use (&$r) {
+            $v->each(function ($v, $k, Loop $loop) use (&$r) {
+                if ($v === 4) {
+                    $loop->stop(2);
+                    return;
+                }
+
+                $r[] = $v;
+            });
+        });
+
+        self::assertEquals(
+            [1, 2, 3],
+            $r
+        );
     }
 
     public function testMapAs(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->instance->mapAs(StringObject::class);
+
+        foreach ($a as $i => $v) {
+            self::assertInstanceOf(
+                StringObject::class,
+                $v,
+                sprintf('Index %s should be StringObject', $i)
+            );
+        }
     }
 
     public function testReject(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = $this->instance->reject(fn ($v) => $v > 1);
+
+        self::assertEquals([1], $a->dump());
     }
 
     public function testMapRecursive(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $a = arr($src = [
+            'ai' => 'Jarvis',
+            'agent' => 'Phil Coulson',
+            'red' => [
+                'left' => 'Pepper',
+                'right' => 'Iron Man',
+            ],
+            'human' => [
+                'dark' => 'Nick Fury',
+                'black' => arr([
+                    'female' => 'Black Widow',
+                    'male' => 'Loki',
+                ]),
+            ]
+        ])->mapRecursive(fn ($v) => is_string($v) ? strtoupper($v) : $v, false, true);
+
+        $expected = [
+            'ai' => 'JARVIS',
+            'agent' => 'PHIL COULSON',
+            'red' => [
+                'left' => 'PEPPER',
+                'right' => 'IRON MAN',
+            ],
+            'human' => [
+                'dark' => 'NICK FURY',
+                'black' => [
+                    'male' => 'LOKI',
+                    'female' => 'BLACK WIDOW',
+                ],
+            ],
+        ];
+
+        self::assertEquals(
+            $expected,
+            $a->dump()
+        );
     }
 
     protected function setUp(): void
@@ -198,5 +320,10 @@ class ArrayLoopTraitTest extends TestCase
 
     protected function tearDown(): void
     {
+    }
+
+    protected function getAssoc(): ArrayObject
+    {
+        return new ArrayObject(['foo' => 'bar', 'flower' => 'sakura']);
     }
 }

@@ -12,6 +12,7 @@ namespace Windwalker\Utilities\Test;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Test\Traits\BaseAssertionTrait;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\ArrConverterTrait;
 use function Windwalker\where;
 
 /**
@@ -1020,32 +1021,6 @@ Array
 OUT;
 
         self::assertStringSafeEquals($expected, Arr::dump($data, 4));
-    }
-
-    public function testMapWithKey(): void
-    {
-        $src = [
-            'A' => [
-                'name' => 'Captain America',
-                'id' => 1,
-            ],
-            'B' => [
-                'name' => 'Luke Cage',
-                'id' => 2,
-            ],
-            'C' => [
-                'name' => 'Thor',
-                'id' => 3,
-            ],
-        ];
-
-        $expected = [
-            1 => 'Captain America',
-            2 => 'Luke Cage',
-            3 => 'Thor',
-        ];
-
-        self::assertEquals($expected, Arr::mapWithKeys($src, fn (array $item) => [$item['id'] => $item['name']]));
     }
 
     public static function testWhere(): void
