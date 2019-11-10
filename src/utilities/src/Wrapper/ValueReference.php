@@ -23,14 +23,14 @@ class ValueReference implements WrapperInterface
      *
      * @var  string
      */
-    public string $path;
+    public $path;
 
     /**
      * Property separator.
      *
      * @var  string|null
      */
-    public ?string $delimiter;
+    public $delimiter;
 
     /**
      * ValueReference constructor.
@@ -56,6 +56,6 @@ class ValueReference implements WrapperInterface
      */
     public function __invoke($src, $default = null)
     {
-        return Arr::get($src, $this->path, $default, (string) $this->delimiter);
+        return Arr::get($src, $this->path, (string) $this->delimiter);
     }
 }

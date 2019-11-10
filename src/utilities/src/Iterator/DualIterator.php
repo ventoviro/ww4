@@ -43,21 +43,21 @@ class DualIterator implements Iterator
      *
      * @var  Iterator
      */
-    private Iterator $lhs;
+    private $lhs;
 
     /**
      * Property rhs.
      *
      * @var  Iterator
      */
-    private Iterator $rhs;
+    private $rhs;
 
     /**
      * Property flags.
      *
      * @var  int
      */
-    private int $flags;
+    private $flags;
 
     /** construct iterator from two iterators
      *

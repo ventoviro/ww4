@@ -313,7 +313,9 @@ class ArrConverterTraitTest extends TestCase
 
         self::assertEquals(
             $expected,
-            Arr::mapWithKeys($src, fn (array $item) => [$item['id'] => $item['name']])
+            Arr::mapWithKeys($src, static function (array $item) {
+                return [$item['id'] => $item['name']];
+            })
         );
     }
 }

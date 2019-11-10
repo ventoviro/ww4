@@ -20,18 +20,25 @@ use function Windwalker\arr;
  */
 class ArrayContentTraitTest extends TestCase
 {
-    protected ?ArrayObject $instance;
+    /**
+     * @var  ArrayObject
+     */
+    protected $instance;
 
     public function testFirst(): void
     {
         self::assertEquals(1, $this->instance->first());
-        self::assertEquals(4, $this->instance->first(fn ($v, $k) => $k > 2));
+        self::assertEquals(4, $this->instance->first(function ($v, $k) {
+            return $k > 2;
+        }));
     }
 
     public function testLast(): void
     {
         self::assertEquals(5, $this->instance->last());
-        self::assertEquals(3, $this->instance->last(fn ($v, $k) => $k < 3));
+        self::assertEquals(3, $this->instance->last(function ($v, $k) {
+            return $k < 3;
+        }));
     }
 
     public function testFlatten(): void

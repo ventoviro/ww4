@@ -34,7 +34,7 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
     /**
      * @var int Seed used to ensure queue order for items of the same priority
      */
-    protected int $serial = PHP_INT_MAX;
+    protected $serial = PHP_INT_MAX;
 
     /**
      * Class init.

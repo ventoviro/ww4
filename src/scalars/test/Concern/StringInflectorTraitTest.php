@@ -22,7 +22,7 @@ use function Windwalker\str;
  */
 class StringInflectorTraitTest extends TestCase
 {
-    protected ?StringObject $instance;
+    protected $instance;
 
     /**
      * Test isSingular

@@ -75,7 +75,7 @@ trait ArrayCreationTrait
      */
     public static function fill(int $start, int $num, $value)
     {
-        return $this->newInstance(array_fill($start, $num, $value));
+        return static::wrap(array_fill($start, $num, $value));
     }
 
     /**
@@ -158,7 +158,9 @@ trait ArrayCreationTrait
      */
     public function mergeRecursive(...$args)
     {
-        $args = array_map(fn ($arg) => $arg instanceof ArrayObject ? $arg->dump() : $arg, $args);
+        $args = array_map(static function ($arg) {
+            return $arg instanceof ArrayObject ? $arg->dump() : $arg;
+        }, $args);
 
         return $this->newInstance(Arr::mergeRecursive($this->storage, ...$args));
     }
@@ -190,6 +192,6 @@ trait ArrayCreationTrait
      */
     public static function range($start, $end, $step = 1)
     {
-        return $this->newInstance(range($start, $end, $step));
+        return static::wrap(range($start, $end, $step));
     }
 }

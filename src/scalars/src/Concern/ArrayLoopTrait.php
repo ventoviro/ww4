@@ -23,7 +23,10 @@ use Windwalker\Utilities\TypeCast;
  */
 trait ArrayLoopTrait
 {
-    protected static ?Loop $currentLoop = null;
+    /**
+     * @var  Loop|null
+     */
+    protected static $currentLoop = null;
 
     /**
      * reduce

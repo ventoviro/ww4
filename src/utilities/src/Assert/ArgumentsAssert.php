@@ -16,5 +16,8 @@ namespace Windwalker\Utilities\Assert;
  */
 class ArgumentsAssert extends TypeAssert
 {
-    protected static string $exceptionClass = \InvalidArgumentException::class;
+    /**
+     * @var  string
+     */
+    protected static $exceptionClass = \InvalidArgumentException::class;
 }

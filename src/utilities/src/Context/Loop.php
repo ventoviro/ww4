@@ -16,18 +16,30 @@ namespace Windwalker\Utilities\Context;
  */
 class Loop
 {
-    protected int $index;
+    /**
+     * @var int
+     */
+    protected $index;
 
     /**
      * @var mixed
      */
     protected $key;
 
-    protected int $length;
+    /**
+     * @var  int
+     */
+    protected $length;
 
-    protected ?Loop $parent;
+    /**
+     * @var  Loop|null
+     */
+    protected $parent;
 
-    protected bool $stop = false;
+    /**
+     * @var  bool
+     */
+    protected $stop = false;
 
     /**
      * @var mixed

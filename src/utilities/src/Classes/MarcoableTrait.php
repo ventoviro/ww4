@@ -19,7 +19,10 @@ use Closure;
  */
 trait MarcoableTrait
 {
-    protected static array $macros = [];
+    /**
+     * @var  array
+     */
+    protected static $macros = [];
 
     public static function macro(string $name, callable $macro): void
     {

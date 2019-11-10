@@ -110,7 +110,7 @@ class ArrayObject implements AccessibleInterface
     {
         $new = clone $this;
 
-        $new->storage[$key] ??= $default;
+        $new->storage[$key] =         $new->storage[$key] ?? $default;
 
         return $new;
     }
@@ -320,7 +320,9 @@ class ArrayObject implements AccessibleInterface
      */
     protected static function mapUnwrap(array $args): array
     {
-        return array_map(fn ($v) => $v instanceof static ? $v->dump() : $v, $args);
+        return array_map(static function ($v) {
+            return $v instanceof static ? $v->dump() : $v;
+        }, $args);
     }
 
     /**

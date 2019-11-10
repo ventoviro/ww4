@@ -997,7 +997,9 @@ class StrTest extends TestCase
      */
     public function testMap()
     {
-        $actual = Str::map('Foo/Bar/Yoo', static fn ($char, $key) => $char === '/' ? '_' : $char);
+        $actual = Str::map('Foo/Bar/Yoo', static function ($char, $key) {
+            return $char === '/' ? '_' : $char;
+        });
 
         self::assertEquals('Foo_Bar_Yoo', (string) $actual);
 
@@ -1013,7 +1015,9 @@ class StrTest extends TestCase
      */
     public function testFilter()
     {
-        $actual = Str::filter('Foo/Bar/Yoo', static fn ($char, $key) => $char !== '/');
+        $actual = Str::filter('Foo/Bar/Yoo', static function ($char, $key) {
+            return $char !== '/';
+        });
 
         self::assertEquals('FooBarYoo', (string) $actual);
 
@@ -1029,7 +1033,9 @@ class StrTest extends TestCase
      */
     public function testReject()
     {
-        $actual = Str::reject('Foo/Bar/Yoo', static fn ($char, $key) => $char === '/');
+        $actual = Str::reject('Foo/Bar/Yoo', static function ($char, $key) {
+            return $char === '/';
+        });
 
         self::assertEquals('FooBarYoo', (string) $actual);
 

@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 /**
  * Part of ww4 project.
@@ -21,9 +21,9 @@ trait BaseAssertionTrait
     /**
      * assertStringDataEquals
      *
-     * @param string $expected
-     * @param string $actual
-     * @param string $message
+     * @param  string  $expected
+     * @param  string  $actual
+     * @param  string  $message
      *
      * @return  void
      */
@@ -35,16 +35,16 @@ trait BaseAssertionTrait
         static::assertEquals(
             TestStringHelper::clean($expected),
             TestStringHelper::clean($actual),
-            $message,
+            $message
         );
     }
 
     /**
      * assertStringDataEquals
      *
-     * @param string $expected
-     * @param string $actual
-     * @param string $message
+     * @param  string  $expected
+     * @param  string  $actual
+     * @param  string  $message
      *
      * @return  void
      */
@@ -56,18 +56,18 @@ trait BaseAssertionTrait
         static::assertEquals(
             trim(TestStringHelper::removeCRLF($expected)),
             trim(TestStringHelper::removeCRLF($actual)),
-            $message,
+            $message
         );
     }
 
     /**
      * assertExpectedException
      *
-     * @param callable $closure
-     * @param string   $class
-     * @param string   $msg
-     * @param int      $code
-     * @param string   $message
+     * @param  callable  $closure
+     * @param  string    $class
+     * @param  string    $msg
+     * @param  int       $code
+     * @param  string    $message
      *
      * @return  void
      */

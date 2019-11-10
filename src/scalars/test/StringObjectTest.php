@@ -807,7 +807,9 @@ class StringObjectTest extends TestCase
     {
         $s = new StringObject('FooBar');
 
-        $s2 = $s->pipe(static fn (StringObject $str) => $str->toUpperCase());
+        $s2 = $s->pipe(static function (StringObject $str) {
+            return $str->toUpperCase();
+        });
 
         self::assertNotSame($s, $s2);
         self::assertEquals('FOOBAR', (string) $s2);

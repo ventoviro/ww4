@@ -21,7 +21,7 @@ class RecursiveDualIterator extends \RecursiveIteratorIterator
      *
      * @var boolean
      */
-    protected bool $equal = false;
+    protected $equal = false;
 
     /**
      * Construct from RecursiveDualIterator

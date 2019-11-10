@@ -18,7 +18,10 @@ use TypeError;
  */
 class TypeAssert
 {
-    protected static string $exceptionClass = TypeError::class;
+    /**
+     * @var  string
+     */
+    protected static $exceptionClass = TypeError::class;
 
     /**
      * assert
@@ -43,7 +46,7 @@ class TypeAssert
         }
 
         if (!$result) {
-            $caller ??= static::getCaller();
+            $caller =             $caller ?? static::getCaller();
 
             static::throwException(static::$exceptionClass, $message, $value, $caller);
         }
@@ -51,14 +54,14 @@ class TypeAssert
 
     public static function invalidArguments(string $message, $value = null, ?string $caller = null): void
     {
-        $caller ??= static::getCaller();
+        $caller =         $caller ?? static::getCaller();
 
         static::throwException(\InvalidArgumentException::class, $message, $value, $caller);
     }
 
     public static function throwException(string $class, string $message, $value = null, ?string $caller = null): void
     {
-        $caller ??= static::getCaller();
+        $caller =         $caller ?? static::getCaller();
 
         throw new $class(sprintf($message, $caller, static::describeValue($value)));
     }

@@ -22,11 +22,13 @@ use function Windwalker\arr;
  */
 class ArraySortTraitTest extends TestCase
 {
-    protected ?ArrayObject $instance;
+    protected $instance;
 
     public function testUksort(): void
     {
-        $r = $this->instance->uksort(fn ($a, $b) => (int) $a > (int) $b);
+        $r = $this->instance->uksort(function ($a, $b) {
+            return (int) $a > (int) $b;
+        });
 
         self::assertEquals(
             [
@@ -56,7 +58,9 @@ class ArraySortTraitTest extends TestCase
      */
     public function testUasort(): void
     {
-        $r = $this->instance->uasort(fn ($a, $b) => strcmp($a, $b));
+        $r = $this->instance->uasort(function ($a, $b) {
+            return strcmp($a, $b);
+        });
 
         self::assertSame(
             [
@@ -269,7 +273,9 @@ class ArraySortTraitTest extends TestCase
 
     public function testUsort(): void
     {
-        $r = $this->instance->usort(fn ($a, $b) => strcmp($a, $b));
+        $r = $this->instance->usort(function ($a, $b) {
+            return strcmp($a, $b);
+        });
 
         self::assertSame(
             [

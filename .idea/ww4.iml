@@ -9,7 +9,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/data/test" isTestSource="true" packagePrefix="Windwalker\Data\Test" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/scalars/test" isTestSource="true" packagePrefix="Windwalker\Scalars\Test" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/utilities/test" isTestSource="true" packagePrefix="Windwalker\Utilities\Test" generated="true" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/brick/math" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/danielstjules/stringy" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/inflector" />
@@ -24,6 +23,8 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-ctype" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-mbstring" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php72" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php73" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php74" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/var-dumper" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/yaml" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/yosymfony/parser-utils" />

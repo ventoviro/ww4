@@ -91,7 +91,9 @@ class MarcoableTraitTest extends TestCase
             use MarcoableTrait;
         };
 
-        $this->instance::macro('foo', fn ($a = null) => 'Hello:' . $a);
+        $this->instance::macro('foo', function ($a = null) {
+            return 'Hello:' . $a;
+        });
     }
 
     protected function tearDown(): void

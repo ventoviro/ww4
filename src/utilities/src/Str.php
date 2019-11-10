@@ -61,7 +61,7 @@ class Str
         int $offset = 0,
         string $encoding = null
     ): string {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         $startIndex = Utf8String::strpos($string, $start, $offset, $encoding);
 

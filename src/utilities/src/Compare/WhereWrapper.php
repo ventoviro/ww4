@@ -19,7 +19,10 @@ use Windwalker\Utilities\Wrapper\WrapperInterface;
  */
 class WhereWrapper implements WrapperInterface
 {
-    protected string $operator;
+    /**
+     * @var  string
+     */
+    protected $operator;
 
     /**
      * @var mixed
@@ -31,7 +34,10 @@ class WhereWrapper implements WrapperInterface
      */
     protected $var2;
 
-    protected bool $strict;
+    /**
+     * @var  bool
+     */
+    protected $strict;
 
     /**
      * CompareWrapper constructor.
@@ -61,7 +67,7 @@ class WhereWrapper implements WrapperInterface
     public function __invoke($src): bool
     {
         return CompareHelper::compare(
-            Arr::get($src, $this->var1, null, ''),
+            Arr::get($src, $this->var1, ''),
             $this->operator,
             $this->var2,
             $this->strict

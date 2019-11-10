@@ -1,1 +1,1 @@
-php74 C:/ProgramData/ComposerSetup/bin/composer.phar %*
+php72 C:/ProgramData/ComposerSetup/bin/composer.phar %*

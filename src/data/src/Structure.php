@@ -21,7 +21,10 @@ use Windwalker\Utilities\TypeCast;
  */
 class Structure extends Collection
 {
-    protected FormatRegistry $formatRegistry;
+    /**
+     * @var FormatRegistry
+     */
+    protected $formatRegistry;
 
     /**
      * Structure constructor.
@@ -53,7 +56,7 @@ class Structure extends Collection
      */
     public function get($key, $delimiter = '.')
     {
-        return Arr::get($this->storage, $key, $delimiter);
+        return Arr::get($this->storage, $key);
     }
 
     /**

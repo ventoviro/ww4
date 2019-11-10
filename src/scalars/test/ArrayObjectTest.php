@@ -26,7 +26,7 @@ class ArrayObjectTest extends TestCase
      *
      * @var ArrayObject
      */
-    protected ArrayObject $instance;
+    protected $instance;
 
     /**
      * {@inheritDoc}
@@ -43,7 +43,7 @@ class ArrayObjectTest extends TestCase
 
     public function testJsonSerialize(): void
     {
-        self::assertEquals('[1,2,3]', json_encode($this->instance, JSON_THROW_ON_ERROR, 512));
+        self::assertEquals('[1,2,3]', json_encode($this->instance));
     }
 
     public function testCount(): void
@@ -232,7 +232,9 @@ class ArrayObjectTest extends TestCase
 
     public function testPipe(): void
     {
-        $a = $this->instance->pipe(fn (ArrayObject $arr) => $arr->append(4));
+        $a = $this->instance->pipe(function (ArrayObject $arr) {
+            return $arr->append(4);
+        });
 
         self::assertEquals([1, 2, 3, 4], $a->dump());
     }
@@ -339,7 +341,9 @@ class ArrayObjectTest extends TestCase
 
     public function testApply(): void
     {
-        $a = $this->instance->apply(fn (array $v) => array_reverse($v));
+        $a = $this->instance->apply(function (array $v) {
+            return array_reverse($v);
+        });
 
         self::assertEquals([3, 2, 1], $a->dump());
     }

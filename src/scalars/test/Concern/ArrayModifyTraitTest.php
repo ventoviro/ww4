@@ -22,7 +22,7 @@ use function Windwalker\arr;
  */
 class ArrayModifyTraitTest extends TestCase
 {
-    protected ?ArrayObject $instance;
+    protected $instance;
 
     public function testExcept(): void
     {

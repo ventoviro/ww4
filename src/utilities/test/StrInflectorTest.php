@@ -135,7 +135,7 @@ class StrInflectorTest extends \PHPUnit\Framework\TestCase
                 StrInflector::isSingular($plural),
                 sprintf(
                     'Checks the plural (%s) is not singular.',
-                    $plural,
+                    $plural
                 )
             );
         }

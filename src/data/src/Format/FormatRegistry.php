@@ -16,13 +16,25 @@ namespace Windwalker\Data\Format;
  */
 class FormatRegistry
 {
-    protected array $handlers = [];
+    /**
+     * @var  array
+     */
+    protected $handlers = [];
 
-    protected array $aliases = [];
+    /**
+     * @var  array
+     */
+    protected $aliases = [];
 
-    protected array $extMaps = [];
+    /**
+     * @var  array
+     */
+    protected $extMaps = [];
 
-    public string $defaultFormat = 'json';
+    /**
+     * @var  string
+     */
+    public $defaultFormat = 'json';
 
     /**
      * FormatRegistry constructor.

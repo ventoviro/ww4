@@ -20,7 +20,10 @@ use function Windwalker\arr;
  */
 class ArrayCreationTraitTest extends TestCase
 {
-    protected ?ArrayObject $instance;
+    /**
+     * @var  ArrayObject
+     */
+    protected $instance;
 
     public function testCombine(): void
     {

@@ -16,9 +16,15 @@ namespace Windwalker\Utilities;
  */
 class SimpleTemplate
 {
-    protected array $wrapper = ['{{', '}}'];
+    /**
+     * @var  array
+     */
+    protected $wrapper = ['{{', '}}'];
 
-    protected string $delimiter = '.';
+    /**
+     * @var  string
+     */
+    protected $delimiter = '.';
 
     public static function create(): SimpleTemplate
     {
@@ -34,7 +40,7 @@ class SimpleTemplate
         return preg_replace_callback(
             chr(1) . $regex . chr(1),
             function ($match) use ($data) {
-                $return = Arr::get($data, $match[1], '', $this->delimiter);
+                $return = Arr::get($data, $match[1], $this->delimiter);
 
                 if (is_array($return) || is_object($return)) {
                     return TypeCast::toString($return);

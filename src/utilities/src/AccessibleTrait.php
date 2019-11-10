@@ -14,13 +14,16 @@ use Iterator;
 /**
  * The Accessible trait which implements AccessibleInterface.
  *
- * @see AccessibleInterface
+ * @see    AccessibleInterface
  *
  * @since  __DEPLOY_VERSION__
  */
 trait AccessibleTrait
 {
-    protected array $storage = [];
+    /**
+     * @var  array
+     */
+    protected $storage = [];
 
     /**
      * Get value from this object.
@@ -31,8 +34,10 @@ trait AccessibleTrait
      */
     public function &get($key)
     {
+        $ret = null;
+
         if (!$this->has($key)) {
-            return null;
+            return $ret;
         }
 
         $ret =& $this->storage[$key];
@@ -58,8 +63,8 @@ trait AccessibleTrait
     /**
      * Set value default if not exists.
      *
-     * @param mixed $key
-     * @param mixed $default
+     * @param  mixed  $key
+     * @param  mixed  $default
      *
      * @return  static
      *
@@ -67,7 +72,7 @@ trait AccessibleTrait
      */
     public function def($key, $default)
     {
-        $this->storage[$key] ??= $default;
+        $this->storage[$key] = $this->storage[$key] ?? $default;
 
         return $this;
     }
@@ -75,7 +80,7 @@ trait AccessibleTrait
     /**
      * Check a key exists or not.
      *
-     * @param mixed $key
+     * @param  mixed  $key
      *
      * @return  mixed
      *
@@ -89,7 +94,7 @@ trait AccessibleTrait
     /**
      * remove
      *
-     * @param mixed $key
+     * @param  mixed  $key
      *
      * @return  static
      *
@@ -178,6 +183,11 @@ trait AccessibleTrait
      */
     public function offsetSet($key, $value): void
     {
+        if ($key === null || $key === '') {
+            $this->storage[] = $value;
+            return;
+        }
+
         $this->set($key, $value);
     }
 

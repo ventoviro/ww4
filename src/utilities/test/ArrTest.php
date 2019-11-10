@@ -225,9 +225,8 @@ class ArrTest extends TestCase
 
         $this->assertEquals('sakura', Arr::get($data, 'flower'));
         $this->assertEquals('love', Arr::get($data, 'pos1.sunflower'));
-        $this->assertEquals('default', Arr::get($data, 'pos1.notexists', 'default'));
-        $this->assertEquals('default', Arr::get($data, '', 'default'));
-        $this->assertEquals('love', Arr::get($data, 'pos1/sunflower', null, '/'));
+        $this->assertEquals('default', Arr::get($data, 'pos1.notexists') ?? 'default');
+        $this->assertEquals('love', Arr::get($data, 'pos1/sunflower', '/'));
         $this->assertEquals($data['array'], Arr::get($data, 'array'));
 
         $data = (object) [
@@ -248,9 +247,9 @@ class ArrTest extends TestCase
 
         $this->assertEquals('sakura', Arr::get($data, 'flower'));
         $this->assertEquals('love', Arr::get($data, 'pos1.sunflower'));
-        $this->assertEquals('default', Arr::get($data, 'pos1.notexists', 'default'));
+        $this->assertEquals('default', Arr::get($data, 'pos1.notexists') ?? 'default');
         $this->assertEquals('elegant', Arr::get($data, 'pos2.cornflower'));
-        $this->assertEquals('love', Arr::get($data, 'pos1/sunflower', null, '/'));
+        $this->assertEquals('love', Arr::get($data, 'pos1/sunflower', '/'));
         $this->assertEquals($data->array, Arr::get($data, 'array'));
         $this->assertNull(Arr::get($data, 'not.exists'));
     }
@@ -983,7 +982,47 @@ class ArrTest extends TestCase
             }
         ];
 
-        $expected = <<<OUT
+        if (PHP_VERSION_ID <= 70400) {
+            $expected = <<<OUT
+Array
+(
+    [0] => 1
+    [1] => 2
+    [foo] => bar
+    [2] => stdClass Object
+        (
+            [baz] => yoo
+        )
+
+    [3] => ArrayObject Object
+        (
+            [flower] => sakura
+            [fruit] => apple
+        )
+
+    [4] => Array
+        (
+            [max] => Array
+                (
+                    [level] => Array
+                        *MAX LEVEL*
+
+                )
+
+        )
+
+    [5] => class@anonymous Object
+        (
+            [foo:protected] => bar
+            [baz:class@anonymous:private] => yoo
+            [flower] => sakura
+            [car:static] => toyota
+        )
+
+)
+OUT;
+        } else {
+            $expected = <<<SHOW
 Array
 (
     [0] => 1
@@ -1018,7 +1057,8 @@ Array
         )
 
 )
-OUT;
+SHOW;
+        }
 
         self::assertStringSafeEquals($expected, Arr::dump($data, 4));
     }
@@ -1081,7 +1121,10 @@ OUT;
 
         // Test compare wrapper
         $this->assertEquals([$data[1]], Arr::query($data, [where('id', '=', 2)]));
-        $this->assertEquals([$data[1]], Arr::query($data, ['id' => fn ($v) => $v === 2]));
+        $this->assertEquals([$data[1]], Arr::query($data, ['id' => function ($v) {
+            return $v === 2;
+        }
+        ]));
 
         // Test strict equals
         $this->assertEquals([$data[0], $data[2], $data[3]], Arr::query($data, ['data' => true], false));
@@ -1147,7 +1190,9 @@ OUT;
 
         $results = Arr::query(
             $data,
-            static fn ($value, $key) => $value['title'] === 'Julius Caesar' || $value['id'] == 4
+            static function ($value, $key) {
+                return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+            }
         );
 
         $this->assertEquals([$data[0], $data[3]], $results);
@@ -1203,7 +1248,9 @@ OUT;
                 ],
         ];
 
-        self::assertEquals($expected, Arr::filterRecursive($src, fn ($v) => strpos($v, 'a') !== false));
+        self::assertEquals($expected, Arr::filterRecursive($src, function ($v) {
+            return strpos($v, 'a') !== false;
+        }));
     }
 
     public function testMapRecursive(): void
@@ -1266,7 +1313,9 @@ OUT;
             ],
         ];
 
-        self::assertEquals($expected, Arr::mapRecursive($src, fn ($v, $k) => $v . '-' . $k, true, true));
+        self::assertEquals($expected, Arr::mapRecursive($src, function ($v, $k) {
+            return $v . '-' . $k;
+        }, true, true));
     }
 
     public function testFlatMap(): void
@@ -1277,7 +1326,9 @@ OUT;
             ['age' => 28]
         ];
 
-        $b = Arr::flatMap($a, fn ($values) => array_map('strtoupper', $values));
+        $b = Arr::flatMap($a, function ($values) {
+            return array_map('strtoupper', $values);
+        });
 
         self::assertEquals(
             ['name' => 'SALLY', 'school' => 'ARKANSAS', 'age' => '28'],

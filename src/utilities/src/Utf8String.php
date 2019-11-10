@@ -115,7 +115,7 @@ abstract class Utf8String
      */
     public static function strIreplace($search, $replace, string $str, ?int $count = null, ?string $encoding = null)
     {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         if (!is_array($search)) {
             $slen = strlen($search);
@@ -177,7 +177,7 @@ abstract class Utf8String
      */
     public static function strSplit(string $string, int $length = 1, ?string $encoding = null)
     {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         if ($length === 1) {
             return preg_split('//u', $string, -1, PREG_SPLIT_NO_EMPTY);
@@ -211,7 +211,7 @@ abstract class Utf8String
      */
     public static function strcasecmp(string $str1, string $str2, ?string $encoding = null): int
     {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         return static::strcmp(static::strtoupper($str1, $encoding), static::strtoupper($str2, $encoding));
     }
@@ -254,7 +254,7 @@ abstract class Utf8String
         int $length = null,
         ?string $encoding = null
     ): int {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         if (empty($mask) || $mask === '') {
             return 0;
@@ -316,7 +316,7 @@ abstract class Utf8String
         int $length = null,
         ?string $encoding = null
     ): int {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         $mask = preg_replace('!([\\\\\\-\\]\\[/^])!', '\\\${1}', $mask);
 
@@ -360,7 +360,7 @@ abstract class Utf8String
         ?int $length = null,
         ?string $encoding = null
     ): string {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         preg_match_all('/./us', $str, $ar);
         preg_match_all('/./us', $repl, $rar);
@@ -508,7 +508,7 @@ abstract class Utf8String
      */
     public static function lcfirst(string $str, ?string $encoding = null): string
     {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         switch (static::strlen($str, $encoding)) {
             case 0:
@@ -558,7 +558,7 @@ abstract class Utf8String
         bool $caseSensitive = true,
         ?string $encoding = null
     ): int {
-        $encoding ??= mb_internal_encoding();
+        $encoding =         $encoding ?? mb_internal_encoding();
 
         if (!$caseSensitive) {
             $string = static::strtoupper($string);

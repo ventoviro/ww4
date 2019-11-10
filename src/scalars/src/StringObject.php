@@ -95,14 +95,14 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @var  string
      */
-    protected string $string = '';
+    protected $string = '';
 
     /**
      * Property encoding.
      *
      * @var  string
      */
-    protected ?string $encoding = null;
+    protected $encoding = null;
 
     /**
      * StringObject constructor.
@@ -402,7 +402,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      */
     public function explode(string $delimiter, ?int $limit = null): ArrayObject
     {
-        $limit ??= PHP_INT_MAX;
+        $limit =         $limit ?? PHP_INT_MAX;
 
         return ArrayObject::explode($delimiter, $this->string, $limit);
     }
@@ -453,7 +453,9 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      */
     public function apply(callable $callback, ...$args): self
     {
-        return $this->cloneInstance(static fn ($new) => $new->string = $callback($new->string, ...$args));
+        return $this->cloneInstance(static function ($new) use ($callback, $args) {
+            return $new->string = $callback($new->string, ...$args);
+        });
     }
 
     /**

@@ -131,19 +131,18 @@ abstract class Arr
      *
      * @param  mixed       $data       An array or object to get value.
      * @param  string|int  $key        The key path.
-     * @param  mixed       $default    The default value if not exists.
      * @param  string      $delimiter  Separator of paths.
      *
      * @return mixed Found value, null if not exists.
      *
      * @since   2.0
      */
-    public static function get($data, $key, $default = null, string $delimiter = '.')
+    public static function get($data, $key, string $delimiter = '.')
     {
         $nodes = static::getPathNodes((string) $key, $delimiter);
 
         if (empty($nodes)) {
-            return \Windwalker\value($default);
+            return null;
         }
 
         $dataTmp = $data;
@@ -156,7 +155,7 @@ abstract class Arr
                 // Check object value exists
                 $dataTmp = $dataTmp->$arg;
             } else {
-                return $default;
+                return null;
             }
         }
 
@@ -419,7 +418,7 @@ abstract class Arr
         $i       = 0;
         $c       = 0;
 
-        $callback ??= 'is_null';
+        $callback =         $callback ?? 'is_null';
 
         foreach ($data as $key => $value) {
             // If use global function, send only value as argument.
@@ -503,7 +502,7 @@ abstract class Arr
             return $default;
         }
 
-        $value = static::get($data, $key, $delimiter);
+        $value = static::get($data, $key);
 
         $data = static::remove($data, $key, $delimiter);
 
@@ -978,8 +977,7 @@ abstract class Arr
                     // Workaround for PHP object compare bug, see: https://bugs.php.net/bug.php?id=62976
                     $compare1 = is_object(static::get($array, $key)) ? get_object_vars(
                         static::get(
-                            $array,
-                            $key
+                            $array, $key
                         )
                     ) : static::get($array, $key);
                     $compare2 = is_object($val) ? get_object_vars($val) : $val;
