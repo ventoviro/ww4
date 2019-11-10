@@ -11,7 +11,7 @@
  *
  * @since  __DEPLOY_VERSION__
  */
-public ${STATIC} function set${NAME}(#if (${SCALAR_TYPE_HINT})${SCALAR_TYPE_HINT} #else#end$${PARAM_NAME})#if(${RETURN_TYPE}): self#else#end
+public ${STATIC} function set${NAME}(#if (${SCALAR_TYPE_HINT})${SCALAR_TYPE_HINT} #else#end$${PARAM_NAME})
 {
 #if (${STATIC} == "static")
     static::$${FIELD_NAME} = $${PARAM_NAME};
