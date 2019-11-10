@@ -4,6 +4,11 @@ php:
   - 7.2
   - 7.3
   - 7.4snapshot
+  - nightly
+
+matrix:
+  allow_failures:
+    - php: nightly
 
 #addons:
 #  postgresql: "9.3"
