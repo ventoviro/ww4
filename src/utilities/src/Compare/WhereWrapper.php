@@ -95,7 +95,7 @@ class WhereWrapper implements WrapperInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setVar1($var1): self
+    public function setVar1($var1)
     {
         $this->var1 = $var1;
 
@@ -123,7 +123,7 @@ class WhereWrapper implements WrapperInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setVar2($var2): self
+    public function setVar2($var2)
     {
         $this->var2 = $var2;
 
@@ -151,7 +151,7 @@ class WhereWrapper implements WrapperInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setOperator(string $operator): self
+    public function setOperator(string $operator)
     {
         $this->operator = $operator;
 

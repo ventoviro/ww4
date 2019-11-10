@@ -70,7 +70,7 @@ class Loop
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function loop(int $index, $key): self
+    public function loop(int $index, $key)
     {
         $this->index = $index;
         $this->key = $key;

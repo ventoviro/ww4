@@ -95,7 +95,7 @@ class SimpleTemplate
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setDelimiter(string $delimiter): self
+    public function setDelimiter(string $delimiter)
     {
         $this->delimiter = $delimiter;
 

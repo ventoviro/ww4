@@ -30,7 +30,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function pad(int $size, $value): self
+    public function pad(int $size, $value)
     {
         return $this->newInstance(array_pad($this->storage, $size, $value));
     }
@@ -45,7 +45,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function leftPad(int $size, $value): self
+    public function leftPad(int $size, $value)
     {
         return $this->pad(-$size, $value);
     }
@@ -60,7 +60,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function rightPad(int $size, $value): self
+    public function rightPad(int $size, $value)
     {
         return $this->pad($size, $value);
     }
@@ -126,7 +126,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5.13
      */
-    public function append(...$args): self
+    public function append(...$args)
     {
         $new = $this->storage;
         array_push($new, ...$args);
@@ -143,7 +143,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5.13
      */
-    public function prepend(...$args): self
+    public function prepend(...$args)
     {
         $new = $this->storage;
         array_unshift($new, ...$args);
@@ -160,7 +160,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5.13
      */
-    public function removeLast($num = 1): self
+    public function removeLast($num = 1)
     {
         return (clone $this)->splice(0, -$num);
     }
@@ -174,7 +174,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5.13
      */
-    public function removeFirst($num = 1): self
+    public function removeFirst($num = 1)
     {
         return (clone $this)->splice($num);
     }
@@ -188,7 +188,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function replace(...$args): self
+    public function replace(...$args)
     {
         return $this->newInstance(array_replace($this->storage, ...static::mapUnwrap($args)));
     }
@@ -202,7 +202,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function replaceRecursive(...$args): self
+    public function replaceRecursive(...$args)
     {
         return $this->newInstance(array_replace_recursive($this->storage, ...static::mapUnwrap($args)));
     }
@@ -216,7 +216,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function reverse(bool $preserveKeys = false): self
+    public function reverse(bool $preserveKeys = false)
     {
         return $this->newInstance(array_reverse($this->storage, $preserveKeys));
     }
@@ -232,7 +232,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function slice(int $offset, ?int $length = null, bool $preserveKeys = false): self
+    public function slice(int $offset, ?int $length = null, bool $preserveKeys = false)
     {
         return $this->newInstance(array_slice($this->storage, ...func_get_args()));
     }
@@ -248,7 +248,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function splice(int $offset, ?int $length = null, $replacement = null): self
+    public function splice(int $offset, ?int $length = null, $replacement = null)
     {
         return $this->newInstance(array_splice($this->storage, ...func_get_args()));
     }
@@ -263,7 +263,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function insertAfter(int $key, ...$args): self
+    public function insertAfter(int $key, ...$args)
     {
         $new = clone $this;
 
@@ -282,7 +282,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function insertBefore(int $key, $value): self
+    public function insertBefore(int $key, $value)
     {
         $new = clone $this;
 
@@ -325,7 +325,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5
      */
-    public function shuffle(): self
+    public function shuffle()
     {
         $new = $this->storage;
 

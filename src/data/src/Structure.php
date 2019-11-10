@@ -54,7 +54,7 @@ class Structure extends Collection
      *
      * @return mixed
      */
-    public function get($key, $delimiter = '.')
+    public function &get($key, $delimiter = '.')
     {
         return Arr::get($this->storage, $key);
     }
@@ -86,7 +86,7 @@ class Structure extends Collection
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function with($key, $value, $delimiter = '.'): Structure
+    public function with($key, $value, $delimiter = '.')
     {
         $new = clone $this;
 

@@ -89,7 +89,7 @@ class CallbackFormatHandler implements FormatInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setParser(?callable $parser): self
+    public function setParser(?callable $parser)
     {
         $this->parser = $parser;
 
@@ -117,7 +117,7 @@ class CallbackFormatHandler implements FormatInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setDumper(?callable $dumper): self
+    public function setDumper(?callable $dumper)
     {
         $this->dumper = $dumper;
 

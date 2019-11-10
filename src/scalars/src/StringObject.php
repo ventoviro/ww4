@@ -348,7 +348,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @return  static  Return self to support chaining.
      */
-    public function withEncoding(string $encoding): self
+    public function withEncoding(string $encoding)
     {
         return $this->cloneInstance(static function (StringObject $new) use ($encoding) {
             $new->encoding = $encoding;
@@ -372,7 +372,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @return  static  Return self to support chaining.
      */
-    public function withString(string $string): self
+    public function withString(string $string)
     {
         return $this->cloneInstance(static function (StringObject $new) use ($string) {
             $new->string = $string;
@@ -451,7 +451,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @return  static
      */
-    public function apply(callable $callback, ...$args): self
+    public function apply(callable $callback, ...$args)
     {
         return $this->cloneInstance(static function ($new) use ($callback, $args) {
             return $new->string = $callback($new->string, ...$args);
@@ -468,7 +468,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @since  3.5.14
      */
-    public function pipe(callable $callback, ...$args): self
+    public function pipe(callable $callback, ...$args)
     {
         return $callback($this, ...$args);
     }

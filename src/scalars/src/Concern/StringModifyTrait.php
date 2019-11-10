@@ -45,7 +45,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function replace($search, $replacement, int &$count = null): self
+    public function replace($search, $replacement, int &$count = null)
     {
         return $this->cloneInstance(function (StringObject $new) use ($search, $replacement, &$count) {
             $new->string = str_replace($search, $replacement, $new->string, $count);
@@ -74,7 +74,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function reverse(): self
+    public function reverse()
     {
         return $this->cloneInstance(function (StringObject $new) {
             $new->string = Utf8String::strrev($new->string);
@@ -90,7 +90,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function substrReplace(string $replace, int $start, int $offset = null): self
+    public function substrReplace(string $replace, int $start, int $offset = null)
     {
         return $this->cloneInstance(function (StringObject $new) use ($replace, $start, $offset) {
             $new->string = Utf8String::substrReplace($new->string, $replace, $start, $offset, $this->encoding);
@@ -104,7 +104,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function trimLeft(string $charlist = null): self
+    public function trimLeft(string $charlist = null)
     {
         return $this->cloneInstance(function (StringObject $new) use ($charlist) {
             $new->string = Utf8String::ltrim($new->string, $charlist);
@@ -118,7 +118,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function trimRight(string $charlist = null): self
+    public function trimRight(string $charlist = null)
     {
         return $this->cloneInstance(function (StringObject $new) use ($charlist) {
             $new->string = Utf8String::rtrim($new->string, $charlist);
@@ -132,7 +132,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function trim(string $charlist = null): self
+    public function trim(string $charlist = null)
     {
         return $this->cloneInstance(function (StringObject $new) use ($charlist) {
             $new->string = Utf8String::trim($new->string, $charlist);
@@ -144,7 +144,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function upperCaseFirst(): self
+    public function upperCaseFirst()
     {
         return $this->cloneInstance(function (StringObject $new) {
             $new->string = Utf8String::ucfirst($new->string, $this->encoding);
@@ -156,7 +156,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function lowerCaseFirst(): self
+    public function lowerCaseFirst()
     {
         return $this->cloneInstance(function (StringObject $new) {
             $new->string = Utf8String::lcfirst($new->string, $this->encoding);
@@ -168,7 +168,7 @@ trait StringModifyTrait
      *
      * @return  static
      */
-    public function upperCaseWords(): self
+    public function upperCaseWords()
     {
         return $this->cloneInstance(function (StringObject $new) {
             $new->string = Utf8String::ucwords($new->string, $this->encoding);
@@ -184,7 +184,7 @@ trait StringModifyTrait
      *
      * @since  3.5.13
      */
-    public function stripHtmlTags(?string $allowTags = null): self
+    public function stripHtmlTags(?string $allowTags = null)
     {
         return $this->cloneInstance(static function (self $new) use ($allowTags) {
             $new->string = strip_tags($new->string, $allowTags);
@@ -200,7 +200,7 @@ trait StringModifyTrait
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function append($string): self
+    public function append($string)
     {
         return tap(clone $this, static function (StringObject $new) use ($string) {
             $new->string .= $string;
@@ -216,7 +216,7 @@ trait StringModifyTrait
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function prepend($string): self
+    public function prepend($string)
     {
         return tap(clone $this, static function (StringObject $new) use ($string) {
             $new->string = $string . $new->string;

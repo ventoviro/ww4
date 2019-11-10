@@ -982,7 +982,7 @@ class ArrTest extends TestCase
             }
         ];
 
-        if (PHP_VERSION_ID <= 70400) {
+        if (PHP_VERSION_ID < 70400) {
             $expected = <<<OUT
 Array
 (
