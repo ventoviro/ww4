@@ -55,6 +55,11 @@
             "Windwalker\\Utilities\\Test\\": "src/utilities/test"
         }
     },
+    "config": {
+        "platform": {
+            "php": "7.2"
+        }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "4.x-dev"
