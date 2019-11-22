@@ -128,6 +128,22 @@ trait AccessibleTrait
     }
 
     /**
+     * reset
+     *
+     * @param array $storage
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function reset(array $storage = [])
+    {
+        $this->storage = $storage;
+
+        return $this;
+    }
+
+    /**
      * Convert the object into something JSON serializable.
      *
      * @return array

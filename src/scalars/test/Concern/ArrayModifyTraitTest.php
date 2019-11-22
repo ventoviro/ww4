@@ -67,13 +67,9 @@ class ArrayModifyTraitTest extends TestCase
 
     public function testShuffle(): void
     {
-        $this->instance = ArrayObject::range(1, 999);
+        $this->instance = ArrayObject::range(1, 10);
 
         $a = $this->instance->shuffle();
-
-        if ($a->dump() == $this->instance->dump()) {
-            $a = $this->instance->shuffle();
-        }
 
         // Make sure shuffled
         self::assertNotEquals($this->instance->dump(), $a->dump());
@@ -233,7 +229,7 @@ class ArrayModifyTraitTest extends TestCase
 
         self::assertEquals(
             Arr::group($src->dump(), 'group'),
-            $src->groupBy('group')->dump()
+            $src->group('group')->dump(true)
         );
     }
 
@@ -351,6 +347,21 @@ class ArrayModifyTraitTest extends TestCase
             ],
             $src->only(['ai', 'agent', 'green'])->dump()
         );
+    }
+
+    /**
+     * @see  ArrayObject::union
+     */
+    public function testUnion(): void
+    {
+        $a = arr(['a' => 'apple', 'b' => 'banana']);
+        $b = arr(['a' => 'pear', 'b' => 'strawberry', 'c' => 'cherry']);
+
+        self::assertEquals([
+            'a' => 'apple',
+            'b' => 'banana',
+            'c' => 'cherry',
+        ], $a->union($b)->dump());
     }
 
     protected function setUp(): void

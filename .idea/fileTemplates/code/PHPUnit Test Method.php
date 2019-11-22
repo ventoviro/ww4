@@ -1,6 +1,4 @@
 /**
- * Test ${NAME}
- *
  * @see  ${TESTED_NAME}::${NAME}
  */
 public function test${CAPITALIZED_NAME}(): void

@@ -41,6 +41,30 @@ class ArrayObjectTest extends TestCase
         return new ArrayObject(['foo' => 'bar', 'flower' => 'sakura']);
     }
 
+    /**
+     * @see  ArrayObject::withReset
+     */
+    public function testWithReset(): void
+    {
+        $a = $this->instance->withReset();
+
+        self::assertEquals([], $a->dump());
+
+        $b = $this->instance->withReset([5, 5, 5]);
+
+        self::assertEquals([5, 5, 5], $b->dump());
+    }
+
+    /**
+     * @see  ArrayObject::bind
+     */
+    public function testBind(): void
+    {
+        $a = $this->instance->bind(['a', 'b', null]);
+
+        self::assertEquals(['a', 'b', 3], $a->dump());
+    }
+
     public function testJsonSerialize(): void
     {
         self::assertEquals('[1,2,3]', json_encode($this->instance));
@@ -239,6 +263,17 @@ class ArrayObjectTest extends TestCase
         self::assertEquals([1, 2, 3, 4], $a->dump());
     }
 
+    public function testTap()
+    {
+        $b = 1;
+
+        $a = $this->instance->tap(function (ArrayObject $a) use (&$b) {
+            $b += $a->first();
+        });
+
+        self::assertEquals(2, $b);
+    }
+
     public function testUnset(): void
     {
         unset($this->instance[1]);
@@ -295,6 +330,20 @@ class ArrayObjectTest extends TestCase
         self::assertEquals(6, $this->instance->sum());
 
         self::assertEquals(0, $this->getAssoc()->sum());
+    }
+
+    /**
+     * @see  ArrayObject::avg
+     */
+    public function testAvg(): void
+    {
+        $a = $this->instance->avg();
+
+        self::assertEquals(2, $a);
+
+        $a = $this->instance->append(5, 2, 3)->avg();
+
+        self::assertEquals(2.67, round($a, 2));
     }
 
     public function testValues(): void

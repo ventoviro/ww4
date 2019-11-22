@@ -166,6 +166,18 @@ trait ArrayCreationTrait
     }
 
     /**
+     * countValues
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function countValues()
+    {
+        return $this->group()->map('count');
+    }
+
+    /**
      * rand
      *
      * @param  int  $num

@@ -10,6 +10,7 @@
 namespace Windwalker\Scalars\Concern;
 
 use Windwalker\Data\Traits\CollectionTrait;
+use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\TypeCast;
 
@@ -372,7 +373,7 @@ trait ArrayModifyTrait
      *
      * @since  3.5.3
      */
-    public function groupBy(string $column, int $type = Arr::GROUP_TYPE_ARRAY)
+    public function group(?string $column = null, int $type = Arr::GROUP_TYPE_ARRAY)
     {
         return $this->newInstance(Arr::group($this->dump(), $column, $type));
     }
@@ -387,5 +388,25 @@ trait ArrayModifyTrait
     public function keyBy(string $field)
     {
         return $this->newInstance(Arr::group($this->dump(), $field, Arr::GROUP_TYPE_KEY_BY));
+    }
+
+    /**
+     * union
+     *
+     * @param array[] ...$args
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function union(...$args)
+    {
+        $new = clone $this;
+
+        foreach ($args as $arg) {
+            $new->storage += TypeCast::toArray($arg);
+        }
+
+        return $new;
     }
 }

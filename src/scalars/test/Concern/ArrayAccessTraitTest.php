@@ -18,7 +18,7 @@ use function Windwalker\arr;
  *
  * @since  __DEPLOY_VERSION__
  */
-class ArrayContentTraitTest extends TestCase
+class ArrayAccessTraitTest extends TestCase
 {
     /**
      * @var  ArrayObject

@@ -238,6 +238,25 @@ class ArrayCreationTraitTest extends TestCase
         self::assertEquals(['foo' => 'bar'], $a->diffKeys($b)->dump());
     }
 
+    /**
+     * @see  ArrayObject::countValues()
+     */
+    public function testCountValues(): void
+    {
+        $a = arr([1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 5, 5]);
+
+        self::assertEquals(
+            [
+                1 => 2,
+                2 => 3,
+                3 => 4,
+                4 => 1,
+                5 => 2,
+            ],
+            $a->countValues()->dump()
+        );
+    }
+
     public function testRand(): void
     {
         $a = arr(['A', 'B', 'C', 'D', 'E']);

@@ -9,16 +9,14 @@
 
 namespace Windwalker\Scalars\Concern;
 
-use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
-use Windwalker\Utilities\TypeCast;
 
 /**
  * The ArrayContentTrait class.
  *
  * @since  __DEPLOY_VERSION__
  */
-trait ArrayContentTrait
+trait ArrayAccessTrait
 {
     /**
      * first
