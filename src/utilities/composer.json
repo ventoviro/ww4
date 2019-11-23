@@ -13,7 +13,8 @@
         "doctrine/inflector": "^1.3"
     },
     "suggest": {
-        "doctrine/inflector": "Install ~1.0 to use inflector."
+        "doctrine/inflector": "Install ~1.0 to use inflector.",
+        "opis/closure": "Install ^3.0 to support serializable Closure."
     },
     "minimum-stability": "beta",
     "autoload": {

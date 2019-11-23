@@ -76,6 +76,8 @@ namespace {
             return json_last_error() === JSON_ERROR_NONE;
         }
     }
+
+    include_once __DIR__ . '/serializer.php';
 }
 
 namespace Windwalker {
