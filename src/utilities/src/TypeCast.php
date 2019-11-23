@@ -15,6 +15,13 @@ use Windwalker\Utilities\Contract\DumpableInterface;
 /**
  * The TypeCast class.
  *
+ * @method static tryInteger($value, bool $strict = false)
+ * @method static tryFloat($value, bool $strict = false)
+ * @method static tryString($value, bool $strict = false)
+ * @method static tryBoolean($value, bool $strict = false)
+ * @method static tryArray($value, bool $strict = false)
+ * @method static tryObject($value, bool $strict = false)
+ *
  * @since  __DEPLOY_VERSION__
  */
 abstract class TypeCast
@@ -269,5 +276,37 @@ abstract class TypeCast
             default:
                 return null;
         }
+    }
+
+    /**
+     * __callStatic
+     *
+     * @param string $name
+     * @param array  $args
+     *
+     * @return  void
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function __callStatic(string $name, array $args)
+    {
+        $tryMethods = [
+            'tryInteger',
+            'tryFloat',
+            'tryString',
+            'tryBoolean',
+            'tryArray',
+            'tryObject',
+        ];
+
+        if (in_array(strtolower($name), array_map('strtolower', $tryMethods), true)) {
+            return static::try($args[0], strtolower(substr($name, 3)), $args[1] ?? false);
+        }
+
+        throw new \BadMethodCallException(sprintf(
+            'Method: %s::%s() not found',
+            static::class,
+            $name
+        ));
     }
 }

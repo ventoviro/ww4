@@ -596,4 +596,11 @@ class TypeCastTest extends TestCase
             ],
         ];
     }
+
+    public function testTryShortCut()
+    {
+        $r = TypeCast::tryInteger('123');
+
+        self::assertSame(123, $r);
+    }
 }
