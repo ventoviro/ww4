@@ -91,4 +91,23 @@ trait ArrayAccessTrait
     {
         return $this->newInstance(Arr::collapse($this->dump()));
     }
+
+    /**
+     * page
+     *
+     * @param int $page
+     * @param int $limit
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function page(int $page, int $limit)
+    {
+        $new = clone $this;
+
+        $new->storage = array_slice($new->storage, ($page - 1) * $limit, $limit);
+
+        return $new;
+    }
 }

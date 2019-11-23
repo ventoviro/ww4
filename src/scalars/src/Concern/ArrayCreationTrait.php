@@ -192,6 +192,28 @@ trait ArrayCreationTrait
     }
 
     /**
+     * crossJoin
+     *
+     * @param mixed ...$args
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function crossJoin(...$args)
+    {
+        return $this->newInstance(
+            Arr::crossJoin(
+                $this->storage,
+                ...array_map(
+                    [TypeCast::class, 'toArray'],
+                    $args
+                )
+            )
+        );
+    }
+
+    /**
      * range
      *
      * @param  mixed      $start

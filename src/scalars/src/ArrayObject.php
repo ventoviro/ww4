@@ -79,7 +79,7 @@ class ArrayObject implements AccessibleInterface
      */
     public static function explode(string $delimiter, string $string, ?int $limit = null)
     {
-        return new static(explode(...func_get_args()));
+        return new static(explode(...array_filter(func_get_args())));
     }
 
     /**
@@ -191,7 +191,7 @@ class ArrayObject implements AccessibleInterface
      */
     public function keys($search = null, ?bool $strict = null)
     {
-        return $this->newInstance(array_keys($this->storage, ...func_get_args()));
+        return $this->newInstance(array_keys($this->storage, ...array_filter(func_get_args())));
     }
 
     /**

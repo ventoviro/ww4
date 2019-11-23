@@ -99,6 +99,18 @@ class ArrayAccessTraitTest extends TestCase
         ], $a->collapse()->dump());
     }
 
+    /**
+     * @see  ArrayAccessTrait::page
+     */
+    public function testPage(): void
+    {
+        $a = arr([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+        $a = $a->page(2, 3);
+
+        self::assertEquals([4, 5, 6], $a->dump());
+    }
+
     protected function setUp(): void
     {
         $this->instance = arr([1, 2, 3, 4, 5]);

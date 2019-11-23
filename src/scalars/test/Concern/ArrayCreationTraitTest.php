@@ -11,6 +11,7 @@ namespace Windwalker\Scalars\Test\Concern;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\ArrayObject;
+use Windwalker\Utilities\Arr;
 use function Windwalker\arr;
 
 /**
@@ -255,6 +256,34 @@ class ArrayCreationTraitTest extends TestCase
             ],
             $a->countValues()->dump()
         );
+    }
+
+    /**
+     * @see  ArrayObject::crossJoin()
+     */
+    public function testCrossJoin(): void
+    {
+        $a = arr([1, 2])->crossJoin(['a', 'b']);
+
+        self::assertEquals([
+            [1, 'a'],
+            [1, 'b'],
+            [2, 'a'],
+            [2, 'b'],
+        ], $a->dump());
+
+        $b = arr([1, 2])->crossJoin(['a', 'b'], ['I', 'II']);
+
+        self::assertEquals([
+            [1, 'a', 'I'],
+            [1, 'a', 'II'],
+            [1, 'b', 'I'],
+            [1, 'b', 'II'],
+            [2, 'a', 'I'],
+            [2, 'a', 'II'],
+            [2, 'b', 'I'],
+            [2, 'b', 'II'],
+        ], $b->dump());
     }
 
     public function testRand(): void

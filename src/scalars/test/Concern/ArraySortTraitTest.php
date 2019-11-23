@@ -24,61 +24,12 @@ class ArraySortTraitTest extends TestCase
 {
     protected $instance;
 
-    public function testUksort(): void
-    {
-        $r = $this->instance->uksort(function ($a, $b) {
-            return (int) $a > (int) $b;
-        });
-
-        self::assertEquals(
-            [
-                1 => 'H',
-                2 => 'Z',
-                3 => 'A',
-                5 => 'B',
-            ],
-            $r->dump()
-        );
-    }
-
-    public function testRsort(): void
-    {
-        $r = $this->instance->rsort();
-
-        self::assertEquals(
-            ['Z', 'H', 'B', 'A'],
-            $r->dump()
-        );
-    }
-
-    /**
-     * Test uasort
-     *
-     * @see  ArraySortTrait::uasort
-     */
-    public function testUasort(): void
-    {
-        $r = $this->instance->uasort(function ($a, $b) {
-            return strcmp($a, $b);
-        });
-
-        self::assertSame(
-            [
-                3 => 'A',
-                5 => 'B',
-                1 => 'H',
-                2 => 'Z',
-            ],
-            $r->dump()
-        );
-    }
-
     /**
      * Test sortColumn
      *
-     * @see  ArraySortTrait::sortColumn
+     * @see  ArraySortTrait::sortBy
      */
-    public function testSortColumn(): void
+    public function testSortBy(): void
     {
         $data = arr($src = [
             [
@@ -103,8 +54,7 @@ class ArraySortTraitTest extends TestCase
             ],
         ]);
 
-        // Keep key
-        $a = $data->sortColumn('id');
+        $a = $data->sortBy('id');
 
         self::assertEquals(
             ['Julius Caesar', 'Macbeth', 'Othello', 'Hamlet'],
@@ -116,13 +66,24 @@ class ArraySortTraitTest extends TestCase
             $a->keys()->dump()
         );
 
-        // No keep key
-        $a = $data->sortColumn('id', false);
+        // Test callable
+        $a = $data->sortBy(function ($item) {
+            return $item['id'];
+        });
 
         self::assertEquals(
             ['Julius Caesar', 'Macbeth', 'Othello', 'Hamlet'],
             $a->column('title')->dump()
         );
+
+        self::assertEquals(
+            [3, 1, 0, 2],
+            $a->keys()->dump()
+        );
+
+        $a = $data->sortBy(function ($item, $k) {
+            return $k;
+        });
 
         self::assertEquals(
             [0, 1, 2, 3],
@@ -133,11 +94,11 @@ class ArraySortTraitTest extends TestCase
     /**
      * Test asort
      *
-     * @see  ArraySortTrait::asort
+     * @see  ArraySortTrait::sort
      */
-    public function testAsort(): void
+    public function testSort(): void
     {
-        $a = $this->instance->asort();
+        $a = $this->instance->sort();
 
         self::assertSame(
             [
@@ -148,16 +109,30 @@ class ArraySortTraitTest extends TestCase
             ],
             $a->dump()
         );
+
+        $r = $this->instance->sort(function ($a, $b) {
+            return strcmp($a, $b);
+        });
+
+        self::assertSame(
+            [
+                3 => 'A',
+                5 => 'B',
+                1 => 'H',
+                2 => 'Z',
+            ],
+            $r->dump()
+        );
     }
 
     /**
      * Test krsort
      *
-     * @see  ArraySortTrait::krsort
+     * @see  ArraySortTrait::sortKeysDesc
      */
-    public function testKrsort(): void
+    public function testSortKeysDesc(): void
     {
-        $a = $this->instance->krsort();
+        $a = $this->instance->sortKeysDesc();
 
         self::assertSame(
             [
@@ -173,13 +148,13 @@ class ArraySortTraitTest extends TestCase
     /**
      * Test natsort
      *
-     * @see  ArraySortTrait::natsort
+     * @see  ArraySortTrait::natureSort
      */
     public function testNatsort(): void
     {
         $a = arr($src = ['img12.png', 'img10.png', 'img2.png', 'img1.png']);
 
-        $a = $a->natsort();
+        $a = $a->natureSort();
 
         self::assertSame(
             [
@@ -195,11 +170,11 @@ class ArraySortTraitTest extends TestCase
     /**
      * Test ksort
      *
-     * @see  ArraySortTrait::ksort
+     * @see  ArraySortTrait::sortKeys
      */
-    public function testKsort(): void
+    public function testSortKeys(): void
     {
-        $a = $this->instance->ksort();
+        $a = $this->instance->sortKeys();
 
         self::assertSame(
             [
@@ -210,38 +185,32 @@ class ArraySortTraitTest extends TestCase
             ],
             $a->dump()
         );
-    }
 
-    /**
-     * Test sort
-     *
-     * @see  ArraySortTrait::sort
-     */
-    public function testSort(): void
-    {
-        $a = $this->instance->sort();
+        $r = $this->instance->sortKeys(function ($a, $b) {
+            return (int) $a > (int) $b;
+        });
 
-        self::assertSame(
+        self::assertEquals(
             [
-                0 => 'A',
-                1 => 'B',
-                2 => 'H',
-                3 => 'Z',
+                1 => 'H',
+                2 => 'Z',
+                3 => 'A',
+                5 => 'B',
             ],
-            $a->dump()
+            $r->dump()
         );
     }
 
     /**
      * Test natcasesort
      *
-     * @see  ArraySortTrait::natcasesort
+     * @see  ArraySortTrait::natureSortCaseInsensitive
      */
     public function testNatcasesort(): void
     {
         $a = arr($src = ['IMG0.png', 'img12.png', 'img10.png', 'img2.png', 'img1.png', 'IMG3.png']);
 
-        $a = $a->natcasesort();
+        $a = $a->natureSortCaseInsensitive();
 
         self::assertSame(
             [
@@ -256,9 +225,9 @@ class ArraySortTraitTest extends TestCase
         );
     }
 
-    public function testArsort(): void
+    public function testSortDesc(): void
     {
-        $a = $this->instance->arsort();
+        $a = $this->instance->sortDesc();
 
         self::assertSame(
             [
@@ -268,23 +237,6 @@ class ArraySortTraitTest extends TestCase
                 3 => 'A',
             ],
             $a->dump()
-        );
-    }
-
-    public function testUsort(): void
-    {
-        $r = $this->instance->usort(function ($a, $b) {
-            return strcmp($a, $b);
-        });
-
-        self::assertSame(
-            [
-                0 => 'A',
-                1 => 'B',
-                2 => 'H',
-                3 => 'Z',
-            ],
-            $r->dump()
         );
     }
 

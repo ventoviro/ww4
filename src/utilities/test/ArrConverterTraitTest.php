@@ -318,4 +318,32 @@ class ArrConverterTraitTest extends TestCase
             })
         );
     }
+
+    /**
+     * @see  Arr::crossJoin()
+     */
+    public function testCrossJoin(): void
+    {
+        $a = Arr::crossJoin([1, 2], ['a', 'b']);
+
+        self::assertEquals([
+            [1, 'a'],
+            [1, 'b'],
+            [2, 'a'],
+            [2, 'b'],
+        ], $a);
+
+        $b = Arr::crossJoin([1, 2], ['a', 'b'], ['I', 'II']);
+
+        self::assertEquals([
+            [1, 'a', 'I'],
+            [1, 'a', 'II'],
+            [1, 'b', 'I'],
+            [1, 'b', 'II'],
+            [2, 'a', 'I'],
+            [2, 'a', 'II'],
+            [2, 'b', 'I'],
+            [2, 'b', 'II'],
+        ], $b);
+    }
 }

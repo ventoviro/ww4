@@ -229,4 +229,33 @@ trait ArrConverterTrait
 
         return $results;
     }
+
+    /**
+     * crossJoin
+     *
+     * @param mixed ...$args
+     *
+     * @return  array
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function crossJoin(...$args): array
+    {
+        $results = [[]];
+
+        foreach ($args as $i => $arg) {
+            $append = [];
+
+            foreach ($results as $value) {
+                foreach ($arg as $item) {
+                    $value[$i] = $item;
+                    $append[] = $value;
+                }
+            }
+
+            $results = $append;
+        }
+
+        return $results;
+    }
 }

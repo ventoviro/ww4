@@ -23,17 +23,21 @@ trait ArraySortTrait
     /**
      * Sort Dataset by key.
      *
-     * @param  integer  $flags  You may modify the behavior of the sort using the optional parameter flags.
+     * @param  integer|callable  $flags  sort flags or user sort handler.
      *
      * @return  static  Support chaining.
      *
      * @since   3.5.2
      */
-    public function ksort($flags = null)
+    public function sortKeys($flags = SORT_REGULAR)
     {
         $new = clone $this;
 
-        ksort($new->storage, ...func_get_args());
+        if (is_callable($flags)) {
+            uksort($new->storage, $flags);
+        } else {
+            ksort($new->storage, $flags);
+        }
 
         return $new;
     }
@@ -41,55 +45,15 @@ trait ArraySortTrait
     /**
      * Sort DataSet by key in reverse order
      *
-     * @param  integer  $flags  You may modify the behavior of the sort using the optional parameter flags.
+     * @param  integer|callable  $flags  sort flags or user sort handler.
      *
      * @return  static  Support chaining.
      *
      * @since   3.5.2
      */
-    public function krsort($flags = null)
+    public function sortKeysDesc($flags = SORT_REGULAR)
     {
-        $new = clone $this;
-
-        krsort($new->storage, ...func_get_args());
-
-        return $new;
-    }
-
-    /**
-     * Sort data.
-     *
-     * @param  integer  $flags  You may modify the behavior of the sort using the optional parameter flags.
-     *
-     * @return  static  Support chaining.
-     *
-     * @since   3.0
-     */
-    public function sort($flags = null)
-    {
-        $new = clone $this;
-
-        sort($new->storage, ...func_get_args());
-
-        return $new;
-    }
-
-    /**
-     * Sort Data in reverse order.
-     *
-     * @param  integer  $flags  You may modify the behavior of the sort using the optional parameter flags.
-     *
-     * @return  static  Support chaining.
-     *
-     * @since   3.0
-     */
-    public function rsort($flags = null)
-    {
-        $new = clone $this;
-
-        rsort($new->storage, ...func_get_args());
-
-        return $new;
+        return $this->sortKeys($flags)->reverse(true);
     }
 
     /**
@@ -97,7 +61,7 @@ trait ArraySortTrait
      *
      * @return static
      */
-    public function natcasesort()
+    public function natureSortCaseInsensitive()
     {
         return tap(clone $this, static function (ArrayObject $new) {
             natcasesort($new->storage);
@@ -109,7 +73,7 @@ trait ArraySortTrait
      *
      * @return static
      */
-    public function natsort()
+    public function natureSort()
     {
         $new = clone $this;
 
@@ -121,15 +85,19 @@ trait ArraySortTrait
     /**
      * Sort an array and maintain index association.
      *
-     * @param  int  $flags
+     * @param  int|callable  $flags
      *
      * @return static
      */
-    public function asort($flags = null)
+    public function sort($flags = SORT_REGULAR)
     {
         $new = clone $this;
 
-        asort($new->storage, ...func_get_args());
+        if (is_callable($flags)) {
+            uasort($new->storage, $flags);
+        } else {
+            asort($new->storage, $flags);
+        }
 
         return $new;
     }
@@ -141,97 +109,46 @@ trait ArraySortTrait
      *
      * @return static
      */
-    public function arsort($flags = null)
+    public function sortDesc($flags = SORT_REGULAR)
     {
         $new = clone $this;
 
-        arsort($new->storage, ...func_get_args());
+        arsort($new->storage, $flags);
 
         return $new;
     }
 
     /**
-     * Sort the entries with a user-defined comparison function and maintain key association
+     * Sort by column or custom getter.
      *
-     * @param  callable  $function
-     *
-     * @return static
-     */
-    public function uasort($function)
-    {
-        return tap(clone $this, static function (ArrayObject $new) use ($function) {
-            uasort($new->storage, $function);
-        });
-    }
-
-    /**
-     * Sort the entries with a user-defined comparison function and maintain key association
-     *
-     * @param  callable  $function
-     *
-     * @return static
-     */
-    public function usort($function)
-    {
-        return tap(clone $this, static function (ArrayObject $new) use ($function) {
-            usort($new->storage, $function);
-        });
-    }
-
-    /**
-     * Sort DataSet by keys using a user-defined comparison function
-     *
-     * @param  callable  $callable  The compare function used for the sort.
-     *
-     * @return  static  Support chaining.
-     *
-     * @since   3.5.2
-     */
-    public function uksort($callable)
-    {
-        return tap(clone $this, static function (ArrayObject $new) use ($callable) {
-            uksort($new->storage, $callable);
-        });
-    }
-
-    /**
-     * sortColumn
-     *
-     * @param  string  $column
-     * @param  bool    $keepKey
+     * @param string|callable $column
+     * @param int             $flags
+     * @param bool             $desc
      *
      * @return  static
      *
-     * @since  3.5.3
+     * @since  __DEPLOY_VERSION__
      */
-    public function sortColumn(string $column, bool $keepKey = true)
+    public function sortBy($column, int $flags = SORT_REGULAR, bool $desc = false)
     {
-        $array = $this->dump();
+        $results = [];
 
-        $handler = $keepKey ? 'uasort' : 'usort';
+        $getter = $column instanceof \Closure ? $column : function ($item) use ($column) {
+            return Arr::get($item, $column);
+        };
 
-        $handler($array, static function ($a, $b) use ($column) {
-            $aValue = Arr::get($a, $column);
-            $bValue = Arr::get($b, $column);
+        $handler = $desc ? 'arsort' : 'asort';
 
-            if (is_stringable($aValue) && is_stringable($bValue)) {
-                return strcmp(
-                    (string) $aValue,
-                    (string) $bValue
-                );
-            }
+        foreach ($this->storage as $key => $value) {
+            $results[$key] = $getter($value, $key);
+        }
 
-            if ($aValue > $bValue) {
-                return 1;
-            }
+        $handler($results, $flags);
 
-            if ($bValue > $aValue) {
-                return -1;
-            }
+        foreach (array_keys($results) as $key) {
+            $results[$key] = $this->storage[$key];
+        }
 
-            return 0;
-        });
-
-        return $this->newInstance($array);
+        return $this->newInstance($results);
     }
 }
