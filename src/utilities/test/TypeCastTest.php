@@ -458,7 +458,7 @@ class TypeCastTest extends TestCase
         $failMsg = sprintf(
             'Try convert %s to %s failed',
             TypeAssert::describeValue($value),
-            TypeAssert::describeValue($expt),
+            TypeAssert::describeValue($expt)
         );
 
         if ($type === 'object') {
