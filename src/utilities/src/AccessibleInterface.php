@@ -20,7 +20,12 @@ use Windwalker\Utilities\Contract\DumpableInterface;
  *
  * @since  __DEPLOY_VERSION__
  */
-interface AccessibleInterface extends JsonSerializable, ArrayAccess, DumpableInterface, Countable, IteratorAggregate
+interface AccessibleInterface extends JsonSerializable,
+    ArrayAccess,
+    DumpableInterface,
+    Countable,
+    IteratorAggregate,
+    NullableInterface
 {
     /**
      * Get value from this object.
