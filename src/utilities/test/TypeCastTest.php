@@ -12,6 +12,7 @@ namespace Windwalker\Utilities\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Test\Traits\BaseAssertionTrait;
+use Windwalker\Utilities\Assert\TypeAssert;
 use Windwalker\Utilities\TypeCast;
 
 /**
@@ -52,33 +53,33 @@ class TypeCastTest extends TestCase
             'string' => [
                 'foo',
                 false,
-                ['foo']
+                ['foo'],
             ],
             'array' => [
                 ['foo'],
                 false,
-                ['foo']
+                ['foo'],
             ],
             'array_recursive' => [
                 [
                     'foo' => [
                         (object) ['bar' => 'bar'],
-                        (object) ['baz' => 'baz']
-                    ]
+                        (object) ['baz' => 'baz'],
+                    ],
                 ],
                 true,
                 [
                     'foo' => [
                         ['bar' => 'bar'],
-                        ['baz' => 'baz']
-                    ]
-                ]
+                        ['baz' => 'baz'],
+                    ],
+                ],
             ],
             'iterator' => [
                 ['foo' => new \ArrayIterator(['bar' => 'baz'])],
                 true,
-                ['foo' => ['bar' => 'baz']]
-            ]
+                ['foo' => ['bar' => 'baz']],
+            ],
         ];
     }
 
@@ -111,105 +112,105 @@ class TypeCastTest extends TestCase
                 [
                     'integer' => 12,
                     'float' => 1.29999,
-                    'string' => 'A Test String'
+                    'string' => 'A Test String',
                 ],
                 (object) [
                     'integer' => 12,
                     'float' => 1.29999,
-                    'string' => 'A Test String'
+                    'string' => 'A Test String',
                 ],
                 false,
-                'Should turn array into single object'
+                'Should turn array into single object',
             ],
             'multiple objects' => [
                 [
                     'first' => [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                     'second' => [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                     'third' => [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                 ],
                 (object) [
                     'first' => (object) [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                     'second' => (object) [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                     'third' => (object) [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                 ],
                 true,
-                'Should turn multiple dimension array into nested objects'
+                'Should turn multiple dimension array into nested objects',
             ],
             'single object with class' => [
                 [
                     'integer' => 12,
                     'float' => 1.29999,
-                    'string' => 'A Test String'
+                    'string' => 'A Test String',
                 ],
                 (object) [
                     'integer' => 12,
                     'float' => 1.29999,
-                    'string' => 'A Test String'
+                    'string' => 'A Test String',
                 ],
                 false,
-                'Should turn array into single object'
+                'Should turn array into single object',
             ],
             'multiple objects with class' => [
                 [
                     'first' => [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                     'second' => [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                     'third' => [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                 ],
                 (object) [
                     'first' => (object) [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                     'second' => (object) [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                     'third' => (object) [
                         'integer' => 12,
                         'float' => 1.29999,
-                        'string' => 'A Test String'
+                        'string' => 'A Test String',
                     ],
                 ],
                 true,
-                'Should turn multiple dimension array into nested objects'
+                'Should turn multiple dimension array into nested objects',
             ],
         ];
     }
@@ -218,11 +219,15 @@ class TypeCastTest extends TestCase
     {
         $src = [
             [
-                1, 2, 3
+                1,
+                2,
+                3,
             ],
             [
-                4, 5, 6
-            ]
+                4,
+                5,
+                6,
+            ],
         ];
 
         /** @var \ArrayObject[] $r */
@@ -231,5 +236,364 @@ class TypeCastTest extends TestCase
         self::assertInstanceOf(\ArrayObject::class, $r[0]);
         self::assertInstanceOf(\ArrayObject::class, $r[1]);
         self::assertEquals([4, 5, 6], $r[1]->getArrayCopy());
+    }
+
+    /**
+     * @param  mixed   $value
+     * @param  mixed   $expt
+     * @param  string  $type
+     *
+     * @see          TypeCast::try()
+     *
+     * @dataProvider providerTry
+     */
+    public function testTry($value, $expt, string $type): void
+    {
+        if ($type === 'object') {
+            self::assertEquals($expt, TypeCast::try($value, $type, false));
+        } else {
+            self::assertSame($expt, TypeCast::try($value, $type, false));
+        }
+    }
+
+    public function providerTry()
+    {
+        return [
+            // To int
+            [
+                'foo',
+                0,
+                'int',
+            ],
+            [
+                '3',
+                3,
+                'int',
+            ],
+            [
+                '10.0',
+                10,
+                'int',
+            ],
+            [
+                10.0,
+                10,
+                'int',
+            ],
+            [
+                10.3,
+                10,
+                'int',
+            ],
+            [
+                [],
+                null,
+                'int'
+            ],
+            [
+                new \stdClass(),
+                null,
+                'int'
+            ],
+            [
+                true,
+                1,
+                'int'
+            ],
+            [
+                false,
+                0,
+                'int'
+            ],
+            // To float
+            [
+                'foo',
+                0.0,
+                'float',
+            ],
+            [
+                '3',
+                3.0,
+                'float',
+            ],
+            [
+                '10.0',
+                10.0,
+                'float',
+            ],
+            [
+                10.0,
+                10.0,
+                'float',
+            ],
+            [
+                10.3,
+                10.3,
+                'float',
+            ],
+            [
+                [],
+                null,
+                'float'
+            ],
+            [
+                new \stdClass(),
+                null,
+                'float'
+            ],
+            [
+                true,
+                1.0,
+                'float'
+            ],
+            [
+                false,
+                0.0,
+                'float'
+            ],
+            // To string
+            [
+                'foo',
+                'foo',
+                'string',
+            ],
+            [
+                1,
+                '1',
+                'string',
+            ],
+            [
+                1.23000,
+                '1.23',
+                'string',
+            ],
+            [
+                [],
+                null,
+                'string',
+            ],
+            [
+                new \stdClass(),
+                null,
+                'string',
+            ],
+            [
+                75e-5,
+                '0.00075',
+                'string',
+            ],
+            // Bool
+            [
+                'A',
+                true,
+                'bool'
+            ],
+            [
+                '1',
+                true,
+                'bool'
+            ],
+            [
+                '',
+                false,
+                'bool'
+            ],
+            [
+                '0',
+                false,
+                'bool'
+            ],
+            [
+                0,
+                false,
+                'bool'
+            ],
+            // array
+            [
+                'a',
+                ['a'],
+                'array'
+            ],
+            [
+                123,
+                [123],
+                'array'
+            ],
+            [
+                (object) ['foo' => 'bar'],
+                ['foo' => 'bar'],
+                'array'
+            ],
+            // obj
+            [
+                ['foo' => 'bar'],
+                (object) ['foo' => 'bar'],
+                'object'
+            ],
+            [
+                static function () {},
+                static function () {},
+                'object'
+            ],
+            // Other
+            [
+                'Hello',
+                null,
+                'none'
+            ],
+        ];
+    }
+
+    /**
+     * @param  mixed   $value
+     * @param  mixed   $expt
+     * @param  string  $type
+     *
+     * @see          TypeCast::try()
+     *
+     * @dataProvider providerTryStrict
+     */
+    public function testTryStrict($value, $expt, string $type): void
+    {
+        $failMsg = sprintf(
+            'Try convert %s to %s failed',
+            TypeAssert::describeValue($value),
+            TypeAssert::describeValue($expt),
+        );
+
+        if ($type === 'object') {
+            self::assertEquals($expt, TypeCast::try($value, $type, true), $failMsg);
+        } else {
+            self::assertSame($expt, TypeCast::try($value, $type, true), $failMsg);
+        }
+    }
+
+    public function providerTryStrict()
+    {
+        return [
+            // To int
+            [
+                'foo',
+                null,
+                'int',
+            ],
+            [
+                '3',
+                3,
+                'int',
+            ],
+            [
+                '10.0',
+                10,
+                'int',
+            ],
+            [
+                10.0,
+                10,
+                'int',
+            ],
+            [
+                10.3,
+                null,
+                'int',
+            ],
+            [
+                [],
+                null,
+                'int'
+            ],
+            [
+                new \stdClass(),
+                null,
+                'int'
+            ],
+            [
+                true,
+                null,
+                'int'
+            ],
+            [
+                false,
+                null,
+                'int'
+            ],
+            // To float
+            [
+                'foo',
+                null,
+                'float',
+            ],
+            [
+                '3',
+                3.0,
+                'float',
+            ],
+            [
+                '10.0',
+                10.0,
+                'float',
+            ],
+            [
+                10.0,
+                10.0,
+                'float',
+            ],
+            [
+                10.3,
+                10.3,
+                'float',
+            ],
+            [
+                [],
+                null,
+                'float'
+            ],
+            [
+                new \stdClass(),
+                null,
+                'float'
+            ],
+            [
+                true,
+                null,
+                'float'
+            ],
+            [
+                false,
+                null,
+                'float'
+            ],
+            // To string
+            [
+                'foo',
+                'foo',
+                'string',
+            ],
+            [
+                1,
+                '1',
+                'string',
+            ],
+            [
+                1.23000,
+                '1.23',
+                'string',
+            ],
+            [
+                [],
+                null,
+                'string',
+            ],
+            [
+                new \stdClass(),
+                null,
+                'string',
+            ],
+            [
+                75e-5,
+                '0.00075',
+                'string',
+            ],
+        ];
     }
 }

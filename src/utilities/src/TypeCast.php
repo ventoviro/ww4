@@ -144,6 +144,20 @@ abstract class TypeCast
     }
 
     /**
+     * forceString
+     *
+     * @param mixed $data The data to convert.
+     *
+     * @return  string
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function forceString($data): string
+    {
+        return static::toString($data, true);
+    }
+
+    /**
      * mapAs
      *
      * @param  array   $src
@@ -192,5 +206,68 @@ abstract class TypeCast
         }
 
         throw new \InvalidArgumentException(sprintf('Class %s not exists', $typeOrClass));
+    }
+
+    /**
+     * Try convert to another type or return NULL if unable to cast.
+     *
+     * @see    https://wiki.php.net/rfc/safe_cast
+     *
+     * @param  mixed   $value
+     * @param  string  $type
+     * @param  bool    $strict
+     *
+     * @return  mixed
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function try($value, string $type, bool $strict = false)
+    {
+        switch (strtolower($type)) {
+            case 'int':
+            case 'integer':
+                if ($strict) {
+                    return is_numeric($value) && floor($value) == $value ? (int) $value : null;
+                }
+
+                if (is_scalar($value)) {
+                    return (int) $value;
+                }
+
+                return null;
+
+            case 'float':
+            case 'double':
+            case 'real':
+                if ($strict) {
+                    return is_numeric($value) ? (float) $value : null;
+                }
+
+                if (is_scalar($value)) {
+                    return (float) $value;
+                }
+
+                return null;
+
+            case 'string':
+                if ($strict && ($value === null || is_bool($value))) {
+                    return null;
+                }
+
+                return is_stringable($value) ? (string) $value : null;
+
+            case 'bool':
+            case 'boolean':
+                return (bool) $value;
+
+            case 'array':
+                return (array) $value;
+
+            case 'object':
+                return (object) $value;
+
+            default:
+                return null;
+        }
     }
 }

@@ -39,7 +39,19 @@ namespace {
          */
         function is_stringable($var): bool
         {
-            return (is_scalar($var) && !is_bool($var)) || (is_object($var) && method_exists($var, '__toString'));
+            if (is_array($var)) {
+                return false;
+            }
+
+            if (is_object($var) && !method_exists($var, '__toString')) {
+                return false;
+            }
+
+            if (is_resource($var)) {
+                return false;
+            }
+
+            return true;
         }
     }
 
