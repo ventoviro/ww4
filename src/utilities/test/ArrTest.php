@@ -229,6 +229,13 @@ class ArrTest extends TestCase
         $this->assertEquals('love', Arr::get($data, 'pos1/sunflower', '/'));
         $this->assertEquals($data['array'], Arr::get($data, 'array'));
 
+        // Test reference
+        $v = &Arr::get($data, 'pos1.sunflower');
+
+        Arr::set($data, 'pos1.sunflower', 'new love');
+
+        self::assertEquals('new love', $v, 'Reference not work');
+
         $data = (object) [
             'flower' => 'sakura',
             'olive' => 'peace',

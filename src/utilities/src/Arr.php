@@ -137,25 +137,26 @@ abstract class Arr
      *
      * @since   2.0
      */
-    public static function get($data, $key, string $delimiter = '.')
+    public static function &get(&$data, $key, string $delimiter = '.')
     {
         $nodes = static::getPathNodes((string) $key, $delimiter);
+        $null = null;
 
         if (empty($nodes)) {
-            return null;
+            return $null;
         }
 
-        $dataTmp = $data;
+        $dataTmp = &$data;
 
         foreach ($nodes as $arg) {
             if (static::isAccessible($dataTmp) && isset($dataTmp[$arg])) {
                 // Check arrayAccess value exists
-                $dataTmp = $dataTmp[$arg];
+                $dataTmp = &$dataTmp[$arg];
             } elseif (is_object($dataTmp) && isset($dataTmp->$arg)) {
                 // Check object value exists
-                $dataTmp = $dataTmp->$arg;
+                $dataTmp = &$dataTmp->$arg;
             } else {
-                return null;
+                return $null;
             }
         }
 

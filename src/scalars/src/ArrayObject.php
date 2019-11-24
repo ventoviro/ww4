@@ -137,6 +137,24 @@ class ArrayObject implements AccessibleInterface
     }
 
     /**
+     * withRemove
+     *
+     * @param mixed $key
+     *
+     * @return  static
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function withRemove($key)
+    {
+        $new = clone $this;
+
+        unset($new->storage[$key]);
+
+        return $new;
+    }
+
+    /**
      * withReset
      *
      * @param array $storage
