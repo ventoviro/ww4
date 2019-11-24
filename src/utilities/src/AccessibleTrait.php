@@ -15,6 +15,7 @@ use Iterator;
  * The Accessible trait which implements AccessibleInterface.
  *
  * @see    AccessibleInterface
+ * @see    NullableInterface
  *
  * @since  __DEPLOY_VERSION__
  */
@@ -278,5 +279,21 @@ trait AccessibleTrait
     public function getIterator(): Iterator
     {
         return new \ArrayIterator($this->storage);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isNull(): bool
+    {
+        return $this->storage === [];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function notNull(): bool
+    {
+        return !$this->isNull();
     }
 }
