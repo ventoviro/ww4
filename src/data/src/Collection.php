@@ -11,6 +11,8 @@ namespace Windwalker\Data;
 
 use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Assert\TypeAssert;
+use Windwalker\Utilities\TypeCast;
 
 /**
  * The Collection class.
@@ -69,6 +71,23 @@ class Collection extends ArrayObject
             } else {
                 $new->storage = Arr::get($this->storage, $path);
             }
+        }
+
+        TypeAssert::assert(
+            !($reference && !is_array($new->storage)),
+            'Method: %s Proxy to sub element should be array, got %s.',
+            $new->storage
+        );
+
+        TypeAssert::assert(
+            is_array($new->storage) || is_object($new->storage) || $new->storage === null,
+            'Method: %s extract to sub element should should be array or object or NULL, got %s.',
+            $new->storage
+        );
+
+        // Force object to array
+        if (!$reference) {
+            $new->storage = TypeCast::toArray($new->storage);
         }
 
         return $new;

@@ -90,7 +90,7 @@ class FormatRegistry
             return $this->loadFile($string, $format, $options);
         }
 
-        return $this->parse($string, $format, $options);
+        return $this->parse($string, $format ?: $this->defaultFormat, $options);
     }
 
     public function getFormatHandler(string $format): FormatInterface

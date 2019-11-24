@@ -68,7 +68,7 @@ trait StructureTrait
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function load($data, string $format = 'json', array $options = [])
+    public function load($data, ?string $format = null, array $options = [])
     {
         $this->storage = Arr::mergeRecursive($this->storage, $this->loadData($data, $format, $options));
 
@@ -86,7 +86,7 @@ trait StructureTrait
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function withLoad($data, string $format = 'json', array $options = [])
+    public function withLoad($data, ?string $format = null, array $options = [])
     {
         $new = clone $this;
 
@@ -106,7 +106,7 @@ trait StructureTrait
      *
      * @since  __DEPLOY_VERSION__
      */
-    protected function loadData($data, string $format = 'json', array $options = []): array
+    protected function loadData($data, ?string $format = null, array $options = []): array
     {
         if (is_array($data) || is_object($data)) {
             $storage = TypeCast::toArray($data, $options['to_array'] ?? true);
@@ -129,7 +129,7 @@ trait StructureTrait
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function toString(string $format = 'json', array $options = []): string
+    public function toString(?string $format = null, array $options = []): string
     {
         return $this->getFormatRegistry()->dump($this->storage, $format, $options);
     }

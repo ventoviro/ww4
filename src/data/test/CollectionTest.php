@@ -56,6 +56,14 @@ class CollectionTest extends TestCase
         $new = $this->instance->setDeep('foo.bar.goo', 'Hola');
 
         self::assertEquals($extracted->getDeep('foo.bar.goo'), $new->getDeep('foo.bar.goo'));
+
+        // Extract to non-array
+        $this->expectExceptionMessage(sprintf(
+            'Method: %s::extract() extract to sub element should should be array or object or NULL, got string(4) "Hola"',
+            Collection::class
+        ));
+
+        $extracted = $this->instance->extract('foo.bar.goo');
     }
 
     /**
@@ -94,6 +102,24 @@ class CollectionTest extends TestCase
             $extracted->dump(),
             $this->instance->getDeep('foo.bar.yoo.items')
         );
+
+        // Extract to non-array
+        $this->expectExceptionMessage(sprintf(
+            'Method: %s::extract() Proxy to sub element should be array, got string(4) "Hola"',
+            Collection::class
+        ));
+
+        $extracted = $this->instance->extract('foo.bar.goo', true);
+    }
+
+    /**
+     * @see  Collection::proxy
+     */
+    public function testProxy(): void
+    {
+        $avg = $this->instance->proxy('foo.bar.yoo.items')->column('id')->sum();
+
+        self::assertEquals(6, $avg);
     }
 
     /**
