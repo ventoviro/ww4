@@ -15,6 +15,14 @@ use Windwalker\Utilities\Arr;
 /**
  * The Collection class.
  *
+ * @method string toJson(array $options = [])
+ * @method string toXml(array $options = [])
+ * @method string toIni(array $options = [])
+ * @method string toPhoString(array $options = [])
+ * @method string toYaml(array $options = [])
+ * @method string toHjson(array $options = [])
+ * @method string toToml(array $options = [])
+ *
  * @since  __DEPLOY_VERSION__
  */
 class Collection extends ArrayObject
@@ -69,13 +77,13 @@ class Collection extends ArrayObject
     /**
      * proxy
      *
-     * @param  string|null  $path
+     * @param  string  $path
      *
      * @return  static
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function proxy(?string $path)
+    public function proxy(string $path)
     {
         return $this->extract($path, true);
     }
@@ -179,5 +187,36 @@ class Collection extends ArrayObject
         $new->storage = Arr::remove($new->storage, $path);
 
         return $new;
+    }
+
+    /**
+     * __call
+     *
+     * @param string $name
+     * @param array  $args
+     *
+     * @return  mixed|string
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function __call($name, $args)
+    {
+        $allowFormat = [
+            'tojson' => 'json',
+            'toxml' => 'xml',
+            'toyaml' => 'yaml',
+            'tohjson' => 'jhson',
+            'toini' => 'ini',
+            'tophpstring' => 'php',
+            'totoml' => 'json',
+        ];
+
+        $method = strtolower($name);
+
+        if ($allowFormat[$method] ?? null) {
+            return $this->toString($allowFormat[$method], ...$args);
+        }
+
+        return parent::__call($name, $args);
     }
 }

@@ -118,4 +118,31 @@ trait StructureTrait
 
         return $storage;
     }
+
+    /**
+     * toString
+     *
+     * @param  string  $format
+     * @param  array   $options
+     *
+     * @return  string
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function toString(string $format = 'json', array $options = []): string
+    {
+        return $this->getFormatRegistry()->dump($this->storage, $format, $options);
+    }
+
+    /**
+     * __toString
+     *
+     * @return  string
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function __toString(): string
+    {
+        return $this->toString();
+    }
 }
