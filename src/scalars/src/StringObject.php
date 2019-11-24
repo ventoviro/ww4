@@ -24,7 +24,7 @@ use Windwalker\Scalars\Concern\StringModifyTrait;
 use Windwalker\Utilities\Classes\ImmutableHelperTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\Classes\StringableInterface;
-use Windwalker\Utilities\NullableInterface;
+use Windwalker\Utilities\Contract\NullableInterface;
 use Windwalker\Utilities\Str;
 use Windwalker\Utilities\Utf8String;
 

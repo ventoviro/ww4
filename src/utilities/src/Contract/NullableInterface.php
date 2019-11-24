@@ -7,7 +7,7 @@
  * @license    __LICENSE__
  */
 
-namespace Windwalker\Utilities;
+namespace Windwalker\Utilities\Contract;
 
 /**
  * Interface NullableInterface

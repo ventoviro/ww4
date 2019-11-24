@@ -10,6 +10,8 @@
 namespace Windwalker\Utilities;
 
 use Iterator;
+use Windwalker\Utilities\Contract\AccessibleInterface;
+use Windwalker\Utilities\Contract\NullableInterface;
 
 /**
  * The Accessible trait which implements AccessibleInterface.
@@ -227,7 +229,7 @@ trait AccessibleTrait
      *
      * @return mixed
      */
-    public function __get($key)
+    public function &__get($key)
     {
         return $this->get($key);
     }

@@ -7,13 +7,12 @@
  * @license    __LICENSE__
  */
 
-namespace Windwalker\Utilities;
+namespace Windwalker\Utilities\Contract;
 
 use ArrayAccess;
 use Countable;
 use IteratorAggregate;
 use JsonSerializable;
-use Windwalker\Utilities\Contract\DumpableInterface;
 
 /**
  * The AccessibleInterface class.
@@ -131,7 +130,7 @@ interface AccessibleInterface extends JsonSerializable,
      *
      * @return mixed
      */
-    public function __get($key);
+    public function &__get($key);
 
     /**
      * Dynamically set the value of an attribute.
