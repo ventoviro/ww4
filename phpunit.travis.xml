@@ -16,17 +16,17 @@
 	</php>
 	<testsuites>
 		<testsuite name="Unit">
-			<directory>src/*/test</directory>
+			<directory>packages/*/test</directory>
 		</testsuite>
 	</testsuites>
 
 	<filter>
 		<whitelist processUncoveredFilesFromWhitelist="true">
-			<directory suffix=".php">src</directory>
+			<directory suffix=".php">packages</directory>
 			<exclude>
-                <directory suffix=".php">src/*/test</directory>
-                <directory suffix=".php">src/*/.ide</directory>
-                <directory suffix=".php">src/*/resources</directory>
+                <directory suffix=".php">packages/*/test</directory>
+                <directory suffix=".php">packages/*/.ide</directory>
+                <directory suffix=".php">packages/*/resources</directory>
 			</exclude>
 		</whitelist>
 	</filter>

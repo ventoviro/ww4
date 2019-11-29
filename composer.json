@@ -41,21 +41,21 @@
     },
     "autoload": {
         "psr-4": {
-            "Windwalker\\Data\\": "src/data/src",
-            "Windwalker\\Scalars\\": "src/scalars/src",
-            "Windwalker\\Test\\": "src/test/src",
-            "Windwalker\\Utilities\\": "src/utilities/src"
+            "Windwalker\\Data\\": "packages/data/src",
+            "Windwalker\\Scalars\\": "packages/scalars/src",
+            "Windwalker\\Test\\": "packages/test/src",
+            "Windwalker\\Utilities\\": "packages/utilities/src"
         },
         "files": [
-            "src/functions.php"
+            "packages/functions.php"
         ]
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Data\\Test\\": "src/data/test",
-            "Windwalker\\Scalars\\Test\\": "src/scalars/test",
-            "Windwalker\\Test\\Test\\": "src/test/test",
-            "Windwalker\\Utilities\\Test\\": "src/utilities/test"
+            "Windwalker\\Data\\Test\\": "packages/data/test",
+            "Windwalker\\Scalars\\Test\\": "packages/scalars/test",
+            "Windwalker\\Test\\Test\\": "packages/test/test",
+            "Windwalker\\Utilities\\Test\\": "packages/utilities/test"
         }
     },
     "config": {
