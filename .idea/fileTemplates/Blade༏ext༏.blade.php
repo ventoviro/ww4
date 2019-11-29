@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Global variables
@@ -12,6 +12,8 @@
  * @var ${DS}router        \Windwalker\Core\Router\PackageRouter       Router object.
  * @var ${DS}asset         \Windwalker\Core\Asset\AssetManager         The Asset manager.
  */
+ 
+ declare(strict_types=1);
 
 ?>
 
