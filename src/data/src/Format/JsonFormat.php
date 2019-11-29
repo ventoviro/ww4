@@ -1,10 +1,12 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
  * @copyright  Copyright (C) 2019 LYRASOFT.
  * @license    LGPL-2.0-or-later
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Data\Format;
 
@@ -27,7 +29,7 @@ class JsonFormat implements FormatInterface
      */
     public function dump($data, array $options = []): string
     {
-        $depth = $options['depth'] ?? 512;
+        $depth  = $options['depth'] ?? 512;
         $option = $options['options'] ?? 0;
 
         return json_encode($data, JSON_THROW_ON_ERROR | $option, $depth);
@@ -43,8 +45,8 @@ class JsonFormat implements FormatInterface
      */
     public function parse(string $string, array $options = []): array
     {
-        $assoc = $options['assoc'] ?? true;
-        $depth = $options['depth'] ?? 512;
+        $assoc  = $options['assoc'] ?? true;
+        $depth  = $options['depth'] ?? 512;
         $option = $options['options'] ?? 0;
 
         return json_decode(trim($string), $assoc, $depth, JSON_THROW_ON_ERROR | $option);

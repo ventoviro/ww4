@@ -1,8 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * @copyright  Copyright (C) 2019 LYRASOFT Source Matters, Inc.
  * @license    LGPL-2.0-or-later
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Utilities\Test;
 
@@ -163,8 +165,8 @@ class StrNormaliseTest extends TestCase
     /**
      * Method to test StrNormalise::fromCamelCase(string, true).
      *
-     * @param   string $input    The input value for the method.
-     * @param   string $expected The expected value from the method.
+     * @param  string  $input     The input value for the method.
+     * @param  string  $expected  The expected value from the method.
      *
      * @return  void
      *
@@ -178,8 +180,8 @@ class StrNormaliseTest extends TestCase
     /**
      * Method to test StrNormalise::toCamelCase().
      *
-     * @param   string $expected The expected value from the method.
-     * @param   string $input    The input value for the method.
+     * @param  string  $expected  The expected value from the method.
+     * @param  string  $input     The input value for the method.
      *
      * @return  void
      *
@@ -194,8 +196,8 @@ class StrNormaliseTest extends TestCase
     /**
      * Method to test StrNormalise::toDashSeparated().
      *
-     * @param   string $expected The expected value from the method.
-     * @param   string $input    The input value for the method.
+     * @param  string  $expected  The expected value from the method.
+     * @param  string  $input     The input value for the method.
      *
      * @return  void
      *
@@ -210,8 +212,8 @@ class StrNormaliseTest extends TestCase
     /**
      * Method to test StrNormalise::toSpaceSeparated().
      *
-     * @param   string $expected The expected value from the method.
-     * @param   string $input    The input value for the method.
+     * @param  string  $expected  The expected value from the method.
+     * @param  string  $input     The input value for the method.
      *
      * @return  void
      *
@@ -226,8 +228,8 @@ class StrNormaliseTest extends TestCase
     /**
      * Method to test StrNormalise::toUnderscoreSeparated().
      *
-     * @param   string $expected The expected value from the method.
-     * @param   string $input    The input value for the method.
+     * @param  string  $expected  The expected value from the method.
+     * @param  string  $input     The input value for the method.
      *
      * @return  void
      *
@@ -242,8 +244,8 @@ class StrNormaliseTest extends TestCase
     /**
      * Method to test StrNormalise::toVariable().
      *
-     * @param   string $expected The expected value from the method.
-     * @param   string $input    The input value for the method.
+     * @param  string  $expected  The expected value from the method.
+     * @param  string  $input     The input value for the method.
      *
      * @return  void
      *
@@ -258,8 +260,8 @@ class StrNormaliseTest extends TestCase
     /**
      * Method to test StrNormalise::toKey().
      *
-     * @param   string $expected The expected value from the method.
-     * @param   string $input    The input value for the method.
+     * @param  string  $expected  The expected value from the method.
+     * @param  string  $input     The input value for the method.
      *
      * @return  void
      *

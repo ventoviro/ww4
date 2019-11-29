@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 __ORGANIZATION__.
  * @license    __LICENSE__
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Utilities;
 
@@ -21,11 +23,11 @@ use Windwalker\Utilities\Contract\DumpableInterface;
  * @since  __DEPLOY_VERSION__
  */
 interface AccessibleInterface extends JsonSerializable,
-    ArrayAccess,
-    DumpableInterface,
-    Countable,
-    IteratorAggregate,
-    NullableInterface
+                                      ArrayAccess,
+                                      DumpableInterface,
+                                      Countable,
+                                      IteratorAggregate,
+                                      NullableInterface
 {
     /**
      * Get value from this object.
@@ -49,8 +51,8 @@ interface AccessibleInterface extends JsonSerializable,
     /**
      * Set value default if not exists.
      *
-     * @param mixed $key
-     * @param mixed $default
+     * @param  mixed  $key
+     * @param  mixed  $default
      *
      * @return  static
      *
@@ -61,7 +63,7 @@ interface AccessibleInterface extends JsonSerializable,
     /**
      * Check a key exists or not.
      *
-     * @param mixed $key
+     * @param  mixed  $key
      *
      * @return  mixed
      *

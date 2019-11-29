@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,8 +7,13 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities;
 
+use InvalidArgumentException;
+use stdClass;
+use Traversable;
 use Windwalker\Utilities\Classes\PreventInitialTrait;
 use Windwalker\Utilities\Contract\DumpableInterface;
 
@@ -39,7 +44,7 @@ abstract class TypeCast
             if ($recursive) {
                 return $data;
             }
-        } elseif ($data instanceof \Traversable) {
+        } elseif ($data instanceof Traversable) {
             $data = iterator_to_array($data);
         } elseif (is_object($data)) {
             $data = get_object_vars($data);
@@ -97,7 +102,7 @@ abstract class TypeCast
      *
      * @since   2.0
      */
-    public static function toObject(array $array, bool $recursive = false, string $class = \stdClass::class)
+    public static function toObject(array $array, bool $recursive = false, string $class = stdClass::class)
     {
         $obj = new $class();
 
@@ -115,8 +120,8 @@ abstract class TypeCast
     /**
      * Convert all to string.
      *
-     * @param mixed $data The data to convert.
-     * @param bool  $dump If is array or object, will dump it if this argument set to TRUE.
+     * @param  mixed  $data  The data to convert.
+     * @param  bool   $dump  If is array or object, will dump it if this argument set to TRUE.
      *
      * @return  string
      *
@@ -146,7 +151,7 @@ abstract class TypeCast
     /**
      * forceString
      *
-     * @param mixed $data The data to convert.
+     * @param  mixed  $data  The data to convert.
      *
      * @return  string
      *
@@ -170,42 +175,60 @@ abstract class TypeCast
     public static function mapAs(array $src, string $typeOrClass): array
     {
         if ($typeOrClass === 'array') {
-            return array_map(static function ($value) {
-                return TypeCast::toArray($value);
-            }, $src);
+            return array_map(
+                static function ($value) {
+                    return TypeCast::toArray($value);
+                },
+                $src
+            );
         }
 
         if ($typeOrClass === 'string') {
-            return array_map(static function ($value) {
-                return (string) $value;
-            }, $src);
+            return array_map(
+                static function ($value) {
+                    return (string) $value;
+                },
+                $src
+            );
         }
 
         if ($typeOrClass === 'int' || $typeOrClass === 'integer') {
-            return array_map(static function ($value) {
-                return (int) $value;
-            }, $src);
+            return array_map(
+                static function ($value) {
+                    return (int) $value;
+                },
+                $src
+            );
         }
 
         if ($typeOrClass === 'float' || $typeOrClass === 'double') {
-            return array_map(static function ($value) {
-                return (float) $value;
-            }, $src);
+            return array_map(
+                static function ($value) {
+                    return (float) $value;
+                },
+                $src
+            );
         }
 
         if ($typeOrClass === 'bool' || $typeOrClass === 'boolean') {
-            return array_map(static function ($value) {
-                return (bool) $value;
-            }, $src);
+            return array_map(
+                static function ($value) {
+                    return (bool) $value;
+                },
+                $src
+            );
         }
 
         if (class_exists($typeOrClass)) {
-            return array_map(static function ($value) use ($typeOrClass) {
-                return new $typeOrClass($value);
-            }, $src);
+            return array_map(
+                static function ($value) use ($typeOrClass) {
+                    return new $typeOrClass($value);
+                },
+                $src
+            );
         }
 
-        throw new \InvalidArgumentException(sprintf('Class %s not exists', $typeOrClass));
+        throw new InvalidArgumentException(sprintf('Class %s not exists', $typeOrClass));
     }
 
     /**

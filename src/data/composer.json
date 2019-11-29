@@ -2,7 +2,11 @@
     "name": "windwalker/data",
     "type": "windwalker-package",
     "description": "Windwalker Data package",
-    "keywords": ["windwalker", "framework", "utilities"],
+    "keywords": [
+        "windwalker",
+        "framework",
+        "utilities"
+    ],
     "homepage": "https://github.com/ventoviro/windwalker-data",
     "license": "MIT",
     "require": {

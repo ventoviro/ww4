@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,8 +7,11 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities;
 
+use ArrayIterator;
 use Iterator;
 
 /**
@@ -131,7 +134,7 @@ trait AccessibleTrait
     /**
      * reset
      *
-     * @param array $storage
+     * @param  array  $storage
      *
      * @return  static
      *
@@ -202,6 +205,7 @@ trait AccessibleTrait
     {
         if ($key === null || $key === '') {
             $this->storage[] = $value;
+
             return;
         }
 
@@ -278,7 +282,7 @@ trait AccessibleTrait
      */
     public function getIterator(): Iterator
     {
-        return new \ArrayIterator($this->storage);
+        return new ArrayIterator($this->storage);
     }
 
     /**

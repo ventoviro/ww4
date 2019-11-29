@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
@@ -6,9 +6,12 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Iterator;
 
 use Iterator;
+use RecursiveIterator;
 
 /**
  * The DualIterator class.
@@ -61,14 +64,14 @@ class DualIterator implements Iterator
 
     /** construct iterator from two iterators
      *
-     * @param Iterator $lhs   Left  Hand Side Iterator
-     * @param Iterator $rhs   Right Hand Side Iterator
-     * @param int       $flags Iteration flags
+     * @param  Iterator  $lhs    Left  Hand Side Iterator
+     * @param  Iterator  $rhs    Right Hand Side Iterator
+     * @param  int       $flags  Iteration flags
      */
     public function __construct(Iterator $lhs, Iterator $rhs, $flags = 0x33)
     {
-        $this->lhs = $lhs;
-        $this->rhs = $rhs;
+        $this->lhs   = $lhs;
+        $this->rhs   = $rhs;
         $this->flags = $flags;
     }
 
@@ -95,7 +98,7 @@ class DualIterator implements Iterator
     /**
      * Set flags.
      *
-     * @param int $flags new flags
+     * @param  int  $flags  new flags
      *
      * @return void
      */
@@ -217,9 +220,9 @@ class DualIterator implements Iterator
     /**
      * Compare two iterators.
      *
-     * @param Iterator $lhs       Left  Hand Side Iterator
-     * @param Iterator $rhs       Right Hand Side Iterator
-     * @param boolean   $identical Whether to use areEqual() or areIdentical()
+     * @param  Iterator  $lhs        Left  Hand Side Iterator
+     * @param  Iterator  $rhs        Right Hand Side Iterator
+     * @param  boolean   $identical  Whether to use areEqual() or areIdentical()
      *
      * @return boolean whether both iterators are equal/identical
      *
@@ -228,8 +231,8 @@ class DualIterator implements Iterator
      */
     public static function compareIterators(Iterator $lhs, Iterator $rhs, bool $identical = false): bool
     {
-        if ($lhs instanceof \RecursiveIterator) {
-            if ($rhs instanceof \RecursiveIterator) {
+        if ($lhs instanceof RecursiveIterator) {
+            if ($rhs instanceof RecursiveIterator) {
                 $it = new RecursiveDualIterator($lhs, $rhs, self::CURRENT_0 | self::KEY_0);
                 $it = new RecursiveCompareDualIterator($it);
             } else {

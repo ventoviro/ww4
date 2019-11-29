@@ -8,9 +8,14 @@
  */
 declare(strict_types=1);
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Test;
 
+use ArrayIterator;
+use ArrayObject;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Windwalker\Test\Traits\BaseAssertionTrait;
 use Windwalker\Utilities\Assert\TypeAssert;
 use Windwalker\Utilities\TypeCast;
@@ -76,7 +81,7 @@ class TypeCastTest extends TestCase
                 ],
             ],
             'iterator' => [
-                ['foo' => new \ArrayIterator(['bar' => 'baz'])],
+                ['foo' => new ArrayIterator(['bar' => 'baz'])],
                 true,
                 ['foo' => ['bar' => 'baz']],
             ],
@@ -230,11 +235,11 @@ class TypeCastTest extends TestCase
             ],
         ];
 
-        /** @var \ArrayObject[] $r */
-        $r = TypeCast::mapAs($src, \ArrayObject::class);
+        /** @var ArrayObject[] $r */
+        $r = TypeCast::mapAs($src, ArrayObject::class);
 
-        self::assertInstanceOf(\ArrayObject::class, $r[0]);
-        self::assertInstanceOf(\ArrayObject::class, $r[1]);
+        self::assertInstanceOf(ArrayObject::class, $r[0]);
+        self::assertInstanceOf(ArrayObject::class, $r[1]);
         self::assertEquals([4, 5, 6], $r[1]->getArrayCopy());
     }
 
@@ -291,7 +296,7 @@ class TypeCastTest extends TestCase
                 'int'
             ],
             [
-                new \stdClass(),
+                new stdClass(),
                 null,
                 'int'
             ],
@@ -337,7 +342,7 @@ class TypeCastTest extends TestCase
                 'float'
             ],
             [
-                new \stdClass(),
+                new stdClass(),
                 null,
                 'float'
             ],
@@ -373,7 +378,7 @@ class TypeCastTest extends TestCase
                 'string',
             ],
             [
-                new \stdClass(),
+                new stdClass(),
                 null,
                 'string',
             ],
@@ -431,8 +436,10 @@ class TypeCastTest extends TestCase
                 'object'
             ],
             [
-                static function () {},
-                static function () {},
+                static function () {
+                },
+                static function () {
+                },
                 'object'
             ],
             // Other
@@ -503,7 +510,7 @@ class TypeCastTest extends TestCase
                 'int'
             ],
             [
-                new \stdClass(),
+                new stdClass(),
                 null,
                 'int'
             ],
@@ -549,7 +556,7 @@ class TypeCastTest extends TestCase
                 'float'
             ],
             [
-                new \stdClass(),
+                new stdClass(),
                 null,
                 'float'
             ],
@@ -585,7 +592,7 @@ class TypeCastTest extends TestCase
                 'string',
             ],
             [
-                new \stdClass(),
+                new stdClass(),
                 null,
                 'string',
             ],

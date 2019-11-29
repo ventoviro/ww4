@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,12 +7,14 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Test\Concern;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\Concern\StringInflectorTrait;
-use Windwalker\Scalars\StringObject;
 use Windwalker\Utilities\StrInflector;
+
 use function Windwalker\str;
 
 /**
@@ -27,12 +29,13 @@ class StringInflectorTraitTest extends TestCase
     /**
      * Test isSingular
      *
-     * @see       StringInflectorTrait::isSingular
+     * @param  string  $singular
+     * @param  string  $plural
+     *
+     * @see          StringInflectorTrait::isSingular
      *
      * @dataProvider \Windwalker\Utilities\Test\StrInflectorTest::providerSinglePlural
      *
-     * @param  string  $singular
-     * @param  string  $plural
      */
     public function testIsSingular(string $singular, string $plural): void
     {
@@ -49,12 +52,13 @@ class StringInflectorTraitTest extends TestCase
     /**
      * Test isPlural
      *
-     * @see  StringInflectorTrait::isPlural
+     * @param  string  $singular
+     * @param  string  $plural
+     *
+     * @see          StringInflectorTrait::isPlural
      *
      * @dataProvider \Windwalker\Utilities\Test\StrInflectorTest::providerSinglePlural
      *
-     * @param  string  $singular
-     * @param  string  $plural
      */
     public function testIsPlural(string $singular, string $plural): void
     {
@@ -71,12 +75,13 @@ class StringInflectorTraitTest extends TestCase
     /**
      * Test toPlural
      *
-     * @see  StringInflectorTrait::toPlural
+     * @param  string  $singular
+     * @param  string  $plural
+     *
+     * @see          StringInflectorTrait::toPlural
      *
      * @dataProvider \Windwalker\Utilities\Test\StrInflectorTest::providerSinglePlural
      *
-     * @param  string  $singular
-     * @param  string  $plural
      */
     public function testToPlural(string $singular, string $plural): void
     {
@@ -89,12 +94,13 @@ class StringInflectorTraitTest extends TestCase
     /**
      * Test toSingular
      *
-     * @see  StringInflectorTrait::toSingular
+     * @param  string  $singular
+     * @param  string  $plural
+     *
+     * @see          StringInflectorTrait::toSingular
      *
      * @dataProvider \Windwalker\Utilities\Test\StrInflectorTest::providerSinglePlural
      *
-     * @param  string  $singular
-     * @param  string  $plural
      */
     public function testToSingular(string $singular, string $plural): void
     {

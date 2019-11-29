@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,10 +7,11 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Data;
 
 use Windwalker\Data\Format\FormatRegistry;
-use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\TypeCast;
 

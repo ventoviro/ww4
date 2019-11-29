@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of phoenix project.
  *
  * @copyright  Copyright (C) 2019 $Asikart.
  * @license    LGPL-2.0-or-later
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Utilities;
 
@@ -233,7 +236,7 @@ trait ArrConverterTrait
     /**
      * crossJoin
      *
-     * @param mixed ...$args
+     * @param  mixed  ...$args
      *
      * @return  array
      *
@@ -249,7 +252,7 @@ trait ArrConverterTrait
             foreach ($results as $value) {
                 foreach ($arg as $item) {
                     $value[$i] = $item;
-                    $append[] = $value;
+                    $append[]  = $value;
                 }
             }
 

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,8 +7,11 @@
  * @license    GNU General Public License version 2 or later.
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Test\Traits;
 
+use Throwable;
 use Windwalker\Test\Helper\TestStringHelper;
 
 /**
@@ -73,7 +76,7 @@ trait BaseAssertionTrait
      */
     public static function assertExpectedException(
         callable $closure,
-        $class = \Throwable::class,
+        $class = Throwable::class,
         $msg = null,
         $code = null,
         $message = ''
@@ -84,7 +87,7 @@ trait BaseAssertionTrait
 
         try {
             $closure();
-        } catch (\Throwable $t) {
+        } catch (Throwable $t) {
             static::assertInstanceOf($class, $t, $message);
 
             if ($msg !== null) {

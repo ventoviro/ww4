@@ -6,6 +6,8 @@
  * @license    MIT
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Test\Helper;
 
 /**
@@ -20,13 +22,13 @@ class TestDomHelper
      *
      * Code from: http://stackoverflow.com/questions/6225351/how-to-minify-php-page-html-output
      *
-     * @param string $buffer
+     * @param  string  $buffer
      *
      * @return  mixed
      */
     public static function minify($buffer)
     {
-        $search = array(
+        $search = [
             // Strip whitespaces after tags, except space
             '/\>[^\S ]+/s',
 
@@ -35,17 +37,17 @@ class TestDomHelper
 
             // Shorten multiple whitespace sequences
             '/(\s)+/s'
-        );
+        ];
 
-        $replace = array(
+        $replace = [
             '>',
             '<',
             '\\1'
-        );
+        ];
 
         $buffer = preg_replace($search, $replace, $buffer);
 
-        $buffer = str_replace(array(' <', '> '), array('<', '>'), $buffer);
+        $buffer = str_replace([' <', '> '], ['<', '>'], $buffer);
 
         return trim($buffer);
     }

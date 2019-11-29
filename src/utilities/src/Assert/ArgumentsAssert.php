@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,7 +7,11 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Assert;
+
+use InvalidArgumentException;
 
 /**
  * The ArgumentsAssert class.
@@ -19,5 +23,5 @@ class ArgumentsAssert extends TypeAssert
     /**
      * @var  string
      */
-    protected static $exceptionClass = \InvalidArgumentException::class;
+    protected static $exceptionClass = InvalidArgumentException::class;
 }

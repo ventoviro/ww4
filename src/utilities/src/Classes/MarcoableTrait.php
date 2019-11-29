@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 __ORGANIZATION__.
  * @license    __LICENSE__
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Utilities\Classes;
 
@@ -47,9 +49,13 @@ trait MarcoableTrait
     public static function __callStatic($name, $args)
     {
         if (!static::hasMacro($name)) {
-            throw new BadMethodCallException(sprintf(
-                'Method %s::%s does not exist.', static::class, $name
-            ));
+            throw new BadMethodCallException(
+                sprintf(
+                    'Method %s::%s does not exist.',
+                    static::class,
+                    $name
+                )
+            );
         }
 
         $macro = static::$macros[$name];
@@ -64,9 +70,13 @@ trait MarcoableTrait
     public function __call($name, $args)
     {
         if (!static::hasMacro($name)) {
-            throw new BadMethodCallException(sprintf(
-                'Method %s::%s does not exist.', static::class, $name
-            ));
+            throw new BadMethodCallException(
+                sprintf(
+                    'Method %s::%s does not exist.',
+                    static::class,
+                    $name
+                )
+            );
         }
 
         $macro = static::$macros[$name];

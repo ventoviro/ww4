@@ -2,7 +2,11 @@
     "name": "windwalker/scalars",
     "type": "windwalker-package",
     "description": "Windwalker Scalars package",
-    "keywords": ["windwalker", "framework", "utilities"],
+    "keywords": [
+        "windwalker",
+        "framework",
+        "utilities"
+    ],
     "homepage": "https://github.com/ventoviro/windwalker-scalars",
     "license": "MIT",
     "require": {

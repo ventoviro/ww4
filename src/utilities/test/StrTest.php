@@ -1,11 +1,14 @@
 <?php
+
 /**
  * Part of ww4 project.
  *
  * @copyright  Copyright (C) 2016 LYRASOFT.
  * @license    Please see LICENSE file.
  */
-declare(strict_types = 1);
+declare(strict_types=1);
+
+declare(strict_types=1);
 
 namespace Windwalker\Utilities\Test;
 
@@ -22,8 +25,8 @@ class StrTest extends TestCase
     /**
      * testGetChar
      *
-     * @param int    $pos
-     * @param string $expected
+     * @param  int     $pos
+     * @param  string  $expected
      *
      * @dataProvider getCharProvider
      */
@@ -100,10 +103,10 @@ class StrTest extends TestCase
     /**
      * testContains
      *
-     * @param      $expected
-     * @param      $string
-     * @param      $search
-     * @param bool $caseSensitive
+     * @param        $expected
+     * @param        $string
+     * @param        $search
+     * @param  bool  $caseSensitive
      *
      * @dataProvider  containsProvider
      */
@@ -167,10 +170,10 @@ class StrTest extends TestCase
     /**
      * testStartsWith
      *
-     * @param string $string
-     * @param string $search
-     * @param bool   $caseSensitive
-     * @param bool   $expected
+     * @param  string  $string
+     * @param  string  $search
+     * @param  bool    $caseSensitive
+     * @param  bool    $expected
      *
      * @dataProvider estartsWithProvider
      */
@@ -203,9 +206,9 @@ class StrTest extends TestCase
     /**
      * testEnsureLeft
      *
-     * @param string $string
-     * @param string $search
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $search
+     * @param  string  $expected
      *
      * @dataProvider ensureLeftProvider
      */
@@ -235,9 +238,9 @@ class StrTest extends TestCase
     /**
      * testEnsureRight
      *
-     * @param string $string
-     * @param string $search
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $search
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -269,8 +272,8 @@ class StrTest extends TestCase
     /**
      * testHasLowerCase
      *
-     * @param string $string
-     * @param bool   $expected
+     * @param  string  $string
+     * @param  bool    $expected
      *
      * @return  void
      *
@@ -300,8 +303,8 @@ class StrTest extends TestCase
     /**
      * testHasUpperCase
      *
-     * @param string $string
-     * @param bool   $expected
+     * @param  string  $string
+     * @param  bool    $expected
      *
      * @return  void
      *
@@ -331,10 +334,10 @@ class StrTest extends TestCase
     /**
      * testInsert
      *
-     * @param string $string
-     * @param string $insert
-     * @param int    $position
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $insert
+     * @param  int     $position
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -363,8 +366,8 @@ class StrTest extends TestCase
     /**
      * testIsLowerCase
      *
-     * @param string $string
-     * @param bool   $expected
+     * @param  string  $string
+     * @param  bool    $expected
      *
      * @return  void
      *
@@ -394,8 +397,8 @@ class StrTest extends TestCase
     /**
      * testIsUpperCase
      *
-     * @param string $string
-     * @param bool   $expected
+     * @param  string  $string
+     * @param  bool    $expected
      *
      * @dataProvider isUpperCaseProvider
      */
@@ -423,9 +426,9 @@ class StrTest extends TestCase
     /**
      * testFirst
      *
-     * @param string $string
-     * @param int    $length
-     * @param string $expected
+     * @param  string  $string
+     * @param  int     $length
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -460,9 +463,9 @@ class StrTest extends TestCase
     /**
      * testLast
      *
-     * @param string $string
-     * @param int    $length
-     * @param string $expected
+     * @param  string  $string
+     * @param  int     $length
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -529,9 +532,9 @@ class StrTest extends TestCase
     /**
      * testIntersectRight
      *
-     * @param string $string1
-     * @param string $string2
-     * @param string $expected
+     * @param  string  $string1
+     * @param  string  $string2
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -565,9 +568,9 @@ class StrTest extends TestCase
     /**
      * testIntersect
      *
-     * @param string $string1
-     * @param string $string2
-     * @param string $expected
+     * @param  string  $string1
+     * @param  string  $string2
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -601,10 +604,10 @@ class StrTest extends TestCase
     /**
      * testPad
      *
-     * @param string $string
-     * @param string $substring
-     * @param int    $length
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $substring
+     * @param  int     $length
+     * @param  string  $expected
      *
      * @dataProvider padProvider
      */
@@ -634,10 +637,10 @@ class StrTest extends TestCase
     /**
      * testPadLeft
      *
-     * @param string $string
-     * @param string $substring
-     * @param int    $length
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $substring
+     * @param  int     $length
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -669,10 +672,10 @@ class StrTest extends TestCase
     /**
      * testPadRight
      *
-     * @param string $string
-     * @param string $substring
-     * @param int    $length
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $substring
+     * @param  int     $length
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -704,9 +707,9 @@ class StrTest extends TestCase
     /**
      * testRemove
      *
-     * @param string $string
-     * @param int    $offset
-     * @param string $expected
+     * @param  string  $string
+     * @param  int     $offset
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -805,10 +808,10 @@ class StrTest extends TestCase
     /**
      * testSlice
      *
-     * @param string $string
-     * @param int    $start
-     * @param int    $end
-     * @param string $expected
+     * @param  string  $string
+     * @param  int     $start
+     * @param  int     $end
+     * @param  string  $expected
      *
      * @dataProvider sliceProvider
      */
@@ -844,10 +847,10 @@ class StrTest extends TestCase
     /**
      * testSubstring
      *
-     * @param string $string
-     * @param int    $start
-     * @param int    $end
-     * @param string $expected
+     * @param  string  $string
+     * @param  int     $start
+     * @param  int     $end
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -885,9 +888,9 @@ class StrTest extends TestCase
     /**
      * testSurround
      *
-     * @param string       $string
-     * @param string       $expected
-     * @param string|array $substring
+     * @param  string        $string
+     * @param  string        $expected
+     * @param  string|array  $substring
      *
      * @return  void
      *
@@ -920,8 +923,8 @@ class StrTest extends TestCase
     /**
      * testToggleCase
      *
-     * @param string $string
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -951,11 +954,11 @@ class StrTest extends TestCase
     /**
      * testTruncate
      *
-     * @param string $string
-     * @param int    $length
-     * @param bool   $wordBreak
-     * @param string $expected
-     * @param string $suffix
+     * @param  string  $string
+     * @param  int     $length
+     * @param  bool    $wordBreak
+     * @param  string  $expected
+     * @param  string  $suffix
      *
      * @dataProvider truncateProvider
      */
@@ -997,9 +1000,12 @@ class StrTest extends TestCase
      */
     public function testMap()
     {
-        $actual = Str::map('Foo/Bar/Yoo', static function ($char, $key) {
-            return $char === '/' ? '_' : $char;
-        });
+        $actual = Str::map(
+            'Foo/Bar/Yoo',
+            static function ($char, $key) {
+                return $char === '/' ? '_' : $char;
+            }
+        );
 
         self::assertEquals('Foo_Bar_Yoo', (string) $actual);
 
@@ -1015,9 +1021,12 @@ class StrTest extends TestCase
      */
     public function testFilter()
     {
-        $actual = Str::filter('Foo/Bar/Yoo', static function ($char, $key) {
-            return $char !== '/';
-        });
+        $actual = Str::filter(
+            'Foo/Bar/Yoo',
+            static function ($char, $key) {
+                return $char !== '/';
+            }
+        );
 
         self::assertEquals('FooBarYoo', (string) $actual);
 
@@ -1033,9 +1042,12 @@ class StrTest extends TestCase
      */
     public function testReject()
     {
-        $actual = Str::reject('Foo/Bar/Yoo', static function ($char, $key) {
-            return $char === '/';
-        });
+        $actual = Str::reject(
+            'Foo/Bar/Yoo',
+            static function ($char, $key) {
+                return $char === '/';
+            }
+        );
 
         self::assertEquals('FooBarYoo', (string) $actual);
 

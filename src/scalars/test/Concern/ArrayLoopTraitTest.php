@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,13 +7,15 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Test\Concern;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\ArrayObject;
 use Windwalker\Scalars\StringObject;
-use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Context\Loop;
+
 use function Windwalker\arr;
 use function Windwalker\where;
 
@@ -28,9 +30,11 @@ class ArrayLoopTraitTest extends TestCase
 
     public function testPartition(): void
     {
-        [$a1, $a2] = $this->instance->partition(function ($v) {
-            return $v > 1;
-        });
+        [$a1, $a2] = $this->instance->partition(
+            function ($v) {
+                return $v > 1;
+            }
+        );
 
         self::assertEquals([2, 3], $a1->dump());
         self::assertEquals([1], $a2->dump());
@@ -40,9 +44,11 @@ class ArrayLoopTraitTest extends TestCase
     {
         $a = ArrayObject::range(1, 10);
 
-        $r = $a->findFirst(function ($v) {
-            return $v >= 5;
-        });
+        $r = $a->findFirst(
+            function ($v) {
+                return $v >= 5;
+            }
+        );
 
         self::assertEquals(5, $r);
     }
@@ -51,9 +57,11 @@ class ArrayLoopTraitTest extends TestCase
     {
         $a = ArrayObject::range(1, 10);
 
-        $a = $a->filter(function ($v) {
-            return $v % 2 === 1;
-        });
+        $a = $a->filter(
+            function ($v) {
+                return $v % 2 === 1;
+            }
+        );
 
         self::assertEquals([1, 3, 5, 7, 9], $a->values()->dump());
         self::assertEquals([0, 2, 4, 6, 8], $a->keys()->dump());
@@ -61,26 +69,28 @@ class ArrayLoopTraitTest extends TestCase
 
     public function testWalkRecursive(): void
     {
-        $a = arr($src = [
-            'ai' => 'Jarvis',
-            'agent' => 'Phil Coulson',
-            'red' => [
-                'left' => 'Pepper',
-                'right' => 'Iron Man',
-            ],
-            'human' => [
-                'dark' => 'Nick Fury',
-                'black' => [
-                    'female' => 'Black Widow',
-                    'male' => 'Loki',
+        $a = arr(
+            $src = [
+                'ai' => 'Jarvis',
+                'agent' => 'Phil Coulson',
+                'red' => [
+                    'left' => 'Pepper',
+                    'right' => 'Iron Man',
                 ],
+                'human' => [
+                    'dark' => 'Nick Fury',
+                    'black' => [
+                        'female' => 'Black Widow',
+                        'male' => 'Loki',
+                    ],
+                ]
             ]
-        ]);
+        );
 
         $callback = function (&$v, $k) {
             return $v = strtoupper($v);
         };
-        $b = $a->walkRecursive($callback);
+        $b        = $a->walkRecursive($callback);
         array_walk_recursive($src, $callback);
 
         self::assertEquals($src, $b->dump());
@@ -88,123 +98,154 @@ class ArrayLoopTraitTest extends TestCase
 
     public function testQuery(): void
     {
-        $a = arr($data = [
-            [
-                'id' => 1,
-                'title' => 'Julius Caesar',
-                'data' => (object) ['foo' => 'bar'],
-            ],
-            [
-                'id' => 2,
-                'title' => 'Macbeth',
-                'data' => [],
-            ],
-            [
-                'id' => 3,
-                'title' => 'Othello',
-                'data' => 123,
-            ],
-            [
-                'id' => 4,
-                'title' => 'Hamlet',
-                'data' => true,
-            ],
-        ]);
+        $a = arr(
+            $data = [
+                [
+                    'id' => 1,
+                    'title' => 'Julius Caesar',
+                    'data' => (object) ['foo' => 'bar'],
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'Macbeth',
+                    'data' => [],
+                ],
+                [
+                    'id' => 3,
+                    'title' => 'Othello',
+                    'data' => 123,
+                ],
+                [
+                    'id' => 4,
+                    'title' => 'Hamlet',
+                    'data' => true,
+                ],
+            ]
+        );
 
         // Test id equals
         $this->assertEquals([$data[1]], $a->query(['id' => 2])->dump());
 
         // Test compare wrapper
         $this->assertEquals([$data[1]], $a->query([where('id', '=', 2)])->dump());
-        $this->assertEquals([$data[1]], $a->query(['id' => function ($v) {
-            return $v === 2;
-        }
-        ])->dump());
+        $this->assertEquals(
+            [$data[1]],
+            $a->query(
+                [
+                    'id' => function ($v) {
+                        return $v === 2;
+                    }
+                ]
+            )->dump()
+        );
     }
 
     public function testMap(): void
     {
-        $a = $this->instance->map(function ($v) {
-            return 1 + $v;
-        });
+        $a = $this->instance->map(
+            function ($v) {
+                return 1 + $v;
+            }
+        );
 
         self::assertEquals([2, 3, 4], $a->dump());
     }
 
     public function testWalk(): void
     {
-        $a = $this->instance->walk(function (&$v) {
-            return $v += 2;
-        });
+        $a = $this->instance->walk(
+            function (&$v) {
+                return $v += 2;
+            }
+        );
 
         self::assertEquals([3, 4, 5], $a->dump());
     }
 
     public function testFind(): void
     {
-        $a = arr($data = [
-            [
-                'id' => 1,
-                'title' => 'Julius Caesar',
-                'data' => (object) ['foo' => 'bar'],
-            ],
-            [
-                'id' => 2,
-                'title' => 'Macbeth',
-                'data' => [],
-            ],
-            [
-                'id' => 3,
-                'title' => 'Othello',
-                'data' => 123,
-            ],
-            [
-                'id' => 4,
-                'title' => 'Hamlet',
-                'data' => true,
-            ],
-        ]);
+        $a = arr(
+            $data = [
+                [
+                    'id' => 1,
+                    'title' => 'Julius Caesar',
+                    'data' => (object) ['foo' => 'bar'],
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'Macbeth',
+                    'data' => [],
+                ],
+                [
+                    'id' => 3,
+                    'title' => 'Othello',
+                    'data' => 123,
+                ],
+                [
+                    'id' => 4,
+                    'title' => 'Hamlet',
+                    'data' => true,
+                ],
+            ]
+        );
 
-        self::assertEquals($a->slice(0, 2)->dump(), $a->find(function ($item) {
-            return $item['id'] < 3;
-        })->dump());
+        self::assertEquals(
+            $a->slice(0, 2)->dump(),
+            $a->find(
+                function ($item) {
+                    return $item['id'] < 3;
+                }
+            )->dump()
+        );
     }
 
     public function testReduce(): void
     {
-        $a = $this->instance->reduce(function (int $sum, int $v) {
-            return $sum + $v;
-        }, 5)->toInteger();
+        $a = $this->instance->reduce(
+            function (int $sum, int $v) {
+                return $sum + $v;
+            },
+            5
+        )->toInteger();
 
         self::assertEquals(11, $a);
 
-        $a = arr($data = [
-            [1, 2],
-            [3, 4],
-            [5, 6]
-        ])->reduce(function (array $sum, array $v) {
-            return array_merge($sum, $v);
-        }, ['A', 'B']);
+        $a = arr(
+            $data = [
+                [1, 2],
+                [3, 4],
+                [5, 6]
+            ]
+        )->reduce(
+            function (array $sum, array $v) {
+                return array_merge($sum, $v);
+            },
+            ['A', 'B']
+        );
 
         self::assertEquals(array_merge(['A', 'B'], ...$data), $a->dump());
     }
 
     public function testMapWithKeys(): void
     {
-        $a = $this->getAssoc()->mapWithKeys(function ($v, $k) {
-            return [$v => $k];
-        });
+        $a = $this->getAssoc()->mapWithKeys(
+            function ($v, $k) {
+                return [$v => $k];
+            }
+        );
 
         self::assertEquals(['bar' => 'foo', 'sakura' => 'flower'], $a->dump());
 
-        $src = arr([
-            1 => 'a',
-            2 => 'b',
-            3 => 'b',
-            4 => 'c',
-            5 => 'a',
-            6 => 'a',
-        ]);
+        $src = arr(
+            [
+                1 => 'a',
+                2 => 'b',
+                3 => 'b',
+                4 => 'c',
+                5 => 'a',
+                6 => 'a',
+            ]
+        );
 
         $expected = [
             'a' => [1, 5, 6],
@@ -214,18 +255,23 @@ class ArrayLoopTraitTest extends TestCase
 
         self::assertEquals(
             $expected,
-            $src->mapWithKeys(function ($v, $k) {
-                return [$v => $k];
-            }, $src::GROUP_TYPE_MIX)->dump()
+            $src->mapWithKeys(
+                function ($v, $k) {
+                    return [$v => $k];
+                },
+                $src::GROUP_TYPE_MIX
+            )->dump()
         );
     }
 
     public function testEach(): void
     {
         $r = [];
-        $this->instance->each(function ($v, $k) use (&$r) {
-            return $r[] = $k . '-' . $v;
-        });
+        $this->instance->each(
+            function ($v, $k) use (&$r) {
+                return $r[] = $k . '-' . $v;
+            }
+        );
 
         self::assertEquals(
             [
@@ -237,13 +283,15 @@ class ArrayLoopTraitTest extends TestCase
         );
 
         $r = [];
-        $this->instance->each(static function ($v, $k, Loop $loop) use (&$r) {
-            if ($v > 1) {
-                return $loop->stop();
-            }
+        $this->instance->each(
+            static function ($v, $k, Loop $loop) use (&$r) {
+                if ($v > 1) {
+                    return $loop->stop();
+                }
 
-            return $r[] = $k . '-' . $v;
-        });
+                return $r[] = $k . '-' . $v;
+            }
+        );
 
         self::assertEquals(
             [
@@ -252,25 +300,32 @@ class ArrayLoopTraitTest extends TestCase
             $r
         );
 
-        $a = arr([
-            [1, 2, 3],
-            [4, 5, 6],
-            [7, 8, 9],
-            [10, 11, 12],
-        ])->wrapAll();
+        $a = arr(
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+                [10, 11, 12],
+            ]
+        )->wrapAll();
 
         $r = [];
 
-        $a->each(function (ArrayObject $v, $k, $l) use (&$r) {
-            $v->each(function ($v, $k, Loop $loop) use (&$r) {
-                if ($v === 4) {
-                    $loop->stop(2);
-                    return;
-                }
+        $a->each(
+            function (ArrayObject $v, $k, $l) use (&$r) {
+                $v->each(
+                    function ($v, $k, Loop $loop) use (&$r) {
+                        if ($v === 4) {
+                            $loop->stop(2);
 
-                $r[] = $v;
-            });
-        });
+                            return;
+                        }
+
+                        $r[] = $v;
+                    }
+                );
+            }
+        );
 
         self::assertEquals(
             [1, 2, 3],
@@ -293,32 +348,42 @@ class ArrayLoopTraitTest extends TestCase
 
     public function testReject(): void
     {
-        $a = $this->instance->reject(function ($v) {
-            return $v > 1;
-        });
+        $a = $this->instance->reject(
+            function ($v) {
+                return $v > 1;
+            }
+        );
 
         self::assertEquals([1], $a->dump());
     }
 
     public function testMapRecursive(): void
     {
-        $a = arr($src = [
-            'ai' => 'Jarvis',
-            'agent' => 'Phil Coulson',
-            'red' => [
-                'left' => 'Pepper',
-                'right' => 'Iron Man',
-            ],
-            'human' => [
-                'dark' => 'Nick Fury',
-                'black' => arr([
-                    'female' => 'Black Widow',
-                    'male' => 'Loki',
-                ]),
+        $a = arr(
+            $src = [
+                'ai' => 'Jarvis',
+                'agent' => 'Phil Coulson',
+                'red' => [
+                    'left' => 'Pepper',
+                    'right' => 'Iron Man',
+                ],
+                'human' => [
+                    'dark' => 'Nick Fury',
+                    'black' => arr(
+                        [
+                            'female' => 'Black Widow',
+                            'male' => 'Loki',
+                        ]
+                    ),
+                ]
             ]
-        ])->mapRecursive(function ($v) {
-            return is_string($v) ? strtoupper($v) : $v;
-        }, false, true);
+        )->mapRecursive(
+            function ($v) {
+                return is_string($v) ? strtoupper($v) : $v;
+            },
+            false,
+            true
+        );
 
         $expected = [
             'ai' => 'JARVIS',
@@ -344,15 +409,19 @@ class ArrayLoopTraitTest extends TestCase
 
     public function testFlatMap(): void
     {
-        $a = arr([
-            ['name' => 'Sally'],
-            ['school' => 'Arkansas'],
-            ['age' => 28]
-        ]);
+        $a = arr(
+            [
+                ['name' => 'Sally'],
+                ['school' => 'Arkansas'],
+                ['age' => 28]
+            ]
+        );
 
-        $b = $a->flatMap(function ($values) {
-            return array_map('strtoupper', $values);
-        });
+        $b = $a->flatMap(
+            function ($values) {
+                return array_map('strtoupper', $values);
+            }
+        );
 
         self::assertEquals(
             ['name' => 'SALLY', 'school' => 'ARKANSAS', 'age' => '28'],

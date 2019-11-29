@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2016 LYRASOFT.
  * @license    Please see LICENSE file.
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Scalars;
 
@@ -110,8 +112,8 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @see  http://php.net/manual/en/mbstring.supported-encodings.php
      *
-     * @param string      $string
-     * @param null|string $encoding
+     * @param  string       $string
+     * @param  null|string  $encoding
      */
     public function __construct($string = '', ?string $encoding = self::ENCODING_UTF8)
     {
@@ -122,8 +124,8 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * create
      *
-     * @param string      $string
-     * @param null|string $encoding
+     * @param  string       $string
+     * @param  null|string  $encoding
      *
      * @return  static
      */
@@ -135,8 +137,8 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * __call
      *
-     * @param string $name
-     * @param array  $args
+     * @param  string  $name
+     * @param  array   $args
      *
      * @return  mixed
      * @throws BadMethodCallException
@@ -166,9 +168,9 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * callProxy
      *
-     * @param string $class
-     * @param string $method
-     * @param array  $args
+     * @param  string  $class
+     * @param  string  $method
+     * @param  array   $args
      *
      * @return  static
      * @throws ReflectionException
@@ -229,7 +231,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetexists.php
      *
-     * @param mixed $offset    <p>
+     * @param  mixed  $offset  <p>
      *                         An offset to check for.
      *                         </p>
      *
@@ -258,7 +260,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * Offset to retrieve
      *
-     * @param int $offset The offset to retrieve.
+     * @param  int  $offset  The offset to retrieve.
      *
      * @return string|static Can return all value types.
      */
@@ -272,8 +274,8 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetset.php
      *
-     * @param mixed $offset The offset to assign the value to.
-     * @param mixed $string The value to set.
+     * @param  mixed  $offset  The offset to assign the value to.
+     * @param  mixed  $string  The value to set.
      *
      * @return void
      */
@@ -287,7 +289,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetunset.php
      *
-     * @param mixed $offset The offset to unset.
+     * @param  mixed  $offset  The offset to unset.
      *
      * @return void
      */
@@ -345,15 +347,17 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * Method to set property encoding
      *
-     * @param string $encoding
+     * @param  string  $encoding
      *
      * @return  static  Return self to support chaining.
      */
     public function withEncoding(string $encoding)
     {
-        return $this->cloneInstance(static function (StringObject $new) use ($encoding) {
-            $new->encoding = $encoding;
-        });
+        return $this->cloneInstance(
+            static function (StringObject $new) use ($encoding) {
+                $new->encoding = $encoding;
+            }
+        );
     }
 
     /**
@@ -369,22 +373,24 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * Method to set property string
      *
-     * @param string $string
+     * @param  string  $string
      *
      * @return  static  Return self to support chaining.
      */
     public function withString(string $string)
     {
-        return $this->cloneInstance(static function (StringObject $new) use ($string) {
-            $new->string = $string;
-        });
+        return $this->cloneInstance(
+            static function (StringObject $new) use ($string) {
+                $new->string = $string;
+            }
+        );
     }
 
     /**
      * substrCount
      *
-     * @param string $search
-     * @param bool   $caseSensitive
+     * @param  string  $search
+     * @param  bool    $caseSensitive
      *
      * @return  int
      */
@@ -396,8 +402,8 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * explode
      *
-     * @param string   $delimiter
-     * @param int|null $limit
+     * @param  string    $delimiter
+     * @param  int|null  $limit
      *
      * @return  ArrayObject
      */
@@ -411,7 +417,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * indexOf
      *
-     * @param string $search
+     * @param  string  $search
      *
      * @return  int
      */
@@ -429,7 +435,7 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * indexOf
      *
-     * @param string $search
+     * @param  string  $search
      *
      * @return  int
      */
@@ -447,23 +453,25 @@ class StringObject implements Countable, ArrayAccess, IteratorAggregate, Stringa
     /**
      * apply
      *
-     * @param callable $callback
-     * @param array    $args
+     * @param  callable  $callback
+     * @param  array     $args
      *
      * @return  static
      */
     public function apply(callable $callback, ...$args)
     {
-        return $this->cloneInstance(static function ($new) use ($callback, $args) {
-            return $new->string = $callback($new->string, ...$args);
-        });
+        return $this->cloneInstance(
+            static function ($new) use ($callback, $args) {
+                return $new->string = $callback($new->string, ...$args);
+            }
+        );
     }
 
     /**
      * pipe
      *
-     * @param callable $callback
-     * @param array    $args
+     * @param  callable  $callback
+     * @param  array     $args
      *
      * @return  static
      *

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,10 +7,14 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Concern;
 
+use Closure;
 use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
+
 use function Windwalker\tap;
 
 /**
@@ -63,9 +67,12 @@ trait ArraySortTrait
      */
     public function natureSortCaseInsensitive()
     {
-        return tap(clone $this, static function (ArrayObject $new) {
-            natcasesort($new->storage);
-        });
+        return tap(
+            clone $this,
+            static function (ArrayObject $new) {
+                natcasesort($new->storage);
+            }
+        );
     }
 
     /**
@@ -121,9 +128,9 @@ trait ArraySortTrait
     /**
      * Sort by column or custom getter.
      *
-     * @param string|callable $column
-     * @param int             $flags
-     * @param bool             $desc
+     * @param  string|callable  $column
+     * @param  int              $flags
+     * @param  bool             $desc
      *
      * @return  static
      *
@@ -133,7 +140,7 @@ trait ArraySortTrait
     {
         $results = [];
 
-        $getter = $column instanceof \Closure ? $column : function ($item) use ($column) {
+        $getter = $column instanceof Closure ? $column : function ($item) use ($column) {
             return Arr::get($item, $column);
         };
 

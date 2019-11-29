@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,11 +7,14 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Iterator\PriorityQueue;
+
 use function Windwalker\arr;
 
 /**
@@ -115,10 +118,12 @@ class ArrayObjectTest extends TestCase
         self::assertEquals([1, 2, 3], $this->instance->dump());
 
         // Recursive
-        $foo = arr([
-            clone $this->instance,
-            clone $this->instance,
-        ]);
+        $foo = arr(
+            [
+                clone $this->instance,
+                clone $this->instance,
+            ]
+        );
 
         self::assertEquals(
             [
@@ -256,9 +261,11 @@ class ArrayObjectTest extends TestCase
 
     public function testPipe(): void
     {
-        $a = $this->instance->pipe(function (ArrayObject $arr) {
-            return $arr->append(4);
-        });
+        $a = $this->instance->pipe(
+            function (ArrayObject $arr) {
+                return $arr->append(4);
+            }
+        );
 
         self::assertEquals([1, 2, 3, 4], $a->dump());
     }
@@ -267,9 +274,11 @@ class ArrayObjectTest extends TestCase
     {
         $b = 1;
 
-        $a = $this->instance->tap(function (ArrayObject $a) use (&$b) {
-            $b += $a->first();
-        });
+        $a = $this->instance->tap(
+            function (ArrayObject $a) use (&$b) {
+                $b += $a->first();
+            }
+        );
 
         self::assertEquals(2, $b);
     }
@@ -297,25 +306,33 @@ class ArrayObjectTest extends TestCase
     {
         $a = arr([1, 2, 1, 2, 4, 5, 6, 5, 6, 3, 2, 4, 5])->unique();
 
-        self::assertEquals([
-            0 => 1,
-            1 => 2,
-            4 => 4,
-            5 => 5,
-            6 => 6,
-            9 => 3,
-        ], $a->dump());
+        self::assertEquals(
+            [
+                0 => 1,
+                1 => 2,
+                4 => 4,
+                5 => 5,
+                6 => 6,
+                9 => 3,
+            ],
+            $a->dump()
+        );
 
-        $a = arr([
-            [1, 2],
-            [3, 4],
-            [1, 2]
-        ])->unique(SORT_REGULAR);
+        $a = arr(
+            [
+                [1, 2],
+                [3, 4],
+                [1, 2]
+            ]
+        )->unique(SORT_REGULAR);
 
-        self::assertEquals([
-            [1, 2],
-            [3, 4],
-        ], $a->dump());
+        self::assertEquals(
+            [
+                [1, 2],
+                [3, 4],
+            ],
+            $a->dump()
+        );
     }
 
     public function testExplode(): void
@@ -355,8 +372,8 @@ class ArrayObjectTest extends TestCase
      * testSearch
      *
      * @param  mixed  $exp
-     * @param  mixed $search
-     * @param  bool  $strict
+     * @param  mixed  $search
+     * @param  bool   $strict
      *
      * @return  void
      *
@@ -390,9 +407,11 @@ class ArrayObjectTest extends TestCase
 
     public function testApply(): void
     {
-        $a = $this->instance->apply(function (array $v) {
-            return array_reverse($v);
-        });
+        $a = $this->instance->apply(
+            function (array $v) {
+                return array_reverse($v);
+            }
+        );
 
         self::assertEquals([3, 2, 1], $a->dump());
     }

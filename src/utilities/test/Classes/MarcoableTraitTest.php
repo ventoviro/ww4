@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,10 +7,11 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Test\Classes;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Test\TestHelper;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 
 /**
@@ -91,9 +92,12 @@ class MarcoableTraitTest extends TestCase
             use MarcoableTrait;
         };
 
-        $this->instance::macro('foo', function ($a = null) {
-            return 'Hello:' . $a;
-        });
+        $this->instance::macro(
+            'foo',
+            function ($a = null) {
+                return 'Hello:' . $a;
+            }
+        );
     }
 
     protected function tearDown(): void

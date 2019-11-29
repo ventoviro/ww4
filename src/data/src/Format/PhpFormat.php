@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
@@ -6,10 +6,11 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Data\Format;
 
 use Windwalker\Data\DataHelper;
-use Windwalker\Utilities\Arr;
 
 /**
  * PHP class format handler for Data
@@ -29,9 +30,9 @@ class PhpFormat implements FormatInterface
      */
     public function dump($data, array $options = []): string
     {
-        $header = $options['header'] ?? '';
+        $header  = $options['header'] ?? '';
         $asArray = $options['return'] ?? false;
-        $strict = $options['strict'] ?? true;
+        $strict  = $options['strict'] ?? true;
 
         // Build the object variables string
         $vars = '';
@@ -46,7 +47,7 @@ class PhpFormat implements FormatInterface
 
         if (!$asArray) {
             if ($strict) {
-                $str = "<?php declare(strict_types=1);\n";
+                $str = "<?php\n";
             } else {
                 $str = "<?php\n";
             }
@@ -91,7 +92,7 @@ class PhpFormat implements FormatInterface
     /**
      * Method to get an array as an exported string.
      *
-     * @param   array $a The array to get as a string.
+     * @param  array  $a  The array to get as a string.
      *
      * @return  string
      */

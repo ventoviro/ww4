@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,8 +7,11 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Assert;
 
+use InvalidArgumentException;
 use TypeError;
 
 /**
@@ -56,7 +59,7 @@ class TypeAssert
     {
         $caller = $caller ?? static::getCaller();
 
-        static::throwException(\InvalidArgumentException::class, $message, $value, $caller);
+        static::throwException(InvalidArgumentException::class, $message, $value, $caller);
     }
 
     public static function throwException(string $class, string $message, $value = null, ?string $caller = null): void

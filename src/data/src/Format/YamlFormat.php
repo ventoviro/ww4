@@ -1,10 +1,12 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
  * @copyright  Copyright (C) 2019 LYRASOFT.
  * @license    LGPL-2.0-or-later
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Data\Format;
 
@@ -32,7 +34,7 @@ class YamlFormat implements FormatInterface
     {
         $inline = $options['inline'] ?? 2;
         $indent = $options['indent'] ?? 0;
-        $flags = $options['flags'] ?? 0;
+        $flags  = $options['flags'] ?? 0;
 
         return Yaml::dump($data, $inline, $indent, $flags);
     }

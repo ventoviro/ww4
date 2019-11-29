@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,12 +7,19 @@
  * @license    Please see LICENSE file.
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities;
 
-use Traversable;
+use ArrayAccess;
+use ArrayIterator;
+use ArrayObject;
+use InvalidArgumentException;
+use ReflectionObject;
 use Windwalker\Utilities\Classes\PreventInitialTrait;
 use Windwalker\Utilities\Compare\WhereWrapper;
 use Windwalker\Utilities\Dumper\VarDumper;
+
 use function Windwalker\count;
 
 /**
@@ -60,7 +67,7 @@ abstract class Arr
         $key   = array_shift($nodes);
         $value = null;
 
-        if ($source instanceof \ArrayAccess && isset($source[$key])) {
+        if ($source instanceof ArrayAccess && isset($source[$key])) {
             $value = $source[$key];
         } elseif (is_array($source) && array_key_exists($key, $source)) {
             $value = $source[$key];
@@ -86,7 +93,7 @@ abstract class Arr
      * @param  string        $delimiter  Separator to split paths.
      *
      * @return  array|object
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      *
      * @since 4.0
      */
@@ -172,7 +179,7 @@ abstract class Arr
      * @param  string  $storeType  The new store data type, default is `array`. you can set object class name.
      *
      * @return  array|object
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      *
      * @since   2.0
      */
@@ -191,7 +198,7 @@ abstract class Arr
          *
          * @return  array
          *
-         * @throws \InvalidArgumentException
+         * @throws InvalidArgumentException
          */
         $createStore = static function ($type) {
             if (strtolower($type) === 'array') {
@@ -202,7 +209,7 @@ abstract class Arr
                 return new $type();
             }
 
-            throw new \InvalidArgumentException(sprintf('Type or class: %s not exists', $type));
+            throw new InvalidArgumentException(sprintf('Type or class: %s not exists', $type));
         };
 
         $dataTmp = &$data;
@@ -297,9 +304,12 @@ abstract class Arr
     {
         $result = [];
 
-        array_walk_recursive($data, static function ($v, $k) use (&$result) {
-            $result[$k] = $v;
-        });
+        array_walk_recursive(
+            $data,
+            static function ($v, $k) use (&$result) {
+                $result[$k] = $v;
+            }
+        );
 
         return $result;
     }
@@ -344,7 +354,7 @@ abstract class Arr
      * @param  array         $fields
      *
      * @return  array|object
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function only($data, array $fields)
     {
@@ -364,7 +374,7 @@ abstract class Arr
             return $data;
         }
 
-        throw new \InvalidArgumentException('Argument 1 not array or object');
+        throw new InvalidArgumentException('Argument 1 not array or object');
     }
 
     /**
@@ -393,7 +403,7 @@ abstract class Arr
             return $data;
         }
 
-        throw new \InvalidArgumentException('Argument 1 not array or object');
+        throw new InvalidArgumentException('Argument 1 not array or object');
     }
 
     /**
@@ -418,7 +428,7 @@ abstract class Arr
         $i       = 0;
         $c       = 0;
 
-        $callback =         $callback ?? 'is_null';
+        $callback = $callback ?? 'is_null';
 
         foreach ($data as $key => $value) {
             // If use global function, send only value as argument.
@@ -625,7 +635,7 @@ abstract class Arr
      */
     public static function isAccessible($array): bool
     {
-        return is_array($array) || $array instanceof \ArrayAccess;
+        return is_array($array) || $array instanceof ArrayAccess;
     }
 
     /**
@@ -725,7 +735,7 @@ abstract class Arr
 
         foreach ($args as $i => $array) {
             if (!is_array($array)) {
-                throw new \InvalidArgumentException(sprintf('Argument #%d is not an array.', $i + 2));
+                throw new InvalidArgumentException(sprintf('Argument #%d is not an array.', $i + 2));
             }
 
             foreach ($array as $key => &$value) {
@@ -770,14 +780,14 @@ abstract class Arr
             // If type is object, try to get properties by Reflection.
             if ($type === 'object') {
                 // Remove special characters from anonymous class name.
-                $ref        = new \ReflectionObject($data);
+                $ref        = new ReflectionObject($data);
                 $class      = $ref->isAnonymous() ? 'class@anonymous' : $ref->getName();
                 $output     = $class . ' ' . ucfirst($type);
                 $properties = $ref->getProperties();
 
                 // Fix for ArrayObject & ArrayIterator
-                if ($data instanceof \ArrayObject || $data instanceof \ArrayIterator) {
-                    $data->setFlags(\ArrayObject::ARRAY_AS_PROPS);
+                if ($data instanceof ArrayObject || $data instanceof ArrayIterator) {
+                    $data->setFlags(ArrayObject::ARRAY_AS_PROPS);
                 }
 
                 foreach ($properties as $property) {
@@ -798,7 +808,7 @@ abstract class Arr
                     $elements[$pType] = $property->getValue($data);
                 }
 
-                if ($data instanceof \ArrayObject || $data instanceof \ArrayIterator) {
+                if ($data instanceof ArrayObject || $data instanceof ArrayIterator) {
                     $data->setFlags(0);
                 }
             } elseif ($type === 'array') {
@@ -868,7 +878,7 @@ abstract class Arr
         } elseif (is_array($field)) {
             $query = $field;
         } else {
-            throw new \InvalidArgumentException('Where query must br array or string.');
+            throw new InvalidArgumentException('Where query must br array or string.');
         }
 
         return static::query($array, $query, $strict, $keepKey);
@@ -977,7 +987,8 @@ abstract class Arr
                     // Workaround for PHP object compare bug, see: https://bugs.php.net/bug.php?id=62976
                     $compare1 = is_object(static::get($array, $key)) ? get_object_vars(
                         static::get(
-                            $array, $key
+                            $array,
+                            $key
                         )
                     ) : static::get($array, $key);
                     $compare2 = is_object($val) ? get_object_vars($val) : $val;

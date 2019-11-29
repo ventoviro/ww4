@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of Windwalker project.
@@ -7,8 +7,11 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Compare;
 
+use InvalidArgumentException;
 use Windwalker\Utilities\TypeCast;
 
 /**
@@ -21,14 +24,14 @@ class CompareHelper
     /**
      * Compare two values.
      *
-     * @param mixed  $compare1 The compare1 value.
-     * @param string $operator The compare operator.
-     * @param mixed  $compare2 The compare2 calue.
-     * @param bool   $strict   Use strict compare.
+     * @param  mixed   $compare1  The compare1 value.
+     * @param  string  $operator  The compare operator.
+     * @param  mixed   $compare2  The compare2 calue.
+     * @param  bool    $strict    Use strict compare.
      *
      * @return  boolean
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function compare($compare1, string $operator, $compare2, $strict = false): bool
     {
@@ -86,7 +89,7 @@ class CompareHelper
                 break;
 
             default:
-                throw new \InvalidArgumentException('Invalid compare operator: ' . $operator);
+                throw new InvalidArgumentException('Invalid compare operator: ' . $operator);
         }
     }
 }

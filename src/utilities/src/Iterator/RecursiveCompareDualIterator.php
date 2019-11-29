@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of windwalker project.
  *
@@ -6,14 +6,18 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Iterator;
+
+use RecursiveIteratorIterator;
 
 /**
  * The RecursiveCompareDualIterator class.
  *
  * @since  2.0
  */
-class RecursiveCompareDualIterator extends \RecursiveIteratorIterator
+class RecursiveCompareDualIterator extends RecursiveIteratorIterator
 {
     /**
      * Used to keep end of recursion equality. That is en leaving a nesting
@@ -26,9 +30,9 @@ class RecursiveCompareDualIterator extends \RecursiveIteratorIterator
     /**
      * Construct from RecursiveDualIterator
      *
-     * @param RecursiveDualIterator $it    RecursiveDualIterator
-     * @param integer               $mode  Should be LEAVES_ONLY
-     * @param integer               $flags Should be 0
+     * @param  RecursiveDualIterator  $it     RecursiveDualIterator
+     * @param  integer                $mode   Should be LEAVES_ONLY
+     * @param  integer                $flags  Should be 0
      */
     public function __construct(RecursiveDualIterator $it, int $mode = self::LEAVES_ONLY, int $flags = 0)
     {
@@ -50,9 +54,9 @@ class RecursiveCompareDualIterator extends \RecursiveIteratorIterator
     /**
      * Calculate $equal
      *
+     * @return void
      * @see $equal
      *
-     * @return void
      */
     public function endChildren(): void
     {
