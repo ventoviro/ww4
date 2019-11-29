@@ -9,7 +9,9 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Data\Test;
+declare(strict_types=1);
+
+namespace  Windwalker\Data\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Data\Collection;

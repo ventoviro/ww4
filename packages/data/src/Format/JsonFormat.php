@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Data\Format;
 
-use Windwalker\Data\DataHelper;
-
 /**
  * JSON format handler for Data.
  *
