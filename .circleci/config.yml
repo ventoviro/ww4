@@ -22,4 +22,5 @@ jobs:
     steps:
       - checkout
       # run tests!
+      - run: composer install
       - run: vendor/bin/phpcs --standard=PSR12 -n --extensions=php
