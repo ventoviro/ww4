@@ -10,7 +10,6 @@
 declare(strict_types=1);
 
 namespace {
-
     use Windwalker\Utilities\Arr;
 
     if (!function_exists('show')) {
@@ -81,9 +80,6 @@ namespace {
 
     include_once __DIR__ . '/serializer.php';
 }
-
-declare(strict_types=1);
-
 namespace Windwalker {
 
     use Closure;

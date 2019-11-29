@@ -53,7 +53,8 @@ class TypeAssertTest extends TestCase
                 'Method %s must with type X, %s given.',
                 5,
                 null,
-                'Method Windwalker\Utilities\Test\Assert\TypeAssertTest::testThrowException() must with type X, integer(5) given.'
+                'Method Windwalker\Utilities\Test\Assert\TypeAssertTest::testThrowException() ' .
+                'must with type X, integer(5) given.'
             ],
             'Custom caller' => [
                 InvalidArgumentException::class,

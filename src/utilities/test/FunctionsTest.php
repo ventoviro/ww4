@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright  Copyright (C) 2019 LYRASOFT Source Matters, Inc.
  * @license    LGPL-2.0-or-later

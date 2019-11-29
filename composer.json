@@ -31,7 +31,9 @@
         "laktak/hjson": "^2.1",
         "yosymfony/toml": "^1.0",
         "ext-simplexml": "*",
-        "opis/closure": "^3.4"
+        "opis/closure": "^3.4",
+        "phpunit/phpunit": "^8.4",
+        "squizlabs/php_codesniffer": "^3.5"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",

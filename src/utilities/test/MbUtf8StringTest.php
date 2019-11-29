@@ -6,7 +6,6 @@
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT Taiwan, Inc. All rights reserved.
  * @license    MIT
  */
-declare(strict_types=1);
 
 declare(strict_types=1);
 
@@ -178,7 +177,7 @@ class MbUtf8StringTest extends TestCase
      * @dataProvider  strIreplaceProvider
      * @since         2.0
      */
-    public function testStr_ireplace($search, $replace, $subject, $count, $expect)
+    public function testStrIreplace($search, $replace, $subject, $count, $expect)
     {
         $actual = Utf8String::strIreplace($search, $replace, $subject, $count);
         $this->assertEquals($expect, $actual);
@@ -196,7 +195,7 @@ class MbUtf8StringTest extends TestCase
      * @dataProvider  strSplitProvider
      * @since         2.0
      */
-    public function testStr_split($string, $split_length, $expect)
+    public function testStrSplit($string, $split_length, $expect)
     {
         $actual = Utf8String::strSplit($string, $split_length);
         $this->assertEquals($expect, $actual);
@@ -207,10 +206,9 @@ class MbUtf8StringTest extends TestCase
      *
      * @param  string  $string1  @todo
      * @param  string  $string2  @todo
-     * @param  string  $locale   @todo
      * @param  string  $expect   @todo
      *
-     * @return  array
+     * @return void
      *
      * @dataProvider  strcasecmpProvider
      * @since         2.0

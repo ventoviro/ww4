@@ -142,7 +142,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * withRemove
      *
-     * @param mixed $key
+     * @param  mixed  $key
      *
      * @return  static
      *
@@ -434,7 +434,7 @@ class ArrayObject implements AccessibleInterface
     {
         return array_map(
             static function ($v) {
-                return $v instanceof static ? $v->dump() : $v;
+                return $v instanceof ArrayObject ? $v->dump() : $v;
             },
             $args
         );

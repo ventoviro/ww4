@@ -6,7 +6,6 @@
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT. All rights reserved.
  * @license    MIT
  */
-declare(strict_types=1);
 
 declare(strict_types=1);
 
@@ -687,7 +686,8 @@ abstract class Utf8String
                         * Check for illegal sequences and codepoints.
                         */
                         // From Unicode 3.1, non-shortest form is illegal
-                        if (((2 === $mBytes) && ($mUcs4 < 0x0080)) ||
+                        if (
+                            ((2 === $mBytes) && ($mUcs4 < 0x0080)) ||
                             ((3 === $mBytes) && ($mUcs4 < 0x0800)) ||
                             ((4 === $mBytes) && ($mUcs4 < 0x10000)) ||
                             (4 < $mBytes) ||

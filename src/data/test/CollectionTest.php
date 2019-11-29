@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,10 +7,13 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Data\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Data\Collection;
+
 use function Windwalker\collect;
 
 /**
@@ -58,10 +61,13 @@ class CollectionTest extends TestCase
         self::assertEquals($extracted->getDeep('foo.bar.goo'), $new->getDeep('foo.bar.goo'));
 
         // Extract to non-array
-        $this->expectExceptionMessage(sprintf(
-            'Method: %s::extract() extract to sub element should should be array or object or NULL, got string(4) "Hola"',
-            Collection::class
-        ));
+        $this->expectExceptionMessage(
+            sprintf(
+                'Method: %s::extract() extract to sub element should should be array or object or NULL,' .
+                ' got string(4) "Hola"',
+                Collection::class
+            )
+        );
 
         $extracted = $this->instance->extract('foo.bar.goo');
     }
@@ -93,10 +99,12 @@ class CollectionTest extends TestCase
         // Proxy with some operation
         $extracted = $this->instance->extract('foo.bar.yoo.items', true);
 
-        $extracted->push([
-            'id' => 4,
-            'title' => 'Olive'
-        ]);
+        $extracted->push(
+            [
+                'id' => 4,
+                'title' => 'Olive'
+            ]
+        );
 
         self::assertEquals(
             $extracted->dump(),
@@ -104,10 +112,12 @@ class CollectionTest extends TestCase
         );
 
         // Extract to non-array
-        $this->expectExceptionMessage(sprintf(
-            'Method: %s::extract() Proxy to sub element should be array, got string(4) "Hola"',
-            Collection::class
-        ));
+        $this->expectExceptionMessage(
+            sprintf(
+                'Method: %s::extract() Proxy to sub element should be array, got string(4) "Hola"',
+                Collection::class
+            )
+        );
 
         $extracted = $this->instance->extract('foo.bar.goo', true);
     }
@@ -148,30 +158,32 @@ class CollectionTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->instance = collect([
-            'foo' => [
-                'bar' => [
-                    'goo' => 'Hello',
-                    'yoo' => [
-                        'uid' => 123456,
-                        'items' => [
-                            [
-                                'id' => 1,
-                                'title' => 'Sakura'
-                            ],
-                            [
-                                'id' => 2,
-                                'title' => 'Rose'
-                            ],
-                            [
-                                'id' => 3,
-                                'title' => 'Sunflower'
-                            ],
+        $this->instance = collect(
+            [
+                'foo' => [
+                    'bar' => [
+                        'goo' => 'Hello',
+                        'yoo' => [
+                            'uid' => 123456,
+                            'items' => [
+                                [
+                                    'id' => 1,
+                                    'title' => 'Sakura'
+                                ],
+                                [
+                                    'id' => 2,
+                                    'title' => 'Rose'
+                                ],
+                                [
+                                    'id' => 3,
+                                    'title' => 'Sunflower'
+                                ],
+                            ]
                         ]
                     ]
                 ]
             ]
-        ]);
+        );
     }
 
     protected function tearDown(): void

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,11 +7,14 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker;
 
 use Opis\Closure\SerializableClosure;
 
-function serialize($data): string {
+function serialize($data): string
+{
     if (!class_exists(SerializableClosure::class)) {
         throw new \LogicException('Please install opis/closure first');
     }
@@ -19,7 +22,8 @@ function serialize($data): string {
     return \Opis\Closure\serialize($data);
 }
 
-function unserialize(string $data) {
+function unserialize(string $data)
+{
     if (!class_exists(SerializableClosure::class)) {
         throw new \LogicException('Please install opis/closure first');
     }
@@ -27,7 +31,8 @@ function unserialize(string $data) {
     return \Opis\Closure\unserialize($data);
 }
 
-function closure(\Closure $closure) {
+function closure(\Closure $closure)
+{
     if (!class_exists(SerializableClosure::class)) {
         throw new \LogicException('Please install opis/closure first');
     }
