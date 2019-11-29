@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 __ORGANIZATION__.
  * @license    __LICENSE__
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Scalars\Concern;
 
@@ -158,9 +160,12 @@ trait ArrayCreationTrait
      */
     public function mergeRecursive(...$args)
     {
-        $args = array_map(static function ($arg) {
-            return $arg instanceof ArrayObject ? $arg->dump() : $arg;
-        }, $args);
+        $args = array_map(
+            static function ($arg) {
+                return $arg instanceof ArrayObject ? $arg->dump() : $arg;
+            },
+            $args
+        );
 
         return $this->newInstance(Arr::mergeRecursive($this->storage, ...$args));
     }
@@ -194,7 +199,7 @@ trait ArrayCreationTrait
     /**
      * crossJoin
      *
-     * @param mixed ...$args
+     * @param  mixed  ...$args
      *
      * @return  static
      *

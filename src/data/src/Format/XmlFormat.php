@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
@@ -6,7 +6,12 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Data\Format;
+
+use SimpleXMLElement;
+use stdClass;
 
 /**
  * XML format handler for Data.
@@ -68,7 +73,7 @@ class XmlFormat implements FormatInterface
     /**
      * Method to get a PHP native value for a SimpleXMLElement object. -- called recursively
      *
-     * @param   object $node SimpleXMLElement object for which to get the native value.
+     * @param  object  $node  SimpleXMLElement object for which to get the native value.
      *
      * @return  mixed  Native value of the SimpleXMLElement object.
      */
@@ -107,7 +112,7 @@ class XmlFormat implements FormatInterface
                 break;
 
             default:
-                $value = new \stdClass();
+                $value = new stdClass();
 
                 foreach ($node->children() as $child) {
                     $value->$child['name'] = static::getValueFromNode($child);
@@ -122,13 +127,13 @@ class XmlFormat implements FormatInterface
     /**
      * Method to build a level of the XML string -- called recursively
      *
-     * @param   \SimpleXMLElement $node     SimpleXMLElement object to attach children.
-     * @param   object            $var      Object that represents a node of the XML document.
-     * @param   string            $nodeName The name to use for node elements.
+     * @param  SimpleXMLElement  $node      SimpleXMLElement object to attach children.
+     * @param  object             $var       Object that represents a node of the XML document.
+     * @param  string             $nodeName  The name to use for node elements.
      *
      * @return  void
      */
-    protected static function getXmlChildren(\SimpleXMLElement $node, $var, $nodeName)
+    protected static function getXmlChildren(SimpleXMLElement $node, $var, $nodeName)
     {
         // Iterate over the object members.
         foreach ((array) $var as $k => $v) {

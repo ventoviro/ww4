@@ -1,11 +1,14 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * @copyright  Copyright (C) 2019 LYRASOFT Source Matters, Inc.
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Test;
 
+use PHPUnit\Framework\TestCase;
 use Windwalker\Utilities\StrInflector;
 
 /**
@@ -14,7 +17,7 @@ use Windwalker\Utilities\StrInflector;
  * @link   http://en.wikipedia.org/wiki/English_plural
  * @since  2.0
  */
-class StrInflectorTest extends \PHPUnit\Framework\TestCase
+class StrInflectorTest extends TestCase
 {
     /**
      * Method to provider data to testIsCountable.

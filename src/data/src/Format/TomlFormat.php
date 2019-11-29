@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
@@ -6,8 +6,11 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Data\Format;
 
+use Traversable;
 use Windwalker\Utilities\Arr;
 use Yosymfony\Toml\Toml;
 use Yosymfony\Toml\TomlBuilder;
@@ -33,7 +36,7 @@ class TomlFormat implements FormatInterface
     {
         $tb = new TomlBuilder();
 
-        if ($data instanceof \Traversable) {
+        if ($data instanceof Traversable) {
             $data = iterator_to_array($data);
         } elseif (is_object($data)) {
             $data = get_object_vars($data);
@@ -49,9 +52,9 @@ class TomlFormat implements FormatInterface
     /**
      * addValues
      *
-     * @param TomlBuilder $tb
-     * @param mixed       $struct
-     * @param string|null $prefix
+     * @param  TomlBuilder  $tb
+     * @param  mixed        $struct
+     * @param  string|null  $prefix
      *
      * @return  void
      *

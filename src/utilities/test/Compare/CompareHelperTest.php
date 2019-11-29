@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of Windwalker project Test files.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 LYRASOFT Taiwan, Inc.
  * @license    LGPL-2.0-or-later
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Compare\Test\Compare;
 
@@ -106,11 +108,11 @@ class CompareHelperTest extends TestCase
     /**
      * Method to test compare().
      *
-     * @param mixed  $compare1
-     * @param string $operator
-     * @param mixed  $compare2
-     * @param bool   $strict
-     * @param bool   $result
+     * @param  mixed   $compare1
+     * @param  string  $operator
+     * @param  mixed   $compare2
+     * @param  bool    $strict
+     * @param  bool    $result
      *
      * @return void
      *

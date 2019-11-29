@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,12 +7,13 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Test\Concern;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Scalars\ArrayObject;
 use Windwalker\Scalars\Concern\ArraySortTrait;
-use Windwalker\Utilities\Str;
+
 use function Windwalker\arr;
 
 /**
@@ -31,28 +32,30 @@ class ArraySortTraitTest extends TestCase
      */
     public function testSortBy(): void
     {
-        $data = arr($src = [
-            [
-                'id' => 3,
-                'title' => 'Othello',
-                'data' => 123,
-            ],
-            [
-                'id' => 2,
-                'title' => 'Macbeth',
-                'data' => [],
-            ],
-            [
-                'id' => 4,
-                'title' => 'Hamlet',
-                'data' => true,
-            ],
-            [
-                'id' => 1,
-                'title' => 'Julius Caesar',
-                'data' => (object) ['foo' => 'bar'],
-            ],
-        ]);
+        $data = arr(
+            $src = [
+                [
+                    'id' => 3,
+                    'title' => 'Othello',
+                    'data' => 123,
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'Macbeth',
+                    'data' => [],
+                ],
+                [
+                    'id' => 4,
+                    'title' => 'Hamlet',
+                    'data' => true,
+                ],
+                [
+                    'id' => 1,
+                    'title' => 'Julius Caesar',
+                    'data' => (object) ['foo' => 'bar'],
+                ],
+            ]
+        );
 
         $a = $data->sortBy('id');
 
@@ -67,9 +70,11 @@ class ArraySortTraitTest extends TestCase
         );
 
         // Test callable
-        $a = $data->sortBy(function ($item) {
-            return $item['id'];
-        });
+        $a = $data->sortBy(
+            function ($item) {
+                return $item['id'];
+            }
+        );
 
         self::assertEquals(
             ['Julius Caesar', 'Macbeth', 'Othello', 'Hamlet'],
@@ -81,9 +86,11 @@ class ArraySortTraitTest extends TestCase
             $a->keys()->dump()
         );
 
-        $a = $data->sortBy(function ($item, $k) {
-            return $k;
-        });
+        $a = $data->sortBy(
+            function ($item, $k) {
+                return $k;
+            }
+        );
 
         self::assertEquals(
             [0, 1, 2, 3],
@@ -110,9 +117,11 @@ class ArraySortTraitTest extends TestCase
             $a->dump()
         );
 
-        $r = $this->instance->sort(function ($a, $b) {
-            return strcmp($a, $b);
-        });
+        $r = $this->instance->sort(
+            function ($a, $b) {
+                return strcmp($a, $b);
+            }
+        );
 
         self::assertSame(
             [
@@ -186,9 +195,11 @@ class ArraySortTraitTest extends TestCase
             $a->dump()
         );
 
-        $r = $this->instance->sortKeys(function ($a, $b) {
-            return (int) $a > (int) $b;
-        });
+        $r = $this->instance->sortKeys(
+            function ($a, $b) {
+                return (int) $a > (int) $b;
+            }
+        );
 
         self::assertEquals(
             [
@@ -242,12 +253,14 @@ class ArraySortTraitTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->instance = arr([
-            '3' => 'A',
-            '2' => 'Z',
-            '5' => 'B',
-            '1' => 'H',
-        ]);
+        $this->instance = arr(
+            [
+                '3' => 'A',
+                '2' => 'Z',
+                '5' => 'B',
+                '1' => 'H',
+            ]
+        );
     }
 
     protected function tearDown(): void

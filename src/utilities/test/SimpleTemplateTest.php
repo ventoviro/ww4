@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project Test files.  @codingStandardsIgnoreStart
  *
@@ -6,8 +6,11 @@
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Test;
 
+use PHPUnit\Framework\TestCase;
 use Windwalker\Utilities\SimpleTemplate;
 
 /**
@@ -15,7 +18,7 @@ use Windwalker\Utilities\SimpleTemplate;
  *
  * @since 3.0
  */
-class SimpleTemplateTest extends \PHPUnit\Framework\TestCase
+class SimpleTemplateTest extends TestCase
 {
     /**
      * Tears down the fixture, for example, closes a network connection.
@@ -38,7 +41,6 @@ class SimpleTemplateTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals('This is Flower', SimpleTemplate::render('This is {{ foo.bar.baz }}', $data));
         $this->assertEquals('This is ', SimpleTemplate::render('This is {{ foo.yoo }}', $data));
-
     }
 
     public function testRenderTemplate(): void

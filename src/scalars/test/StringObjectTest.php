@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 /**
  * Part of ww4 project.
@@ -7,13 +7,18 @@
  * @license    Please see LICENSE file.
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Test;
 
+use BadMethodCallException;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\StringObject;
 use Windwalker\Utilities\Str;
 use Windwalker\Utilities\Test\MbstringTestTrait;
 use Windwalker\Utilities\Utf8String;
+
 use function Windwalker\str;
 
 /**
@@ -121,7 +126,7 @@ class StringObjectTest extends TestCase
             (new StringObject('白日依山盡', StringObject::ENCODING_DEFAULT_ISO))->slice(1, 3)
         );
 
-        $this->expectException(\BadMethodCallException::class);
+        $this->expectException(BadMethodCallException::class);
 
         (new StringObject('Foo'))->notexists();
     }
@@ -129,8 +134,8 @@ class StringObjectTest extends TestCase
     /**
      * testOffsetGet
      *
-     * @param string $expected
-     * @param int    $offset
+     * @param  string  $expected
+     * @param  int     $offset
      *
      * @dataProvider offsetGetProvider
      */
@@ -161,10 +166,10 @@ class StringObjectTest extends TestCase
     /**
      * testOffsetSet
      *
-     * @param string $string
-     * @param string $replace
-     * @param int    $offset
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $replace
+     * @param  int     $offset
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -196,9 +201,9 @@ class StringObjectTest extends TestCase
     /**
      * testOffsetUnset
      *
-     * @param string $string
-     * @param int    $offset
-     * @param string $expected
+     * @param  string  $string
+     * @param  int     $offset
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -280,8 +285,8 @@ class StringObjectTest extends TestCase
     /**
      * testToLowerCase
      *
-     * @param string $string
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -289,7 +294,7 @@ class StringObjectTest extends TestCase
      */
     public function testToLowerCase(string $string, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->toLowerCase();
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -314,8 +319,8 @@ class StringObjectTest extends TestCase
     /**
      * testToUpperCase
      *
-     * @param string $string
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -323,7 +328,7 @@ class StringObjectTest extends TestCase
      */
     public function testToUpperCase(string $string, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->toUpperCase();
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -348,9 +353,9 @@ class StringObjectTest extends TestCase
     /**
      * testLength
      *
-     * @param string      $string
-     * @param int         $expected
-     * @param string|null $encoding
+     * @param  string       $string
+     * @param  int          $expected
+     * @param  string|null  $encoding
      *
      * @return  void
      *
@@ -358,7 +363,7 @@ class StringObjectTest extends TestCase
      */
     public function testLength(string $string, int $expected, string $encoding = null)
     {
-        $s = new StringObject($string, $encoding);
+        $s      = new StringObject($string, $encoding);
         $length = $s->length();
 
         self::assertEquals($expected, $length);
@@ -387,11 +392,11 @@ class StringObjectTest extends TestCase
     /**
      * testReplace
      *
-     * @param string $string
-     * @param        $search
-     * @param        $replacement
-     * @param        $expected
-     * @param int    $count
+     * @param  string  $string
+     * @param          $search
+     * @param          $replacement
+     * @param          $expected
+     * @param  int     $count
      *
      * @return  void
      *
@@ -399,7 +404,7 @@ class StringObjectTest extends TestCase
      */
     public function testReplace(string $string, $search, $replacement, $expected, int $count)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->replace($search, $replacement, $c);
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -440,9 +445,9 @@ class StringObjectTest extends TestCase
     /**
      * testChop
      *
-     * @param string $string
-     * @param int    $length
-     * @param array  $expected
+     * @param  string  $string
+     * @param  int     $length
+     * @param  array   $expected
      *
      * @dataProvider strSplitProvider
      */
@@ -452,7 +457,7 @@ class StringObjectTest extends TestCase
 
         try {
             self::assertEquals($expected, $s->chop($length)->dump());
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             self::assertEquals(0, $length);
         }
     }
@@ -460,9 +465,9 @@ class StringObjectTest extends TestCase
     /**
      * testCompare
      *
-     * @param string $str1
-     * @param string $str2
-     * @param int    $expected
+     * @param  string  $str1
+     * @param  string  $str2
+     * @param  int     $expected
      *
      * @dataProvider strcmpProvider
      */
@@ -482,9 +487,9 @@ class StringObjectTest extends TestCase
     /**
      * testCompare
      *
-     * @param string $str1
-     * @param string $str2
-     * @param int    $expected
+     * @param  string  $str1
+     * @param  string  $str2
+     * @param  int     $expected
      *
      * @dataProvider strcasecmpProvider
      */
@@ -504,14 +509,14 @@ class StringObjectTest extends TestCase
     /**
      * testReverse
      *
-     * @param string $string
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $expected
      *
      * @dataProvider strrevProvider
      */
     public function testReverse(string $string, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->reverse();
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -522,11 +527,11 @@ class StringObjectTest extends TestCase
     /**
      * testSubstrReplace
      *
-     * @param string $expected
-     * @param mixed  $string
-     * @param mixed  $replace
-     * @param int    $start
-     * @param int    $offset
+     * @param  string  $expected
+     * @param  mixed   $string
+     * @param  mixed   $replace
+     * @param  int     $start
+     * @param  int     $offset
      *
      * @dataProvider substrReplaceProvider
      */
@@ -539,10 +544,11 @@ class StringObjectTest extends TestCase
     ) {
         if (is_array($string)) {
             self::markTestSkipped('StringObject only test string.');
+
             return;
         }
 
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->substrReplace($replace, $start, $offset);
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -553,15 +559,15 @@ class StringObjectTest extends TestCase
     /**
      * testLtrim
      *
-     * @param string      $string
-     * @param null|string $charlist
-     * @param string      $expected
+     * @param  string       $string
+     * @param  null|string  $charlist
+     * @param  string       $expected
      *
      * @dataProvider ltrimProvider
      */
     public function testTrimLeft(string $string, ?string $charlist, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->trimLeft($charlist);
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -572,9 +578,9 @@ class StringObjectTest extends TestCase
     /**
      * testRtrim
      *
-     * @param string      $string
-     * @param null|string $charlist
-     * @param string      $expected
+     * @param  string       $string
+     * @param  null|string  $charlist
+     * @param  string       $expected
      *
      * @return  void
      *
@@ -582,7 +588,7 @@ class StringObjectTest extends TestCase
      */
     public function testTrimRight(string $string, ?string $charlist, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->trimRight($charlist);
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -593,9 +599,9 @@ class StringObjectTest extends TestCase
     /**
      * testTrim
      *
-     * @param string      $string
-     * @param null|string $charlist
-     * @param string      $expected
+     * @param  string       $string
+     * @param  null|string  $charlist
+     * @param  string       $expected
      *
      * @return  void
      *
@@ -603,7 +609,7 @@ class StringObjectTest extends TestCase
      */
     public function testTrim(string $string, ?string $charlist, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->trim($charlist);
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -614,14 +620,14 @@ class StringObjectTest extends TestCase
     /**
      * testUcfirst
      *
-     * @param string $string
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $expected
      *
      * @dataProvider ucfirstProvider
      */
     public function testUpperCaseFirst(string $string, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->upperCaseFirst();
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -632,14 +638,14 @@ class StringObjectTest extends TestCase
     /**
      * testLcfirst
      *
-     * @param string $string
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $expected
      *
      * @dataProvider lcfirstProvider
      */
     public function testLowerCaseFirst(string $string, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->lowerCaseFirst();
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -650,8 +656,8 @@ class StringObjectTest extends TestCase
     /**
      * testUpperCaseWords
      *
-     * @param string $string
-     * @param string $expected
+     * @param  string  $string
+     * @param  string  $expected
      *
      * @return  void
      *
@@ -659,7 +665,7 @@ class StringObjectTest extends TestCase
      */
     public function testUpperCaseWords(string $string, string $expected)
     {
-        $s = new StringObject($string);
+        $s  = new StringObject($string);
         $s2 = $s->upperCaseWords();
 
         self::assertInstanceOf(StringObject::class, $s2);
@@ -670,10 +676,10 @@ class StringObjectTest extends TestCase
     /**
      * testSubstrCount
      *
-     * @param string $string
-     * @param string $search
-     * @param int    $expected
-     * @param bool   $caseSensitive
+     * @param  string  $string
+     * @param  string  $search
+     * @param  int     $expected
+     * @param  bool    $caseSensitive
      *
      * @dataProvider substrCountProvider
      */
@@ -687,9 +693,9 @@ class StringObjectTest extends TestCase
     /**
      * testIndexOf
      *
-     * @param string $string
-     * @param string $search
-     * @param int    $expected
+     * @param  string  $string
+     * @param  string  $search
+     * @param  int     $expected
      *
      * @return  void
      *
@@ -722,9 +728,9 @@ class StringObjectTest extends TestCase
     /**
      * testIndexOf
      *
-     * @param string $string
-     * @param string $search
-     * @param int    $expected
+     * @param  string  $string
+     * @param  string  $search
+     * @param  int     $expected
      *
      * @return  void
      *
@@ -757,9 +763,9 @@ class StringObjectTest extends TestCase
     /**
      * testExplode
      *
-     * @param string $string
-     * @param string $delimiter
-     * @param array  $expected
+     * @param  string  $string
+     * @param  string  $delimiter
+     * @param  array   $expected
      *
      * @return  void
      *
@@ -794,9 +800,11 @@ class StringObjectTest extends TestCase
     {
         $s = new StringObject('FooBar');
 
-        $s2 = $s->apply(function ($string) {
-            return strtoupper($string);
-        });
+        $s2 = $s->apply(
+            function ($string) {
+                return strtoupper($string);
+            }
+        );
 
         self::assertInstanceOf(StringObject::class, $s2);
         self::assertNotSame($s, $s2);
@@ -807,9 +815,11 @@ class StringObjectTest extends TestCase
     {
         $s = new StringObject('FooBar');
 
-        $s2 = $s->pipe(static function (StringObject $str) {
-            return $str->toUpperCase();
-        });
+        $s2 = $s->pipe(
+            static function (StringObject $str) {
+                return $str->toUpperCase();
+            }
+        );
 
         self::assertNotSame($s, $s2);
         self::assertEquals('FOOBAR', (string) $s2);
@@ -817,7 +827,7 @@ class StringObjectTest extends TestCase
 
     public function testAppend(): void
     {
-        $str = str('foo');
+        $str  = str('foo');
         $str2 = $str->append(' bar');
 
         self::assertEquals('foo bar', (string) $str2);
@@ -826,7 +836,7 @@ class StringObjectTest extends TestCase
 
     public function testPrepend(): void
     {
-        $str = str('foo');
+        $str  = str('foo');
         $str2 = $str->prepend('bar ');
 
         self::assertEquals('bar foo', (string) $str2);

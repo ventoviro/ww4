@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 /**
  * Part of Windwalker project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT. All rights reserved.
  * @license    MIT
  */
+
+declare(strict_types=1);
 
 namespace Windwalker {
 
@@ -15,8 +17,8 @@ namespace Windwalker {
     /**
      * str
      *
-     * @param string      $string
-     * @param null|string $encoding
+     * @param  string       $string
+     * @param  null|string  $encoding
      *
      * @return  StringObject
      */
@@ -28,13 +30,14 @@ namespace Windwalker {
     /**
      * collect
      *
-     * @param array  $data
+     * @param  array  $data
      *
      * @return  ArrayObject
      *
      * @since  3.5
      */
-    function arr($data = []): ArrayObject {
+    function arr($data = []): ArrayObject
+    {
         return new ArrayObject($data);
     }
 }

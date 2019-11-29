@@ -7,6 +7,8 @@
  * @license    GNU General Public License version 2 or later.
  */
 
+declare(strict_types=1);
+
 namespace PHPSTORM_META {
 
     use Windwalker\Scalars\ArrayObject;
@@ -14,8 +16,10 @@ namespace PHPSTORM_META {
     // Container
     override(
         ArrayObject::as(0),
-        map([
-            '' => '@'
-        ])
+        map(
+            [
+                '' => '@'
+            ]
+        )
     );
 }

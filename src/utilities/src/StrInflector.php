@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,9 +7,12 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities;
 
 use Doctrine\Common\Inflector\Inflector;
+use DomainException;
 
 /**
  * The StrInflector class.
@@ -21,7 +24,7 @@ class StrInflector
     /**
      * Checks if a word is in a plural form.
      *
-     * @param   string $word The string input.
+     * @param  string  $word  The string input.
      *
      * @return  boolean  True if word is plural, false if not.
      *
@@ -36,7 +39,7 @@ class StrInflector
     /**
      * Checks if a word is in a singular form.
      *
-     * @param   string $word The string input.
+     * @param  string  $word  The string input.
      *
      * @return  boolean  True if word is singular, false if not.
      *
@@ -51,7 +54,7 @@ class StrInflector
     /**
      * Converts a word into its plural form.
      *
-     * @param   string $word The singular word to pluralise.
+     * @param  string  $word  The singular word to pluralise.
      *
      * @return  string  An inflected string, or false if no rule could be applied.
      *
@@ -67,7 +70,7 @@ class StrInflector
     /**
      * Converts a word into its singular form.
      *
-     * @param   string $word The plural word to singularise.
+     * @param  string  $word  The plural word to singularise.
      *
      * @return  string  An inflected string, or false if no rule could be applied.
      *
@@ -83,7 +86,7 @@ class StrInflector
     protected static function checkDependency(): void
     {
         if (!class_exists(Inflector::class)) {
-            throw new \DomainException('Please install doctrine/inflector first');
+            throw new DomainException('Please install doctrine/inflector first');
         }
     }
 }

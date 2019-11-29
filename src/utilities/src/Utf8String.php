@@ -8,7 +8,11 @@
  */
 declare(strict_types=1);
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities;
+
+use BadMethodCallException;
 
 /**
  * String handling class for utf-8 data
@@ -87,7 +91,7 @@ abstract class Utf8String
      * @param  array   $args
      *
      * @return  mixed
-     * @throws \BadMethodCallException
+     * @throws BadMethodCallException
      */
     public static function __callStatic($name, $args)
     {
@@ -99,7 +103,7 @@ abstract class Utf8String
             return $function(...$args);
         }
 
-        throw new \BadMethodCallException(sprintf('Call to undefined method: %s::%s', static::class, $name));
+        throw new BadMethodCallException(sprintf('Call to undefined method: %s::%s', static::class, $name));
     }
 
     /**
@@ -115,7 +119,7 @@ abstract class Utf8String
      */
     public static function strIreplace($search, $replace, string $str, ?int $count = null, ?string $encoding = null)
     {
-        $encoding =         $encoding ?? mb_internal_encoding();
+        $encoding = $encoding ?? mb_internal_encoding();
 
         if (!is_array($search)) {
             $slen = strlen($search);
@@ -177,7 +181,7 @@ abstract class Utf8String
      */
     public static function strSplit(string $string, int $length = 1, ?string $encoding = null)
     {
-        $encoding =         $encoding ?? mb_internal_encoding();
+        $encoding = $encoding ?? mb_internal_encoding();
 
         if ($length === 1) {
             return preg_split('//u', $string, -1, PREG_SPLIT_NO_EMPTY);
@@ -211,7 +215,7 @@ abstract class Utf8String
      */
     public static function strcasecmp(string $str1, string $str2, ?string $encoding = null): int
     {
-        $encoding =         $encoding ?? mb_internal_encoding();
+        $encoding = $encoding ?? mb_internal_encoding();
 
         return static::strcmp(static::strtoupper($str1, $encoding), static::strtoupper($str2, $encoding));
     }
@@ -254,7 +258,7 @@ abstract class Utf8String
         int $length = null,
         ?string $encoding = null
     ): int {
-        $encoding =         $encoding ?? mb_internal_encoding();
+        $encoding = $encoding ?? mb_internal_encoding();
 
         if (empty($mask) || $mask === '') {
             return 0;
@@ -316,7 +320,7 @@ abstract class Utf8String
         int $length = null,
         ?string $encoding = null
     ): int {
-        $encoding =         $encoding ?? mb_internal_encoding();
+        $encoding = $encoding ?? mb_internal_encoding();
 
         $mask = preg_replace('!([\\\\\\-\\]\\[/^])!', '\\\${1}', $mask);
 
@@ -360,7 +364,7 @@ abstract class Utf8String
         ?int $length = null,
         ?string $encoding = null
     ): string {
-        $encoding =         $encoding ?? mb_internal_encoding();
+        $encoding = $encoding ?? mb_internal_encoding();
 
         preg_match_all('/./us', $str, $ar);
         preg_match_all('/./us', $repl, $rar);
@@ -508,7 +512,7 @@ abstract class Utf8String
      */
     public static function lcfirst(string $str, ?string $encoding = null): string
     {
-        $encoding =         $encoding ?? mb_internal_encoding();
+        $encoding = $encoding ?? mb_internal_encoding();
 
         switch (static::strlen($str, $encoding)) {
             case 0:
@@ -558,7 +562,7 @@ abstract class Utf8String
         bool $caseSensitive = true,
         ?string $encoding = null
     ): int {
-        $encoding =         $encoding ?? mb_internal_encoding();
+        $encoding = $encoding ?? mb_internal_encoding();
 
         if (!$caseSensitive) {
             $string = static::strtoupper($string);

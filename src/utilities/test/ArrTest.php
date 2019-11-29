@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,12 +7,19 @@
  * @license    Please see LICENSE file.
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Test;
 
+use ArrayAccess;
+use ArrayObject;
+use EmptyIterator;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Windwalker\Test\Traits\BaseAssertionTrait;
 use Windwalker\Utilities\Arr;
-use Windwalker\Utilities\ArrConverterTrait;
+
 use function Windwalker\where;
 
 /**
@@ -27,10 +34,10 @@ class ArrTest extends TestCase
     /**
      * testDef
      *
-     * @param array|object $array
-     * @param string       $key
-     * @param string       $value
-     * @param mixed        $expected
+     * @param  array|object  $array
+     * @param  string        $key
+     * @param  string        $value
+     * @param  mixed         $expected
      *
      * @return  void
      *
@@ -92,7 +99,7 @@ class ArrTest extends TestCase
         self::assertFalse(Arr::has(['foo' => 'bar'], 'yoo'));
         self::assertTrue(Arr::has(['foo' => ['bar' => 'yoo']], 'foo.bar'));
         self::assertFalse(Arr::has(['foo' => ['bar' => 'yoo']], ''));
-        self::assertTrue(Arr::has(['foo' => new \ArrayObject(['bar' => 'yoo'])], 'foo.bar'));
+        self::assertTrue(Arr::has(['foo' => new ArrayObject(['bar' => 'yoo'])], 'foo.bar'));
         self::assertTrue(Arr::has(['foo' => ['bar' => 'yoo']], 'foo/bar', '/'));
         self::assertTrue(Arr::has(['foo' => ['bar' => 'yoo']], 'foo'));
     }
@@ -183,14 +190,16 @@ class ArrTest extends TestCase
 
         $this->assertEquals($flatted['pos2/pos3/0'], 'olive');
 
-        $array = new \ArrayObject([
-            'Apple' => [
-                ['name' => 'iPhone 6S', 'brand' => 'Apple'],
-            ],
-            'Samsung' => [
-                ['name' => 'Galaxy S7', 'brand' => 'Samsung']
-            ],
-        ]);
+        $array = new ArrayObject(
+            [
+                'Apple' => [
+                    ['name' => 'iPhone 6S', 'brand' => 'Apple'],
+                ],
+                'Samsung' => [
+                    ['name' => 'Galaxy S7', 'brand' => 'Samsung']
+                ],
+            ]
+        );
 
         $expected = [
             'Apple.0' => ['name' => 'iPhone 6S', 'brand' => 'Apple'],
@@ -242,9 +251,11 @@ class ArrTest extends TestCase
             'pos1' => (object) [
                 'sunflower' => 'love'
             ],
-            'pos2' => new \ArrayObject([
-                'cornflower' => 'elegant'
-            ]),
+            'pos2' => new ArrayObject(
+                [
+                    'cornflower' => 'elegant'
+                ]
+            ),
             'array' => (object) [
                 'A',
                 'B',
@@ -298,18 +309,22 @@ class ArrTest extends TestCase
 
         $this->assertEquals('value', $return['double']['separators']);
 
-        $this->assertExpectedException(function () use ($data) {
-            Arr::set($data, 'a.b', 'c', '.', 'Non\Exists\Class');
-        }, \InvalidArgumentException::class, 'Type or class: Non\Exists\Class not exists');
+        $this->assertExpectedException(
+            function () use ($data) {
+                Arr::set($data, 'a.b', 'c', '.', 'Non\Exists\Class');
+            },
+            InvalidArgumentException::class,
+            'Type or class: Non\Exists\Class not exists'
+        );
     }
 
     /**
      * testRemove
      *
-     * @param array|object $array
-     * @param array|object $expected
-     * @param int|string   $offset
-     * @param string       $separator
+     * @param  array|object  $array
+     * @param  array|object  $expected
+     * @param  int|string    $offset
+     * @param  string        $separator
      *
      * @dataProvider providerTestRemove
      */
@@ -424,7 +439,7 @@ class ArrTest extends TestCase
             Arr::only((object) $array, ['Lycoris'])
         );
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         Arr::only('string', ['test']);
     }
@@ -466,7 +481,7 @@ class ArrTest extends TestCase
             Arr::except((object) $array, ['Lycoris'])
         );
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         Arr::except('string', ['test']);
     }
@@ -501,36 +516,55 @@ class ArrTest extends TestCase
             ],
         ];
 
-        $results = Arr::find($data, function ($value, $key) {
-            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
-        });
+        $results = Arr::find(
+            $data,
+            function ($value, $key) {
+                return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+            }
+        );
 
         $this->assertEquals([$data[0], $data[3]], $results);
 
         // Keep key
-        $results = Arr::find($data, function ($value, &$key) {
-            $key++;
+        $results = Arr::find(
+            $data,
+            function ($value, &$key) {
+                $key++;
 
-            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
-        }, true);
+                return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+            },
+            true
+        );
 
         $this->assertEquals([1 => $data[0], 4 => $data[3]], $results);
 
         // Offset limit
-        $results = Arr::find($data, function ($value, &$key) {
-            $key++;
+        $results = Arr::find(
+            $data,
+            function ($value, &$key) {
+                $key++;
 
-            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
-        }, false, 0, 1);
+                return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+            },
+            false,
+            0,
+            1
+        );
 
         $this->assertEquals([$data[0]], $results);
 
         // Offset limit
-        $results = Arr::find($data, function ($value, &$key) {
-            $key++;
+        $results = Arr::find(
+            $data,
+            function ($value, &$key) {
+                $key++;
 
-            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
-        }, false, 1, 1);
+                return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+            },
+            false,
+            1,
+            1
+        );
 
         $this->assertEquals([$data[3]], $results);
 
@@ -568,15 +602,21 @@ class ArrTest extends TestCase
             ],
         ];
 
-        $result = Arr::findFirst($data, function ($value, $key) {
-            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
-        });
+        $result = Arr::findFirst(
+            $data,
+            function ($value, $key) {
+                return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+            }
+        );
 
         $this->assertEquals($data[0], $result);
 
-        $result = Arr::findFirst($data, function ($value, $key) {
-            return $value['title'] === 'No exists';
-        });
+        $result = Arr::findFirst(
+            $data,
+            function ($value, $key) {
+                return $value['title'] === 'No exists';
+            }
+        );
 
         $this->assertNull($result);
     }
@@ -611,9 +651,12 @@ class ArrTest extends TestCase
             ],
         ];
 
-        $results = Arr::reject($data, function ($value, $key) {
-            return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
-        });
+        $results = Arr::reject(
+            $data,
+            function ($value, $key) {
+                return $value['title'] === 'Julius Caesar' || $value['id'] == 4;
+            }
+        );
 
         $this->assertEquals([$data[1], $data[2]], $results);
     }
@@ -844,10 +887,9 @@ class ArrTest extends TestCase
     public function testAccessible()
     {
         self::assertTrue(Arr::isAccessible([]));
-        self::assertTrue(Arr::isAccessible(new \ArrayObject()));
+        self::assertTrue(Arr::isAccessible(new ArrayObject()));
 
-        $array = new class implements \ArrayAccess
-        {
+        $array = new class implements ArrayAccess {
             public function offsetExists($offset)
             {
             }
@@ -866,8 +908,8 @@ class ArrTest extends TestCase
         };
 
         self::assertTrue(Arr::isAccessible($array));
-        self::assertFalse(Arr::isAccessible(new \EmptyIterator()));
-        self::assertFalse(Arr::isAccessible(new \stdClass()));
+        self::assertFalse(Arr::isAccessible(new EmptyIterator()));
+        self::assertFalse(Arr::isAccessible(new stdClass()));
     }
 
     /**
@@ -958,7 +1000,7 @@ class ArrTest extends TestCase
 
         $this->assertEquals($expected, Arr::mergeRecursive($data1, $data2, $data3));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         Arr::mergeRecursive('', 123);
     }
@@ -975,10 +1017,9 @@ class ArrTest extends TestCase
             2,
             'foo' => 'bar',
             (object) ['baz' => 'yoo'],
-            new \ArrayObject(['flower' => 'sakura', 'fruit' => 'apple']),
+            new ArrayObject(['flower' => 'sakura', 'fruit' => 'apple']),
             ['max' => ['level' => ['test' => ['no' => 'show']]]],
-            new class
-            {
+            new class {
                 protected $foo = 'bar';
 
                 private $baz = 'yoo';
@@ -1128,10 +1169,17 @@ SHOW;
 
         // Test compare wrapper
         $this->assertEquals([$data[1]], Arr::query($data, [where('id', '=', 2)]));
-        $this->assertEquals([$data[1]], Arr::query($data, ['id' => function ($v) {
-            return $v === 2;
-        }
-        ]));
+        $this->assertEquals(
+            [$data[1]],
+            Arr::query(
+                $data,
+                [
+                    'id' => function ($v) {
+                        return $v === 2;
+                    }
+                ]
+            )
+        );
 
         // Test strict equals
         $this->assertEquals([$data[0], $data[2], $data[3]], Arr::query($data, ['data' => true], false));
@@ -1156,7 +1204,7 @@ SHOW;
         $this->assertEquals([$data[0]], Arr::query($data, ['id' => 1, 'title' => 'Julius Caesar']));
 
         // Test object equals
-        $object      = new \stdClass();
+        $object      = new stdClass();
         $object->foo = 'bar';
         $this->assertEquals([$data[0], $data[3]], Arr::query($data, ['data' => $object]));
 
@@ -1255,9 +1303,15 @@ SHOW;
                 ],
         ];
 
-        self::assertEquals($expected, Arr::filterRecursive($src, function ($v) {
-            return strpos($v, 'a') !== false;
-        }));
+        self::assertEquals(
+            $expected,
+            Arr::filterRecursive(
+                $src,
+                function ($v) {
+                    return strpos($v, 'a') !== false;
+                }
+            )
+        );
     }
 
     public function testMapRecursive(): void
@@ -1300,7 +1354,7 @@ SHOW;
 
         self::assertEquals($expected, Arr::mapRecursive($src, 'strtoupper'));
 
-        $src['human']['black'] = new \ArrayObject($src['human']['black']);
+        $src['human']['black'] = new ArrayObject($src['human']['black']);
 
         $expected = [
             'ai' => 'Jarvis-ai',
@@ -1320,9 +1374,17 @@ SHOW;
             ],
         ];
 
-        self::assertEquals($expected, Arr::mapRecursive($src, function ($v, $k) {
-            return $v . '-' . $k;
-        }, true, true));
+        self::assertEquals(
+            $expected,
+            Arr::mapRecursive(
+                $src,
+                function ($v, $k) {
+                    return $v . '-' . $k;
+                },
+                true,
+                true
+            )
+        );
     }
 
     public function testFlatMap(): void
@@ -1333,9 +1395,12 @@ SHOW;
             ['age' => 28]
         ];
 
-        $b = Arr::flatMap($a, function ($values) {
-            return array_map('strtoupper', $values);
-        });
+        $b = Arr::flatMap(
+            $a,
+            function ($values) {
+                return array_map('strtoupper', $values);
+            }
+        );
 
         self::assertEquals(
             ['name' => 'SALLY', 'school' => 'ARKANSAS', 'age' => '28'],

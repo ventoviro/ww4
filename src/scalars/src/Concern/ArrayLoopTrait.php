@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 __ORGANIZATION__.
  * @license    __LICENSE__
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Scalars\Concern;
 
@@ -31,8 +33,8 @@ trait ArrayLoopTrait
     /**
      * reduce
      *
-     * @param callable $callable
-     * @param mixed    $initial
+     * @param  callable  $callable
+     * @param  mixed     $initial
      *
      * @return  ArrayObject|StringObject|mixed
      *
@@ -48,8 +50,8 @@ trait ArrayLoopTrait
     /**
      * walk
      *
-     * @param callable $callable
-     * @param mixed    $userdata
+     * @param  callable  $callable
+     * @param  mixed     $userdata
      *
      * @return  static
      *
@@ -67,8 +69,8 @@ trait ArrayLoopTrait
     /**
      * walkRecursive
      *
-     * @param callable $callable
-     * @param mixed    $userdata
+     * @param  callable  $callable
+     * @param  mixed     $userdata
      *
      * @return  static
      *
@@ -86,13 +88,13 @@ trait ArrayLoopTrait
     /**
      * each
      *
-     * @param callable $callback
+     * @param  callable  $callback
      *
      * @return  static
      */
     public function each(callable $callback)
     {
-        $i = 0;
+        $i                   = 0;
         static::$currentLoop = new Loop(count($this), $this->storage, static::$currentLoop);
 
         foreach ($this as $key => $value) {
@@ -113,10 +115,10 @@ trait ArrayLoopTrait
     /**
      * find
      *
-     * @param callable $callback
-     * @param bool     $keepKey
-     * @param int      $offset
-     * @param int      $limit
+     * @param  callable  $callback
+     * @param  bool      $keepKey
+     * @param  int       $offset
+     * @param  int       $limit
      *
      * @return static
      */
@@ -128,9 +130,9 @@ trait ArrayLoopTrait
     /**
      * query
      *
-     * @param array|callable $queries
-     * @param bool           $strict
-     * @param bool           $keepKey
+     * @param  array|callable  $queries
+     * @param  bool            $strict
+     * @param  bool            $keepKey
      *
      * @return  static
      *
@@ -144,7 +146,7 @@ trait ArrayLoopTrait
     /**
      * filter
      *
-     * @param callable $callback
+     * @param  callable  $callback
      *
      * @return  static
      */
@@ -156,7 +158,7 @@ trait ArrayLoopTrait
     /**
      * findFirst
      *
-     * @param callable $callback
+     * @param  callable  $callback
      *
      * @return  mixed
      */
@@ -168,8 +170,8 @@ trait ArrayLoopTrait
     /**
      * reject
      *
-     * @param callable $callback
-     * @param bool     $keepKey
+     * @param  callable  $callback
+     * @param  bool      $keepKey
      *
      * @return  static
      */
@@ -181,8 +183,8 @@ trait ArrayLoopTrait
     /**
      * partition
      *
-     * @param callable $callback
-     * @param bool     $keepKey
+     * @param  callable  $callback
+     * @param  bool      $keepKey
      *
      * @return  static[]
      */
@@ -219,8 +221,8 @@ trait ArrayLoopTrait
     /**
      * Mapping all elements.
      *
-     * @param callable $callback
-     * @param array    ...$args
+     * @param  callable  $callback
+     * @param  array     ...$args
      *
      * @return  static  Support chaining.
      *
@@ -245,21 +247,24 @@ trait ArrayLoopTrait
      */
     public function mapRecursive(callable $callback, bool $useKeys = false, bool $loopIterable = false)
     {
-        return $this->map(static function ($value, $key = null) use ($useKeys, $callback, $loopIterable) {
-            if (is_array($value)) {
-                return Arr::mapRecursive($value, $callback, $useKeys, $loopIterable);
-            }
+        return $this->map(
+            static function ($value, $key = null) use ($useKeys, $callback, $loopIterable) {
+                if (is_array($value)) {
+                    return Arr::mapRecursive($value, $callback, $useKeys, $loopIterable);
+                }
 
-            if (is_iterable($value)) {
-                return Arr::mapRecursive(iterator_to_array($value), $callback, $useKeys, $loopIterable);
-            }
+                if (is_iterable($value)) {
+                    return Arr::mapRecursive(iterator_to_array($value), $callback, $useKeys, $loopIterable);
+                }
 
-            if (is_array($value) || $value instanceof static) {
-                return $this->newInstance($value)->mapRecursive($callback, $useKeys, $loopIterable);
-            }
+                if (is_array($value) || $value instanceof static) {
+                    return $this->newInstance($value)->mapRecursive($callback, $useKeys, $loopIterable);
+                }
 
-            return $callback($value, $key);
-        }, ...($useKeys ? $this->keys() : []));
+                return $callback($value, $key);
+            },
+            ...($useKeys ? $this->keys() : [])
+        );
     }
 
     /**

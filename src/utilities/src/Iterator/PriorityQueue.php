@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
@@ -6,8 +6,12 @@
  * @license    GNU General Public License version 2 or later;
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Iterator;
 
+use InvalidArgumentException;
+use Serializable;
 use SplPriorityQueue;
 
 /**
@@ -15,7 +19,7 @@ use SplPriorityQueue;
  *
  * @since  2.1.1
  */
-class PriorityQueue extends SplPriorityQueue implements \Serializable
+class PriorityQueue extends SplPriorityQueue implements Serializable
 {
     public const MIN = -300;
 
@@ -39,8 +43,8 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
     /**
      * Class init.
      *
-     * @param array|SplPriorityQueue  $array
-     * @param int                     $priority
+     * @param  array|SplPriorityQueue  $array
+     * @param  int                     $priority
      */
     public function __construct($array = [], $priority = self::NORMAL)
     {
@@ -54,8 +58,8 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
     /**
      * bind
      *
-     * @param array $array
-     * @param int   $priority
+     * @param  array  $array
+     * @param  int    $priority
      *
      * @return  static
      */
@@ -71,7 +75,7 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
     /**
      * register
      *
-     * @param array $items
+     * @param  array  $items
      *
      * @return  static
      */
@@ -90,8 +94,8 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
      * Utilizes {@var $serial} to ensure that values of equal priority are
      * emitted in the same order in which they are inserted.
      *
-     * @param  mixed $datum
-     * @param  mixed $priority
+     * @param  mixed  $datum
+     * @param  mixed  $priority
      *
      * @return void
      */
@@ -147,7 +151,7 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
     /**
      * Deserialize
      *
-     * @param  string $data
+     * @param  string  $data
      *
      * @return void
      */
@@ -169,7 +173,7 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
 
         foreach ($args as $arg) {
             if (!($arg instanceof SplPriorityQueue)) {
-                throw new \InvalidArgumentException('Only \SplPriorityQueue can merge.');
+                throw new InvalidArgumentException('Only \SplPriorityQueue can merge.');
             }
 
             $queue = clone $arg;
@@ -187,8 +191,8 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
     /**
      * compare
      *
-     * @param mixed $priority1
-     * @param mixed $priority2
+     * @param  mixed  $priority1
+     * @param  mixed  $priority2
      *
      * @return  int
      */
@@ -229,7 +233,7 @@ class PriorityQueue extends SplPriorityQueue implements \Serializable
     /**
      * Method to set property serial
      *
-     * @param   int $serial
+     * @param  int  $serial
      *
      * @return  static  Return self to support chaining.
      */

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of Windwalker project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT. All rights reserved.
  * @license    MIT
  */
+
+declare(strict_types=1);
 
 namespace {
 
@@ -80,8 +82,12 @@ namespace {
     include_once __DIR__ . '/serializer.php';
 }
 
+declare(strict_types=1);
+
 namespace Windwalker {
 
+    use Closure;
+    use Traversable;
     use Windwalker\Utilities\Compare\WhereWrapper;
     use Windwalker\Utilities\Wrapper\ValueReference;
 
@@ -141,13 +147,13 @@ namespace Windwalker {
     /**
      * iterator_keys
      *
-     * @param  \Traversable  $iterable
+     * @param  Traversable  $iterable
      *
      * @return  array
      *
      * @since  __DEPLOY_VERSION__
      */
-    function iterator_keys(\Traversable $iterable): array
+    function iterator_keys(Traversable $iterable): array
     {
         return array_keys(iterator_to_array($iterable));
     }
@@ -172,8 +178,8 @@ namespace Windwalker {
     /**
      * value
      *
-     * @param  mixed|\Closure  $value
-     * @param  mixed           ...$args
+     * @param  mixed|Closure  $value
+     * @param  mixed          ...$args
      *
      * @return  mixed
      *
@@ -181,7 +187,7 @@ namespace Windwalker {
      */
     function value($value, ...$args)
     {
-        return $value instanceof \Closure ? $value(...$args) : $value;
+        return $value instanceof Closure ? $value(...$args) : $value;
     }
 
     /**

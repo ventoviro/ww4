@@ -1,11 +1,14 @@
 <?php
+
 /**
  * Part of windwalker project.
  *
  * @copyright  Copyright (C) 2014 - 2015 LYRASOFT. All rights reserved.
  * @license    MIT
  */
-declare(strict_types = 1);
+declare(strict_types=1);
+
+declare(strict_types=1);
 
 namespace Windwalker\Test\Helper;
 
@@ -22,11 +25,11 @@ class TestStringHelper
      * See: http://stackoverflow.com/questions/3760816/remove-new-lines-from-string
      * And: http://stackoverflow.com/questions/9558110/php-remove-line-break-or-cr-lf-with-no-success
      *
-     * @param string $string
+     * @param  string  $string
      *
      * @return  string
      */
-    public static function clean(string $string) : string
+    public static function clean(string $string): string
     {
         $string = preg_replace('/\s\s+/', ' ', $string);
 
@@ -36,11 +39,11 @@ class TestStringHelper
     /**
      * Convert CRLF to EOL
      *
-     * @param string $string
+     * @param  string  $string
      *
      * @return  string
      */
-    public static function removeCRLF(string $string) : string
+    public static function removeCRLF(string $string): string
     {
         return str_replace("\r\n", "\n", $string);
     }
@@ -48,12 +51,12 @@ class TestStringHelper
     /**
      * quote
      *
-     * @param string       $string
-     * @param array|string $quote
+     * @param  string        $string
+     * @param  array|string  $quote
      *
      * @return  string
      */
-    public static function quote($string, $quote = ['"', '"']) : string
+    public static function quote($string, $quote = ['"', '"']): string
     {
         $quote = (array) $quote;
 

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,7 +7,13 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Data\Format;
+
+use InvalidArgumentException;
+
+use function strlen;
 
 /**
  * The FormatRegistry class.
@@ -76,7 +82,7 @@ class FormatRegistry
     {
         if ($format === null) {
             $paths = explode('.', $file);
-            $ext = $paths[array_key_last($paths)];
+            $ext   = $paths[array_key_last($paths)];
 
             $format = $this->resolveFileFormat($ext);
         }
@@ -86,7 +92,7 @@ class FormatRegistry
 
     public function load(string $string, ?string $format = null, array $options = []): array
     {
-        if (\strlen($string) < PHP_MAXPATHLEN && is_file($string)) {
+        if (strlen($string) < PHP_MAXPATHLEN && is_file($string)) {
             return $this->loadFile($string, $format, $options);
         }
 
@@ -118,14 +124,16 @@ class FormatRegistry
         }
 
         if (!is_callable($handlerOrParser)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Format handler should be %s or callable',
-                FormatInterface::class
-            ));
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Format handler should be %s or callable',
+                    FormatInterface::class
+                )
+            );
         }
 
         if (!is_callable($dumper)) {
-            throw new \InvalidArgumentException('Dumper should be callable callable');
+            throw new InvalidArgumentException('Dumper should be callable callable');
         }
 
         $this->handlers[$format] = new CallbackFormatHandler($handlerOrParser, $dumper);

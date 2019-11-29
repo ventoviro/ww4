@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 __ORGANIZATION__.
  * @license    __LICENSE__
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Utilities;
 
@@ -38,8 +40,8 @@ class StrNormalise
     /**
      * Separate a string by custom separator.
      *
-     * @param   string $input     The string input (ASCII only).
-     * @param   string $separator The separator to want to separate it.
+     * @param  string  $input      The string input (ASCII only).
+     * @param  string  $separator  The separator to want to separate it.
      *
      * @return  string  The string be converted.
      *
@@ -53,7 +55,7 @@ class StrNormalise
     /**
      * Method to convert a string into camel case.
      *
-     * @param   string $input The string input (ASCII only).
+     * @param  string  $input  The string input (ASCII only).
      *
      * @return  string  The camel case string.
      *
@@ -67,7 +69,7 @@ class StrNormalise
     /**
      * Method to convert a string into dash separated form.
      *
-     * @param   string $input The string input (ASCII only).
+     * @param  string  $input  The string input (ASCII only).
      *
      * @return  string  The dash separated string.
      *
@@ -81,7 +83,7 @@ class StrNormalise
     /**
      * Method to convert a string into space separated form.
      *
-     * @param   string $input The string input (ASCII only).
+     * @param  string  $input  The string input (ASCII only).
      *
      * @return  string  The space separated string.
      *
@@ -96,7 +98,7 @@ class StrNormalise
     /**
      * Method to convert a string into dot separated form.
      *
-     * @param   string $input The string input (ASCII only).
+     * @param  string  $input  The string input (ASCII only).
      *
      * @return  string  The dot separated string.
      *
@@ -111,7 +113,7 @@ class StrNormalise
     /**
      * Method to convert a string into underscore separated form.
      *
-     * @param   string $input The string input (ASCII only).
+     * @param  string  $input  The string input (ASCII only).
      *
      * @return  string  The underscore separated string.
      *
@@ -126,7 +128,7 @@ class StrNormalise
     /**
      * Method to convert a string into variable form.
      *
-     * @param   string $input The string input (ASCII only).
+     * @param  string  $input  The string input (ASCII only).
      *
      * @return  string  The variable string.
      *
@@ -149,7 +151,7 @@ class StrNormalise
     /**
      * Method to convert a string into key form.
      *
-     * @param   string $input The string input (ASCII only).
+     * @param  string  $input  The string input (ASCII only).
      *
      * @return  string  The key string.
      *
@@ -167,7 +169,7 @@ class StrNormalise
     /**
      * Convert to standard PSR-0/PSR-4 class name.
      *
-     * @param   string $class The class name string.
+     * @param  string  $class  The class name string.
      *
      * @return  string Normalised class name.
      *

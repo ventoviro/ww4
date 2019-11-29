@@ -6,6 +6,8 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Dumper;
 
 use Symfony\Component\VarDumper\Cloner\Cursor;
@@ -19,11 +21,11 @@ use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 class PrintRDumper extends AbstractDumper
 {
     /**
-     * @param callable|resource|string|null $output  A line dumper callable, an opened stream or an output path,
-     *                                               defaults to static::$defaultOutput
-     * @param string|null                   $charset The default character encoding to use for non-UTF8 strings
-     * @param int                           $flags   A bit field of static::DUMP_* constants to fine tune dumps
-     *                                               representation
+     * @param  callable|resource|string|null  $output   A line dumper callable, an opened stream or an output path,
+     *                                                  defaults to static::$defaultOutput
+     * @param  string|null                    $charset  The default character encoding to use for non-UTF8 strings
+     * @param  int                            $flags    A bit field of static::DUMP_* constants to fine tune dumps
+     *                                                  representation
      */
     public function __construct($output = null, string $charset = null, int $flags = 0)
     {
@@ -33,9 +35,9 @@ class PrintRDumper extends AbstractDumper
     /**
      * Dumps a scalar value.
      *
-     * @param Cursor                $cursor The Cursor position in the dump
-     * @param string                $type   The PHP type of the value being dumped
-     * @param string|int|float|bool $value  The scalar value being dumped
+     * @param  Cursor                 $cursor  The Cursor position in the dump
+     * @param  string                 $type    The PHP type of the value being dumped
+     * @param  string|int|float|bool  $value   The scalar value being dumped
      */
     public function dumpScalar(Cursor $cursor, $type, $value)
     {
@@ -80,10 +82,10 @@ class PrintRDumper extends AbstractDumper
     /**
      * Dumps a string.
      *
-     * @param Cursor $cursor The Cursor position in the dump
-     * @param string $str    The string being dumped
-     * @param bool   $bin    Whether $str is UTF-8 or binary encoded
-     * @param int    $cut    The number of characters $str has been cut by
+     * @param  Cursor  $cursor  The Cursor position in the dump
+     * @param  string  $str     The string being dumped
+     * @param  bool    $bin     Whether $str is UTF-8 or binary encoded
+     * @param  int     $cut     The number of characters $str has been cut by
      */
     public function dumpString(Cursor $cursor, $str, $bin, $cut)
     {
@@ -97,10 +99,10 @@ class PrintRDumper extends AbstractDumper
     /**
      * Dumps while entering an hash.
      *
-     * @param Cursor $cursor   The Cursor position in the dump
-     * @param int    $type     A Cursor::HASH_* const for the type of hash
-     * @param string $class    The object class, resource type or array count
-     * @param bool   $hasChild When the dump of the hash has child item
+     * @param  Cursor  $cursor    The Cursor position in the dump
+     * @param  int     $type      A Cursor::HASH_* const for the type of hash
+     * @param  string  $class     The object class, resource type or array count
+     * @param  bool    $hasChild  When the dump of the hash has child item
      */
     public function enterHash(Cursor $cursor, $type, $class, $hasChild)
     {
@@ -134,11 +136,11 @@ class PrintRDumper extends AbstractDumper
     /**
      * Dumps while leaving an hash.
      *
-     * @param Cursor $cursor   The Cursor position in the dump
-     * @param int    $type     A Cursor::HASH_* const for the type of hash
-     * @param string $class    The object class, resource type or array count
-     * @param bool   $hasChild When the dump of the hash has child item
-     * @param int    $cut      The number of items the hash has been cut by
+     * @param  Cursor  $cursor    The Cursor position in the dump
+     * @param  int     $type      A Cursor::HASH_* const for the type of hash
+     * @param  string  $class     The object class, resource type or array count
+     * @param  bool    $hasChild  When the dump of the hash has child item
+     * @param  int     $cut       The number of items the hash has been cut by
      */
     public function leaveHash(Cursor $cursor, $type, $class, $hasChild, $cut)
     {
@@ -167,7 +169,7 @@ class PrintRDumper extends AbstractDumper
     /**
      * dumpKey
      *
-     * @param Cursor $cursor
+     * @param  Cursor  $cursor
      *
      * @return  void
      *

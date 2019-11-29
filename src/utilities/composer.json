@@ -2,7 +2,11 @@
     "name": "windwalker/utilities",
     "type": "windwalker-package",
     "description": "Windwalker Utilities package",
-    "keywords": ["windwalker", "framework", "utilities"],
+    "keywords": [
+        "windwalker",
+        "framework",
+        "utilities"
+    ],
     "homepage": "https://github.com/ventoviro/windwalker-utilities",
     "license": "MIT",
     "require": {

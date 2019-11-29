@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
@@ -6,7 +6,11 @@
  * @license    GNU General Public License version 2 or later.
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Classes;
+
+use ArrayAccess;
 
 /**
  * The OptionAccessTrait class.
@@ -18,15 +22,15 @@ trait OptionAccessTrait
     /**
      * Property options.
      *
-     * @var  array|\ArrayAccess
+     * @var  array|ArrayAccess
      */
     protected $options = [];
 
     /**
      * Method to get property Options
      *
-     * @param   string $name
-     * @param   mixed  $default
+     * @param  string  $name
+     * @param  mixed   $default
      *
      * @return  mixed
      */
@@ -38,8 +42,8 @@ trait OptionAccessTrait
     /**
      * Method to set property options
      *
-     * @param   string $name
-     * @param   mixed  $value
+     * @param  string  $name
+     * @param  mixed   $value
      *
      * @return  static  Return self to support chaining.
      */
@@ -53,7 +57,7 @@ trait OptionAccessTrait
     /**
      * Method to get property Options
      *
-     * @return  array|\ArrayAccess
+     * @return  array|ArrayAccess
      */
     public function getOptions()
     {
@@ -63,7 +67,7 @@ trait OptionAccessTrait
     /**
      * Method to set property options
      *
-     * @param   array|\ArrayAccess $options
+     * @param  array|ArrayAccess  $options
      *
      * @return  static  Return self to support chaining.
      */

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,11 +7,14 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Test\Concern;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\ArrayObject;
-use Windwalker\Utilities\Arr;
+
 use function Windwalker\arr;
 
 /**
@@ -49,18 +52,20 @@ class ArrayCreationTraitTest extends TestCase
 
     public function testMergeRecursive(): void
     {
-        $data1 = arr([
-            'green' => 'Hulk',
-            'red' => 'empty',
-            'human' => [
-                'dark' => 'empty',
-                'black' => [
-                    'male' => 'empty',
-                    'female' => 'empty',
-                    'no-gender' => 'empty',
+        $data1 = arr(
+            [
+                'green' => 'Hulk',
+                'red' => 'empty',
+                'human' => [
+                    'dark' => 'empty',
+                    'black' => [
+                        'male' => 'empty',
+                        'female' => 'empty',
+                        'no-gender' => 'empty',
+                    ],
                 ],
-            ],
-        ]);
+            ]
+        );
 
         $data2 = [
             'ai' => 'Jarvis',
@@ -78,9 +83,11 @@ class ArrayCreationTraitTest extends TestCase
             ],
         ];
 
-        $data3 = arr([
-            'ai' => 'Ultron',
-        ]);
+        $data3 = arr(
+            [
+                'ai' => 'Ultron',
+            ]
+        );
 
         $expected = [
             'ai' => 'Jarvis',
@@ -106,7 +113,7 @@ class ArrayCreationTraitTest extends TestCase
 
         $this->assertEquals($expected, $data1->mergeRecursive($data2, $data3)->dump());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $data1->mergeRecursive('', 123);
     }
@@ -265,25 +272,31 @@ class ArrayCreationTraitTest extends TestCase
     {
         $a = arr([1, 2])->crossJoin(['a', 'b']);
 
-        self::assertEquals([
-            [1, 'a'],
-            [1, 'b'],
-            [2, 'a'],
-            [2, 'b'],
-        ], $a->dump());
+        self::assertEquals(
+            [
+                [1, 'a'],
+                [1, 'b'],
+                [2, 'a'],
+                [2, 'b'],
+            ],
+            $a->dump()
+        );
 
         $b = arr([1, 2])->crossJoin(['a', 'b'], ['I', 'II']);
 
-        self::assertEquals([
-            [1, 'a', 'I'],
-            [1, 'a', 'II'],
-            [1, 'b', 'I'],
-            [1, 'b', 'II'],
-            [2, 'a', 'I'],
-            [2, 'a', 'II'],
-            [2, 'b', 'I'],
-            [2, 'b', 'II'],
-        ], $b->dump());
+        self::assertEquals(
+            [
+                [1, 'a', 'I'],
+                [1, 'a', 'II'],
+                [1, 'b', 'I'],
+                [1, 'b', 'II'],
+                [2, 'a', 'I'],
+                [2, 'a', 'II'],
+                [2, 'b', 'I'],
+                [2, 'b', 'II'],
+            ],
+            $b->dump()
+        );
     }
 
     public function testRand(): void

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 __ORGANIZATION__.
  * @license    __LICENSE__
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Scalars\Concern;
 
@@ -21,7 +23,7 @@ trait ArrayAccessTrait
     /**
      * first
      *
-     * @param callable $conditions
+     * @param  callable  $conditions
      *
      * @return  mixed
      */
@@ -43,7 +45,7 @@ trait ArrayAccessTrait
     /**
      * last
      *
-     * @param callable $conditions
+     * @param  callable  $conditions
      *
      * @return  mixed
      */
@@ -67,9 +69,9 @@ trait ArrayAccessTrait
     /**
      * flatten
      *
-     * @param string $delimiter
-     * @param int    $depth
-     * @param string $prefix
+     * @param  string  $delimiter
+     * @param  int     $depth
+     * @param  string  $prefix
      *
      * @return  static
      *
@@ -95,8 +97,8 @@ trait ArrayAccessTrait
     /**
      * page
      *
-     * @param int $page
-     * @param int $limit
+     * @param  int  $page
+     * @param  int  $limit
      *
      * @return  static
      *

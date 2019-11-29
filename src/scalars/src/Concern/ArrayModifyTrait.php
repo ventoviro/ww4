@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,10 +7,11 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Concern;
 
 use Windwalker\Data\Traits\CollectionTrait;
-use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\TypeCast;
 
@@ -24,8 +25,8 @@ trait ArrayModifyTrait
     /**
      * pad
      *
-     * @param int   $size
-     * @param mixed $value
+     * @param  int    $size
+     * @param  mixed  $value
      *
      * @return  static
      *
@@ -39,8 +40,8 @@ trait ArrayModifyTrait
     /**
      * leftPad
      *
-     * @param int   $size
-     * @param mixed $value
+     * @param  int    $size
+     * @param  mixed  $value
      *
      * @return  static
      *
@@ -54,8 +55,8 @@ trait ArrayModifyTrait
     /**
      * leftPad
      *
-     * @param int   $size
-     * @param mixed $value
+     * @param  int    $size
+     * @param  mixed  $value
      *
      * @return  static
      *
@@ -93,7 +94,7 @@ trait ArrayModifyTrait
     /**
      * push
      *
-     * @param mixed ...$value
+     * @param  mixed  ...$value
      *
      * @return  int
      *
@@ -107,7 +108,7 @@ trait ArrayModifyTrait
     /**
      * unshift
      *
-     * @param mixed ...$value
+     * @param  mixed  ...$value
      *
      * @return  int
      *
@@ -183,7 +184,7 @@ trait ArrayModifyTrait
     /**
      * replace
      *
-     * @param array[]|static[] ...$args
+     * @param  array[]|static[]  ...$args
      *
      * @return  static
      *
@@ -197,7 +198,7 @@ trait ArrayModifyTrait
     /**
      * replaceRecursive
      *
-     * @param array[]|static[] ...$args
+     * @param  array[]|static[]  ...$args
      *
      * @return  static
      *
@@ -211,7 +212,7 @@ trait ArrayModifyTrait
     /**
      * reverse
      *
-     * @param bool $preserveKeys
+     * @param  bool  $preserveKeys
      *
      * @return  static
      *
@@ -225,9 +226,9 @@ trait ArrayModifyTrait
     /**
      * slice
      *
-     * @param int      $offset
-     * @param int|null $length
-     * @param bool     $preserveKeys
+     * @param  int       $offset
+     * @param  int|null  $length
+     * @param  bool      $preserveKeys
      *
      * @return  static
      *
@@ -241,9 +242,9 @@ trait ArrayModifyTrait
     /**
      * slice
      *
-     * @param int      $offset
-     * @param int|null $length
-     * @param mixed    $replacement
+     * @param  int       $offset
+     * @param  int|null  $length
+     * @param  mixed     $replacement
      *
      * @return  static
      *
@@ -276,8 +277,8 @@ trait ArrayModifyTrait
     /**
      * insertBefore
      *
-     * @param int   $key
-     * @param mixed $value
+     * @param  int    $key
+     * @param  mixed  $value
      *
      * @return  static
      *
@@ -295,7 +296,7 @@ trait ArrayModifyTrait
     /**
      * only
      *
-     * @param array $fields
+     * @param  array  $fields
      *
      *
      * @return  static
@@ -308,7 +309,7 @@ trait ArrayModifyTrait
     /**
      * except
      *
-     * @param array $fields
+     * @param  array  $fields
      *
      * @return  static
      *
@@ -338,9 +339,9 @@ trait ArrayModifyTrait
     /**
      * takeout
      *
-     * @param string $key
-     * @param mixed  $default
-     * @param string $delimiter
+     * @param  string  $key
+     * @param  mixed   $default
+     * @param  string  $delimiter
      *
      * @return  mixed
      */
@@ -352,8 +353,8 @@ trait ArrayModifyTrait
     /**
      * chunk
      *
-     * @param int  $size
-     * @param bool $preserveKeys
+     * @param  int   $size
+     * @param  bool  $preserveKeys
      *
      * @return  static
      */
@@ -381,7 +382,7 @@ trait ArrayModifyTrait
     /**
      * keyBy
      *
-     * @param string $field
+     * @param  string  $field
      *
      * @return  static
      */
@@ -393,7 +394,7 @@ trait ArrayModifyTrait
     /**
      * union
      *
-     * @param array[] ...$args
+     * @param  array[]  ...$args
      *
      * @return  static
      *

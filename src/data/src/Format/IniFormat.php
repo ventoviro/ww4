@@ -1,10 +1,12 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Part of Windwalker project.
  *
  * @copyright  Copyright (C) 2019 LYRASOFT.
  * @license    LGPL-2.0-or-later
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Data\Format;
 
@@ -30,7 +32,7 @@ class IniFormat implements FormatInterface
      */
     public function dump($data, array $options = []): string
     {
-        $local = [];
+        $local  = [];
         $global = [];
 
         // Iterate over the object to set the properties.
@@ -78,7 +80,7 @@ class IniFormat implements FormatInterface
     /**
      * Method to get a value in an INI format.
      *
-     * @param   mixed $value The value to convert to INI format.
+     * @param  mixed  $value  The value to convert to INI format.
      *
      * @return  string  The value in INI format.
      */

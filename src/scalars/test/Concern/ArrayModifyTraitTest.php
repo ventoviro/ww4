@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -7,12 +7,14 @@
  * @license    __LICENSE__
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Scalars\Test\Concern;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\ArrayObject;
-use Windwalker\Scalars\Concern\ArrayModifyTrait;
 use Windwalker\Utilities\Arr;
+
 use function Windwalker\arr;
 
 /**
@@ -26,23 +28,25 @@ class ArrayModifyTraitTest extends TestCase
 
     public function testExcept(): void
     {
-        $src = arr([
-            'ai' => 'Jarvis',
-            'agent' => 'Phil Coulson',
-            'green' => 'Hulk',
-            'red' => [
-                'left' => 'Pepper',
-                'right' => 'Iron Man',
-            ],
-            'human' => [
-                'dark' => 'Nick Fury',
-                'black' => [
-                    'male' => 'Loki',
-                    'female' => 'Black Widow',
-                    'no-gender' => 'empty',
+        $src = arr(
+            [
+                'ai' => 'Jarvis',
+                'agent' => 'Phil Coulson',
+                'green' => 'Hulk',
+                'red' => [
+                    'left' => 'Pepper',
+                    'right' => 'Iron Man',
                 ],
-            ],
-        ]);
+                'human' => [
+                    'dark' => 'Nick Fury',
+                    'black' => [
+                        'male' => 'Loki',
+                        'female' => 'Black Widow',
+                        'no-gender' => 'empty',
+                    ],
+                ],
+            ]
+        );
 
         self::assertEquals(
             [
@@ -80,28 +84,32 @@ class ArrayModifyTraitTest extends TestCase
 
     public function testReplaceRecursive(): void
     {
-        $a = arr($data = [
-            'Jarvis',
-            'Phil Coulson',
-            'red' => [
-                'Pepper',
-                'Iron Man',
+        $a = arr(
+            $data = [
+                'Jarvis',
+                'Phil Coulson',
+                'red' => [
+                    'Pepper',
+                    'Iron Man',
+                ]
             ]
-        ]);
+        );
 
-        $b = arr([
-            'ai' => 'Jarvis',
-            'agent' => 'Phil Coulson',
-            'Hulk',
-            'red' => [
-                'Nick Fury',
-                [
-                    'male' => 'Loki',
-                    'female' => 'Black Widow',
-                    'no-gender' => 'empty',
+        $b = arr(
+            [
+                'ai' => 'Jarvis',
+                'agent' => 'Phil Coulson',
+                'Hulk',
+                'red' => [
+                    'Nick Fury',
+                    [
+                        'male' => 'Loki',
+                        'female' => 'Black Widow',
+                        'no-gender' => 'empty',
+                    ],
                 ],
-            ],
-        ]);
+            ]
+        );
 
         $a = $a->replaceRecursive($b);
 
@@ -139,28 +147,30 @@ class ArrayModifyTraitTest extends TestCase
 
     public function testKeyBy(): void
     {
-        $src = arr([
+        $src = arr(
             [
-                'id' => 1,
-                'title' => 'Julius Caesar',
-                'data' => (object) ['foo' => 'bar'],
-            ],
-            [
-                'id' => 2,
-                'title' => 'Macbeth',
-                'data' => [],
-            ],
-            [
-                'id' => 3,
-                'title' => 'Othello',
-                'data' => 123,
-            ],
-            [
-                'id' => 4,
-                'title' => 'Hamlet',
-                'data' => true,
-            ],
-        ]);
+                [
+                    'id' => 1,
+                    'title' => 'Julius Caesar',
+                    'data' => (object) ['foo' => 'bar'],
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'Macbeth',
+                    'data' => [],
+                ],
+                [
+                    'id' => 3,
+                    'title' => 'Othello',
+                    'data' => 123,
+                ],
+                [
+                    'id' => 4,
+                    'title' => 'Hamlet',
+                    'data' => true,
+                ],
+            ]
+        );
 
         self::assertEquals(3, $src->keyBy('title')['Othello']['id']);
     }
@@ -204,28 +214,30 @@ class ArrayModifyTraitTest extends TestCase
 
     public function testGroupBy(): void
     {
-        $src = arr([
+        $src = arr(
             [
-                'id' => 1,
-                'title' => 'Julius Caesar',
-                'group' => 'A',
-            ],
-            [
-                'id' => 2,
-                'title' => 'Macbeth',
-                'group' => 'B',
-            ],
-            [
-                'id' => 3,
-                'title' => 'Othello',
-                'group' => 'C',
-            ],
-            [
-                'id' => 4,
-                'title' => 'Hamlet',
-                'group' => 'D',
-            ],
-        ]);
+                [
+                    'id' => 1,
+                    'title' => 'Julius Caesar',
+                    'group' => 'A',
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'Macbeth',
+                    'group' => 'B',
+                ],
+                [
+                    'id' => 3,
+                    'title' => 'Othello',
+                    'group' => 'C',
+                ],
+                [
+                    'id' => 4,
+                    'title' => 'Hamlet',
+                    'group' => 'D',
+                ],
+            ]
+        );
 
         self::assertEquals(
             Arr::group($src->dump(), 'group'),
@@ -321,23 +333,25 @@ class ArrayModifyTraitTest extends TestCase
 
     public function testOnly(): void
     {
-        $src = arr([
-            'ai' => 'Jarvis',
-            'agent' => 'Phil Coulson',
-            'green' => 'Hulk',
-            'red' => [
-                'left' => 'Pepper',
-                'right' => 'Iron Man',
-            ],
-            'human' => [
-                'dark' => 'Nick Fury',
-                'black' => [
-                    'male' => 'Loki',
-                    'female' => 'Black Widow',
-                    'no-gender' => 'empty',
+        $src = arr(
+            [
+                'ai' => 'Jarvis',
+                'agent' => 'Phil Coulson',
+                'green' => 'Hulk',
+                'red' => [
+                    'left' => 'Pepper',
+                    'right' => 'Iron Man',
                 ],
-            ],
-        ]);
+                'human' => [
+                    'dark' => 'Nick Fury',
+                    'black' => [
+                        'male' => 'Loki',
+                        'female' => 'Black Widow',
+                        'no-gender' => 'empty',
+                    ],
+                ],
+            ]
+        );
 
         self::assertEquals(
             [
@@ -357,11 +371,14 @@ class ArrayModifyTraitTest extends TestCase
         $a = arr(['a' => 'apple', 'b' => 'banana']);
         $b = arr(['a' => 'pear', 'b' => 'strawberry', 'c' => 'cherry']);
 
-        self::assertEquals([
-            'a' => 'apple',
-            'b' => 'banana',
-            'c' => 'cherry',
-        ], $a->union($b)->dump());
+        self::assertEquals(
+            [
+                'a' => 'apple',
+                'b' => 'banana',
+                'c' => 'cherry',
+            ],
+            $a->union($b)->dump()
+        );
     }
 
     protected function setUp(): void

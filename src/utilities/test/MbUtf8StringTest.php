@@ -8,8 +8,11 @@
  */
 declare(strict_types=1);
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Test;
 
+use BadMethodCallException;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Utilities\Utf8String;
 
@@ -29,7 +32,7 @@ class MbUtf8StringTest extends TestCase
      */
     public function testCallStatic()
     {
-        $this->expectException(\BadMethodCallException::class);
+        $this->expectException(BadMethodCallException::class);
 
         Utf8String::noexists('test');
     }
@@ -590,13 +593,16 @@ class MbUtf8StringTest extends TestCase
 
     public function testToAscii(): void
     {
-        self::assertEquals([
-            1 => 70,
-            2 => 108,
-            3 => 111,
-            4 => 119,
-            5 => 101,
-            6 => 114,
-        ], Utf8String::toAscii('Flower'));
+        self::assertEquals(
+            [
+                1 => 70,
+                2 => 108,
+                3 => 111,
+                4 => 119,
+                5 => 101,
+                6 => 114,
+            ],
+            Utf8String::toAscii('Flower')
+        );
     }
 }

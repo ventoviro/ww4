@@ -6,13 +6,12 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Utilities\Dumper;
 
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
-use Symfony\Component\VarDumper\Dumper\CliDumper;
-use Symfony\Component\VarDumper\Dumper\HtmlDumper;
-use Windwalker\Utilities\Str;
 
 /**
  * The VarDumper class.
@@ -31,8 +30,8 @@ class VarDumper
     /**
      * dump
      *
-     * @param mixed $var
-     * @param int   $depth
+     * @param  mixed  $var
+     * @param  int    $depth
      *
      * @return  string
      *
@@ -71,7 +70,7 @@ class VarDumper
     /**
      * setHandler
      *
-     * @param callable|null $callable
+     * @param  callable|null  $callable
      *
      * @return  callable
      *
@@ -79,7 +78,7 @@ class VarDumper
      */
     public static function setHandler(callable $callable = null): callable
     {
-        $prevHandler = self::$handler;
+        $prevHandler   = self::$handler;
         self::$handler = $callable;
 
         return $prevHandler;

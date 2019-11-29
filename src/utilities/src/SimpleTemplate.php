@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of Windwalker project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 LYRASOFT.
  * @license    GNU General Public License version 2 or later.
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Utilities;
 
@@ -57,14 +59,14 @@ class SimpleTemplate
      *
      * Example: The {{ foo.bar.yoo }} will be replace to value of `$data['foo']['bar']['yoo']`
      *
-     * @param   string $string The template to replace.
-     * @param   array  $data   The data to find.
+     * @param  string  $string  The template to replace.
+     * @param  array   $data    The data to find.
      *
      * @return  string Replaced template.
      */
     public static function render(string $string, array $data = []): string
     {
-        return (new static)->renderTemplate($string, $data);
+        return (new static())->renderTemplate($string, $data);
     }
 
     public function setVarWrapper(string $start, string $end): SimpleTemplate

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 __ORGANIZATION__.
  * @license    __LICENSE__
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Scalars;
 
@@ -19,6 +21,7 @@ use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\Contract\AccessibleInterface;
 use Windwalker\Utilities\TypeCast;
+
 use function Windwalker\str;
 
 /**
@@ -45,7 +48,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * ArrayObject constructor.
      *
-     * @param array $storage
+     * @param  array  $storage
      */
     public function __construct($storage = [])
     {
@@ -55,7 +58,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * create
      *
-     * @param array $data
+     * @param  array  $data
      *
      * @return  static
      *
@@ -69,9 +72,9 @@ class ArrayObject implements AccessibleInterface
     /**
      * explode
      *
-     * @param string   $delimiter
-     * @param string   $string
-     * @param int|null $limit
+     * @param  string    $delimiter
+     * @param  string    $string
+     * @param  int|null  $limit
      *
      * @return  static
      *
@@ -85,7 +88,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * bindNewInstance
      *
-     * @param mixed $data
+     * @param  mixed  $data
      *
      * @return  static
      */
@@ -101,8 +104,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * Set value and immutable.
      *
-     * @param mixed $key
-     * @param mixed $value
+     * @param  mixed  $key
+     * @param  mixed  $value
      *
      * @return  static
      *
@@ -120,8 +123,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * withDef
      *
-     * @param mixed $key
-     * @param mixed $default
+     * @param  mixed  $key
+     * @param  mixed  $default
      *
      * @return  static
      *
@@ -157,7 +160,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * withReset
      *
-     * @param array $storage
+     * @param  array  $storage
      *
      * @return  static
      *
@@ -175,8 +178,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * bind
      *
-     * @param mixed $data
-     * @param array $options
+     * @param  mixed  $data
+     * @param  array  $options
      *
      * @return  static
      *
@@ -200,8 +203,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * keys
      *
-     * @param string|int|null $search
-     * @param bool|null       $strict
+     * @param  string|int|null  $search
+     * @param  bool|null        $strict
      *
      * @return  static
      *
@@ -215,8 +218,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * column
      *
-     * @param string|int  $name
-     * @param string|null $key
+     * @param  string|int   $name
+     * @param  string|null  $key
      *
      * @return  static
      *
@@ -230,8 +233,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * setColumn
      *
-     * @param string|int $name
-     * @param mixed      $value
+     * @param  string|int  $name
+     * @param  mixed       $value
      *
      * @return  static
      *
@@ -239,22 +242,24 @@ class ArrayObject implements AccessibleInterface
      */
     public function setColumn($name, $value)
     {
-        return $this->newInstance()->apply(function (array $storage) use ($name, $value) {
-            foreach ($this->storage as $item) {
-                if (Arr::isAccessible($item)) {
-                    $item[$name] = $value;
-                } elseif (is_object($item)) {
-                    $item->$name = $value;
+        return $this->newInstance()->apply(
+            function (array $storage) use ($name, $value) {
+                foreach ($this->storage as $item) {
+                    if (Arr::isAccessible($item)) {
+                        $item[$name] = $value;
+                    } elseif (is_object($item)) {
+                        $item->$name = $value;
+                    }
                 }
             }
-        });
+        );
     }
 
     /**
      * apply
      *
-     * @param callable $callback
-     * @param array    $args
+     * @param  callable  $callback
+     * @param  array     $args
      *
      * @return  static
      */
@@ -276,8 +281,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * pipe
      *
-     * @param callable $callback
-     * @param array    $args
+     * @param  callable  $callback
+     * @param  array     $args
      *
      * @return  static
      */
@@ -289,8 +294,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * tap
      *
-     * @param callable $callback
-     * @param mixed    ...$args
+     * @param  callable  $callback
+     * @param  mixed     ...$args
      *
      * @return  static
      *
@@ -306,8 +311,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * search
      *
-     * @param mixed $value
-     * @param bool  $strict
+     * @param  mixed  $value
+     * @param  bool   $strict
      *
      * @return  false|int|string
      *
@@ -321,8 +326,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * indexOf
      *
-     * @param mixed $value
-     * @param bool  $strict
+     * @param  mixed  $value
+     * @param  bool   $strict
      *
      * @return  int
      *
@@ -362,7 +367,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * unique
      *
-     * @param int $sortFlags
+     * @param  int  $sortFlags
      *
      * @return  static
      *
@@ -376,8 +381,8 @@ class ArrayObject implements AccessibleInterface
     /**
      * current
      *
-     * @param mixed $value
-     * @param bool  $strict
+     * @param  mixed  $value
+     * @param  bool   $strict
      *
      * @return  bool
      *
@@ -391,7 +396,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * keyExists
      *
-     * @param mixed $key
+     * @param  mixed  $key
      *
      * @return  bool
      *
@@ -405,7 +410,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * implode
      *
-     * @param string $glue
+     * @param  string  $glue
      *
      * @return  StringObject
      *
@@ -419,7 +424,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * mapToArray
      *
-     * @param array $args
+     * @param  array  $args
      *
      * @return  array
      *
@@ -427,15 +432,18 @@ class ArrayObject implements AccessibleInterface
      */
     protected static function mapUnwrap(array $args): array
     {
-        return array_map(static function ($v) {
-            return $v instanceof static ? $v->dump() : $v;
-        }, $args);
+        return array_map(
+            static function ($v) {
+                return $v instanceof static ? $v->dump() : $v;
+            },
+            $args
+        );
     }
 
     /**
      * wrap
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  static
      *
@@ -453,7 +461,7 @@ class ArrayObject implements AccessibleInterface
     /**
      * unwrap
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  mixed
      *

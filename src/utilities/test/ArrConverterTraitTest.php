@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Part of ww4 project.
@@ -6,6 +6,8 @@
  * @copyright  Copyright (C) 2019 __ORGANIZATION__.
  * @license    __LICENSE__
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Utilities;
 
@@ -254,10 +256,13 @@ class ArrConverterTraitTest extends TestCase
 
         self::assertEquals($exp, Arr::groupPrefix($src, 'params_'));
         self::assertEquals($exp, Arr::groupPrefix($src, 'params_', true));
-        self::assertEquals([
-            'id' => 123,
-            'title' => 'Hello',
-        ], $src);
+        self::assertEquals(
+            [
+                'id' => 123,
+                'title' => 'Hello',
+            ],
+            $src
+        );
     }
 
     public function testExtractPrefix(): void
@@ -273,19 +278,25 @@ class ArrConverterTraitTest extends TestCase
             'yoo' => 'Yoo',
         ];
 
-        self::assertEquals([
-            'params_foo' => 'Foo',
-            'params_bar' => 'Bar',
-            'params_yoo' => 'Yoo',
-        ], Arr::extractPrefix($src, 'params_'));
+        self::assertEquals(
+            [
+                'params_foo' => 'Foo',
+                'params_bar' => 'Bar',
+                'params_yoo' => 'Yoo',
+            ],
+            Arr::extractPrefix($src, 'params_')
+        );
 
-        self::assertEquals([
-            'id' => 123,
-            'title' => 'Hello',
-            'params_foo' => 'Foo',
-            'params_bar' => 'Bar',
-            'params_yoo' => 'Yoo',
-        ], Arr::extractPrefix($src, 'params_', $item));
+        self::assertEquals(
+            [
+                'id' => 123,
+                'title' => 'Hello',
+                'params_foo' => 'Foo',
+                'params_bar' => 'Bar',
+                'params_yoo' => 'Yoo',
+            ],
+            Arr::extractPrefix($src, 'params_', $item)
+        );
     }
 
     public function testMapWithKey(): void
@@ -313,9 +324,12 @@ class ArrConverterTraitTest extends TestCase
 
         self::assertEquals(
             $expected,
-            Arr::mapWithKeys($src, static function (array $item) {
-                return [$item['id'] => $item['name']];
-            })
+            Arr::mapWithKeys(
+                $src,
+                static function (array $item) {
+                    return [$item['id'] => $item['name']];
+                }
+            )
         );
     }
 
@@ -326,24 +340,30 @@ class ArrConverterTraitTest extends TestCase
     {
         $a = Arr::crossJoin([1, 2], ['a', 'b']);
 
-        self::assertEquals([
-            [1, 'a'],
-            [1, 'b'],
-            [2, 'a'],
-            [2, 'b'],
-        ], $a);
+        self::assertEquals(
+            [
+                [1, 'a'],
+                [1, 'b'],
+                [2, 'a'],
+                [2, 'b'],
+            ],
+            $a
+        );
 
         $b = Arr::crossJoin([1, 2], ['a', 'b'], ['I', 'II']);
 
-        self::assertEquals([
-            [1, 'a', 'I'],
-            [1, 'a', 'II'],
-            [1, 'b', 'I'],
-            [1, 'b', 'II'],
-            [2, 'a', 'I'],
-            [2, 'a', 'II'],
-            [2, 'b', 'I'],
-            [2, 'b', 'II'],
-        ], $b);
+        self::assertEquals(
+            [
+                [1, 'a', 'I'],
+                [1, 'a', 'II'],
+                [1, 'b', 'I'],
+                [1, 'b', 'II'],
+                [2, 'a', 'I'],
+                [2, 'a', 'II'],
+                [2, 'b', 'I'],
+                [2, 'b', 'II'],
+            ],
+            $b
+        );
     }
 }
