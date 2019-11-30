@@ -48,6 +48,6 @@ class JsonFormat implements FormatInterface
         $depth  = $options['depth'] ?? 512;
         $option = $options['options'] ?? 0;
 
-        return json_decode(trim($string), $assoc, $depth, JSON_THROW_ON_ERROR | $option);
+        return json_decode(trim($string), $assoc, $depth, $option);
     }
 }

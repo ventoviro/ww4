@@ -75,7 +75,11 @@ class IniFormat implements FormatInterface
      */
     public function parse(string $string, array $options = []): array
     {
-        return parse_ini_string($string, $options['mode'] ?? INI_SCANNER_NORMAL);
+        return parse_ini_string(
+            $string,
+            $options['process_section'] ?? true,
+            $options['mode'] ?? INI_SCANNER_NORMAL
+        );
     }
 
     /**

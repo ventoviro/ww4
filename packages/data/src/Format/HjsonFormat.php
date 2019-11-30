@@ -48,6 +48,8 @@ class HjsonFormat implements FormatInterface
      */
     public function parse(string $string, array $options = []): array
     {
+        $options['assoc'] = true;
+
         return (new HJSONParser())->parse($string, $options);
     }
 }
