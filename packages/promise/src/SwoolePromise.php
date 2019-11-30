@@ -8,3 +8,14 @@
  */
 
 declare(strict_types=1);
+
+namespace Windwalker\Promise;
+
+/**
+ * The SwoolePromise class.
+ *
+ * @since  __DEPLOY_VERSION__
+ */
+class SwoolePromise
+{
+}

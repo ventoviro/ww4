@@ -13,7 +13,7 @@ namespace PHPSTORM_META {
 
     use Windwalker\Scalars\ArrayObject;
 
-    // Container
+    // ArrayObject
     override(
         ArrayObject::as(0),
         map(

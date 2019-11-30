@@ -2,13 +2,23 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/packages/data/src" isTestSource="false" packagePrefix="Windwalker\Data" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/scalars/src" isTestSource="false" packagePrefix="Windwalker\Scalars" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/utilities/src" isTestSource="false" packagePrefix="Windwalker\Utilities" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/test/src" isTestSource="false" packagePrefix="Windwalker\Test" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/scalars/test" isTestSource="true" packagePrefix="Windwalker\Scalars\Test" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/utilities/test" isTestSource="true" packagePrefix="Windwalker\Utilities\Test" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/data/test" isTestSource="true" packagePrefix="Windwalker\Data\Test" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/data/src" isTestSource="false" packagePrefix="Windwalker\Data\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/test" isTestSource="true" packagePrefix="Windwalker\Filesystem\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/test/test" isTestSource="true" packagePrefix="Windwalker\Test\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/scalars/src" isTestSource="false" packagePrefix="Windwalker\Scalars\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/test/src" isTestSource="false" packagePrefix="Windwalker\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/src" isTestSource="false" packagePrefix="Windwalker\Filesystem\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/utilities/src" isTestSource="false" packagePrefix="Windwalker\Utilities\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/promise/test" isTestSource="true" packagePrefix="Windwalker\Promise\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/utilities/test" isTestSource="true" packagePrefix="Windwalker\Utilities\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/scalars/test" isTestSource="true" packagePrefix="Windwalker\Scalars\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/swoole/src" isTestSource="false" packagePrefix="Windwalker\Swoole\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/swoole/test" isTestSource="true" packagePrefix="Windwalker\Swoole\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/data/test" isTestSource="true" packagePrefix="Windwalker\Data\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/promise/src" isTestSource="false" packagePrefix="Windwalker\Promise\" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
     </content>
     <orderEntry type="inheritedJdk" />

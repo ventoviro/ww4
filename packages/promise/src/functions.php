@@ -10,10 +10,3 @@
 declare(strict_types=1);
 
 namespace Windwalker;
-
-use Windwalker\Data\Collection;
-
-function collect($storage): Collection
-{
-    return new Collection($storage);
-}
