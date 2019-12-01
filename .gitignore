@@ -17,6 +17,9 @@ composer.lock
 
 /coverage
 
+# JS #
+/node_modules
+
 # Test #
 phpunit.xml
 .phpunit.result.cache

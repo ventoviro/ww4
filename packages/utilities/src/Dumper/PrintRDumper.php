@@ -183,7 +183,7 @@ class PrintRDumper extends AbstractDumper
 
             $key = $cursor->hashKey;
 
-            if (strpos($key, "\0") === 0) {
+            if (strpos((string) $key, "\0") === 0) {
                 $key = explode("\0", substr($key, 1), 2);
 
                 if ($key[0][0] === '+') {
