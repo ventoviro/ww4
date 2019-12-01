@@ -11,9 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise;
 
-use React\Promise\RejectedPromise;
-use function React\Promise\resolve;
-
 /**
  * The Promise class.
  *
@@ -27,9 +24,19 @@ class Promise implements ExtendedPromiseInterface
     protected $result;
 
     /**
-     * @var callable
+     * @var mixed
      */
-    protected $handler;
+    protected $value;
+
+    /**
+     * @var callable[]
+     */
+    protected $handlers;
+
+    /**
+     * @var string
+     */
+    protected $state = self::PENDING;
 
     /**
      * Promise constructor.
@@ -75,17 +82,28 @@ class Promise implements ExtendedPromiseInterface
      */
     public function then(callable $onFulfilled = null, callable $onRejected = null)
     {
-        if (null !== $this->result) {
-            return $this->result->then($onFulfilled, $onRejected);
+        switch ($this->getState()) {
+            case static::FULFILLED:
+                return static::resolved($onFulfilled($this->value));
+                break;
+
+            case static::REJECTED:
+                return static::rejected($onRejected($this->value));
+                break;
+
+            case static::PENDING:
+            default:
+                $child = new static(nope());
+                $this->handlers[] = [
+                    $child,
+                    $onFulfilled,
+                    $onRejected
+                ];
+
+                return $child;
+
+                break;
         }
-
-        $promise = new static(function (callable $resolve, callable $reject) use (&$promise) {
-            $promise->handler = function () {
-
-            };
-        });
-
-        return $promise;
     }
 
     /**
@@ -93,6 +111,77 @@ class Promise implements ExtendedPromiseInterface
      */
     public function getState(): string
     {
+        return $this->state;
+    }
+
+    /**
+     * resolved
+     *
+     * @param mixed $value
+     *
+     * @return  Promise
+     *
+     * @throws \ReflectionException
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function resolved($value): Promise
+    {
+        $promise = null;
+
+        if ($value instanceof ExtendedPromiseInterface) {
+            $promise = $value;
+        }
+
+        if (is_thenable($value)) {
+            $promise = new Promise(static function ($resolve, $reject) use ($value) {
+                $value->then($resolve, $reject);
+            });
+        }
+
+        if ($promise === null) {
+            $promise = new Promise(nope());
+            $promise->value = $value;
+        }
+
+        $promise->state = static::FULFILLED;
+
+        return $promise;
+    }
+
+    /**
+     * rejected
+     *
+     * @param mixed $value
+     *
+     * @return  Promise
+     *
+     * @throws \ReflectionException
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public static function rejected($value): Promise
+    {
+        $promise = null;
+
+        if ($value instanceof PromiseInterface) {
+            $promise = $value;
+        }
+
+        if (is_thenable($value)) {
+            $promise = new Promise(static function ($resolve, $reject) use ($value) {
+                $value->then($resolve, $reject);
+            });
+        }
+
+        if ($promise === null) {
+            $promise = new Promise(nope());
+            $promise->value = $value;
+        }
+
+        $promise->state = static::REJECTED;
+
+        return $promise;
     }
 
     /**
@@ -117,29 +206,56 @@ class Promise implements ExtendedPromiseInterface
     {
     }
 
+    /**
+     * transitionState
+     *
+     * @param  Promise  $promise
+     * @param  string   $state
+     *
+     * @return  void
+     */
+    protected function transitionState(self $promise, string $state): void
+    {
+        $promise->state = $state;
+    }
+
     private function createResolver(callable $onFulfilled = null, callable $onRejected = null)
     {
         return function (callable $resolve, callable $reject) {
             $this->handlers[] = function (PromiseInterface $promise) {
-                $promise->resolve()
+
             };
         };
     }
 
-    private function settle(ExtendedPromiseInterface $promise)
+    /**
+     * settle
+     *
+     * @param mixed $value
+     *
+     * @return  void
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    private function settle($value): void
     {
-        if ($promise === $this) {
-            $promise = new RejectedPromise(
-                new \LogicException('Cannot resolve a promise with itself.')
-            );
+        if (is_thenable($value)) {
+            $value->then(function ($value) {
+                $this->value = $value;
+            });
+        } else {
+            $this->value = $value;
         }
 
         $handlers = $this->handlers;
 
-        $this->result = $promise;
+        $this->state = static::FULFILLED;
 
         foreach ($handlers as $handler) {
-            $handler($promise);
+            /** @var PromiseInterface $promise */
+            [$promise, $onFulfilled] = $handler;
+
+            $promise->resolve($onFulfilled($value));
         }
     }
 
@@ -194,7 +310,7 @@ class Promise implements ExtendedPromiseInterface
                 $callback(
                     static function ($value = null) use (&$target) {
                         if ($target !== null) {
-                            $target->settle(resolve($value));
+                            $target->settle($value);
                             $target = null;
                         }
                     },
