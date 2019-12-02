@@ -19,9 +19,9 @@ namespace Windwalker\Promise;
 class Promise implements ExtendedPromiseInterface
 {
     /**
-     * @var mixed
+     * @var PromiseInterface
      */
-    protected $result;
+    protected $parent;
 
     /**
      * @var mixed
@@ -31,7 +31,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @var callable[]
      */
-    protected $handlers;
+    protected $children;
 
     /**
      * @var string
@@ -42,8 +42,6 @@ class Promise implements ExtendedPromiseInterface
      * Promise constructor.
      *
      * @param  callable  $resolver
-     *
-     * @throws \ReflectionException
      */
     public function __construct(callable $resolver)
     {
@@ -51,6 +49,8 @@ class Promise implements ExtendedPromiseInterface
         // resolver function. This ensure that these arguments do not show up
         // in the stack trace in PHP 7+ only.
         $cb = $resolver;
+
+        // Todo: Run call in async process
         $this->call($cb);
     }
 
@@ -59,6 +59,7 @@ class Promise implements ExtendedPromiseInterface
      */
     public function done(callable $onFulfilled = null, callable $onRejected = null)
     {
+        return $this->then($onFulfilled);
     }
 
     /**
@@ -66,43 +67,69 @@ class Promise implements ExtendedPromiseInterface
      */
     public function catch(callable $onRejected)
     {
+        return $this->then(null, $onRejected);
     }
 
     /**
      * @inheritDoc
      */
-    public function always(callable $onFulfilledOrRejected)
+    public function finally(callable $onFulfilledOrRejected)
     {
+        return $this->then(
+            function () use ($onFulfilledOrRejected) {
+                $onFulfilledOrRejected();
+
+                return $this->value;
+            },
+            function () use ($onFulfilledOrRejected) {
+                $onFulfilledOrRejected();
+
+                return static::rejected($this->value);
+            }
+        );
     }
 
     /**
      * @inheritDoc
-     *
-     * @throws \ReflectionException
      */
-    public function then(callable $onFulfilled = null, callable $onRejected = null)
+    public function then($onFulfilled = null, $onRejected = null)
     {
-        switch ($this->getState()) {
-            case static::FULFILLED:
-                return static::resolved($onFulfilled($this->value));
-                break;
+        if ($this->getState() === static::PENDING) {
+            $child = new static(nope());
 
-            case static::REJECTED:
-                return static::rejected($onRejected($this->value));
-                break;
+            $child->parent = $this;
+            $this->children[] = [
+                $child,
+                $onFulfilled,
+                $onRejected
+            ];
 
-            case static::PENDING:
-            default:
-                $child = new static(nope());
-                $this->handlers[] = [
-                    $child,
-                    $onFulfilled,
-                    $onRejected
-                ];
+            return $child;
+        }
 
-                return $child;
+        $handler = $this->getState() === static::FULFILLED
+            ? $onFulfilled
+            : $onRejected;
 
-                break;
+        // If onFulfilled or onRejected is not function, return promise with same value and state.
+        // @see https://promisesaplus.com/#point-40
+        if (!is_callable($handler)) {
+            if ($this->getState() === static::FULFILLED) {
+                return static::resolved($this->value);
+            }
+
+            return static::rejected($this->value);
+        }
+
+        try {
+            $value = $handler($this->value);
+
+            $child = $this->resolveProcess($value);
+            $child->parent = $this;
+
+            return $child;
+        } catch (\Throwable $e) {
+            return static::rejected($e);
         }
     }
 
@@ -119,13 +146,11 @@ class Promise implements ExtendedPromiseInterface
      *
      * @param mixed $value
      *
-     * @return  Promise
-     *
-     * @throws \ReflectionException
+     * @return  ExtendedPromiseInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public static function resolved($value): Promise
+    public static function resolved($value): ExtendedPromiseInterface
     {
         $promise = null;
 
@@ -154,17 +179,15 @@ class Promise implements ExtendedPromiseInterface
      *
      * @param mixed $value
      *
-     * @return  Promise
-     *
-     * @throws \ReflectionException
+     * @return  ExtendedPromiseInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public static function rejected($value): Promise
+    public static function rejected($value): ExtendedPromiseInterface
     {
         $promise = null;
 
-        if ($value instanceof PromiseInterface) {
+        if ($value instanceof ExtendedPromiseInterface) {
             $promise = $value;
         }
 
@@ -189,7 +212,31 @@ class Promise implements ExtendedPromiseInterface
      */
     public function resolve($value)
     {
-        $this->settle(resolve($value));
+        if ($value === $this) {
+            throw new \TypeError('Unable to resolve self.');
+        }
+
+        if ($this->getState() !== static::PENDING) {
+            return;
+        }
+
+        // If value is promise, start resolving after it resolved.
+        if ($value instanceof PromiseInterface || is_thenable($value)) {
+            $value->then(
+                function ($x = null) {
+                    $this->settle(static::FULFILLED, $x);
+                    return $x;
+                },
+                function ($r = null) {
+                    $this->settle(static::FULFILLED, $r);
+                    return $r;
+                }
+            );
+
+            return;
+        }
+
+        $this->settle(static::FULFILLED, $value);
     }
 
     /**
@@ -197,65 +244,112 @@ class Promise implements ExtendedPromiseInterface
      */
     public function reject($reason)
     {
+        if ($reason === $this) {
+            throw new \TypeError('Unable to resolve self.');
+        }
+
+        if ($this->getState() !== static::PENDING) {
+            return;
+        }
+
+        // If value is promise, start rejecting after it rejected.
+        if ($reason instanceof PromiseInterface || is_thenable($reason)) {
+            $reason->then(
+                function ($x = null) {
+                    $this->settle(static::REJECTED, $x);
+                    return $x;
+                },
+                function ($r = null) {
+                    $this->settle(static::REJECTED, $r);
+                    return $r;
+                }
+            );
+
+            return;
+        }
+
+        $this->settle(static::REJECTED, $reason);
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Throwable
      */
-    public function wait($unwrap = true)
+    public function wait()
     {
+        if ($this->getState() === static::PENDING) {
+            throw new \LogicException('Cannot wait before fulfilled or rejected.');
+        }
+
+        if ($this->value instanceof \Throwable && $this->getState() === static::REJECTED) {
+            throw $this->value;
+        }
+
+        return $this->value;
     }
 
     /**
-     * transitionState
+     * resolveProcess
      *
-     * @param  Promise  $promise
-     * @param  string   $state
+     * @see @see https://promisesaplus.com/#point-48
      *
-     * @return  void
+     * @param $x
+     *
+     * @return  PromiseInterface
      */
-    protected function transitionState(self $promise, string $state): void
+    private function resolveProcess($x): PromiseInterface
     {
-        $promise->state = $state;
-    }
+        // This method always return new Promise so it's unnecessary to check x is not self.
 
-    private function createResolver(callable $onFulfilled = null, callable $onRejected = null)
-    {
-        return function (callable $resolve, callable $reject) {
-            $this->handlers[] = function (PromiseInterface $promise) {
+        // 2.3.2 If x is a promise, adopt its state
+        if ($x instanceof PromiseInterface) {
+            return $x->then();
+        }
 
-            };
-        };
+        if (is_thenable($x)) {
+            // 2.3.3.3 If then is a function, call it with x as this, first argument resolvePromise,
+            // and second argument rejectPromise...
+            return new Promise(static function ($resolve, $reject) use ($x) {
+                $x->then($resolve, $reject);
+            });
+        }
+
+        return static::resolved($x);
     }
 
     /**
      * settle
      *
-     * @param mixed $value
+     * @param  string  $state
+     * @param  mixed   $value
      *
      * @return  void
      *
      * @since  __DEPLOY_VERSION__
      */
-    private function settle($value): void
+    private function settle(string $state, $value): void
     {
-        if (is_thenable($value)) {
-            $value->then(function ($value) {
-                $this->value = $value;
-            });
-        } else {
-            $this->value = $value;
+        if ($value instanceof PromiseInterface) {
+            throw new \LogicException('Value at here should not be Promise.');
         }
 
-        $handlers = $this->handlers;
+        $handlers = $this->children;
 
-        $this->state = static::FULFILLED;
+        $this->state = $state;
+        $this->value = $value;
 
         foreach ($handlers as $handler) {
             /** @var PromiseInterface $promise */
-            [$promise, $onFulfilled] = $handler;
+            [$promise, $onFulfilled, $onRejection] = $handler;
 
-            $promise->resolve($onFulfilled($value));
+            $callback = $state === static::FULFILLED
+                ? $onFulfilled($value)
+                : $onRejection($value);
+
+            $value = $callback !== null ? $callback($value) : $value;
+
+            $promise->resolve($value);
         }
     }
 
@@ -266,13 +360,13 @@ class Promise implements ExtendedPromiseInterface
      *
      * @see https://github.com/reactphp/promise
      *
-     * @param  callable  $cb
+     * @param  callable|null  $cb
      *
      * @return  void
      *
-     * @throws \ReflectionException
+     * @throws
      */
-    private function call(callable $cb)
+    private function call(callable $cb): void
     {
         // Explicitly overwrite argument with null value. This ensure that this
         // argument does not show up in the stack trace in PHP 7+ only.
@@ -310,15 +404,19 @@ class Promise implements ExtendedPromiseInterface
                 $callback(
                     static function ($value = null) use (&$target) {
                         if ($target !== null) {
-                            $target->settle($value);
+                            $target->resolve($value);
                             $target = null;
                         }
+
+                        return $value;
                     },
                     static function ($reason = null) use (&$target) {
                         if ($target !== null) {
                             $target->reject($reason);
                             $target = null;
                         }
+
+                        return $reason;
                     }
                 );
             }

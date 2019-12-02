@@ -38,5 +38,5 @@ interface ExtendedPromiseInterface extends PromiseInterface
      *
      * @return static
      */
-    public function always(callable $onFulfilledOrRejected);
+    public function finally(callable $onFulfilledOrRejected);
 }

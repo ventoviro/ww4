@@ -72,18 +72,18 @@ class PromiseTest extends TestCase
         self::assertNotSame($p2, $p);
 
         // Handlers
-        $handlers = TestHelper::getValue($p, 'handlers');
+        $children = TestHelper::getValue($p, 'children');
 
-        self::assertSame($handlers[0][0], $p2);
-        self::assertSame($handlers[0][1], $rsv1);
-        self::assertSame($handlers[0][2], $rej1);
-        self::assertSame($handlers[1][1], $rsv2);
+        self::assertSame($children[0][0], $p2);
+        self::assertSame($children[0][1], $rsv1);
+        self::assertSame($children[0][2], $rej1);
+        self::assertSame($children[1][1], $rsv2);
 
-        $handlers = TestHelper::getValue($p2, 'handlers');
+        $children = TestHelper::getValue($p2, 'children');
 
-        self::assertSame($handlers[0][0], $p3);
-        self::assertSame($handlers[0][1], $rsv3);
-        self::assertSame($handlers[0][2], $rej3);
+        self::assertSame($children[0][0], $p3);
+        self::assertSame($children[0][1], $rsv3);
+        self::assertSame($children[0][2], $rej3);
     }
 
     /**
@@ -144,7 +144,7 @@ class PromiseTest extends TestCase
 
         $p2 = $p
             ->then(nope(), function () {
-
+                //
             })
             ->then(nope(), function ($v) {
                 return ++$v;

@@ -11,30 +11,16 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise;
 
-use ReflectionException;
-
 /**
  * resolve
  *
  * @param  mixed|PromiseInterface  $promiseOrValue
  *
- * @return  FulfilledPromise|Promise
- *
- * @throws ReflectionException
+ * @return  ExtendedPromiseInterface
  */
-function resolve($promiseOrValue = null)
+function resolve($promiseOrValue = null): ExtendedPromiseInterface
 {
-    if ($promiseOrValue instanceof ExtendedPromiseInterface) {
-        return $promiseOrValue;
-    }
-
-    if (is_thenable($promiseOrValue)) {
-        return new Promise(static function ($resolve, $reject) use ($promiseOrValue) {
-            $promiseOrValue->then($resolve, $reject);
-        });
-    }
-
-    return new FulfilledPromise($promiseOrValue);
+    return Promise::resolved($promiseOrValue);
 }
 
 /**
@@ -44,15 +30,9 @@ function resolve($promiseOrValue = null)
  *
  * @return  ExtendedPromiseInterface
  */
-function reject($promiseOrValue = null)
+function reject($promiseOrValue = null): ExtendedPromiseInterface
 {
-    if ($promiseOrValue instanceof PromiseInterface) {
-        return new RejectedPromise(static function ($resolve, $reject) use ($promiseOrValue) {
-            return $promiseOrValue->then($resolve, $reject);
-        });
-    }
-
-    return new RejectedPromise($promiseOrValue);
+    return Promise::rejected($promiseOrValue);
 }
 
 /**
@@ -68,11 +48,63 @@ function is_thenable($value): bool
 }
 
 /**
+ * async
+ *
+ * @param  callable  $callable
+ *
+ * @return  \Closure
+ */
+function asyncable(callable $callable): \Closure
+{
+    return static function (...$args) use ($callable): Promise {
+        return new Promise(static function ($resolve, $reject) use ($callable, $args) {
+            try {
+                $resolve($callable(...$args));
+            } catch (\Throwable $e) {
+                $reject($e);
+            }
+        });
+    };
+}
+
+/**
+ * async
+ *
+ * @param  callable  $callable
+ *
+ * @return  Promise
+ */
+function async(callable $callable): Promise
+{
+    return new Promise(static function ($resolve, $reject) use ($callable) {
+        try {
+            $resolve($callable());
+        } catch (\Throwable $e) {
+            $reject($e);
+        }
+    });
+}
+
+/**
+ * await
+ *
+ * @param  PromiseInterface  $promise
+ *
+ * @return  mixed
+ */
+function await(PromiseInterface $promise)
+{
+    return $promise->wait();
+}
+
+/**
  * nope
  *
  * @return  \Closure
  */
 function nope(): \Closure
 {
-    return static function () {};
+    return static function () {
+        //
+    };
 }
