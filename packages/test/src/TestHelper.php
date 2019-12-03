@@ -37,7 +37,7 @@ class TestHelper
      * @throws ReflectionException
      * @since   2.0
      */
-    public static function getValue($object, $propertyName)
+    public static function getValue(object $object, string $propertyName)
     {
         $ref = new ReflectionClass($object);
 
@@ -75,21 +75,15 @@ class TestHelper
      *
      * @param  object  $object      The object on which to invoke the method.
      * @param  string  $methodName  The name of the method to invoke.
+     * @param  array   $args        Arguments.
      *
      * @return  mixed
      *
      * @throws ReflectionException
      * @since   2.0
      */
-    public static function invoke($object, $methodName)
+    public static function invoke(object $object, string $methodName, ...$args)
     {
-        // Get the full argument list for the method.
-        $args = func_get_args();
-
-        // Remove the method name from the argument list.
-        array_shift($args);
-        array_shift($args);
-
         $method = new ReflectionMethod($object, $methodName);
         $method->setAccessible(true);
 
@@ -108,7 +102,7 @@ class TestHelper
      * @throws ReflectionException
      * @since   2.0
      */
-    public static function setValue($object, $propertyName, $value): void
+    public static function setValue(object $object, string $propertyName, $value): void
     {
         $refl = new ReflectionClass($object);
 

@@ -19,11 +19,6 @@ namespace Windwalker\Promise;
 class Promise implements ExtendedPromiseInterface
 {
     /**
-     * @var PromiseInterface
-     */
-    protected $parent;
-
-    /**
      * @var mixed
      */
     protected $value;
@@ -31,7 +26,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @var callable[]
      */
-    protected $children;
+    protected $children = [];
 
     /**
      * @var string
@@ -39,11 +34,23 @@ class Promise implements ExtendedPromiseInterface
     protected $state = self::PENDING;
 
     /**
+     * create
+     *
+     * @param  callable  $resolver
+     *
+     * @return  static
+     */
+    public static function create(?callable $resolver = null)
+    {
+        return new static($resolver);
+    }
+
+    /**
      * Promise constructor.
      *
      * @param  callable  $resolver
      */
-    public function __construct(callable $resolver)
+    public function __construct(?callable $resolver = null)
     {
         // Explicitly overwrite arguments with null values before invoking
         // resolver function. This ensure that these arguments do not show up
@@ -51,7 +58,9 @@ class Promise implements ExtendedPromiseInterface
         $cb = $resolver;
 
         // Todo: Run call in async process
-        $this->call($cb);
+        if ($resolver) {
+            $this->call($cb);
+        }
     }
 
     /**
@@ -97,11 +106,10 @@ class Promise implements ExtendedPromiseInterface
         if ($this->getState() === static::PENDING) {
             $child = new static(nope());
 
-            $child->parent = $this;
             $this->children[] = [
                 $child,
-                $onFulfilled,
-                $onRejected
+                is_callable($onFulfilled) ? $onFulfilled : null,
+                is_callable($onRejected) ? $onRejected : null
             ];
 
             return $child;
@@ -125,7 +133,6 @@ class Promise implements ExtendedPromiseInterface
             $value = $handler($this->value);
 
             $child = $this->resolveProcess($value);
-            $child->parent = $this;
 
             return $child;
         } catch (\Throwable $e) {
@@ -229,7 +236,7 @@ class Promise implements ExtendedPromiseInterface
                 },
                 function ($r = null) {
                     $this->settle(static::FULFILLED, $r);
-                    return $r;
+                    return static::rejected($r);
                 }
             );
 
@@ -261,7 +268,7 @@ class Promise implements ExtendedPromiseInterface
                 },
                 function ($r = null) {
                     $this->settle(static::REJECTED, $r);
-                    return $r;
+                    return static::rejected($r);
                 }
             );
 
@@ -341,13 +348,28 @@ class Promise implements ExtendedPromiseInterface
 
         foreach ($handlers as $handler) {
             /** @var PromiseInterface $promise */
-            [$promise, $onFulfilled, $onRejection] = $handler;
+            [$promise, $onFulfilled, $onRejected] = $handler;
 
-            $callback = $state === static::FULFILLED
-                ? $onFulfilled($value)
-                : $onRejection($value);
+            $handler = $this->getState() === static::FULFILLED
+                ? $onFulfilled
+                : $onRejected;
 
-            $value = $callback !== null ? $callback($value) : $value;
+            // If onFulfilled or onRejected is not function, return promise with same value and state.
+            // @see https://promisesaplus.com/#point-40
+            if (!is_callable($handler)) {
+                if ($state === static::FULFILLED) {
+                    $promise->resolve($value);
+                }
+
+                $promise->reject($value);
+            }
+
+            try {
+                $value = $handler($value);
+            } catch (\Throwable $e) {
+                $promise->reject($e);
+                continue;
+            }
 
             $promise->resolve($value);
         }

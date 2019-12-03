@@ -104,7 +104,7 @@ function await(PromiseInterface $promise)
  */
 function nope(): \Closure
 {
-    return static function () {
-        //
+    return static function ($v) {
+        return $v;
     };
 }
