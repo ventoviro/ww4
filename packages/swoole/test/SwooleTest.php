@@ -22,23 +22,23 @@ use Swoole\Timer;
  */
 class SwooleTest extends TestCase
 {
-    public function testEventWait()
-    {
-        Timer::tick(2000, function ($id) {
-            var_dump($id);
-        });
-
-        Event::cycle(function () {
-            echo "hello [1]\n";
-            Event::cycle(function () {
-                echo "hello [2]\n";
-                Event::cycle(null);
-            });
-        });
-
-        Event::cycle(function () {
-            echo "hello [3]\n";
-            Event::cycle(null);
-        });
-    }
+    // public function testEventWait()
+    // {
+    //     Timer::tick(2000, function ($id) {
+    //         var_dump($id);
+    //     });
+    //
+    //     Event::cycle(function () {
+    //         echo "hello [1]\n";
+    //         Event::cycle(function () {
+    //             echo "hello [2]\n";
+    //             Event::cycle(null);
+    //         });
+    //     });
+    //
+    //     Event::cycle(function () {
+    //         echo "hello [3]\n";
+    //         Event::cycle(null);
+    //     });
+    // }
 }
