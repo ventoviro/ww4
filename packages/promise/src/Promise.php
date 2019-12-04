@@ -342,8 +342,6 @@ class Promise implements ExtendedPromiseInterface
      * @param  callable|null  $cb
      *
      * @return  void
-     *
-     * @throws
      */
     private function call(callable $cb): void
     {
@@ -405,6 +403,7 @@ class Promise implements ExtendedPromiseInterface
             }
         } catch (UncaughtException $e) {
             if ($this->isAsync) {
+                // Make a way to just output to console, not error.
                 throw $e->getPrevious();
             }
 
