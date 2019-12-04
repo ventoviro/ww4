@@ -298,6 +298,73 @@ class PromiseThenTest extends TestCase
         self::assertEquals('Olive', $this->values['v2']);
     }
 
+    /**
+     * @see  PromiseThen::then
+     */
+    public function testThenWithRejectedPromise(): void
+    {
+        Promise::create(function ($re) {
+            $re('Hello');
+        })
+            ->then(function () {
+                $this->values['p2'] = $p2 = new Promise(function ($re2, $rj2) {
+                    $rj2('Error');
+                });
+
+                $p2->then(
+                    nope(),
+                    function ($reason) {
+                        $this->values['r1'] = $reason;
+                    }
+                );
+
+                return $p2;
+            })
+            ->then(
+                function ($v) {
+                    $this->values['v1'] = $v;
+                },
+                function ($r2) {
+                    $this->values['r2'] = $r2;
+                }
+            );
+
+        self::assertEquals('Error', $this->values['r1']);
+        self::assertEquals('Error', $this->values['r2']);
+    }
+
+    public function testThenWithRejectedThenable(): void
+    {
+        Promise::create(function ($re) {
+            $re('Hello');
+        })
+            ->then(function () {
+                $this->values['p2'] = $p2 = new Promise(function ($re2, $rj2) {
+                    $rj2('Error');
+                });
+
+                $p2->then(
+                    nope(),
+                    function ($reason) {
+                        $this->values['r1'] = $reason;
+                    }
+                );
+
+                return $p2;
+            })
+            ->then(
+                function ($v) {
+                    $this->values['v1'] = $v;
+                },
+                function ($r2) {
+                    $this->values['r2'] = $r2;
+                }
+            );
+
+        self::assertEquals('Error', $this->values['r1']);
+        self::assertEquals('Error', $this->values['r2']);
+    }
+
     protected function setUp(): void
     {
         $this->values = [];

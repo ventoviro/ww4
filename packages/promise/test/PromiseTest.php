@@ -60,4 +60,19 @@ class PromiseTest extends TestCase
 
         self::assertEquals('Sakura', TestHelper::getValue($p, 'value'));
     }
+
+    public function testRejected(): void
+    {
+        self::markTestIncomplete();
+    }
+
+    public function testRejectedWithoutCatch(): void
+    {
+        self::markTestSkipped('Enable this after async promise prepared');
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Hello');
+
+        Promise::rejected('Hello');
+    }
 }
