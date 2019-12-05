@@ -16,5 +16,30 @@ namespace Windwalker\Promise\Exception;
  */
 class UncaughtException extends \Exception
 {
-    //
+    private $reason;
+
+    /**
+     * UncaughtException constructor.
+     *
+     * @param  mixed            $reason
+     * @param  \Throwable|null  $previous
+     */
+    public function __construct($reason, ?\Throwable $previous = null)
+    {
+        $this->reason = $reason;
+
+        parent::__construct('', 0, $previous);
+    }
+
+    /**
+     * Method to get property Reason
+     *
+     * @return  mixed
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function getReason()
+    {
+        return $this->reason;
+    }
 }

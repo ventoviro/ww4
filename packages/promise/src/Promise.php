@@ -31,14 +31,9 @@ class Promise implements ExtendedPromiseInterface
     protected $value;
 
     /**
-     * @var bool
-     */
-    protected $isAsync = false;
-
-    /**
      * @var callable[]
      */
-    protected $children = [];
+    protected $handlers = [];
 
     /**
      * create
@@ -50,7 +45,66 @@ class Promise implements ExtendedPromiseInterface
      */
     public static function create(?callable $resolver = null)
     {
-        return new static($resolver);
+        $cb = $resolver;
+        $resolver = null;
+
+        return new static($cb);
+    }
+
+    /**
+     * all
+     *
+     * @param  array  $values
+     *
+     * @return  ExtendedPromiseInterface
+     */
+    public static function all(array $values): ExtendedPromiseInterface
+    {
+        return new static(static function ($resolve, $reject) use ($values) {
+            $count = count($values);
+            $done = 0;
+
+            foreach ($values as $i => $value) {
+                static::resolved($value)
+                    ->then(
+                        static function ($v) use (&$done, &$count, $resolve, $i, $values) {
+                            $values[$i] = $v;
+
+                            if ($done !== $count) {
+                                $done++;
+                                return;
+                            }
+
+                            $resolve($values);
+                        },
+                        $reject
+                    );
+            }
+        });
+    }
+
+    /**
+     * race
+     *
+     * @param  array  $values
+     *
+     * @return  ExtendedPromiseInterface
+     */
+    public static function race(array $values): ExtendedPromiseInterface
+    {
+        return new static(static function ($resolve, $reject) use ($values) {
+            if ($values === []) {
+                $resolve();
+            }
+
+            foreach ($values as $i => $value) {
+                static::resolved($value)
+                    ->then(
+                        $resolve,
+                        $reject
+                    );
+            }
+        });
     }
 
     /**
@@ -64,10 +118,12 @@ class Promise implements ExtendedPromiseInterface
         // resolver function. This ensure that these arguments do not show up
         // in the stack trace in PHP 7+ only.
         $cb = $resolver;
+        $resolver = null;
 
-        // Todo: Run call in async process
-        if ($resolver) {
-            $this->call($cb);
+        if ($cb) {
+            $this->runAsync(function () use ($cb) {
+                $this->call($cb);
+            });
         }
     }
 
@@ -111,13 +167,23 @@ class Promise implements ExtendedPromiseInterface
      */
     public function then($onFulfilled = null, $onRejected = null)
     {
-        if ($this->getState() === static::PENDING) {
-            $child = new static(nope());
+        $onFulfilled = is_callable($onFulfilled)
+            ? $onFulfilled
+            : nope();
 
-            $this->children[] = [
+        $onRejected = is_callable($onRejected)
+            ? $onRejected
+            : static function ($e) {
+                throw new UncaughtException($e);
+            };
+
+        if ($this->getState() === static::PENDING) {
+            $child = new static();
+
+            $this->handlers[] = [
                 $child,
-                is_callable($onFulfilled) ? $onFulfilled : null,
-                is_callable($onRejected) ? $onRejected : null
+                $onFulfilled,
+                $onRejected,
             ];
 
             return $child;
@@ -127,23 +193,13 @@ class Promise implements ExtendedPromiseInterface
             ? $onFulfilled
             : $onRejected;
 
-        // If onFulfilled or onRejected is not function, return promise with same value and state.
-        // @see https://promisesaplus.com/#point-40
-        if (!is_callable($handler)) {
-            if ($this->getState() === static::FULFILLED) {
-                return static::resolved($this->value);
+        return new static(function ($resolve) use ($handler) {
+            try {
+                $resolve($handler($this->value));
+            } catch (UncaughtException $e) {
+                throw $e->getReason();
             }
-
-            return static::rejected($this->value);
-        }
-
-        try {
-            $value = $handler($this->value);
-
-            return static::resolveProcess(new Promise(), $value);
-        } catch (\Throwable $e) {
-            return static::rejected($e);
-        }
+        });
     }
 
     /**
@@ -193,30 +249,7 @@ class Promise implements ExtendedPromiseInterface
      */
     public function resolve($value)
     {
-        if ($value === $this) {
-            $this->reject(new \TypeError('Unable to resolve self.'));
-            return;
-        }
-
-        if ($this->getState() !== static::PENDING) {
-            return;
-        }
-
-        // If value is promise, start resolving after it resolved.
-        if ($value instanceof PromiseInterface || is_thenable($value)) {
-            $value->then(
-                function ($x = null) {
-                    $this->settle(static::FULFILLED, $x);
-                },
-                function ($r = null) {
-                    $this->settle(static::FULFILLED, $r);
-                }
-            );
-
-            return;
-        }
-
-        $this->settle(static::FULFILLED, $value);
+        $this->resolvePromise($this, $value);
     }
 
     /**
@@ -254,27 +287,68 @@ class Promise implements ExtendedPromiseInterface
         return $this->value;
     }
 
-    private static function resolveProcess(Promise $promise, $x): Promise
+    /**
+     * Log the uncaught reject reason.
+     *
+     * @param UncaughtException  $e
+     *
+     * @return  void
+     */
+    private function log(UncaughtException $e): void
     {
-        if ($promise === $x) {
-            $promise->reject(new \TypeError('Cannot resolve self'));
+        //
+    }
+
+    /**
+     * resolvePromise
+     *
+     * @param  PromiseInterface  $promise
+     * @param  mixed             $value
+     *
+     * @return  PromiseInterface
+     */
+    private function resolvePromise(PromiseInterface $promise, $value): PromiseInterface
+    {
+        if ($value === $promise) {
+            $promise->reject(new \TypeError('Unable to resolve self.'));
+            return $promise;
         }
 
-        // 2.3.2 If x is a promise, adopt its state
-        // 2.3.3.3 If then is a function, call it with x as this, first argument resolvePromise,
-        // and second argument rejectPromise...
-        if ($x instanceof PromiseInterface || is_thenable($x)) {
-            $x->then(
-                [$promise, 'resolve'],
-                [$promise, 'reject']
+        if ($promise->getState() !== static::PENDING) {
+            return $promise;
+        }
+
+        // If value is promise, start resolving after it resolved.
+        if ($value instanceof PromiseInterface || is_thenable($value)) {
+            $value->then(
+                static function ($x = null) use ($promise) {
+                    $promise->resolve($x);
+                    return $x;
+                },
+                static function ($r = null) use ($promise) {
+                    $promise->reject($r);
+                    return static::rejected($r);
+                }
             );
 
             return $promise;
         }
 
-        $promise->resolve($x);
+        $promise->settle(static::FULFILLED, $value);
 
         return $promise;
+    }
+
+    /**
+     * runAsync
+     *
+     * @param  callable  $callback
+     *
+     * @return  mixed
+     */
+    private function runAsync(callable $callback)
+    {
+        return $callback();
     }
 
     /**
@@ -290,17 +364,14 @@ class Promise implements ExtendedPromiseInterface
      */
     private function settle(string $state, $value): void
     {
-        $handlers = $this->children;
+        $handlers = $this->handlers;
 
         $this->state = $state;
         $this->value = $value;
 
         if ($handlers === [] && $state === static::REJECTED) {
-            if (!$value instanceof \Throwable) {
-                $value = new \Exception($value);
-            }
-
-            throw $value;
+            $this->log(new UncaughtException($value));
+            return;
         }
 
         foreach ($handlers as $handler) {
@@ -311,24 +382,13 @@ class Promise implements ExtendedPromiseInterface
                 ? $onFulfilled
                 : $onRejected;
 
-            // If onFulfilled or onRejected is not function, return promise with same value and state.
-            // @see https://promisesaplus.com/#point-40
-            if (!is_callable($handler)) {
-                if ($state === static::FULFILLED) {
-                    $promise->resolve($value);
-                }
-
-                $promise->reject($value);
-            }
-
             try {
-                $value = $handler($value);
+                $promise->resolve($handler($value));
+            } catch (UncaughtException $e) {
+                $promise->reject($e->getReason());
             } catch (\Throwable $e) {
                 $promise->reject($e);
-                continue;
             }
-
-            $promise->resolve($value);
         }
     }
 
@@ -389,11 +449,7 @@ class Promise implements ExtendedPromiseInterface
                     },
                     static function ($reason = null) use (&$target) {
                         if ($target !== null) {
-                            try {
-                                $target->reject($reason);
-                            } catch (\Throwable $e) {
-                                throw new UncaughtException('Promise has no catch', 0, $e);
-                            }
+                            $target->reject($reason);
                             $target = null;
                         }
 
@@ -401,17 +457,10 @@ class Promise implements ExtendedPromiseInterface
                     }
                 );
             }
-        } catch (UncaughtException $e) {
-            if ($this->isAsync) {
-                // Make a way to just output to console, not error.
-                throw $e->getPrevious();
-            }
-
-            $this->reject($e);
         } catch (\Throwable $e) {
-            $this->reject($e);
-        } finally {
+            show($this);
             $target = null;
+            $this->reject($e);
         }
     }
 }
