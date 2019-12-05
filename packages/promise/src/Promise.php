@@ -130,7 +130,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @inheritDoc
      */
-    public function done(callable $onFulfilled = null, callable $onRejected = null)
+    public function done(?callable $onFulfilled = null)
     {
         return $this->then($onFulfilled);
     }
@@ -138,7 +138,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @inheritDoc
      */
-    public function catch(callable $onRejected)
+    public function catch(?callable $onRejected)
     {
         return $this->then(null, $onRejected);
     }
@@ -146,7 +146,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @inheritDoc
      */
-    public function finally(callable $onFulfilledOrRejected)
+    public function finally(?callable $onFulfilledOrRejected)
     {
         return $this->then(
             function () use ($onFulfilledOrRejected) {
@@ -247,7 +247,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @inheritDoc
      */
-    public function resolve($value)
+    public function resolve($value): void
     {
         $this->resolvePromise($this, $value);
     }
@@ -255,7 +255,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @inheritDoc
      */
-    public function reject($reason)
+    public function reject($reason): void
     {
         if ($reason === $this) {
             $this->reject(new \TypeError('Unable to resolve self.'));
@@ -395,13 +395,14 @@ class Promise implements ExtendedPromiseInterface
     /**
      * Calling callback.
      *
-     * This method is part of Reactphp/Promise
+     * This method is a clone of Reactphp/Promise
      *
      * @see https://github.com/reactphp/promise
      *
      * @param  callable|null  $cb
      *
      * @return  void
+     * @throws \Throwable
      */
     private function call(callable $cb): void
     {
@@ -458,7 +459,6 @@ class Promise implements ExtendedPromiseInterface
                 );
             }
         } catch (\Throwable $e) {
-            show($this);
             $target = null;
             $this->reject($e);
         }

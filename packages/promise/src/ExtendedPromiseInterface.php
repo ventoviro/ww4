@@ -20,23 +20,22 @@ interface ExtendedPromiseInterface extends PromiseInterface
 {
     /**
      * @param  callable|null  $onFulfilled
-     * @param  callable|null  $onRejected
      *
-     * @return void
+     * @return static
      */
-    public function done(callable $onFulfilled = null, callable $onRejected = null);
+    public function done(?callable $onFulfilled = null);
 
     /**
      * @param  callable  $onRejected
      *
      * @return static
      */
-    public function catch(callable $onRejected);
+    public function catch(?callable $onRejected);
 
     /**
      * @param  callable  $onFulfilledOrRejected
      *
      * @return static
      */
-    public function finally(callable $onFulfilledOrRejected);
+    public function finally(?callable $onFulfilledOrRejected);
 }

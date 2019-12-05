@@ -48,18 +48,18 @@ class PromiseThenTest extends TestCase
         self::assertNotSame($p2, $p);
 
         // Handlers
-        $children = TestHelper::getValue($p, 'children');
+        $handlers = TestHelper::getValue($p, 'handlers');
 
-        self::assertSame($children[0][0], $p2);
-        self::assertSame($children[0][1], $rsv1);
-        self::assertSame($children[0][2], $rej1);
-        self::assertSame($children[1][1], $rsv2);
+        self::assertSame($handlers[0][0], $p2);
+        self::assertSame($handlers[0][1], $rsv1);
+        self::assertSame($handlers[0][2], $rej1);
+        self::assertSame($handlers[1][1], $rsv2);
 
-        $children = TestHelper::getValue($p2, 'children');
+        $handlers = TestHelper::getValue($p2, 'handlers');
 
-        self::assertSame($children[0][0], $p3);
-        self::assertSame($children[0][1], $rsv3);
-        self::assertSame($children[0][2], $rej3);
+        self::assertSame($handlers[0][0], $p3);
+        self::assertSame($handlers[0][1], $rsv3);
+        self::assertSame($handlers[0][2], $rej3);
     }
 
     /**
