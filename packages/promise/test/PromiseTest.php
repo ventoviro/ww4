@@ -20,6 +20,18 @@ use Windwalker\Test\TestHelper;
  */
 class PromiseTest extends TestCase
 {
+    /**
+     * @var array
+     */
+    protected $values = [];
+
+    protected function setUp(): void
+    {
+        $this->values = [];
+
+        parent::setUp();
+    }
+
     public function testConstructorAndRun(): void
     {
         $foo = null;
@@ -59,6 +71,23 @@ class PromiseTest extends TestCase
         );
 
         self::assertEquals('Sakura', TestHelper::getValue($p, 'value'));
+    }
+
+    public function testConstructorCoroutine(): void
+    {
+        $p = new Promise(function ($resolve) use (&$generator) {
+            $generator = (static function () use ($resolve) {
+                $resolve(yield);
+            })();
+        });
+
+        $p->then(function ($v) {
+            $this->values['v1'] = $v;
+        });
+
+        $generator->send('Flower');
+
+        self::assertEquals('Flower', $this->values['v1']);
     }
 
     public function testRejected(): void
