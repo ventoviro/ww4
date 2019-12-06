@@ -98,6 +98,35 @@ function await(PromiseInterface $promise)
 }
 
 /**
+ * coroutine
+ *
+ * @param  callable  $callback
+ *
+ * @return  ExtendedPromiseInterface
+ *
+ * @throws \Throwable
+ */
+function coroutine(callable $callback): ExtendedPromiseInterface
+{
+    return new Promise(function ($resolve) use ($callback) {
+        \Windwalker\go(function () use ($resolve, $callback) {
+            /** @var \Generator $generator */
+            $generator = $callback();
+
+            $value = $generator->current();
+
+            do {
+                $value = $generator->send(Promise::resolved($value)->wait());
+            } while ($generator->valid());
+
+            $generator->send(Promise::resolved($value)->wait());
+
+            $resolve($generator->getReturn());
+        });
+    });
+}
+
+/**
  * nope
  *
  * @return  \Closure

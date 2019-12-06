@@ -13,8 +13,10 @@ namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
 
+use Windwalker\Promise\Async\AsyncInterface;
 use Windwalker\Promise\Async\AsyncRunner;
 use Windwalker\Promise\Async\DeferredAsync;
+use Windwalker\Promise\Async\NoAsync;
 use Windwalker\Promise\Async\SwooleAsync;
 use Windwalker\Promise\Async\TaskQueue;
 
@@ -25,6 +27,7 @@ use Windwalker\Reactor\Test\Traits\SwooleTestTrait;
 
 use function Windwalker\Promise\async;
 use function Windwalker\Promise\await;
+use function Windwalker\Promise\coroutine;
 
 /**
  * The FunctionsTest class.
@@ -44,11 +47,7 @@ class FunctionsTest extends TestCase
 
         TaskQueue::getInstance()->disableShutdownRunner();
 
-        AsyncRunner::getInstance()->setHandlers(
-            [
-                new DeferredAsync()
-            ]
-        );
+        static::useHandler(new DeferredAsync());
     }
 
     protected function setUp(): void
@@ -68,11 +67,7 @@ class FunctionsTest extends TestCase
 
     public function testAsync()
     {
-        AsyncRunner::getInstance()->setHandlers(
-            [
-                new SwooleAsync()
-            ]
-        );
+        static::useHandler(new SwooleAsync());
 
         go(function () {
             $p = async(function () {
@@ -89,6 +84,8 @@ class FunctionsTest extends TestCase
 
     public function testAwait()
     {
+        static::useHandler(new SwooleAsync());
+
         async(function () {
             $this->values['v1'] = await($this->runAsync('Sakura'));
             $this->values['v2'] = await($this->runAsync('Sunflower'));
@@ -103,6 +100,33 @@ class FunctionsTest extends TestCase
             });
     }
 
+    public function testCoroutine()
+    {
+        static::useHandler(new NoAsync());
+
+        $v = coroutine(function () {
+            $v1 = yield $this->runAsync('Sakura');
+            $v2 = yield $this->runAsync('Rose');
+
+            return $v1 . ' ' . $v2;
+        })->wait();
+
+        self::assertEquals('Sakura Rose', $v);
+
+        // static::useHandler(new SwooleAsync());
+        //
+        // go(function () {
+        //     $v = coroutine(function () {
+        //         $v1 = yield $this->runAsync('Sakura');
+        //         $v2 = yield $this->runAsync('Rose');
+        //
+        //         return $v1 . ' ' . $v2;
+        //     })->wait();
+        //
+        //     self::assertEquals('Sakura Rose', $v);
+        // });
+    }
+
     /**
      * runAsync
      *
@@ -115,5 +139,17 @@ class FunctionsTest extends TestCase
         return async(static function () use ($value) {
             return $value;
         });
+    }
+
+    /**
+     * useHandler
+     *
+     * @param  AsyncInterface  $handler
+     *
+     * @return  void
+     */
+    protected static function useHandler(AsyncInterface $handler): void
+    {
+        AsyncRunner::getInstance()->setHandlers([$handler]);
     }
 }
