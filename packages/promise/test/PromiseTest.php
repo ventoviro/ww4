@@ -12,6 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Promise\Async\AsyncRunner;
+use Windwalker\Promise\Async\NoAsync;
+use Windwalker\Promise\Async\TaskQueue;
 use Windwalker\Promise\Promise;
 use Windwalker\Test\TestHelper;
 
@@ -24,6 +27,20 @@ class PromiseTest extends TestCase
      * @var array
      */
     protected $values = [];
+
+    /**
+     * This method is called before the first test of this test class is run.
+     */
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        TaskQueue::getInstance()->disableShutdownRunner();
+
+        AsyncRunner::getInstance()->setHandlers([
+            new NoAsync()
+        ]);
+    }
 
     protected function setUp(): void
     {

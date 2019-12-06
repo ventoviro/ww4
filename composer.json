@@ -48,7 +48,7 @@
             "Windwalker\\Filesystem\\": "packages/filesystem/src",
             "Windwalker\\Promise\\": "packages/promise/src",
             "Windwalker\\Scalars\\": "packages/scalars/src",
-            "Windwalker\\Swoole\\": "packages/swoole/src",
+            "Windwalker\\Reactor\\": "packages/reactor/src",
             "Windwalker\\Test\\": "packages/test/src",
             "Windwalker\\Utilities\\": "packages/utilities/src"
         },
@@ -62,7 +62,7 @@
             "Windwalker\\Filesystem\\Test\\": "packages/filesystem/test",
             "Windwalker\\Promise\\Test\\": "packages/promise/test",
             "Windwalker\\Scalars\\Test\\": "packages/scalars/test",
-            "Windwalker\\Swoole\\Test\\": "packages/swoole/test",
+            "Windwalker\\Reactor\\Test\\": "packages/reactor/test",
             "Windwalker\\Test\\Test\\": "packages/test/test",
             "Windwalker\\Utilities\\Test\\": "packages/utilities/test"
         }

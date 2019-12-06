@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Promise\Async\AsyncRunner;
+use Windwalker\Promise\Async\NoAsync;
 use Windwalker\Promise\Promise;
 use Windwalker\Test\TestHelper;
 use Windwalker\Test\Traits\TestAccessorTrait;
@@ -31,6 +33,20 @@ class PromiseThenTest extends TestCase
      * @var array
      */
     protected $values = '';
+
+    /**
+     * This method is called before the first test of this test class is run.
+     */
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        AsyncRunner::getInstance()->setHandlers(
+            [
+                new NoAsync()
+            ]
+        );
+    }
 
     /**
      * @throws \ReflectionException
@@ -273,23 +289,28 @@ class PromiseThenTest extends TestCase
         $p1 = Promise::create();
         // Give no functions to then(), will just return same state Promise and same values.
         $p2 = $p1->then()
-            ->then(function ($v) {
-                $this->values['v1'] = $v;
+            ->then(
+                function ($v) {
+                    $this->values['v1'] = $v;
 
-                throw new \Exception('Sakura');
-            })
+                    throw new \Exception('Sakura');
+                }
+            )
             ->then()
             ->then(
                 null,
                 function ($r) {
                     $this->values['r1'] = $r;
+
                     return 'Olive';
                 }
             )
             // If onRejected called, back to fulfilled
-            ->then(function ($v) {
-                $this->values['v2'] = $v;
-            });
+            ->then(
+                function ($v) {
+                    $this->values['v2'] = $v;
+                }
+            );
 
         $p1->resolve('Rose');
 
@@ -303,23 +324,29 @@ class PromiseThenTest extends TestCase
      */
     public function testThenWithRejectedPromise(): void
     {
-        Promise::create(function ($re) {
-            $re('Hello');
-        })
-            ->then(function () {
-                $this->values['p2'] = $p2 = new Promise(function ($re2, $rj2) {
-                    $rj2('Error');
-                });
+        Promise::create(
+            function ($re) {
+                $re('Hello');
+            }
+        )
+            ->then(
+                function () {
+                    $this->values['p2'] = $p2 = new Promise(
+                        function ($re2, $rj2) {
+                            $rj2('Error');
+                        }
+                    );
 
-                $p2->then(
-                    nope(),
-                    function ($reason) {
-                        $this->values['r1'] = $reason;
-                    }
-                );
+                    $p2->then(
+                        nope(),
+                        function ($reason) {
+                            $this->values['r1'] = $reason;
+                        }
+                    );
 
-                return $p2;
-            })
+                    return $p2;
+                }
+            )
             ->then(
                 function ($v) {
                     $this->values['v1'] = $v;
@@ -335,23 +362,29 @@ class PromiseThenTest extends TestCase
 
     public function testThenWithRejectedThenable(): void
     {
-        Promise::create(function ($re) {
-            $re('Hello');
-        })
-            ->then(function () {
-                $this->values['p2'] = $p2 = new Promise(function ($re2, $rj2) {
-                    $rj2('Error');
-                });
+        Promise::create(
+            function ($re) {
+                $re('Hello');
+            }
+        )
+            ->then(
+                function () {
+                    $this->values['p2'] = $p2 = new Promise(
+                        function ($re2, $rj2) {
+                            $rj2('Error');
+                        }
+                    );
 
-                $p2->then(
-                    nope(),
-                    function ($reason) {
-                        $this->values['r1'] = $reason;
-                    }
-                );
+                    $p2->then(
+                        nope(),
+                        function ($reason) {
+                            $this->values['r1'] = $reason;
+                        }
+                    );
 
-                return $p2;
-            })
+                    return $p2;
+                }
+            )
             ->then(
                 function ($v) {
                     $this->values['v1'] = $v;

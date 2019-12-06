@@ -1,11 +1,14 @@
 {
-    "name": "windwalker/swoole",
+    "name": "windwalker/reactor",
     "type": "windwalker-package",
     "description": "Windwalker Swoole package",
     "keywords": [
         "windwalker",
         "framework",
-        "swoole"
+        "swoole",
+        "react",
+        "async",
+        "reactor"
     ],
     "homepage": "https://github.com/ventoviro/windwalker-swoole",
     "license": "MIT",
@@ -20,7 +23,7 @@
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\swoole\\": "src/"
+            "Windwalker\\Reactor\\": "src/"
         },
         "files": [
             "src/functions.php"

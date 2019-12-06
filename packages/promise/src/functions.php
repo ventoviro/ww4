@@ -72,9 +72,9 @@ function asyncable(callable $callable): \Closure
  *
  * @param  callable  $callable
  *
- * @return  Promise
+ * @return  ExtendedPromiseInterface
  */
-function async(callable $callable): Promise
+function async(callable $callable): ExtendedPromiseInterface
 {
     return new Promise(static function ($resolve, $reject) use ($callable) {
         try {
