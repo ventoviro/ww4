@@ -8,6 +8,7 @@
  */
 
 include_once __DIR__ . '/data/src/functions.php';
+include_once __DIR__ . '/event/src/functions.php';
 include_once __DIR__ . '/filesystem/src/functions.php';
 include_once __DIR__ . '/promise/src/functions.php';
 include_once __DIR__ . '/scalars/src/functions.php';

@@ -12,8 +12,11 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
+use React\EventLoop\StreamSelectLoop;
 use Swoole\Event;
+use Windwalker\Promise\Async\AsyncInterface;
 use Windwalker\Promise\Async\AsyncRunner;
+use Windwalker\Promise\Async\DeferredAsync;
 use Windwalker\Promise\Async\NoAsync;
 use Windwalker\Promise\Async\TaskQueue;
 use Windwalker\Promise\Promise;
@@ -121,5 +124,38 @@ class PromiseTest extends TestCase
         $this->expectExceptionMessage('Hello');
 
         Promise::rejected('Hello');
+    }
+
+    public function testEventLoop(): void
+    {
+        self::useHandler(new DeferredAsync());
+
+        $loop = new StreamSelectLoop();
+
+        $p = new Promise(static function (callable $resolve) {
+            $resolve('Hello');
+        });
+        $p->then(function ($v) use ($loop) {
+            $this->values['v1'] = $v;
+
+            $loop->stop();
+        });
+
+        $loop->addPeriodicTimer(0, [TaskQueue::getInstance(), 'run']);
+        $loop->run();
+
+        self::assertEquals('Hello', $this->values['v1']);
+    }
+
+    /**
+     * useHandler
+     *
+     * @param  AsyncInterface  $handler
+     *
+     * @return  void
+     */
+    protected static function useHandler(AsyncInterface $handler): void
+    {
+        AsyncRunner::getInstance()->setHandlers([$handler]);
     }
 }

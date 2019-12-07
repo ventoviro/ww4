@@ -13,7 +13,6 @@ namespace Windwalker\Promise;
 
 use Windwalker\Promise\Async\AsyncCursor;
 use Windwalker\Promise\Async\AsyncRunner;
-use Windwalker\Promise\Async\SwooleAsync;
 use Windwalker\Promise\Exception\UncaughtException;
 
 /**
@@ -132,7 +131,7 @@ class Promise implements ExtendedPromiseInterface
             //
         };
 
-        $this->asyncCursor = $this->runAsync(function () use ($cb) {
+        $this->runAsync(function () use ($cb) {
             $this->call($cb);
         });
     }
@@ -287,7 +286,7 @@ class Promise implements ExtendedPromiseInterface
     public function wait()
     {
         if ($this->getState() === static::PENDING) {
-            AsyncRunner::getInstance()->wait($this->asyncCursor);
+            $this->waitAsync();
         }
 
         if ($this->value instanceof \Throwable && $this->getState() === static::REJECTED) {
@@ -348,11 +347,34 @@ class Promise implements ExtendedPromiseInterface
      *
      * @param  callable  $callback
      *
-     * @return  AsyncCursor
+     * @return  void
      */
-    protected function runAsync(callable $callback): AsyncCursor
+    protected function runAsync(callable $callback): void
     {
-        return AsyncRunner::getInstance()->run($callback);
+        $this->asyncCursor = AsyncRunner::getInstance()->run($callback);
+    }
+
+    /**
+     * waitAsync
+     *
+     * @return  void
+     */
+    protected function waitAsync(): void
+    {
+        AsyncRunner::getInstance()->wait($this->asyncCursor);
+    }
+
+    /**
+     * doneAsync
+     *
+     * @return  void
+     */
+    protected function doneAsync(): void
+    {
+        AsyncRunner::getInstance()->done($this->asyncCursor);
+
+        // Free cursor
+        $this->asyncCursor = null;
     }
 
     /**
@@ -373,7 +395,7 @@ class Promise implements ExtendedPromiseInterface
         $this->state = $state;
         $this->value = $value;
 
-        AsyncRunner::getInstance()->done($this->asyncCursor);
+        $this->doneAsync();
 
         if ($handlers === [] && $state === static::REJECTED) {
             $this->log(new UncaughtException($value));

@@ -17,14 +17,26 @@ namespace Windwalker\Promise;
 class SyncablePromise extends Promise
 {
     /**
-     * runAsync
-     *
-     * @param  callable  $callback
-     *
-     * @return  void
+     * @inheritDoc
      */
     protected function runAsync(callable $callback): void
     {
         $callback();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function waitAsync(): void
+    {
+        //
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function doneAsync(): void
+    {
+        //
     }
 }

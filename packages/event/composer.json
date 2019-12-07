@@ -1,0 +1,40 @@
+{
+    "name": "windwalker/event",
+    "type": "windwalker-package",
+    "description": "Windwalker Event package",
+    "keywords": [
+        "windwalker",
+        "framework",
+        "event",
+        "event-dispatcher",
+        "psr-14"
+    ],
+    "homepage": "https://github.com/ventoviro/windwalker-event",
+    "license": "MIT",
+    "provide": {
+        "psr/event-dispatcher-implementation": "1.0.0"
+    },
+    "require": {
+        "php": ">=7.2",
+        "psr/event-dispatcher": "^1.0"
+    },
+    "require-dev": {
+        "windwalker/test": "~4.0"
+    },
+    "suggest": {
+    },
+    "minimum-stability": "beta",
+    "autoload": {
+        "psr-4": {
+            "Windwalker\\Event\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "3.x-dev"
+        }
+    }
+}
