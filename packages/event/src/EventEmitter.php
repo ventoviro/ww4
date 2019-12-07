@@ -113,25 +113,21 @@ class EventEmitter extends EventDispatcher implements
     /**
      * off
      *
-     * @param  mixed  $listenerOrSubscriber
+     * @param  mixed  $listener
      *
      * @return  static
      *
      * @throws \ReflectionException
      */
-    public function remove($listenerOrSubscriber)
+    public function remove($listener)
     {
-        if (
-            is_array($listenerOrSubscriber)
-            || is_string($listenerOrSubscriber)
-            || $listenerOrSubscriber instanceof \Closure
-        ) {
-            foreach ($this->getQueues() as $listener) {
-                $listener->remove($listenerOrSubscriber);
+        if ($this->isSubscriber($listener)) {
+            foreach ($this->getQueues() as $queue) {
+                $this->offSubscriber($queue, $listener);
             }
         } else {
-            foreach ($this->getQueues() as $listener) {
-                $this->offSubscriber($listener, $listenerOrSubscriber);
+            foreach ($this->getQueues() as $queue) {
+                $queue->remove($listener);
             }
         }
 
@@ -153,21 +149,19 @@ class EventEmitter extends EventDispatcher implements
 
         $listeners = &$this->getQueues();
 
-        if (isset($listeners[$event->getName()])) {
-            if ($listener === null) {
-                unset($listeners[$event->getName()]);
-            } else {
-                $queue = $listeners[$event->getName()];
+        if (!isset($listeners[$event->getName()])) {
+            return $this;
+        }
 
-                if (
-                    is_array($listener)
-                    || is_string($listener)
-                    || $listener instanceof \Closure
-                ) {
-                    $queue->remove($listener);
-                } else {
-                    $this->offSubscriber($queue, $listener);
-                }
+        if ($listener === null) {
+            unset($listeners[$event->getName()]);
+        } else {
+            $queue = $listeners[$event->getName()];
+
+            if ($this->isSubscriber($listener)) {
+                $this->offSubscriber($queue, $listener);
+            } else {
+                $queue->remove($listener);
             }
         }
 
@@ -203,6 +197,20 @@ class EventEmitter extends EventDispatcher implements
                 $queue->remove($listener);
             }
         }
+    }
+
+    /**
+     * isSubscriber
+     *
+     * @param mixed $listener
+     *
+     * @return  bool
+     */
+    private function isSubscriber($listener): bool
+    {
+        return !is_array($listener)
+            && !is_string($listener)
+            && !$listener instanceof \Closure;
     }
 
     /**
