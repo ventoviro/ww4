@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Event\Provider;
 
 use Psr\EventDispatcher\ListenerProviderInterface;
-use Windwalker\Utilities\Assert\ArgumentsAssert;
+use Windwalker\Event\EventInterface;
 
 /**
  * The SimpleListenerProvider class.
@@ -39,14 +39,22 @@ class SimpleListenerProvider implements ListenerProviderInterface
      */
     public function getListenersForEvent(object $event): iterable
     {
+        $isEventInterface = $event instanceof EventInterface;
+
         foreach ($this->listeners as $eventType => $listeners) {
-            if (!$event instanceof $eventType) {
+            if ($isEventInterface && $eventType !== $event->getName()) {
+                continue;
+            }
+
+            if (!$isEventInterface && !$event instanceof $eventType) {
                 continue;
             }
 
             foreach ($listeners as $listener) {
                 yield $listener;
             }
+
+            break;
         }
     }
 
@@ -93,18 +101,8 @@ class SimpleListenerProvider implements ListenerProviderInterface
     public function setListeners(array $listeners)
     {
         foreach ($listeners as $event => $listenerQueue) {
-            ArgumentsAssert::assert(
-                is_array($listenerQueue) && !is_callable($listenerQueue),
-                'Event ' . $event . ' listeners should be array, %2$s given',
-                $listenerQueue
-            );
-
             foreach ($listenerQueue as $i => $listener) {
-                ArgumentsAssert::assert(
-                    is_callable($listener),
-                    'Listener ' . $event . ' => ' . $i . ' should be callable, %2$s given',
-                    $listener
-                );
+                $this->add($event, $listener);
             }
         }
 

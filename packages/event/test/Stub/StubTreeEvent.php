@@ -11,10 +11,11 @@ declare(strict_types=1);
 
 namespace Windwalker\Event\Test\Stub;
 
+use Windwalker\Event\Event;
+
 /**
- * The StubFlowerEvent class.
+ * The StubTreeEvent class.
  */
-class StubFlowerEvent
+class StubTreeEvent extends Event
 {
-    //
 }

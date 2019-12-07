@@ -14,13 +14,12 @@ namespace Windwalker\Event;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
-use Windwalker\Event\Provider\StandardListenerProvider;
-use Windwalker\Utilities\Assert\ArgumentsAssert;
+use Windwalker\Event\Provider\SubscribableListenerProvider;
 
 /**
  * The EventDispatcher class.
  */
-class EventDispatcher implements EventEmitterInterface, EventDispatcherInterface
+class EventDispatcher implements EventDispatcherInterface
 {
     /**
      * @var ListenerProviderInterface
@@ -34,7 +33,7 @@ class EventDispatcher implements EventEmitterInterface, EventDispatcherInterface
      */
     public function __construct(ListenerProviderInterface $listenerProvider = null)
     {
-        $this->listenerProvider = $listenerProvider ?? new StandardListenerProvider();
+        $this->listenerProvider = $listenerProvider ?? new SubscribableListenerProvider();
     }
 
     /**
@@ -57,28 +56,6 @@ class EventDispatcher implements EventEmitterInterface, EventDispatcherInterface
                 return $event;
             }
         }
-
-        return $event;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function emit($event, $args = []): EventInterface
-    {
-        ArgumentsAssert::assert(
-            is_string($event) || $event instanceof EventInterface,
-            '%s argument 1 should be string or EventInterface, %s given.',
-            $event
-        );
-
-        if (!$event instanceof EventInterface) {
-            $event = new Event($event);
-        }
-
-        $event->merge($args);
-
-        $this->dispatch($event);
 
         return $event;
     }

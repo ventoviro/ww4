@@ -40,4 +40,16 @@ class DecorateListenerProvider implements ListenerProviderInterface
     {
         return $this->provider->getListenersForEvent($event);
     }
+
+    /**
+     * Method to get property Provider
+     *
+     * @return  ListenerProviderInterface
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function getProvider(): ListenerProviderInterface
+    {
+        return $this->provider;
+    }
 }

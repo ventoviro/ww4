@@ -42,11 +42,6 @@ class Event implements EventInterface, AccessibleInterface, \Serializable
     protected $stopped = false;
 
     /**
-     * @var bool
-     */
-    protected $once = false;
-
-    /**
      * wrap
      *
      * @param  string|EventInterface  $event
@@ -68,14 +63,14 @@ class Event implements EventInterface, AccessibleInterface, \Serializable
     /**
      * Constructor.
      *
-     * @param  string  $name       The event name.
-     * @param  array   $arguments  The event arguments.
+     * @param  string|null  $name       The event name.
+     * @param  array        $arguments  The event arguments.
      *
      * @since   2.0
      */
-    public function __construct($name, array $arguments = [])
+    public function __construct(?string $name = null, array $arguments = [])
     {
-        $this->name = $name;
+        $this->name = $name ?? static::class;
 
         $this->merge($arguments);
     }
@@ -95,7 +90,7 @@ class Event implements EventInterface, AccessibleInterface, \Serializable
     /**
      * @inheritDoc
      */
-    public function cloneNew(string $name, array $args = [])
+    public function mirror(string $name, array $args = [])
     {
         $new = clone $this;
 
@@ -243,7 +238,6 @@ class Event implements EventInterface, AccessibleInterface, \Serializable
         return [
             'name' => $this->name,
             'stopped' => $this->stopped,
-            'once' => $this->once,
             'arguments' => $this->storage,
         ];
     }

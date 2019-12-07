@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Event\Provider;
 
-use Psr\EventDispatcher\ListenerProviderInterface;
 use Windwalker\Event\EventInterface;
 use Windwalker\Event\EventSubscriberInterface;
 use Windwalker\Event\Listener\ListenerPriority;
@@ -19,9 +18,9 @@ use Windwalker\Event\Listener\ListenersQueue;
 use Windwalker\Utilities\StrNormalise;
 
 /**
- * The SimpleListenerProvider class.
+ * The SubscribableListenerProvider class.
  */
-class StandardListenerProvider implements ListenerProviderInterface
+class SubscribableListenerProvider implements SubscribableListenerProviderInterface
 {
     /**
      * @var ListenersQueue[]
@@ -47,16 +46,19 @@ class StandardListenerProvider implements ListenerProviderInterface
     /**
      * @inheritDoc
      */
-    public function on(string $event, callable $listener, ?int $priority = null): void
-    {
-        $priority = $priority ?? ListenerPriority::NORMAL;
+    public function on(
+        string $event,
+        callable $listener,
+        ?int $priority = null,
+        bool $once = false
+    ): void {
         $event = strtolower($event);
 
-        if (!$this->listeners[$event]) {
+        if (!isset($this->listeners[$event])) {
             $this->listeners[$event] = new ListenersQueue();
         }
 
-        $this->listeners[$event]->add($listener, $priority);
+        $this->listeners[$event]->add($listener, $priority, $once);
     }
 
     /**
@@ -81,12 +83,17 @@ class StandardListenerProvider implements ListenerProviderInterface
                 $this->on($event, [$subscriber, $method], $priority);
             } elseif (is_array($method) && $method !== []) {
                 if (is_string($method[0])) {
-                    // Register: ['eventName' => ['methodName', $priority]]
-                    $this->on($event, [$subscriber, $method[0]], $method[1] ?? $priority);
+                    // Register: ['eventName' => ['methodName', $priority, $once = false]]
+                    $this->on($event, [$subscriber, $method[0]], $method[1] ?? $priority, $method[2] ?? false);
                 } elseif (is_array($method[0])) {
-                    // Register: ['eventName' => [['methodName1', $priority], ['methodName2']]]
+                    // Register: ['eventName' => [['methodName1', $priority, $once = false], ['methodName2']]]
                     foreach ($method as $method2) {
-                        $this->on($event, [$subscriber, $method2[0]], $method2[1] ?? $priority);
+                        $this->on(
+                            $event,
+                            [$subscriber, $method2[0]],
+                            $method2[1] ?? $priority,
+                            $method2[2] ?? false
+                        );
                     }
                 }
             }

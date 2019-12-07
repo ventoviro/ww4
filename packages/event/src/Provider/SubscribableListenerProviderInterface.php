@@ -16,9 +16,9 @@ use Windwalker\Event\Listener\ListenerPriority;
 use Windwalker\Event\Listener\ListenersQueue;
 
 /**
- * The AttachableListenerProviderInterface class.
+ * The SubscribableListenerProviderInterface class.
  */
-interface StandardListenerProviderInterface extends ListenerProviderInterface
+interface SubscribableListenerProviderInterface extends ListenerProviderInterface
 {
     /**
      * on
@@ -27,9 +27,11 @@ interface StandardListenerProviderInterface extends ListenerProviderInterface
      * @param  callable  $listener
      * @param  int       $priority
      *
+     * @param  bool      $once
+     *
      * @return  void
      */
-    public function on(string $event, callable $listener, int $priority = ListenerPriority::NORMAL): void;
+    public function on(string $event, callable $listener, ?int $priority = ListenerPriority::NORMAL, bool $once = false): void;
 
     /**
      * subscribe

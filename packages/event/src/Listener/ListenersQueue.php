@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project.
  *
  * @copyright  Copyright (C) 2019 LYRASOFT.
  * @license    LGPL-2.0-or-later
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Event\Listener;
 
@@ -33,7 +36,7 @@ class ListenersQueue implements \IteratorAggregate, \Countable
      */
     public function add($listener, ?int $priority = null, bool $once = false)
     {
-        $this->queue = new ListenerItem($listener, $priority, $once);
+        $this->queue[] = new ListenerItem($listener, $priority, $once);
 
         return $this;
     }

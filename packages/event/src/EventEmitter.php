@@ -14,24 +14,25 @@ namespace Windwalker\Event;
 use Psr\EventDispatcher\StoppableEventInterface;
 use Windwalker\Event\Listener\ListenerItem;
 use Windwalker\Event\Provider\DecorateListenerProvider;
-use Windwalker\Event\Provider\StandardListenerProviderInterface;
+use Windwalker\Event\Provider\SubscribableListenerProviderInterface;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 
 /**
  * The AttachableEventDispatcher class.
  */
-class EventEmitter extends EventDispatcher implements DispatcherInterface
+class EventEmitter extends EventDispatcher implements EventEmitterInterface, EventSubscribableInterface
 {
     /**
-     * @var StandardListenerProviderInterface
+     * @var SubscribableListenerProviderInterface
      */
     protected $queues;
 
     /**
      * EventEmitter constructor.
      *
-     * @param  StandardListenerProviderInterface  $queues
+     * @param  SubscribableListenerProviderInterface  $queues
      */
-    public function __construct(StandardListenerProviderInterface $queues)
+    public function __construct(SubscribableListenerProviderInterface $queues)
     {
         $this->queues = $queues;
 
@@ -70,6 +71,28 @@ class EventEmitter extends EventDispatcher implements DispatcherInterface
     /**
      * @inheritDoc
      */
+    public function emit($event, $args = []): EventInterface
+    {
+        ArgumentsAssert::assert(
+            is_string($event) || $event instanceof EventInterface,
+            '%s argument 1 should be string or EventInterface, %s given.',
+            $event
+        );
+
+        if (!$event instanceof EventInterface) {
+            $event = new Event($event);
+        }
+
+        $event->merge($args);
+
+        $this->dispatch($event);
+
+        return $event;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function subscribe(object $subscriber, ?int $priority = null)
     {
         $this->getQueues()->subscribe($subscriber, $priority);
@@ -80,11 +103,19 @@ class EventEmitter extends EventDispatcher implements DispatcherInterface
     /**
      * @inheritDoc
      */
-    public function on(string $event, callable $callable, ?int $priority = null)
+    public function on(string $event, callable $callable, ?int $priority = null, bool $once = false)
     {
-        $this->getQueues()->on($event, $callable, $priority);
+        $this->getQueues()->on($event, $callable, $priority, $once);
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function once(string $event, callable $callable, ?int $priority = null)
+    {
+        return $this->on($event, $callable, $priority, true);
     }
 
     /**
@@ -192,11 +223,11 @@ class EventEmitter extends EventDispatcher implements DispatcherInterface
     /**
      * Method to get property Queues
      *
-     * @return  StandardListenerProviderInterface
+     * @return  SubscribableListenerProviderInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getQueues(): StandardListenerProviderInterface
+    public function getQueues(): SubscribableListenerProviderInterface
     {
         return $this->queues;
     }
@@ -204,13 +235,13 @@ class EventEmitter extends EventDispatcher implements DispatcherInterface
     /**
      * Method to set property queues
      *
-     * @param  StandardListenerProviderInterface  $queues
+     * @param  SubscribableListenerProviderInterface  $queues
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setQueues(StandardListenerProviderInterface $queues)
+    public function setQueues(SubscribableListenerProviderInterface $queues)
     {
         $this->queues = $queues;
 

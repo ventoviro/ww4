@@ -27,11 +27,29 @@ interface EventInterface extends StoppableEventInterface
     public function getName(): string;
 
     /**
-     * withNewName
+     * Clone a new instance with new name. Use for pass Event to another new progress but keep arguments.
+     *
+     * ```php
+     * $event = $dispatcher->emit(new Event('before.run'));
+     *
+     * // ...
+     *
+     * $event2 = $dispatcher->emit($event->mirror('after.run'));
+     * ```
      *
      * @param  string  $name
+     * @param  array   $args
      *
      * @return  static
      */
-    public function cloneNew(string $name);
+    public function mirror(string $name, array $args);
+
+    /**
+     * Stop the event propagation.
+     *
+     * @return  void
+     *
+     * @since   2.0
+     */
+    public function stopPropagation(): void;
 }

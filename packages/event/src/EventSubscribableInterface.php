@@ -13,7 +13,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * Interface DispatcherInterface
  */
-interface DispatcherInterface extends EventEmitterInterface, EventDispatcherInterface
+interface EventSubscribableInterface extends EventEmitterInterface, SubscribeOnceInterface, EventDispatcherInterface
 {
     /**
      * Add a listener to this dispatcher, only if not already registered to these events.
