@@ -116,7 +116,7 @@ class SubscribableListenerProviderTest extends TestCase
     }
 
     /**
-     * @see  SubscribableListenerProvider::getListeners
+     * @see  SubscribableListenerProvider::getQueues
      */
     public function testGetListeners(): void
     {
@@ -124,7 +124,7 @@ class SubscribableListenerProviderTest extends TestCase
         $this->instance->on('hello', $fn2 = $this->nope());
         $this->instance->on('world', $fn3 = $this->nope());
 
-        $listeners = $this->instance->getListeners();
+        $listeners = $this->instance->getQueues();
 
         self::assertInstanceOf(ListenersQueue::class, $listeners['hello']);
         self::assertInstanceOf(ListenersQueue::class, $listeners['world']);

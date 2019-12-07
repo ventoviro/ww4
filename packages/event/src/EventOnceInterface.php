@@ -14,7 +14,7 @@ namespace Windwalker\Event;
 /**
  * Interface ListenOnceInterface
  */
-interface SubscribeOnceInterface
+interface EventOnceInterface
 {
     /**
      * Add single listener but only run once.

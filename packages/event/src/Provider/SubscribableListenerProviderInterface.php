@@ -31,7 +31,12 @@ interface SubscribableListenerProviderInterface extends ListenerProviderInterfac
      *
      * @return  void
      */
-    public function on(string $event, callable $listener, ?int $priority = ListenerPriority::NORMAL, bool $once = false): void;
+    public function on(
+        string $event,
+        callable $listener,
+        ?int $priority = ListenerPriority::NORMAL,
+        bool $once = false
+    ): void;
 
     /**
      * subscribe
@@ -50,5 +55,5 @@ interface SubscribableListenerProviderInterface extends ListenerProviderInterfac
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function &getListeners(): array;
+    public function &getQueues(): array;
 }

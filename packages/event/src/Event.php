@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Event;
 
 use Windwalker\Utilities\AccessibleTrait;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Contract\AccessibleInterface;
 
 /**
@@ -51,6 +52,12 @@ class Event implements EventInterface, AccessibleInterface, \Serializable
      */
     public static function wrap($event, array $args = []): EventInterface
     {
+        ArgumentsAssert::assert(
+            is_string($event) || $event instanceof EventInterface,
+            '%s argument 1 should be string or EventInterface, %s given.',
+            $event
+        );
+
         if (!$event instanceof EventInterface) {
             $event = new static($event);
         }

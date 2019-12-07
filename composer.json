@@ -27,20 +27,14 @@
         "roave/security-advisories": "dev-master",
         "mockery/mockery": "^1.3",
         "symfony/var-dumper": "^4.3",
-        "danielstjules/stringy": "^3.1",
         "doctrine/inflector": "^1.3",
         "symfony/yaml": "^4.3",
         "laktak/hjson": "^2.1",
         "yosymfony/toml": "^1.0",
-        "ext-simplexml": "*",
         "opis/closure": "^3.4",
         "phpunit/phpunit": "^8.4",
         "squizlabs/php_codesniffer": "^3.5",
-        "swoole/ide-helper": "^4.4",
-        "guzzlehttp/promises": "^1.3",
-        "react/promise": "^2.7",
-        "react/event-loop": "^1.1",
-        "phly/phly-event-dispatcher": "^1.0"
+        "swoole/ide-helper": "^4.4"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",

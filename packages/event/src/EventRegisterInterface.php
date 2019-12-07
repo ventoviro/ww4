@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project.
  *
@@ -6,14 +7,14 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\Event;
+declare(strict_types=1);
 
-use Psr\EventDispatcher\EventDispatcherInterface;
+namespace Windwalker\Event;
 
 /**
  * Interface DispatcherInterface
  */
-interface EventSubscribableInterface extends EventEmitterInterface, SubscribeOnceInterface, EventDispatcherInterface
+interface EventRegisterInterface
 {
     /**
      * Add a listener to this dispatcher, only if not already registered to these events.

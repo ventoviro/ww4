@@ -25,7 +25,7 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
     /**
      * @var ListenersQueue[]
      */
-    protected $listeners = [];
+    protected $queues = [];
 
     /**
      * @inheritDoc
@@ -40,7 +40,7 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
 
         $eventName = strtolower($eventName);
 
-        return $this->listeners[$eventName] ?? new ListenersQueue();
+        return $this->queues[$eventName] ?? new ListenersQueue();
     }
 
     /**
@@ -54,11 +54,11 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
     ): void {
         $event = strtolower($event);
 
-        if (!isset($this->listeners[$event])) {
-            $this->listeners[$event] = new ListenersQueue();
+        if (!isset($this->queues[$event])) {
+            $this->queues[$event] = new ListenersQueue();
         }
 
-        $this->listeners[$event]->add($listener, $priority, $once);
+        $this->queues[$event]->add($listener, $priority, $once);
     }
 
     /**
@@ -80,11 +80,20 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
         foreach ($events as $event => $method) {
             // Register: ['eventName' => 'methodName']
             if (is_string($method)) {
-                $this->on($event, [$subscriber, $method], $priority);
+                $this->on(
+                    $event,
+                    [$subscriber, $method],
+                    $priority
+                );
             } elseif (is_array($method) && $method !== []) {
                 if (is_string($method[0])) {
                     // Register: ['eventName' => ['methodName', $priority, $once = false]]
-                    $this->on($event, [$subscriber, $method[0]], $method[1] ?? $priority, $method[2] ?? false);
+                    $this->on(
+                        $event,
+                        [$subscriber, $method[0]],
+                        $method[1] ?? $priority,
+                        $method[2] ?? false
+                    );
                 } elseif (is_array($method[0])) {
                     // Register: ['eventName' => [['methodName1', $priority, $once = false], ['methodName2']]]
                     foreach ($method as $method2) {
@@ -119,8 +128,8 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function &getListeners(): array
+    public function &getQueues(): array
     {
-        return $this->listeners;
+        return $this->queues;
     }
 }

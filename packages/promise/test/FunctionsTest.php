@@ -58,6 +58,8 @@ class FunctionsTest extends AbstractPromiseTestCase
 
     public function testAsync()
     {
+        $this->skipIfSwooleNotInstalled();
+
         static::useHandler(new SwooleAsync());
 
         go(function () {
@@ -75,6 +77,8 @@ class FunctionsTest extends AbstractPromiseTestCase
 
     public function testAwait()
     {
+        $this->skipIfSwooleNotInstalled();
+
         static::useHandler(new SwooleAsync());
 
         async(function () {
@@ -110,6 +114,11 @@ class FunctionsTest extends AbstractPromiseTestCase
         })->wait();
 
         self::assertEquals('Sakura Rose', $v);
+    }
+
+    public function testCoroutineInSwoole(): void
+    {
+        $this->skipIfSwooleNotInstalled();
 
         static::useHandler(new SwooleAsync());
 

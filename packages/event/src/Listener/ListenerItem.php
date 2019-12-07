@@ -68,6 +68,10 @@ class ListenerItem
      */
     public function is(callable $callable): bool
     {
+        if ($callable instanceof static) {
+            $callable = $callable->getCallable();
+        }
+
         return $callable === $this->callable;
     }
 

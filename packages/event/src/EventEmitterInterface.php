@@ -8,12 +8,14 @@
 
 namespace Windwalker\Event;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
+
 /**
  * The EventTriggerableInterface interface.
  *
  * @since  2.1.1
  */
-interface EventEmitterInterface
+interface EventEmitterInterface extends EventDispatcherInterface
 {
     /**
      * Trigger an event.

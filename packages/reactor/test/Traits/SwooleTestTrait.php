@@ -34,4 +34,11 @@ trait SwooleTestTrait
     {
         return extension_loaded('swoole');
     }
+
+    public function skipIfSwooleNotInstalled(): void
+    {
+        if (!$this->swooleEnabled()) {
+            self::markTestSkipped('Swoole havn\'t installed');
+        }
+    }
 }
