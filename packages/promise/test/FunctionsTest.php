@@ -13,6 +13,7 @@ namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
 
+use Swoole\Event;
 use Windwalker\Promise\Async\AsyncInterface;
 use Windwalker\Promise\Async\AsyncRunner;
 use Windwalker\Promise\Async\DeferredAsync;
@@ -28,6 +29,7 @@ use Windwalker\Reactor\Test\Traits\SwooleTestTrait;
 use function Windwalker\Promise\async;
 use function Windwalker\Promise\await;
 use function Windwalker\Promise\coroutine;
+use function Windwalker\Promise\coroutineable;
 
 /**
  * The FunctionsTest class.
@@ -100,7 +102,14 @@ class FunctionsTest extends TestCase
             });
     }
 
-    public function testCoroutine()
+    /**
+     * testCoroutine
+     *
+     * @return  void
+     *
+     * @throws \Throwable
+     */
+    public function testCoroutine(): void
     {
         static::useHandler(new NoAsync());
 
@@ -113,19 +122,42 @@ class FunctionsTest extends TestCase
 
         self::assertEquals('Sakura Rose', $v);
 
-        // static::useHandler(new SwooleAsync());
-        //
-        // go(function () {
-        //     $v = coroutine(function () {
-        //         $v1 = yield $this->runAsync('Sakura');
-        //         $v2 = yield $this->runAsync('Rose');
-        //
-        //         return $v1 . ' ' . $v2;
-        //     })->wait();
-        //
-        //     self::assertEquals('Sakura Rose', $v);
-        // });
+        static::useHandler(new SwooleAsync());
+
+        go(function () {
+            $v = coroutine(function () {
+                $v1 = yield $this->runAsync('Sakura');
+                $v2 = yield $this->runAsync('Rose');
+
+                return $v1 . ' ' . $v2;
+            })->wait();
+
+            self::assertEquals('Sakura Rose', $v);
+        });
     }
+
+    /**
+     * testCoroutineable
+     *
+     * @return  void
+     *
+     * @throws \Throwable
+     */
+    public function testCoroutineable(): void
+    {
+        static::useHandler(new NoAsync());
+
+        $c = coroutineable(function ($arg) {
+            $v1 = yield $this->runAsync($arg);
+            $v2 = yield $this->runAsync('Rose');
+
+            return $v1 . ' ' . $v2;
+        });
+
+        self::assertEquals('Sakura Rose', $c('Sakura')->wait());
+    }
+
+
 
     /**
      * runAsync

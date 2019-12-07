@@ -331,14 +331,8 @@ class Promise implements ExtendedPromiseInterface
         // If value is promise, start resolving after it resolved.
         if ($value instanceof PromiseInterface || is_thenable($value)) {
             $value->then(
-                static function ($x = null) use ($promise) {
-                    $promise->resolve($x);
-                    return $x;
-                },
-                static function ($r = null) use ($promise) {
-                    $promise->reject($r);
-                    return static::rejected($r);
-                }
+                [$promise, 'resolve'],
+                [$promise, 'reject']
             );
 
             return $promise;
@@ -457,16 +451,12 @@ class Promise implements ExtendedPromiseInterface
                             $target->resolve($value);
                             $target = null;
                         }
-
-                        return $value;
                     },
                     static function ($reason = null) use (&$target) {
                         if ($target !== null) {
                             $target->reject($reason);
                             $target = null;
                         }
-
-                        return $reason;
                     }
                 );
             }

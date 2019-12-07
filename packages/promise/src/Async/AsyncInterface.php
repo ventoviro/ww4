@@ -48,5 +48,5 @@ interface AsyncInterface
      *
      * @return  void
      */
-    public function done(AsyncCursor $cursor): void;
+    public function done(?AsyncCursor $cursor): void;
 }

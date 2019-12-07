@@ -21,7 +21,7 @@ trait SwooleTestTrait
     public function nextTick(): void
     {
         if ($this->swooleEnabled()) {
-            Event::dispatch();
+            Event::wait();
         }
     }
 

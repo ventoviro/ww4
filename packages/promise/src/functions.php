@@ -11,12 +11,17 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise;
 
+use Closure;
+use Throwable;
+use Windwalker\Promise\Helper\ReturnPromiseInterface;
+
 /**
  * resolve
  *
  * @param  mixed|PromiseInterface  $promiseOrValue
  *
  * @return  ExtendedPromiseInterface
+ * @throws Throwable
  */
 function resolve($promiseOrValue = null): ExtendedPromiseInterface
 {
@@ -29,6 +34,7 @@ function resolve($promiseOrValue = null): ExtendedPromiseInterface
  * @param  mixed|PromiseInterface  $promiseOrValue
  *
  * @return  ExtendedPromiseInterface
+ * @throws Throwable
  */
 function reject($promiseOrValue = null): ExtendedPromiseInterface
 {
@@ -52,17 +58,13 @@ function is_thenable($value): bool
  *
  * @param  callable  $callable
  *
- * @return  \Closure
+ * @return  Closure|ReturnPromiseInterface
  */
-function asyncable(callable $callable): \Closure
+function asyncable(callable $callable): Closure
 {
-    return static function (...$args) use ($callable): Promise {
-        return new Promise(static function ($resolve, $reject) use ($callable, $args) {
-            try {
-                $resolve($callable(...$args));
-            } catch (\Throwable $e) {
-                $reject($e);
-            }
+    return static function (...$args) use ($callable): ExtendedPromiseInterface {
+        return async(static function () use ($callable, $args) {
+            return $callable(...$args);
         });
     };
 }
@@ -79,7 +81,7 @@ function async(callable $callable): ExtendedPromiseInterface
     return new Promise(static function ($resolve, $reject) use ($callable) {
         try {
             $resolve($callable());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $reject($e);
         }
     });
@@ -98,28 +100,41 @@ function await(PromiseInterface $promise)
 }
 
 /**
- * coroutine
+ * Run a coroutine context and auto catch yield values as promise then wait then.
+ *
+ * Every yield values will block process and wait previous call. Similar to ES async/await.
+ *
+ * Example:
+ *
+ * ```php
+ * $res3 = \Windwalker\coroutine(function () {
+ *     $res1 = yield anAsyncFunctionReturnPromise();
+ *     $res2 = yield anAsyncFunctionReturnPromise();
+ *
+ *     return $res1 . $res2; // <-- return as new promise
+ * })
+ *     ->then(...)
+ *     ->wait();
+ * ```
  *
  * @param  callable  $callback
  *
  * @return  ExtendedPromiseInterface
  *
- * @throws \Throwable
+ * @throws Throwable
  */
 function coroutine(callable $callback): ExtendedPromiseInterface
 {
-    return new Promise(function ($resolve) use ($callback) {
-        \Windwalker\go(function () use ($resolve, $callback) {
+    return new Promise(static function ($resolve) use ($callback) {
+        \Windwalker\go(static function () use ($resolve, $callback) {
             /** @var \Generator $generator */
             $generator = $callback();
 
             $value = $generator->current();
 
-            do {
+            while ($generator->valid()) {
                 $value = $generator->send(Promise::resolved($value)->wait());
-            } while ($generator->valid());
-
-            $generator->send(Promise::resolved($value)->wait());
+            }
 
             $resolve($generator->getReturn());
         });
@@ -127,11 +142,39 @@ function coroutine(callable $callback): ExtendedPromiseInterface
 }
 
 /**
+ * Make a callable be coroutine but keep origin interfaces.
+ *
+ * Example:
+ *
+ * ```php
+ * $run = \Windwalker\coroutineable([$foo, 'run']);
+ *
+ * $run($a, $b)->then(...);
+ * ```
+ *
+ * @see coroutine()
+ *
+ * @param  callable  $callback
+ *
+ * @return  Closure|ReturnPromiseInterface
+ *
+ * @throws Throwable
+ */
+function coroutineable(callable $callback): Closure
+{
+    return static function (...$args) use ($callback): ExtendedPromiseInterface {
+        return coroutine(static function () use ($callback, $args) {
+            return $callback(...$args);
+        });
+    };
+}
+
+/**
  * nope
  *
- * @return  \Closure
+ * @return  Closure
  */
-function nope(): \Closure
+function nope(): Closure
 {
     return static function ($v) {
         return $v;

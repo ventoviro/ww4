@@ -71,11 +71,11 @@ class AsyncRunner
     /**
      * done
      *
-     * @param  AsyncCursor  $cursor
+     * @param  AsyncCursor|null  $cursor
      *
      * @return  void
      */
-    public function done(AsyncCursor $cursor): void
+    public function done(?AsyncCursor $cursor): void
     {
         $this->getAvailableHandler()->done($cursor);
     }

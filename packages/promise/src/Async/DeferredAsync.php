@@ -47,7 +47,7 @@ class DeferredAsync implements AsyncInterface
     /**
      * @inheritDoc
      */
-    public function done(AsyncCursor $cursor): void
+    public function done(?AsyncCursor $cursor): void
     {
         $cursor->get()();
     }

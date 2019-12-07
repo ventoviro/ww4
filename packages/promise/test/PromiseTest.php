@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
+use Swoole\Event;
 use Windwalker\Promise\Async\AsyncRunner;
 use Windwalker\Promise\Async\NoAsync;
 use Windwalker\Promise\Async\TaskQueue;
