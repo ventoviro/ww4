@@ -13,6 +13,7 @@ namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Promise\Async\AsyncRunner;
+use Windwalker\Promise\Async\DeferredAsync;
 use Windwalker\Promise\Async\NoAsync;
 use Windwalker\Promise\Promise;
 use Windwalker\Test\TestHelper;
@@ -25,28 +26,9 @@ use function Windwalker\Promise\nope;
  *
  * @since  __DEPLOY_VERSION__
  */
-class PromiseThenTest extends TestCase
+class PromiseThenTest extends AbstractPromiseTestCase
 {
     use TestAccessorTrait;
-
-    /**
-     * @var array
-     */
-    protected $values = '';
-
-    /**
-     * This method is called before the first test of this test class is run.
-     */
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-
-        AsyncRunner::getInstance()->setHandlers(
-            [
-                new NoAsync()
-            ]
-        );
-    }
 
     /**
      * @throws \ReflectionException
@@ -396,10 +378,5 @@ class PromiseThenTest extends TestCase
 
         self::assertEquals('Error', $this->values['r1']);
         self::assertEquals('Error', $this->values['r2']);
-    }
-
-    protected function setUp(): void
-    {
-        $this->values = [];
     }
 }

@@ -41,7 +41,7 @@ class DeferredAsync implements AsyncInterface
      */
     public function wait(AsyncCursor $cursor): void
     {
-        // $cursor->get()();
+        $cursor->get()();
     }
 
     /**
@@ -49,6 +49,6 @@ class DeferredAsync implements AsyncInterface
      */
     public function done(?AsyncCursor $cursor): void
     {
-        $cursor->get()();
+        //
     }
 }

@@ -34,11 +34,9 @@ use function Windwalker\Promise\coroutineable;
 /**
  * The FunctionsTest class.
  */
-class FunctionsTest extends TestCase
+class FunctionsTest extends AbstractPromiseTestCase
 {
     use SwooleTestTrait;
-
-    protected $values = [];
 
     /**
      * This method is called before the first test of this test class is run.
@@ -47,16 +45,7 @@ class FunctionsTest extends TestCase
     {
         parent::setUpBeforeClass();
 
-        TaskQueue::getInstance()->disableShutdownRunner();
-
         static::useHandler(new DeferredAsync());
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->values = [];
     }
 
     protected function tearDown(): void
@@ -171,17 +160,5 @@ class FunctionsTest extends TestCase
         return async(static function () use ($value) {
             return $value;
         });
-    }
-
-    /**
-     * useHandler
-     *
-     * @param  AsyncInterface  $handler
-     *
-     * @return  void
-     */
-    protected static function useHandler(AsyncInterface $handler): void
-    {
-        AsyncRunner::getInstance()->setHandlers([$handler]);
     }
 }

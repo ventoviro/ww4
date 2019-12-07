@@ -23,11 +23,9 @@ use Windwalker\Reactor\Test\Traits\SwooleTestTrait;
 /**
  * The AsyncPromiseTest class.
  */
-class AsyncPromiseTest extends TestCase
+class AsyncPromiseTest extends AbstractPromiseTestCase
 {
     use SwooleTestTrait;
-
-    protected $values = [];
 
     /**
      * This method is called before the first test of this test class is run.
@@ -36,20 +34,7 @@ class AsyncPromiseTest extends TestCase
     {
         parent::setUpBeforeClass();
 
-        TaskQueue::getInstance()->disableShutdownRunner();
-
-        AsyncRunner::getInstance()->setHandlers(
-            [
-                new DeferredAsync()
-            ]
-        );
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->values = [];
+        self::useHandler(new DeferredAsync());
     }
 
     protected function tearDown(): void

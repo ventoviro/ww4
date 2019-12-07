@@ -25,34 +25,8 @@ use Windwalker\Test\TestHelper;
 /**
  * The PromiseTest class.
  */
-class PromiseTest extends TestCase
+class PromiseTest extends AbstractPromiseTestCase
 {
-    /**
-     * @var array
-     */
-    protected $values = [];
-
-    /**
-     * This method is called before the first test of this test class is run.
-     */
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-
-        TaskQueue::getInstance()->disableShutdownRunner();
-
-        AsyncRunner::getInstance()->setHandlers([
-            new NoAsync()
-        ]);
-    }
-
-    protected function setUp(): void
-    {
-        $this->values = [];
-
-        parent::setUp();
-    }
-
     public function testConstructorAndRun(): void
     {
         $foo = null;
@@ -145,17 +119,5 @@ class PromiseTest extends TestCase
         $loop->run();
 
         self::assertEquals('Hello', $this->values['v1']);
-    }
-
-    /**
-     * useHandler
-     *
-     * @param  AsyncInterface  $handler
-     *
-     * @return  void
-     */
-    protected static function useHandler(AsyncInterface $handler): void
-    {
-        AsyncRunner::getInstance()->setHandlers([$handler]);
     }
 }
