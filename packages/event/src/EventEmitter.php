@@ -14,7 +14,7 @@ namespace Windwalker\Event;
 use Psr\EventDispatcher\StoppableEventInterface;
 use Rx\Observable;
 use Rx\ObserverInterface;
-use Windwalker\Event\Listener\ListenerItem;
+use Windwalker\Event\Listener\ListenerCallable;
 use Windwalker\Event\Listener\ListenersQueue;
 use Windwalker\Event\Provider\DecorateListenerProvider;
 use Windwalker\Event\Provider\SubscribableListenerProvider;
@@ -56,7 +56,7 @@ class EventEmitter extends EventDispatcher implements
             return $event;
         }
 
-        /** @var ListenerItem $listener */
+        /** @var ListenerCallable $listener */
         foreach ($this->getListenerProvider()->getListenersForEvent($event) as $listener) {
             $listener->getCallable()($event);
 
@@ -208,7 +208,7 @@ class EventEmitter extends EventDispatcher implements
      */
     private function offSubscriber(ListenersQueue $queue, object $subscriber): void
     {
-        /** @var ListenerItem $listener */
+        /** @var ListenerCallable $listener */
         foreach ($queue as $listener) {
             $callable = $listener->getCallable();
 

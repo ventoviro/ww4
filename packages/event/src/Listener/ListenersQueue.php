@@ -19,7 +19,7 @@ namespace Windwalker\Event\Listener;
 class ListenersQueue implements \IteratorAggregate, \Countable
 {
     /**
-     * @var ListenerItem[]
+     * @var ListenerCallable[]
      */
     protected $queue = [];
 
@@ -36,7 +36,7 @@ class ListenersQueue implements \IteratorAggregate, \Countable
      */
     public function add($listener, ?int $priority = null, bool $once = false)
     {
-        $this->queue[] = new ListenerItem($listener, $priority, $once);
+        $this->queue[] = new ListenerCallable($listener, $priority, $once);
 
         return $this;
     }
@@ -52,8 +52,8 @@ class ListenersQueue implements \IteratorAggregate, \Countable
      */
     public function remove(callable $listener)
     {
-        $this->queue = array_values(array_filter($this->queue, function (ListenerItem $item) use ($listener) {
-            return !$item->is($listener);
+        $this->queue = array_values(array_filter($this->queue, function (ListenerCallable $item) use ($listener) {
+            return !$item->sameWith($listener);
         }));
 
         return $this;
@@ -71,7 +71,7 @@ class ListenersQueue implements \IteratorAggregate, \Countable
     public function has(callable $listener): bool
     {
         foreach ($this->queue as $item) {
-            if ($item->is($listener)) {
+            if ($item->sameWith($listener)) {
                 return true;
             }
         }

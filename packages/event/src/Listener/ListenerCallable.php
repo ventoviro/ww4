@@ -11,16 +11,13 @@ declare(strict_types=1);
 
 namespace Windwalker\Event\Listener;
 
+use Windwalker\Utilities\Proxy\CallableProxy;
+
 /**
  * The ListenerItem class.
  */
-class ListenerItem
+class ListenerCallable extends CallableProxy
 {
-    /**
-     * @var callable
-     */
-    protected $callable;
-
     /**
      * @var int
      */
@@ -40,23 +37,10 @@ class ListenerItem
      */
     public function __construct(callable $callable, ?int $priority, bool $once)
     {
-        $this->callable = $callable;
         $this->priority = $priority ?? ListenerPriority::NORMAL;
         $this->once     = $once;
-    }
 
-    /**
-     * __invoke
-     *
-     * @param  mixed  ...$args
-     *
-     * @return  mixed
-     */
-    public function __invoke(...$args)
-    {
-        $callable = $this->callable;
-
-        return $callable(...$args);
+        parent::__construct($callable);
     }
 
     /**
@@ -66,25 +50,13 @@ class ListenerItem
      *
      * @return  bool
      */
-    public function is(callable $callable): bool
+    public function sameWith(callable $callable): bool
     {
         if ($callable instanceof static) {
             $callable = $callable->getCallable();
         }
 
         return $callable === $this->callable;
-    }
-
-    /**
-     * Method to get property Callable
-     *
-     * @return  callable
-     *
-     * @since  __DEPLOY_VERSION__
-     */
-    public function getCallable(): callable
-    {
-        return $this->callable;
     }
 
     /**

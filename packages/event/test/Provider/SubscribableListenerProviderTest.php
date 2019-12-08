@@ -15,7 +15,7 @@ use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Event\EventInterface;
 use Windwalker\Event\EventSubscriberInterface;
-use Windwalker\Event\Listener\ListenerItem;
+use Windwalker\Event\Listener\ListenerCallable;
 use Windwalker\Event\Listener\ListenersQueue;
 use Windwalker\Event\Provider\SubscribableListenerProvider;
 use Windwalker\Utilities\TypeCast;
@@ -86,7 +86,7 @@ class SubscribableListenerProviderTest extends TestCase
         $event = \Mockery::mock(EventInterface::class);
         $event->shouldReceive('getName')->andReturn('flower.olive')->getMock();
 
-        /** @var ListenerItem[] $listeners */
+        /** @var ListenerCallable[] $listeners */
         $listeners = array_values(TypeCast::toArray($this->instance->getListenersForEvent($event)));
 
         self::assertSame($subscriber, $listeners[0]->getCallable()[0]);
