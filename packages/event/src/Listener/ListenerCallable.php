@@ -11,12 +11,12 @@ declare(strict_types=1);
 
 namespace Windwalker\Event\Listener;
 
-use Windwalker\Utilities\Proxy\CallableProxy;
+use Windwalker\Utilities\Proxy\TimesLimitedCallable;
 
 /**
  * The ListenerItem class.
  */
-class ListenerCallable extends CallableProxy
+class ListenerCallable extends TimesLimitedCallable
 {
     /**
      * @var int
@@ -40,7 +40,7 @@ class ListenerCallable extends CallableProxy
         $this->priority = $priority ?? ListenerPriority::NORMAL;
         $this->once     = $once;
 
-        parent::__construct($callable);
+        parent::__construct($callable, $once ? 1 : null);
     }
 
     /**

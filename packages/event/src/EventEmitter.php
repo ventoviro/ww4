@@ -48,35 +48,6 @@ class EventEmitter extends EventDispatcher implements
     /**
      * @inheritDoc
      */
-    public function dispatch(object $event)
-    {
-        $stoppable = $event instanceof StoppableEventInterface;
-
-        if ($stoppable && $event->isPropagationStopped()) {
-            return $event;
-        }
-
-        /** @var ListenerCallable $listener */
-        foreach ($this->getListenerProvider()->getListenersForEvent($event) as $listener) {
-            $listener->getCallable()($event);
-
-            if ($listener->isOnce()) {
-                $this->remove($listener->getCallable());
-            }
-
-            $stoppable = $event instanceof StoppableEventInterface;
-
-            if ($stoppable && $event->isPropagationStopped()) {
-                return $event;
-            }
-        }
-
-        return $event;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function emit($event, $args = []): EventInterface
     {
         $event = Event::wrap($event, $args);

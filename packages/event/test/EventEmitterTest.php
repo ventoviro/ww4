@@ -18,8 +18,11 @@ use Rx\Scheduler;
 use Windwalker\Event\EventEmitter;
 use Windwalker\Event\EventInterface;
 use Windwalker\Event\EventSubscriberInterface;
+use Windwalker\Event\Listener\ListenerCallable;
 use Windwalker\Promise\Scheduler\EventLoopScheduler;
+use Windwalker\Utilities\Proxy\DisposableCallable;
 use Windwalker\Utilities\TypeCast;
+use function Windwalker\disposable;
 
 /**
  * The EventEmitterTest class.
@@ -56,6 +59,50 @@ class EventEmitterTest extends TestCase
         };
 
         $this->instance->once('hello', $fn);
+
+        $this->instance->emit('hello');
+        $this->instance->emit('hello');
+        $this->instance->emit('hello');
+
+        self::assertEquals(1, $count);
+    }
+
+    /**
+     * @see  EventEmitter::once
+     */
+    public function testOnceWithListenerCallable(): void
+    {
+        $count = 0;
+        $fn = new ListenerCallable(
+            static function () use (&$count) {
+                $count++;
+            },
+            null,
+            true
+        );
+
+        $this->instance->on('hello', $fn);
+
+        $this->instance->emit('hello');
+        $this->instance->emit('hello');
+        $this->instance->emit('hello');
+
+        self::assertEquals(1, $count);
+    }
+
+    /**
+     * @see  EventEmitter::once
+     */
+    public function testOnceWithDisposableCallable(): void
+    {
+        $count = 0;
+        $fn = disposable(
+            static function () use (&$count) {
+                $count++;
+            }
+        );
+
+        $this->instance->on('hello', $fn);
 
         $this->instance->emit('hello');
         $this->instance->emit('hello');

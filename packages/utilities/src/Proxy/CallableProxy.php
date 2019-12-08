@@ -36,7 +36,7 @@ class CallableProxy
      *
      * @param  mixed  ...$args
      *
-     * @return  mixed
+     * @return  mixed|void
      */
     public function __invoke(...$args)
     {

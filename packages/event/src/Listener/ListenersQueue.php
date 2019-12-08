@@ -34,9 +34,11 @@ class ListenersQueue implements \IteratorAggregate, \Countable
      *
      * @since   2.0
      */
-    public function add($listener, ?int $priority = null, bool $once = false)
+    public function add(callable $listener, ?int $priority = null, bool $once = false)
     {
-        $this->queue[] = new ListenerCallable($listener, $priority, $once);
+        $this->queue[] = $listener instanceof ListenerCallable
+            ? $listener
+            : new ListenerCallable($listener, $priority, $once);
 
         return $this;
     }

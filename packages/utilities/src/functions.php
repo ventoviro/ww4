@@ -85,6 +85,7 @@ namespace Windwalker {
     use Closure;
     use Traversable;
     use Windwalker\Utilities\Compare\WhereWrapper;
+    use Windwalker\Utilities\Proxy\DisposableCallable;
     use Windwalker\Utilities\Wrapper\ValueReference;
 
     /**
@@ -199,5 +200,17 @@ namespace Windwalker {
     function ref(string $path, ?string $delimiter = null): ValueReference
     {
         return new ValueReference($path, $delimiter);
+    }
+
+    /**
+     * dispose
+     *
+     * @param  callable  $callable
+     *
+     * @return  DisposableCallable
+     */
+    function disposable(callable $callable): DisposableCallable
+    {
+        return new DisposableCallable($callable);
     }
 }
