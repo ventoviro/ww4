@@ -12,9 +12,13 @@ declare(strict_types=1);
 namespace Windwalker\Event\Test;
 
 use PHPUnit\Framework\TestCase;
+use React\EventLoop\Factory;
+use React\EventLoop\StreamSelectLoop;
+use Rx\Scheduler;
 use Windwalker\Event\EventEmitter;
 use Windwalker\Event\EventInterface;
 use Windwalker\Event\EventSubscriberInterface;
+use Windwalker\Promise\Scheduler\EventLoopScheduler;
 use Windwalker\Utilities\TypeCast;
 
 /**
@@ -353,6 +357,29 @@ class EventEmitterTest extends TestCase
                 $this->count *= $event['num'];
             }
         };
+    }
+
+    public function testObserve(): void
+    {
+        $values = [];
+
+        $this->instance->observe('hello')
+            ->map(static function (EventInterface $event) {
+                $event['num'] += 50;
+                return $event;
+            })
+            ->map(static function (EventInterface $event) {
+                return $event['num'];
+            })
+            ->subscribe(static function ($v) use (&$values) {
+                $values[] = $v;
+            });
+
+        $this->instance->emit('hello', ['num' => 3]);
+        $this->instance->emit('hello', ['num' => 4]);
+        $this->instance->emit('hello', ['num' => 5]);
+
+        self::assertEquals([53, 54, 55], $values);
     }
 
     protected function setUp(): void

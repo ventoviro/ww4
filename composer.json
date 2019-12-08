@@ -54,7 +54,7 @@
             "Windwalker\\Utilities\\": "packages/utilities/src"
         },
         "files": [
-            "packages/functions.php"
+            "packages/bootstrap.php"
         ]
     },
     "autoload-dev": {

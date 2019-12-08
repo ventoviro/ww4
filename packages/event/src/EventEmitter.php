@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace Windwalker\Event;
 
 use Psr\EventDispatcher\StoppableEventInterface;
+use Rx\Observable;
+use Rx\ObserverInterface;
 use Windwalker\Event\Listener\ListenerItem;
 use Windwalker\Event\Listener\ListenersQueue;
 use Windwalker\Event\Provider\DecorateListenerProvider;
@@ -62,6 +64,8 @@ class EventEmitter extends EventDispatcher implements
                 $this->remove($listener->getCallable());
             }
 
+            $stoppable = $event instanceof StoppableEventInterface;
+
             if ($stoppable && $event->isPropagationStopped()) {
                 return $event;
             }
@@ -108,6 +112,30 @@ class EventEmitter extends EventDispatcher implements
     public function once(string $event, callable $callable, ?int $priority = null)
     {
         return $this->on($event, $callable, $priority, true);
+    }
+
+    /**
+     * observe
+     *
+     * @param  string    $event
+     * @param  int|null  $priority
+     * @param  bool      $once
+     *
+     * @return  Observable
+     */
+    public function observe(string $event, ?int $priority = null, bool $once = false): Observable
+    {
+        if (!class_exists(Observable::class)) {
+            throw new \DomainException('Please install reactivex/rxphp to support Observable.');
+        }
+
+        return Observable::create(function (ObserverInterface $subscriber) use ($event, $priority, $once) {
+            $handler = static function (EventInterface $event) use ($subscriber) {
+                $subscriber->onNext($event);
+            };
+
+            $this->on($event, $handler, $priority, $once);
+        });
     }
 
     /**

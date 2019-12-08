@@ -24,7 +24,7 @@
             "Windwalker\\Data\\": "src/"
         },
         "files": [
-            "src/functions.php"
+            "src/bootstrap.php"
         ]
     },
     "extra": {

@@ -23,7 +23,7 @@
             "Windwalker\\Filesystem\\": "src/"
         },
         "files": [
-            "src/functions.php"
+            "src/bootstrap.php"
         ]
     },
     "extra": {

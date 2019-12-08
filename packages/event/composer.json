@@ -7,6 +7,8 @@
         "framework",
         "event",
         "event-dispatcher",
+        "rx",
+        "observable",
         "psr-14"
     ],
     "homepage": "https://github.com/ventoviro/windwalker-event",
@@ -19,9 +21,11 @@
         "psr/event-dispatcher": "^1.0"
     },
     "require-dev": {
-        "windwalker/test": "~4.0"
+        "windwalker/test": "~4.0",
+        "reactivex/rxphp": "^2.0"
     },
     "suggest": {
+        "reactivex/rxphp": "Support EventEmitter::observe() pattern."
     },
     "minimum-stability": "beta",
     "autoload": {
@@ -29,7 +33,7 @@
             "Windwalker\\Event\\": "src/"
         },
         "files": [
-            "src/functions.php"
+            "src/bootstrap.php"
         ]
     },
     "extra": {
