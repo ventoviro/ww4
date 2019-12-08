@@ -22,6 +22,7 @@ use Windwalker\Event\EventSubscriberInterface;
 use Windwalker\Event\Listener\ListenerCallable;
 use Windwalker\Event\Provider\SimpleListenerProvider;
 use Windwalker\Promise\Scheduler\EventLoopScheduler;
+use Windwalker\Utilities\Proxy\CallableProxy;
 use Windwalker\Utilities\Proxy\DisposableCallable;
 use Windwalker\Utilities\TypeCast;
 use function Windwalker\arr;
@@ -76,12 +77,10 @@ class EventEmitterTest extends TestCase
     public function testOnceWithListenerCallable(): void
     {
         $count = 0;
-        $fn = new ListenerCallable(
+        $fn = disposable(
             static function () use (&$count) {
                 $count++;
-            },
-            null,
-            true
+            }
         );
 
         $this->instance->on('hello', $fn);
@@ -112,6 +111,9 @@ class EventEmitterTest extends TestCase
         $this->instance->emit('hello');
 
         self::assertEquals(1, $count);
+
+        // Listener should auto remove
+        self::assertCount(0, TypeCast::toArray($this->instance->getListeners('hello')));
     }
 
     /**

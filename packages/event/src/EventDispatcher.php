@@ -47,7 +47,7 @@ class EventDispatcher implements EventDispatcherInterface
         }
 
         foreach ($this->getProvider()->getListenersForEvent($event) as $listener) {
-            $listener($event);
+            $this->invokeListener($event, $listener);
 
             $stoppable = $event instanceof StoppableEventInterface;
 
@@ -57,6 +57,19 @@ class EventDispatcher implements EventDispatcherInterface
         }
 
         return $event;
+    }
+
+    /**
+     * Invoke listener.
+     *
+     * @param  object    $event
+     * @param  callable  $listener
+     *
+     * @return  void
+     */
+    protected function invokeListener(object $event, callable $listener): void
+    {
+        $listener($event);
     }
 
     /**

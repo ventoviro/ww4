@@ -17,6 +17,9 @@ use Windwalker\Event\EventInterface;
 use Windwalker\Event\Listener\ListenerCallable;
 use Windwalker\Event\Listener\ListenerPriority;
 use Windwalker\Event\Listener\ListenersQueue;
+use Windwalker\Utilities\Proxy\CallableProxy;
+use Windwalker\Utilities\Proxy\DisposableCallable;
+use Windwalker\Utilities\Proxy\TimesLimitedCallable;
 
 /**
  * The CompositeProvider class.
@@ -69,11 +72,20 @@ class CompositeListenerProvider implements SubscribableListenerProviderInterface
 
     /**
      * @inheritDoc
+     * @throws \ReflectionException
      */
     public function getListenersForEvent(object $event): iterable
     {
         foreach ($this->providerIterator() as $provider) {
-            yield from $provider->getListenersForEvent($event);
+            if ($provider instanceof SubscribableListenerProvider) {
+                foreach ($provider->getListenersForEvent($event) as $listener) {
+                    $this->removeIfNecessary($event, $listener);
+
+                    yield $listener;
+                }
+            } else {
+                yield from $provider->getListenersForEvent($event);
+            }
         }
     }
 
@@ -97,7 +109,9 @@ class CompositeListenerProvider implements SubscribableListenerProviderInterface
     }
 
     /**
-     * @inheritDoc
+     * getQueues
+     *
+     * @return  ListenersQueue[]
      */
     private function &getQueues(): array
     {
@@ -105,23 +119,46 @@ class CompositeListenerProvider implements SubscribableListenerProviderInterface
     }
 
     /**
+     * removeIfNecessary
+     *
+     * @param  object    $event
+     * @param  callable  $listener
+     *
+     * @return  void
+     *
+     * @throws \ReflectionException
+     */
+    private function removeIfNecessary(object $event, callable $listener): void
+    {
+        if ($listener instanceof DisposableCallable) {
+            $this->off($event, $listener);
+            return;
+        }
+
+        if ($listener instanceof TimesLimitedCallable && $listener->getLimits() <= ($listener->getCallTimes() + 1)) {
+            $this->off($event, $listener);
+            return;
+        }
+    }
+
+    /**
      * off
      *
-     * @param  mixed  $listener
+     * @param  mixed  $listenerOrSubscriber
      *
      * @return  static
      *
      * @throws \ReflectionException
      */
-    public function remove($listener)
+    public function remove($listenerOrSubscriber)
     {
-        if ($this->isSubscriber($listener)) {
+        if ($this->isSubscriber($listenerOrSubscriber)) {
             foreach ($this->getQueues() as $queue) {
-                $this->offSubscriber($queue, $listener);
+                $this->offSubscriber($queue, $listenerOrSubscriber);
             }
         } else {
             foreach ($this->getQueues() as $queue) {
-                $queue->remove($listener);
+                $queue->remove($listenerOrSubscriber);
             }
         }
 
@@ -132,12 +169,12 @@ class CompositeListenerProvider implements SubscribableListenerProviderInterface
      * offEvent
      *
      * @param  string|EventInterface  $event
-     * @param  callable|object        $listener
+     * @param  callable|object        $listenerOrSubscriber
      *
      * @return  static
      * @throws \ReflectionException
      */
-    public function off($event, $listener = null)
+    public function off($event, $listenerOrSubscriber = null)
     {
         $event = Event::wrap($event);
 
@@ -147,15 +184,15 @@ class CompositeListenerProvider implements SubscribableListenerProviderInterface
             return $this;
         }
 
-        if ($listener === null) {
+        if ($listenerOrSubscriber === null) {
             unset($listeners[$event->getName()]);
         } else {
             $queue = $listeners[$event->getName()];
 
-            if ($this->isSubscriber($listener)) {
-                $this->offSubscriber($queue, $listener);
+            if ($this->isSubscriber($listenerOrSubscriber)) {
+                $this->offSubscriber($queue, $listenerOrSubscriber);
             } else {
-                $queue->remove($listener);
+                $queue->remove($listenerOrSubscriber);
             }
         }
 
@@ -204,7 +241,8 @@ class CompositeListenerProvider implements SubscribableListenerProviderInterface
     {
         return !is_array($listener)
             && !is_string($listener)
-            && !$listener instanceof \Closure;
+            && !$listener instanceof \Closure
+            && !$listener instanceof CallableProxy;
     }
 
     /**

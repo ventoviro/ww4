@@ -16,6 +16,10 @@ use Psr\EventDispatcher\ListenerProviderInterface;
 use Rx\Observable;
 use Rx\ObserverInterface;
 use Windwalker\Event\Provider\CompositeListenerProvider;
+use Windwalker\Utilities\Proxy\ChainableCallable;
+use Windwalker\Utilities\Proxy\DisposableCallable;
+use Windwalker\Utilities\Proxy\TimesLimitedCallable;
+use function Windwalker\disposable;
 use function Windwalker\tap;
 
 /**
@@ -83,7 +87,7 @@ class EventEmitter extends EventDispatcher implements
     /**
      * @inheritDoc
      */
-    public function on(string $event, callable $callable, ?int $priority = null, bool $once = false)
+    public function on(string $event, callable $callable, ?int $priority = null)
     {
         $this->provider->on($event, $callable, $priority);
 
@@ -95,7 +99,9 @@ class EventEmitter extends EventDispatcher implements
      */
     public function once(string $event, callable $callable, ?int $priority = null)
     {
-        return $this->on($event, $callable, $priority, true);
+        $this->on($event, disposable($callable), $priority);
+
+        return $this;
     }
 
     /**
@@ -103,24 +109,22 @@ class EventEmitter extends EventDispatcher implements
      *
      * @param  string    $event
      * @param  int|null  $priority
-     * @param  bool      $once
      *
      * @return  Observable
      */
-    public function observe(string $event, ?int $priority = null, bool $once = false): Observable
+    public function observe(string $event, ?int $priority = null): Observable
     {
         if (!class_exists(Observable::class)) {
             throw new \DomainException('Please install reactivex/rxphp to support Observable.');
         }
 
-        return Observable::create(function (ObserverInterface $subscriber) use ($event, $priority, $once) {
+        return Observable::create(function (ObserverInterface $subscriber) use ($event, $priority) {
             $this->on(
                 $event,
                 static function (EventInterface $event) use ($subscriber) {
                     $subscriber->onNext($event);
                 },
-                $priority,
-                $once
+                $priority
             );
         });
     }
@@ -128,15 +132,15 @@ class EventEmitter extends EventDispatcher implements
     /**
      * off
      *
-     * @param  mixed  $listener
+     * @param  callable|object  $listenerOrSubscriber
      *
      * @return  static
      *
      * @throws \ReflectionException
      */
-    public function remove($listener)
+    public function remove($listenerOrSubscriber)
     {
-        $this->provider->remove($listener);
+        $this->provider->remove($listenerOrSubscriber);
 
         return $this;
     }
@@ -145,14 +149,14 @@ class EventEmitter extends EventDispatcher implements
      * offEvent
      *
      * @param  string|EventInterface  $event
-     * @param  callable|object        $listener
+     * @param  callable|object        $listenerOrSubscriber
      *
      * @return  static
      * @throws \ReflectionException
      */
-    public function off($event, $listener = null)
+    public function off($event, $listenerOrSubscriber = null)
     {
-        $this->provider->off($event, $listener);
+        $this->provider->off($event, $listenerOrSubscriber);
 
         return $this;
     }

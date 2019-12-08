@@ -46,7 +46,7 @@ class TimesLimitedCallable extends CallableProxy
      */
     public function __invoke(...$args)
     {
-        if ($this->limits !== null && $this->callTimes >= $this->limits) {
+        if ($this->isOverLimits()) {
             return;
         }
 
@@ -77,5 +77,15 @@ class TimesLimitedCallable extends CallableProxy
     public function getLimits(): int
     {
         return $this->limits;
+    }
+
+    /**
+     * isOverLimits
+     *
+     * @return  bool
+     */
+    public function isOverLimits(): bool
+    {
+        return $this->limits !== null && $this->callTimes >= $this->limits;
     }
 }
