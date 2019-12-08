@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Promise\Async;
+namespace Windwalker\Promise\Scheduler;
 
 /**
  * The TaskQueue class which inspired by Guzzle.

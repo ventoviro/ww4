@@ -9,12 +9,12 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Promise\Async;
+namespace Windwalker\Promise\Scheduler;
 
 /**
  * Interface AsyncInterface
  */
-interface AsyncInterface
+interface SchedulerInterface
 {
     /**
      * isSupported
@@ -28,25 +28,25 @@ interface AsyncInterface
      *
      * @param  callable  $callback
      *
-     * @return  AsyncCursor
+     * @return  ScheduleCursor
      */
-    public function runAsync(callable $callback): AsyncCursor;
+    public function schedule(callable $callback): ScheduleCursor;
 
     /**
      * wait
      *
-     * @param  AsyncCursor  $cursor
+     * @param  ScheduleCursor  $cursor
      *
      * @return  void
      */
-    public function wait(AsyncCursor $cursor): void;
+    public function wait(ScheduleCursor $cursor): void;
 
     /**
      * done
      *
-     * @param  AsyncCursor  $cursor
+     * @param  ScheduleCursor  $cursor
      *
      * @return  void
      */
-    public function done(?AsyncCursor $cursor): void;
+    public function done(?ScheduleCursor $cursor): void;
 }

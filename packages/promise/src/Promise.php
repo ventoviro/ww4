@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise;
 
-use Windwalker\Promise\Async\AsyncCursor;
-use Windwalker\Promise\Async\AsyncRunner;
+use Windwalker\Promise\Scheduler\ScheduleCursor;
+use Windwalker\Promise\Scheduler\ScheduleRunner;
 use Windwalker\Promise\Exception\UncaughtException;
 
 /**
@@ -38,9 +38,9 @@ class Promise implements ExtendedPromiseInterface
     protected $handlers = [];
 
     /**
-     * @var AsyncCursor
+     * @var ScheduleCursor
      */
-    protected $asyncCursor;
+    protected $scheduleCursor;
 
     /**
      * create
@@ -131,7 +131,7 @@ class Promise implements ExtendedPromiseInterface
             //
         };
 
-        $this->runAsync(function () use ($cb) {
+        $this->schedule(function () use ($cb) {
             $this->call($cb);
         });
     }
@@ -286,7 +286,7 @@ class Promise implements ExtendedPromiseInterface
     public function wait()
     {
         if ($this->getState() === static::PENDING) {
-            $this->waitAsync();
+            $this->scheduleWait();
         }
 
         if ($this->value instanceof \Throwable && $this->getState() === static::REJECTED) {
@@ -349,9 +349,9 @@ class Promise implements ExtendedPromiseInterface
      *
      * @return  void
      */
-    protected function runAsync(callable $callback): void
+    protected function schedule(callable $callback): void
     {
-        $this->asyncCursor = AsyncRunner::getInstance()->run($callback);
+        $this->scheduleCursor = ScheduleRunner::getInstance()->schedule($callback);
     }
 
     /**
@@ -359,9 +359,9 @@ class Promise implements ExtendedPromiseInterface
      *
      * @return  void
      */
-    protected function waitAsync(): void
+    protected function scheduleWait(): void
     {
-        AsyncRunner::getInstance()->wait($this->asyncCursor);
+        ScheduleRunner::getInstance()->wait($this->scheduleCursor);
     }
 
     /**
@@ -369,12 +369,12 @@ class Promise implements ExtendedPromiseInterface
      *
      * @return  void
      */
-    protected function doneAsync(): void
+    protected function scheduleDone(): void
     {
-        AsyncRunner::getInstance()->done($this->asyncCursor);
+        ScheduleRunner::getInstance()->done($this->scheduleCursor);
 
         // Free cursor
-        $this->asyncCursor = null;
+        $this->scheduleCursor = null;
     }
 
     /**
@@ -395,7 +395,7 @@ class Promise implements ExtendedPromiseInterface
         $this->state = $state;
         $this->value = $value;
 
-        $this->doneAsync();
+        $this->scheduleDone();
 
         if ($handlers === [] && $state === static::REJECTED) {
             $this->log(new UncaughtException($value));

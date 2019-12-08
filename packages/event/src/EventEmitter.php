@@ -23,8 +23,8 @@ use Windwalker\Event\Provider\SubscribableListenerProviderInterface;
  */
 class EventEmitter extends EventDispatcher implements
     EventEmitterInterface,
-    EventRegisterInterface,
-    EventOnceInterface
+    EventAttachableInterface,
+    EventDisposableInterface
 {
     /**
      * @var SubscribableListenerProviderInterface

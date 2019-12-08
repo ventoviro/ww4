@@ -14,12 +14,12 @@ namespace Windwalker\Promise\Test;
 use PHPUnit\Framework\TestCase;
 
 use Swoole\Event;
-use Windwalker\Promise\Async\AsyncInterface;
-use Windwalker\Promise\Async\AsyncRunner;
-use Windwalker\Promise\Async\DeferredAsync;
-use Windwalker\Promise\Async\NoAsync;
-use Windwalker\Promise\Async\SwooleAsync;
-use Windwalker\Promise\Async\TaskQueue;
+use Windwalker\Promise\Scheduler\SchedulerInterface;
+use Windwalker\Promise\Scheduler\ScheduleRunner;
+use Windwalker\Promise\Scheduler\DeferredScheduler;
+use Windwalker\Promise\Scheduler\ImmediateScheduler;
+use Windwalker\Promise\Scheduler\SwooleScheduler;
+use Windwalker\Promise\Scheduler\TaskQueue;
 
 use Windwalker\Promise\ExtendedPromiseInterface;
 use Windwalker\Promise\Promise;
@@ -45,7 +45,7 @@ class FunctionsTest extends AbstractPromiseTestCase
     {
         parent::setUpBeforeClass();
 
-        static::useHandler(new DeferredAsync());
+        static::useScheduler(new DeferredScheduler());
     }
 
     protected function tearDown(): void
@@ -60,7 +60,7 @@ class FunctionsTest extends AbstractPromiseTestCase
     {
         $this->skipIfSwooleNotInstalled();
 
-        static::useHandler(new SwooleAsync());
+        static::useScheduler(new SwooleScheduler());
 
         go(function () {
             $p = async(function () {
@@ -79,7 +79,7 @@ class FunctionsTest extends AbstractPromiseTestCase
     {
         $this->skipIfSwooleNotInstalled();
 
-        static::useHandler(new SwooleAsync());
+        static::useScheduler(new SwooleScheduler());
 
         async(function () {
             $this->values['v1'] = await($this->runAsync('Sakura'));
@@ -104,7 +104,7 @@ class FunctionsTest extends AbstractPromiseTestCase
      */
     public function testCoroutine(): void
     {
-        static::useHandler(new NoAsync());
+        static::useScheduler(new ImmediateScheduler());
 
         $v = coroutine(function () {
             $v1 = yield $this->runAsync('Sakura');
@@ -120,7 +120,7 @@ class FunctionsTest extends AbstractPromiseTestCase
     {
         $this->skipIfSwooleNotInstalled();
 
-        static::useHandler(new SwooleAsync());
+        static::useScheduler(new SwooleScheduler());
 
         go(function () {
             $v = coroutine(function () {
@@ -143,7 +143,7 @@ class FunctionsTest extends AbstractPromiseTestCase
      */
     public function testCoroutineable(): void
     {
-        static::useHandler(new NoAsync());
+        static::useScheduler(new ImmediateScheduler());
 
         $c = coroutineable(function ($arg) {
             $v1 = yield $this->runAsync($arg);

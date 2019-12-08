@@ -14,11 +14,11 @@ namespace Windwalker\Promise\Test;
 use PHPUnit\Framework\TestCase;
 use React\EventLoop\StreamSelectLoop;
 use Swoole\Event;
-use Windwalker\Promise\Async\AsyncInterface;
-use Windwalker\Promise\Async\AsyncRunner;
-use Windwalker\Promise\Async\DeferredAsync;
-use Windwalker\Promise\Async\NoAsync;
-use Windwalker\Promise\Async\TaskQueue;
+use Windwalker\Promise\Scheduler\SchedulerInterface;
+use Windwalker\Promise\Scheduler\ScheduleRunner;
+use Windwalker\Promise\Scheduler\DeferredScheduler;
+use Windwalker\Promise\Scheduler\ImmediateScheduler;
+use Windwalker\Promise\Scheduler\TaskQueue;
 use Windwalker\Promise\Promise;
 use Windwalker\Test\TestHelper;
 
@@ -98,26 +98,5 @@ class PromiseTest extends AbstractPromiseTestCase
         $this->expectExceptionMessage('Hello');
 
         Promise::rejected('Hello');
-    }
-
-    public function testEventLoop(): void
-    {
-        self::useHandler(new DeferredAsync());
-
-        $loop = new StreamSelectLoop();
-
-        $p = new Promise(static function (callable $resolve) {
-            $resolve('Hello');
-        });
-        $p->then(function ($v) use ($loop) {
-            $this->values['v1'] = $v;
-
-            $loop->stop();
-        });
-
-        $loop->addPeriodicTimer(0, [TaskQueue::getInstance(), 'run']);
-        $loop->run();
-
-        self::assertEquals('Hello', $this->values['v1']);
     }
 }

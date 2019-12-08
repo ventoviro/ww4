@@ -12,11 +12,14 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
+use React\EventLoop\StreamSelectLoop;
+use Swoole\Coroutine;
 use Swoole\Event;
-use Windwalker\Promise\Async\AsyncRunner;
-use Windwalker\Promise\Async\DeferredAsync;
-use Windwalker\Promise\Async\SwooleAsync;
-use Windwalker\Promise\Async\TaskQueue;
+use Windwalker\Promise\Scheduler\EventLoopScheduler;
+use Windwalker\Promise\Scheduler\ScheduleRunner;
+use Windwalker\Promise\Scheduler\DeferredScheduler;
+use Windwalker\Promise\Scheduler\SwooleScheduler;
+use Windwalker\Promise\Scheduler\TaskQueue;
 use Windwalker\Promise\Promise;
 use Windwalker\Reactor\Test\Traits\SwooleTestTrait;
 
@@ -34,7 +37,7 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
     {
         parent::setUpBeforeClass();
 
-        self::useHandler(new DeferredAsync());
+        self::useScheduler(new DeferredScheduler());
     }
 
     protected function tearDown(): void
@@ -110,13 +113,11 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
 
     public function testSwooleAsync()
     {
-        if (!SwooleAsync::isSupported()) {
-            static::markTestSkipped('Swoole has not installed');
-        }
+        $this->skipIfSwooleNotInstalled();
 
-        AsyncRunner::getInstance()->setHandlers(
+        ScheduleRunner::getInstance()->setSchedulers(
             [
-                new SwooleAsync()
+                new SwooleScheduler()
             ]
         );
 
@@ -144,5 +145,66 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
         });
 
         self::assertArrayNotHasKey('v1', $this->values);
+    }
+
+    public function testEventLoopDeferred(): void
+    {
+        self::useScheduler(new DeferredScheduler());
+
+        $loop = new StreamSelectLoop();
+
+        $p = new Promise(static function (callable $resolve) {
+            $resolve('Hello');
+        });
+        $p->then(function ($v) use ($loop) {
+            $this->values['v1'] = $v;
+
+            $loop->stop();
+        });
+
+        $loop->addPeriodicTimer(0, [TaskQueue::getInstance(), 'run']);
+        $loop->run();
+
+        self::assertEquals('Hello', $this->values['v1']);
+    }
+
+    public function testEventLoopReact()
+    {
+        $loop = new StreamSelectLoop();
+
+        self::useScheduler(new EventLoopScheduler($loop));
+
+        $p = new Promise(static function (callable $resolve) {
+            $resolve('Hello');
+        });
+        $p->then(function ($v) use ($loop) {
+            $this->values['v1'] = $v;
+
+            $loop->stop();
+        });
+
+        $loop->run();
+
+        self::assertEquals('Hello', $this->values['v1']);
+    }
+
+    public function testEventLoopSwoole()
+    {
+        $this->skipIfSwooleNotInstalled();
+
+        self::useScheduler(new EventLoopScheduler(EventLoopScheduler::createSwooleTimer()));
+
+        go(function () {
+            $p = new Promise(static function (callable $resolve) {
+                $resolve('Hello');
+            });
+            $p->then(function ($v) {
+                $this->values['v1'] = $v;
+            });
+        });
+
+        Event::dispatch();
+
+        self::assertEquals('Hello', $this->values['v1']);
     }
 }

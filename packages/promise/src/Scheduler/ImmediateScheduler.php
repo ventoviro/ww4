@@ -9,12 +9,12 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Promise\Async;
+namespace Windwalker\Promise\Scheduler;
 
 /**
  * The NoAsync class.
  */
-class NoAsync implements AsyncInterface
+class ImmediateScheduler implements SchedulerInterface
 {
     /**
      * @inheritDoc
@@ -27,17 +27,17 @@ class NoAsync implements AsyncInterface
     /**
      * @inheritDoc
      */
-    public function runAsync(callable $callback): AsyncCursor
+    public function schedule(callable $callback): ScheduleCursor
     {
         $callback();
 
-        return new AsyncCursor();
+        return new ScheduleCursor();
     }
 
     /**
      * @inheritDoc
      */
-    public function wait(AsyncCursor $cursor): void
+    public function wait(ScheduleCursor $cursor): void
     {
         //
     }
@@ -45,7 +45,7 @@ class NoAsync implements AsyncInterface
     /**
      * @inheritDoc
      */
-    public function done(?AsyncCursor $cursor): void
+    public function done(?ScheduleCursor $cursor): void
     {
         //
     }

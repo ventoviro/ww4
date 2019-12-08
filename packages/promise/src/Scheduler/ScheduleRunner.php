@@ -9,17 +9,17 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Promise\Async;
+namespace Windwalker\Promise\Scheduler;
 
 /**
  * The AsyncHandler class.
  */
-class AsyncRunner
+class ScheduleRunner implements SchedulerInterface
 {
     /**
-     * @var AsyncInterface[]
+     * @var SchedulerInterface[]
      */
-    protected $handlers = [];
+    protected $schedulers = [];
 
     /**
      * @var static
@@ -49,11 +49,11 @@ class AsyncRunner
     /**
      * AsyncRunner constructor.
      *
-     * @param  AsyncInterface[] $handlers
+     * @param  SchedulerInterface[]  $schedulers
      */
-    public function __construct(array $handlers = [])
+    public function __construct(array $schedulers = [])
     {
-        $this->handlers = $handlers;
+        $this->schedulers = $schedulers;
     }
 
     /**
@@ -61,45 +61,45 @@ class AsyncRunner
      *
      * @param  callable  $callback
      *
-     * @return  AsyncCursor
+     * @return  ScheduleCursor
      */
-    public function run(callable $callback): AsyncCursor
+    public function schedule(callable $callback): ScheduleCursor
     {
-        return $this->getAvailableHandler()->runAsync($callback);
+        return $this->getAvailableScheduler()->schedule($callback);
     }
 
     /**
      * done
      *
-     * @param  AsyncCursor|null  $cursor
+     * @param  ScheduleCursor|null  $cursor
      *
      * @return  void
      */
-    public function done(?AsyncCursor $cursor): void
+    public function done(?ScheduleCursor $cursor): void
     {
-        $this->getAvailableHandler()->done($cursor);
+        $this->getAvailableScheduler()->done($cursor);
     }
 
     /**
      * wait
      *
-     * @param  AsyncCursor  $cursor
+     * @param  ScheduleCursor  $cursor
      *
      * @return  void
      */
-    public function wait(AsyncCursor $cursor): void
+    public function wait(ScheduleCursor $cursor): void
     {
-        $this->getAvailableHandler()->wait($cursor);
+        $this->getAvailableScheduler()->wait($cursor);
     }
 
     /**
      * getAvailableHandler
      *
-     * @return  AsyncInterface
+     * @return  SchedulerInterface
      */
-    public function getAvailableHandler(): AsyncInterface
+    public function getAvailableScheduler(): SchedulerInterface
     {
-        foreach ($this->getHandlers() as $handler) {
+        foreach ($this->getSchedulers() as $handler) {
             if ($handler::isSupported()) {
                 return $handler;
             }
@@ -111,33 +111,41 @@ class AsyncRunner
     /**
      * getHandlers
      *
-     * @return  AsyncInterface[]
+     * @return  SchedulerInterface[]
      */
-    public function getHandlers(): array
+    public function getSchedulers(): array
     {
-        if ($this->handlers === []) {
-            $this->handlers = [
-                new SwooleAsync(),
-                new DeferredAsync()
+        if ($this->schedulers === []) {
+            $this->schedulers = [
+                new SwooleScheduler(),
+                new DeferredScheduler()
             ];
         }
 
-        return $this->handlers;
+        return $this->schedulers;
     }
 
     /**
      * Method to set property handlers
      *
-     * @param  AsyncInterface[]  $handlers
+     * @param  SchedulerInterface[]  $schedulers
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setHandlers(array $handlers)
+    public function setSchedulers(array $schedulers)
     {
-        $this->handlers = $handlers;
+        $this->schedulers = $schedulers;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function isSupported(): bool
+    {
+        return true;
     }
 }

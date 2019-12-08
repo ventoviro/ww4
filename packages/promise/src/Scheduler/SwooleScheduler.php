@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Promise\Async;
+namespace Windwalker\Promise\Scheduler;
 
 use Swoole\Coroutine;
 use Swoole\Coroutine\Channel;
@@ -18,7 +18,7 @@ use Swoole\Event;
 /**
  * The SwooleAsync class.
  */
-class SwooleAsync implements AsyncInterface
+class SwooleScheduler implements SchedulerInterface
 {
     /**
      * @var int|null
@@ -46,7 +46,7 @@ class SwooleAsync implements AsyncInterface
     /**
      * @inheritDoc
      */
-    public function runAsync(callable $callback): AsyncCursor
+    public function schedule(callable $callback): ScheduleCursor
     {
         Event::defer(static function () use ($callback) {
             go(static function () use ($callback) {
@@ -56,13 +56,13 @@ class SwooleAsync implements AsyncInterface
 
         // Return Channel as cursor, when Promise resolved,
         // it will call SwooleAsync::done() to push value into Channel.
-        return new AsyncCursor(new Channel());
+        return new ScheduleCursor(new Channel());
     }
 
     /**
      * @inheritDoc
      */
-    public function wait(AsyncCursor $cursor): void
+    public function wait(ScheduleCursor $cursor): void
     {
         $chan = $cursor->get();
 
@@ -83,7 +83,7 @@ class SwooleAsync implements AsyncInterface
     /**
      * @inheritDoc
      */
-    public function done(?AsyncCursor $cursor): void
+    public function done(?ScheduleCursor $cursor): void
     {
         $chan = $cursor->get();
 

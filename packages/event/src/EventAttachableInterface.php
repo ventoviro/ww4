@@ -14,7 +14,7 @@ namespace Windwalker\Event;
 /**
  * Interface DispatcherInterface
  */
-interface EventRegisterInterface
+interface EventAttachableInterface
 {
     /**
      * Add a listener to this dispatcher, only if not already registered to these events.

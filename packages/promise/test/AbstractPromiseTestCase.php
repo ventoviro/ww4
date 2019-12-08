@@ -12,10 +12,10 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Promise\Async\AsyncInterface;
-use Windwalker\Promise\Async\AsyncRunner;
-use Windwalker\Promise\Async\NoAsync;
-use Windwalker\Promise\Async\TaskQueue;
+use Windwalker\Promise\Scheduler\SchedulerInterface;
+use Windwalker\Promise\Scheduler\ScheduleRunner;
+use Windwalker\Promise\Scheduler\ImmediateScheduler;
+use Windwalker\Promise\Scheduler\TaskQueue;
 
 /**
  * The PromiseTestTrait class.
@@ -36,7 +36,7 @@ abstract class AbstractPromiseTestCase extends TestCase
 
         TaskQueue::getInstance()->disableShutdownRunner();
 
-        self::useHandler(new NoAsync());
+        self::useScheduler(new ImmediateScheduler());
     }
 
     protected function setUp(): void
@@ -47,12 +47,12 @@ abstract class AbstractPromiseTestCase extends TestCase
     /**
      * useHandler
      *
-     * @param  AsyncInterface  $handler
+     * @param  SchedulerInterface  $handler
      *
      * @return  void
      */
-    protected static function useHandler(AsyncInterface $handler): void
+    protected static function useScheduler(SchedulerInterface $handler): void
     {
-        AsyncRunner::getInstance()->setHandlers([$handler]);
+        ScheduleRunner::getInstance()->setSchedulers([$handler]);
     }
 }

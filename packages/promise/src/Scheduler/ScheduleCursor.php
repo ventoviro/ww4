@@ -9,12 +9,12 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Promise\Async;
+namespace Windwalker\Promise\Scheduler;
 
 /**
  * The AsyncCursor class.
  */
-class AsyncCursor
+class ScheduleCursor
 {
     /**
      * @var mixed

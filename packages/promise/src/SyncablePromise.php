@@ -19,7 +19,7 @@ class SyncablePromise extends Promise
     /**
      * @inheritDoc
      */
-    protected function runAsync(callable $callback): void
+    protected function schedule(callable $callback): void
     {
         $callback();
     }
@@ -27,7 +27,7 @@ class SyncablePromise extends Promise
     /**
      * @inheritDoc
      */
-    protected function waitAsync(): void
+    protected function scheduleWait(): void
     {
         //
     }
@@ -35,7 +35,7 @@ class SyncablePromise extends Promise
     /**
      * @inheritDoc
      */
-    protected function doneAsync(): void
+    protected function scheduleDone(): void
     {
         //
     }
