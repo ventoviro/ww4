@@ -1,29 +1,26 @@
 {
-    "name": "windwalker/reactor",
+    "name": "windwalker/test",
     "type": "windwalker-package",
-    "description": "Windwalker Swoole package",
+    "description": "Windwalker Test package",
     "keywords": [
         "windwalker",
         "framework",
-        "swoole",
-        "react",
-        "async",
-        "reactor"
+        "test"
     ],
-    "homepage": "https://github.com/ventoviro/windwalker-swoole",
+    "homepage": "https://github.com/ventoviro/windwalker-test",
     "license": "MIT",
     "require": {
         "php": ">=7.2"
     },
     "require-dev": {
-        "windwalker/test": "~4.0"
+        "windwalker/test": "~3.0"
     },
     "suggest": {
     },
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\Reactor\\": "src/"
+            "Windwalker\\Test\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
@@ -31,7 +28,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Reactor\\Test\\": "test/"
+            "Windwalker\\Test\\Test\\": "test/"
         }
     },
     "extra": {

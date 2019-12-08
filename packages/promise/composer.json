@@ -36,6 +36,11 @@
             "src/bootstrap.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Windwalker\\Promise\\Test\\": "test/"
+        }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "3.x-dev"

@@ -2,24 +2,26 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/packages/utilities/src" isTestSource="false" packagePrefix="Windwalker\Utilities\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/reactor/test" isTestSource="true" packagePrefix="Windwalker\Reactor\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/utilities/test" isTestSource="true" packagePrefix="Windwalker\Utilities\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/data/src" isTestSource="false" packagePrefix="Windwalker\Data\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/test" isTestSource="true" packagePrefix="Windwalker\Filesystem\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/test/test" isTestSource="true" packagePrefix="Windwalker\Test\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/scalars/src" isTestSource="false" packagePrefix="Windwalker\Scalars\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/test/src" isTestSource="false" packagePrefix="Windwalker\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/event/src" isTestSource="false" packagePrefix="Windwalker\Event\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/cache/test" isTestSource="true" packagePrefix="Windwalker\Cache\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/src" isTestSource="false" packagePrefix="Windwalker\Filesystem\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/reactor/src" isTestSource="false" packagePrefix="Windwalker\Reactor\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/event/test" isTestSource="true" packagePrefix="Windwalker\Event\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/scalars/src" isTestSource="false" packagePrefix="Windwalker\Scalars\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/utilities/src" isTestSource="false" packagePrefix="Windwalker\Utilities\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/promise/test" isTestSource="true" packagePrefix="Windwalker\Promise\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/event/src" isTestSource="false" packagePrefix="Windwalker\Event\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/test" isTestSource="true" packagePrefix="Windwalker\Filesystem\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/reactor/test" isTestSource="true" packagePrefix="Windwalker\Reactor\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/data/test" isTestSource="true" packagePrefix="Windwalker\Data\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/src" isTestSource="false" packagePrefix="Windwalker\Filesystem\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/test/test" isTestSource="true" packagePrefix="Windwalker\Test\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/test/src" isTestSource="false" packagePrefix="Windwalker\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/data/src" isTestSource="false" packagePrefix="Windwalker\Data\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/promise/src" isTestSource="false" packagePrefix="Windwalker\Promise\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/utilities/test" isTestSource="true" packagePrefix="Windwalker\Utilities\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/scalars/test" isTestSource="true" packagePrefix="Windwalker\Scalars\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/data/test" isTestSource="true" packagePrefix="Windwalker\Data\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/promise/src" isTestSource="false" packagePrefix="Windwalker\Promise\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/cache/src" isTestSource="false" packagePrefix="Windwalker\Cache\" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/inflector" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/instantiator" />
@@ -46,6 +48,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/psr/http-message" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/psr/link" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/psr/log" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/simple-cache" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/react/event-loop" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/react/promise" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/reactivex/rxphp" />

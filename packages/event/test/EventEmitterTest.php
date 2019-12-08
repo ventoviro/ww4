@@ -154,6 +154,35 @@ class EventEmitterTest extends TestCase
         self::assertEquals(72, $subscriber->count);
     }
 
+    public function testSubscribeSimpleObject(): void
+    {
+        $subscriber = new class {
+            public $count = 0;
+            public function foo(EventInterface $event): void
+            {
+                $this->count += $event['num'];
+            }
+
+            public function bar(EventInterface $event): void
+            {
+                $this->count *= $event['num'];
+            }
+        };
+
+        $this->instance->subscribe($subscriber);
+
+        $this->instance->emit('foo', ['num' => 2]);
+        $this->instance->emit('foo', ['num' => 2]);
+        $this->instance->emit('foo', ['num' => 2]);
+
+        self::assertEquals(6, $subscriber->count);
+
+        $this->instance->emit('bar', ['num' => 3]);
+        $this->instance->emit('bar', ['num' => 4]);
+
+        self::assertEquals(72, $subscriber->count);
+    }
+
     /**
      * @see  EventEmitter::off
      */

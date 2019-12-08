@@ -14,7 +14,8 @@
     },
     "require-dev": {
         "windwalker/test": "~4.0",
-        "doctrine/utilities": "~4.0"
+        "windwalker/scalars": "~4.0",
+        "windwalker/utilities": "~4.0"
     },
     "suggest": {
     },

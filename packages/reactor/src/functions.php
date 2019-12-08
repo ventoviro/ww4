@@ -18,8 +18,6 @@ namespace Windwalker;
  * @param  array|null  $params
  *
  * @return  mixed
- *
- * @since  __DEPLOY_VERSION__
  */
 function go(callable $handler, $params = null)
 {

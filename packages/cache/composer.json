@@ -1,19 +1,23 @@
 {
-    "name": "windwalker/reactor",
+    "name": "windwalker/cache",
     "type": "windwalker-package",
-    "description": "Windwalker Swoole package",
+    "description": "Windwalker Cache package",
     "keywords": [
         "windwalker",
         "framework",
-        "swoole",
-        "react",
-        "async",
-        "reactor"
+        "cache",
+        "psr-6",
+        "psr-16"
     ],
-    "homepage": "https://github.com/ventoviro/windwalker-swoole",
+    "homepage": "https://github.com/ventoviro/windwalker-event",
     "license": "MIT",
+    "provide": {
+        "psr/event-dispatcher-implementation": "1.0.0"
+    },
     "require": {
-        "php": ">=7.2"
+        "php": ">=7.2",
+        "psr/cache": "^1.0",
+        "psr/simple-cache": "^1.0"
     },
     "require-dev": {
         "windwalker/test": "~4.0"
@@ -23,7 +27,7 @@
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\Reactor\\": "src/"
+            "Windwalker\\Cache\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
@@ -31,7 +35,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Reactor\\Test\\": "test/"
+            "Windwalker\\Cache\\Test\\": "test/"
         }
     },
     "extra": {

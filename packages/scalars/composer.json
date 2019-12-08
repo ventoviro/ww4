@@ -10,7 +10,8 @@
     "homepage": "https://github.com/ventoviro/windwalker-scalars",
     "license": "MIT",
     "require": {
-        "php": ">=7.2"
+        "php": ">=7.2",
+        "windwalker/utilities": "~4.0"
     },
     "require-dev": {
         "windwalker/test": "~3.0",
@@ -27,6 +28,11 @@
         "files": [
             "src/bootstrap.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Windwalker\\Scalars\\Test\\": "test/"
+        }
     },
     "extra": {
         "branch-alias": {
