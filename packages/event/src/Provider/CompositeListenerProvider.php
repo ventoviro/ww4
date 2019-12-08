@@ -72,7 +72,6 @@ class CompositeListenerProvider implements SubscribableListenerProviderInterface
 
     /**
      * @inheritDoc
-     * @throws \ReflectionException
      */
     public function getListenersForEvent(object $event): iterable
     {

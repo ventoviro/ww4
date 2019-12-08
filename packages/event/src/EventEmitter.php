@@ -16,9 +16,6 @@ use Psr\EventDispatcher\ListenerProviderInterface;
 use Rx\Observable;
 use Rx\ObserverInterface;
 use Windwalker\Event\Provider\CompositeListenerProvider;
-use Windwalker\Utilities\Proxy\ChainableCallable;
-use Windwalker\Utilities\Proxy\DisposableCallable;
-use Windwalker\Utilities\Proxy\TimesLimitedCallable;
 use function Windwalker\disposable;
 use function Windwalker\tap;
 
