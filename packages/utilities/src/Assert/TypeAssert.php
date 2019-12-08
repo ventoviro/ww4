@@ -51,7 +51,7 @@ class TypeAssert
         if (!$result) {
             $caller = $caller ?? static::getCaller();
 
-            static::throwException(static::$exceptionClass, $message, $value, $caller);
+            static::throwException($message, $value, $caller);
         }
     }
 
@@ -59,14 +59,23 @@ class TypeAssert
     {
         $caller = $caller ?? static::getCaller();
 
-        static::throwException(InvalidArgumentException::class, $message, $value, $caller);
+        static::throwException($message, $value, $caller);
     }
 
-    public static function throwException(string $class, string $message, $value = null, ?string $caller = null): void
+    public static function throwException(string $message, $value = null, ?string $caller = null): void
     {
         $caller = $caller ?? static::getCaller();
 
-        throw new $class(sprintf($message, $caller, static::describeValue($value)));
+        throw static::exception($message, $value, $caller);
+    }
+
+    public static function exception(string $message, $value = null, ?string $caller = null)
+    {
+        $caller = $caller ?? static::getCaller();
+
+        $class = static::$exceptionClass;
+
+        return new $class(sprintf($message, $caller, static::describeValue($value)));
     }
 
     public static function getCaller(int $backSteps = 2): string

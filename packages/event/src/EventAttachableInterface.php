@@ -17,12 +17,11 @@ namespace Windwalker\Event;
 interface EventAttachableInterface
 {
     /**
-     * Add a listener to this dispatcher, only if not already registered to these events.
-     * If no events are specified, it will be registered to all events matching it's methods name.
-     * In the case of a closure, you must specify at least one event name.
+     * Add a subscriber object with multiple listener methods to this dispatcher.
+     * If object is not EventSubscriberInterface, it will be registered to all events matching it's methods name.
      *
-     * @param  object|\Closure  $subscriber  The listener
-     * @param  integer          $priority    The listener priority.
+     * @param  object|EventSubscriberInterface  $subscriber  The listener
+     * @param  integer                          $priority    The listener priority.
      *
      * @return  static  This method is chainable.
      *

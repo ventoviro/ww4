@@ -14,7 +14,6 @@ namespace Windwalker\Event;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
-use Windwalker\Event\Provider\SubscribableListenerProvider;
 
 /**
  * The EventDispatcher class.
@@ -24,16 +23,16 @@ class EventDispatcher implements EventDispatcherInterface
     /**
      * @var ListenerProviderInterface
      */
-    protected $listenerProvider;
+    protected $provider;
 
     /**
      * EventDispatcher constructor.
      *
-     * @param  ListenerProviderInterface  $listenerProvider
+     * @param  ListenerProviderInterface  $provider
      */
-    public function __construct(ListenerProviderInterface $listenerProvider = null)
+    public function __construct(ListenerProviderInterface $provider)
     {
-        $this->listenerProvider = $listenerProvider ?? new SubscribableListenerProvider();
+        $this->provider = $provider;
     }
 
     /**
@@ -47,7 +46,7 @@ class EventDispatcher implements EventDispatcherInterface
             return $event;
         }
 
-        foreach ($this->getListenerProvider()->getListenersForEvent($event) as $listener) {
+        foreach ($this->getProvider()->getListenersForEvent($event) as $listener) {
             $listener($event);
 
             $stoppable = $event instanceof StoppableEventInterface;
@@ -61,29 +60,29 @@ class EventDispatcher implements EventDispatcherInterface
     }
 
     /**
-     * Method to get property ListenerProvider
+     * Method to get property Provider
      *
      * @return  ListenerProviderInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getListenerProvider(): ListenerProviderInterface
+    public function getProvider(): ListenerProviderInterface
     {
-        return $this->listenerProvider;
+        return $this->provider;
     }
 
     /**
-     * Method to set property listenerProvider
+     * Method to set property provider
      *
-     * @param  ListenerProviderInterface  $listenerProvider
+     * @param  ListenerProviderInterface  $provider
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setListenerProvider(ListenerProviderInterface $listenerProvider)
+    public function setProvider(ListenerProviderInterface $provider)
     {
-        $this->listenerProvider = $listenerProvider;
+        $this->provider = $provider;
 
         return $this;
     }

@@ -15,13 +15,16 @@ use PHPUnit\Framework\TestCase;
 use React\EventLoop\Factory;
 use React\EventLoop\StreamSelectLoop;
 use Rx\Scheduler;
+use Windwalker\Event\EventDispatcher;
 use Windwalker\Event\EventEmitter;
 use Windwalker\Event\EventInterface;
 use Windwalker\Event\EventSubscriberInterface;
 use Windwalker\Event\Listener\ListenerCallable;
+use Windwalker\Event\Provider\SimpleListenerProvider;
 use Windwalker\Promise\Scheduler\EventLoopScheduler;
 use Windwalker\Utilities\Proxy\DisposableCallable;
 use Windwalker\Utilities\TypeCast;
+use function Windwalker\arr;
 use function Windwalker\disposable;
 
 /**
@@ -58,7 +61,7 @@ class EventEmitterTest extends TestCase
             $count++;
         };
 
-        $this->instance->once('hello', $fn);
+        $this->instance->on('hello', disposable($fn));
 
         $this->instance->emit('hello');
         $this->instance->emit('hello');
@@ -381,10 +384,10 @@ class EventEmitterTest extends TestCase
             public function getSubscribedEvents(): array
             {
                 return [
-                    'foo' => ['foo', 500, true],
+                    'foo' => [disposable([$this, 'foo']), 500],
                     'bar' => [
-                        ['bar1', 100, true],
-                        ['bar2', 100, false]
+                        [disposable([$this, 'bar1']), 100],
+                        ['bar2', 100]
                     ],
                 ];
             }
@@ -427,6 +430,66 @@ class EventEmitterTest extends TestCase
         $this->instance->emit('hello', ['num' => 5]);
 
         self::assertEquals([53, 54, 55], $values);
+    }
+
+    public function testAppendProvider(): void
+    {
+        $this->instance->on('hello', function (EventInterface $event) {
+            $event['main'] = true;
+        });
+
+        $provider1 = new SimpleListenerProvider([
+            'hello' => [
+                function (EventInterface $event) {
+                    $event['sub1'] = true;
+                }
+            ]
+        ]);
+
+        $provider2 = new SimpleListenerProvider([
+            'hello' => [
+                function (EventInterface $event) {
+                    $event['sub2'] = true;
+                }
+            ]
+        ]);
+
+        $this->instance->appendProvider($provider1)
+            ->appendProvider($provider2);
+
+        $event = $this->instance->emit('hello');
+
+        self::assertEquals(['main', 'sub1', 'sub2'], array_keys($event->getArguments()));
+    }
+
+    public function testRegisterDealer(): void
+    {
+        $this->instance->on('hello', function (EventInterface $event) {
+            $event['main'] = true;
+        });
+
+        $dealer1 = new EventDispatcher(new SimpleListenerProvider([
+            'hello' => [
+                function (EventInterface $event) {
+                    $event['sub1'] = true;
+                }
+            ]
+        ]));
+
+        $dealer2 = new EventDispatcher(new SimpleListenerProvider([
+            'hello' => [
+                function (EventInterface $event) {
+                    $event['sub2'] = true;
+                }
+            ]
+        ]));
+
+        $this->instance->registerDealer($dealer1)
+            ->registerDealer($dealer2);
+
+        $event = $this->instance->emit('hello');
+
+        self::assertEquals(['main', 'sub1', 'sub2'], array_keys($event->getArguments()));
     }
 
     protected function setUp(): void

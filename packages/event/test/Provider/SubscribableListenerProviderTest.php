@@ -89,9 +89,9 @@ class SubscribableListenerProviderTest extends TestCase
         /** @var ListenerCallable[] $listeners */
         $listeners = array_values(TypeCast::toArray($this->instance->getListenersForEvent($event)));
 
-        self::assertSame($subscriber, $listeners[0]->getCallable()[0]);
-        self::assertEquals('onFlowerOlive', $listeners[0]->getCallable()[1]);
-        self::assertEquals('onFlowerRose', $listeners[1]->getCallable()[1]);
+        self::assertSame($subscriber, $listeners[0][0]);
+        self::assertEquals('onFlowerOlive', $listeners[0][1]);
+        self::assertEquals('onFlowerRose', $listeners[1][1]);
     }
 
     /**
@@ -110,7 +110,7 @@ class SubscribableListenerProviderTest extends TestCase
 
         $handlers = TypeCast::toArray($this->instance->getListenersForEvent($event));
 
-        self::assertSame($expt, $handlers[0]->getCallable());
+        self::assertSame($expt, $handlers[0]);
 
         $handlers[0]($event);
     }
@@ -128,8 +128,8 @@ class SubscribableListenerProviderTest extends TestCase
 
         self::assertInstanceOf(ListenersQueue::class, $listeners['hello']);
         self::assertInstanceOf(ListenersQueue::class, $listeners['world']);
-        self::assertSame($fn2, array_values(TypeCast::toArray($listeners['hello']))[1]->getCallable());
-        self::assertSame($fn3, array_values(TypeCast::toArray($listeners['world']))[0]->getCallable());
+        self::assertSame($fn2, array_values(TypeCast::toArray($listeners['hello']))[1]);
+        self::assertSame($fn3, array_values(TypeCast::toArray($listeners['world']))[0]);
     }
 
     protected function setUp(): void

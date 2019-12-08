@@ -53,7 +53,7 @@ class ListenerCallable extends TimesLimitedCallable
     public function sameWith(callable $callable): bool
     {
         if ($callable instanceof static) {
-            $callable = $callable->getCallable();
+            $callable = $callable->get();
         }
 
         return $callable === $this->callable;

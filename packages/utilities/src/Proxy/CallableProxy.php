@@ -22,6 +22,22 @@ class CallableProxy
     protected $callable;
 
     /**
+     * unwrap
+     *
+     * @param  callable  $callable
+     *
+     * @return  callable
+     */
+    public static function unwrap(callable $callable): callable
+    {
+        if ($callable instanceof self) {
+            $callable = $callable->get(true);
+        }
+
+        return $callable;
+    }
+
+    /**
      * CallbackProxy constructor.
      *
      * @param  callable  $callable
@@ -48,12 +64,20 @@ class CallableProxy
     /**
      * Method to get property Callable
      *
+     * @param  bool  $recursive
+     *
      * @return  callable
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getCallable(): callable
+    public function get(bool $recursive = false): callable
     {
-        return $this->callable;
+        $callable =  $this->callable;
+
+        if ($recursive && $callable instanceof self) {
+            $callable = $callable->get($recursive);
+        }
+
+        return $callable;
     }
 }

@@ -85,8 +85,21 @@ namespace Windwalker {
     use Closure;
     use Traversable;
     use Windwalker\Utilities\Compare\WhereWrapper;
+    use Windwalker\Utilities\Proxy\CachedCallable;
     use Windwalker\Utilities\Proxy\DisposableCallable;
     use Windwalker\Utilities\Wrapper\ValueReference;
+
+    /**
+     * nope
+     *
+     * @return  Closure
+     */
+    function nope(): Closure
+    {
+        return static function ($v) {
+            return $v;
+        };
+    }
 
     /**
      * Do some operation after value get.
@@ -212,5 +225,17 @@ namespace Windwalker {
     function disposable(callable $callable): DisposableCallable
     {
         return new DisposableCallable($callable);
+    }
+
+    /**
+     * cachable
+     *
+     * @param  callable  $callable
+     *
+     * @return  CachedCallable
+     */
+    function cachable(callable $callable): CachedCallable
+    {
+        return new CachedCallable($callable);
     }
 }

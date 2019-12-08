@@ -27,15 +27,12 @@ interface SubscribableListenerProviderInterface extends ListenerProviderInterfac
      * @param  callable  $listener
      * @param  int       $priority
      *
-     * @param  bool      $once
-     *
      * @return  void
      */
     public function on(
         string $event,
         callable $listener,
-        ?int $priority = ListenerPriority::NORMAL,
-        bool $once = false
+        ?int $priority = ListenerPriority::NORMAL
     ): void;
 
     /**
@@ -47,13 +44,4 @@ interface SubscribableListenerProviderInterface extends ListenerProviderInterfac
      * @return  void
      */
     public function subscribe(object $subscriber, ?int $priority = null): void;
-
-    /**
-     * Method to get property Listeners
-     *
-     * @return  ListenersQueue[]
-     *
-     * @since  __DEPLOY_VERSION__
-     */
-    public function &getQueues(): array;
 }

@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Event\Listener;
 
+use Windwalker\Utilities\Proxy\CallableProxy;
+
 /**
  * Class ListenerPriorityQueue
  *
@@ -28,17 +30,14 @@ class ListenersQueue implements \IteratorAggregate, \Countable
      *
      * @param  callable  $listener  The listener.
      * @param  integer   $priority  The listener priority.
-     * @param  bool      $once      Listener only run once.
      *
      * @return  ListenersQueue  This method is chainable.
      *
      * @since   2.0
      */
-    public function add(callable $listener, ?int $priority = null, bool $once = false)
+    public function add(callable $listener, ?int $priority = null)
     {
-        $this->queue[] = $listener instanceof ListenerCallable
-            ? $listener
-            : new ListenerCallable($listener, $priority, $once);
+        $this->queue[] = [$listener, $priority ?? ListenerPriority::NORMAL];
 
         return $this;
     }
@@ -54,8 +53,8 @@ class ListenersQueue implements \IteratorAggregate, \Countable
      */
     public function remove(callable $listener)
     {
-        $this->queue = array_values(array_filter($this->queue, function (ListenerCallable $item) use ($listener) {
-            return !$item->sameWith($listener);
+        $this->queue = array_values(array_filter($this->queue, function ($item) use ($listener) {
+            return !static::isCallableSame($item[0], $listener);
         }));
 
         return $this;
@@ -73,12 +72,33 @@ class ListenersQueue implements \IteratorAggregate, \Countable
     public function has(callable $listener): bool
     {
         foreach ($this->queue as $item) {
-            if ($item->sameWith($listener)) {
+            if (static::isCallableSame($item[0], $listener)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * isCallableSame
+     *
+     * @param  callable  $inner
+     * @param  callable  $outer
+     *
+     * @return  bool
+     */
+    private static function isCallableSame(callable $inner, callable $outer): bool
+    {
+        if ($inner === $outer) {
+            return true;
+        }
+
+        if (!$inner instanceof CallableProxy) {
+            return false;
+        }
+
+        return $inner->get(true) === $outer;
     }
 
     /**
@@ -93,7 +113,7 @@ class ListenersQueue implements \IteratorAggregate, \Countable
         $listeners = [];
 
         foreach ($this as $listener) {
-            $listeners[] = $listener;
+            $listeners[] = $listener[0];
         }
 
         return $listeners;
@@ -112,7 +132,7 @@ class ListenersQueue implements \IteratorAggregate, \Countable
         $queue = new \SplPriorityQueue();
 
         foreach ($this->queue as $item) {
-            $queue->insert($item, $item->getPriority());
+            $queue->insert(...$item);
         }
 
         return $queue;

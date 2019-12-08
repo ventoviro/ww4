@@ -19,7 +19,7 @@ use Windwalker\Promise\Promise;
 use Windwalker\Test\TestHelper;
 use Windwalker\Test\Traits\TestAccessorTrait;
 
-use function Windwalker\Promise\nope;
+use function Windwalker\nope;
 
 /**
  * The SwoolePromiseTest class.

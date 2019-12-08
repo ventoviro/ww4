@@ -14,6 +14,7 @@ namespace Windwalker\Promise;
 use Windwalker\Promise\Scheduler\ScheduleCursor;
 use Windwalker\Promise\Scheduler\ScheduleRunner;
 use Windwalker\Promise\Exception\UncaughtException;
+use function Windwalker\nope;
 
 /**
  * The Promise class.

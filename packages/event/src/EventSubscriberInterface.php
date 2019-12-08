@@ -22,8 +22,8 @@ interface EventSubscriberInterface
      * Example:
      *
      *  * ['eventName' => 'methodName']
-     *  * ['eventName' => ['methodName', $priority, $once = false]]
-     *  * ['eventName' => [['methodName1', $priority, $once = false], ['methodName2']]]
+     *  * ['eventName' => ['methodName or callable', $priority]
+     *  * ['eventName' => [['methodName1 or callable', $priority, $once = false], ['methodName2']]]
      *
      * @return  mixed
      */

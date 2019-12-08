@@ -20,7 +20,7 @@ use Windwalker\Utilities\Contract\AccessibleInterface;
  *
  * @since 2.0
  */
-class Event implements EventInterface, AccessibleInterface, \Serializable
+class Event implements EventInterface, \Serializable, AccessibleInterface
 {
     use AccessibleTrait;
 
@@ -130,7 +130,7 @@ class Event implements EventInterface, AccessibleInterface, \Serializable
      *
      * @since   2.0
      */
-    public function getArguments(): array
+    public function &getArguments(): array
     {
         return $this->storage;
     }

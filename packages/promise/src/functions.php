@@ -168,15 +168,3 @@ function coroutineable(callable $callback): Closure
         });
     };
 }
-
-/**
- * nope
- *
- * @return  Closure
- */
-function nope(): Closure
-{
-    return static function ($v) {
-        return $v;
-    };
-}

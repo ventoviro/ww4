@@ -11,14 +11,12 @@ declare(strict_types=1);
 
 namespace Windwalker\Event;
 
-use Psr\EventDispatcher\StoppableEventInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface;
 use Rx\Observable;
 use Rx\ObserverInterface;
-use Windwalker\Event\Listener\ListenerCallable;
-use Windwalker\Event\Listener\ListenersQueue;
-use Windwalker\Event\Provider\DecorateListenerProvider;
-use Windwalker\Event\Provider\SubscribableListenerProvider;
-use Windwalker\Event\Provider\SubscribableListenerProviderInterface;
+use Windwalker\Event\Provider\CompositeListenerProvider;
+use function Windwalker\tap;
 
 /**
  * The AttachableEventDispatcher class.
@@ -29,20 +27,35 @@ class EventEmitter extends EventDispatcher implements
     EventDisposableInterface
 {
     /**
-     * @var SubscribableListenerProviderInterface
+     * @var CompositeListenerProvider
      */
-    protected $queueHolder;
+    protected $provider;
+
+    /**
+     * @var EventDispatcherInterface[]
+     */
+    protected $dealers = [];
 
     /**
      * EventEmitter constructor.
      *
-     * @param  SubscribableListenerProviderInterface  $pool
+     * @param  ListenerProviderInterface  $provider
      */
-    public function __construct(SubscribableListenerProviderInterface $pool = null)
+    public function __construct(ListenerProviderInterface $provider = null)
     {
-        $this->queueHolder = $pool ?: new SubscribableListenerProvider();
+        parent::__construct(CompositeListenerProvider::create($provider));
+    }
 
-        parent::__construct(new DecorateListenerProvider($this->queueHolder));
+    /**
+     * @inheritDoc
+     */
+    public function dispatch(object $event)
+    {
+        return tap(parent::dispatch($event), function () use ($event) {
+            foreach ($this->dealers as $dealer) {
+                $dealer->dispatch($event);
+            }
+        });
     }
 
     /**
@@ -62,7 +75,7 @@ class EventEmitter extends EventDispatcher implements
      */
     public function subscribe(object $subscriber, ?int $priority = null)
     {
-        $this->getQueueHolder()->subscribe($subscriber, $priority);
+        $this->provider->subscribe($subscriber, $priority);
 
         return $this;
     }
@@ -72,7 +85,7 @@ class EventEmitter extends EventDispatcher implements
      */
     public function on(string $event, callable $callable, ?int $priority = null, bool $once = false)
     {
-        $this->getQueueHolder()->on($event, $callable, $priority, $once);
+        $this->provider->on($event, $callable, $priority);
 
         return $this;
     }
@@ -101,11 +114,14 @@ class EventEmitter extends EventDispatcher implements
         }
 
         return Observable::create(function (ObserverInterface $subscriber) use ($event, $priority, $once) {
-            $handler = static function (EventInterface $event) use ($subscriber) {
-                $subscriber->onNext($event);
-            };
-
-            $this->on($event, $handler, $priority, $once);
+            $this->on(
+                $event,
+                static function (EventInterface $event) use ($subscriber) {
+                    $subscriber->onNext($event);
+                },
+                $priority,
+                $once
+            );
         });
     }
 
@@ -120,15 +136,7 @@ class EventEmitter extends EventDispatcher implements
      */
     public function remove($listener)
     {
-        if ($this->isSubscriber($listener)) {
-            foreach ($this->getQueues() as $queue) {
-                $this->offSubscriber($queue, $listener);
-            }
-        } else {
-            foreach ($this->getQueues() as $queue) {
-                $queue->remove($listener);
-            }
-        }
+        $this->provider->remove($listener);
 
         return $this;
     }
@@ -144,72 +152,9 @@ class EventEmitter extends EventDispatcher implements
      */
     public function off($event, $listener = null)
     {
-        $event = Event::wrap($event);
-
-        $listeners = &$this->getQueues();
-
-        if (!isset($listeners[$event->getName()])) {
-            return $this;
-        }
-
-        if ($listener === null) {
-            unset($listeners[$event->getName()]);
-        } else {
-            $queue = $listeners[$event->getName()];
-
-            if ($this->isSubscriber($listener)) {
-                $this->offSubscriber($queue, $listener);
-            } else {
-                $queue->remove($listener);
-            }
-        }
+        $this->provider->off($event, $listener);
 
         return $this;
-    }
-
-    /**
-     * offSubscriber
-     *
-     * @param  ListenersQueue  $queue
-     * @param  object          $subscriber
-     *
-     * @return  void
-     *
-     * @throws \ReflectionException
-     */
-    private function offSubscriber(ListenersQueue $queue, object $subscriber): void
-    {
-        /** @var ListenerCallable $listener */
-        foreach ($queue as $listener) {
-            $callable = $listener->getCallable();
-
-            if ($callable instanceof \Closure) {
-                $ref  = new \ReflectionFunction($callable);
-                $that = $ref->getClosureThis();
-            } elseif (is_array($callable)) {
-                $that = $callable[0];
-            } else {
-                continue;
-            }
-
-            if ($that === $subscriber) {
-                $queue->remove($listener);
-            }
-        }
-    }
-
-    /**
-     * isSubscriber
-     *
-     * @param mixed $listener
-     *
-     * @return  bool
-     */
-    private function isSubscriber($listener): bool
-    {
-        return !is_array($listener)
-            && !is_string($listener)
-            && !$listener instanceof \Closure;
     }
 
     /**
@@ -221,41 +166,45 @@ class EventEmitter extends EventDispatcher implements
      */
     public function getListeners($event): iterable
     {
-        return $this->getQueueHolder()->getListenersForEvent(Event::wrap($event));
+        return $this->provider->getListenersForEvent(Event::wrap($event));
     }
 
     /**
-     * getQueues
+     * appendProvider
      *
-     * @return  ListenersQueue[]
+     * @param  ListenerProviderInterface  $provider
+     *
+     * @return  static
      */
-    protected function &getQueues(): array
+    public function appendProvider(ListenerProviderInterface $provider)
     {
-        return $this->getQueueHolder()->getQueues();
+        $this->provider->appendProvider($provider);
+
+        return $this;
     }
 
     /**
-     * Method to get property Queues
+     * registerDealer
      *
-     * @return  SubscribableListenerProviderInterface
+     * @param  EventDispatcherInterface  $dispatcher
+     *
+     * @return  static
      */
-    public function getQueueHolder(): SubscribableListenerProviderInterface
+    public function registerDealer(EventDispatcherInterface $dispatcher)
     {
-        return $this->queueHolder;
+        $this->dealers[] = $dispatcher;
+
+        return $this;
     }
 
     /**
-     * Method to set property queues
+     * resetDealers
      *
-     * @param  SubscribableListenerProviderInterface  $queueHolder
-     *
-     * @return  static  Return self to support chaining.
+     * @return  static
      */
-    public function setQueueHolder(SubscribableListenerProviderInterface $queueHolder)
+    public function resetDealers()
     {
-        $this->queueHolder = $queueHolder;
-
-        $this->listenerProvider = new DecorateListenerProvider($queueHolder);
+        $this->dealers = [];
 
         return $this;
     }

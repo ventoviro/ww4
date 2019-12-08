@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Utilities\Test\Assert;
 
-use InvalidArgumentException;
+use TypeError;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 use Windwalker\Utilities\Assert\TypeAssert;
@@ -39,7 +39,7 @@ class TypeAssertTest extends TestCase
     public function testThrowException(string $class, string $message, $value, ?string $caller, string $expected): void
     {
         try {
-            TypeAssert::throwException($class, $message, $value, $caller);
+            TypeAssert::throwException($message, $value, $caller);
         } catch (Throwable $e) {
             self::assertEquals($expected, $e->getMessage());
         }
@@ -49,7 +49,7 @@ class TypeAssertTest extends TestCase
     {
         return [
             'Auto get caller' => [
-                InvalidArgumentException::class,
+                TypeError::class,
                 'Method %s must with type X, %s given.',
                 5,
                 null,
@@ -57,21 +57,21 @@ class TypeAssertTest extends TestCase
                 'must with type X, integer(5) given.'
             ],
             'Custom caller' => [
-                InvalidArgumentException::class,
+                TypeError::class,
                 'Method %s must with type X, %s given.',
                 5,
                 'Foo::bar()',
                 'Method Foo::bar() must with type X, integer(5) given.'
             ],
             'Custom arguments ordering' => [
-                InvalidArgumentException::class,
+                TypeError::class,
                 'Got %2$s in %1$s',
                 5,
                 'Foo::bar()',
                 'Got integer(5) in Foo::bar()'
             ],
             'No message arguments' => [
-                InvalidArgumentException::class,
+                TypeError::class,
                 'Method wrong.',
                 5,
                 null,

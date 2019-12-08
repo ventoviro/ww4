@@ -70,7 +70,7 @@ class EventDispatcherTest extends TestCase
      */
     public function testGetListenerProvider(): void
     {
-        self::assertInstanceOf(SimpleListenerProvider::class, $this->instance->getListenerProvider());
+        self::assertInstanceOf(SimpleListenerProvider::class, $this->instance->getProvider());
     }
 
     // /**

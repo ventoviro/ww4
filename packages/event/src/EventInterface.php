@@ -15,7 +15,7 @@ use Psr\EventDispatcher\StoppableEventInterface;
  *
  * @since 2.0
  */
-interface EventInterface extends StoppableEventInterface
+interface EventInterface extends StoppableEventInterface, \ArrayAccess
 {
     /**
      * Get the event name.
@@ -52,4 +52,11 @@ interface EventInterface extends StoppableEventInterface
      * @since   2.0
      */
     public function stopPropagation(): void;
+
+    /**
+     * getArguments
+     *
+     * @return  array
+     */
+    public function &getArguments(): array;
 }

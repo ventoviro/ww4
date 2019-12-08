@@ -15,6 +15,7 @@ use Windwalker\Event\EventInterface;
 use Windwalker\Event\EventSubscriberInterface;
 use Windwalker\Event\Listener\ListenerPriority;
 use Windwalker\Event\Listener\ListenersQueue;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\StrNormalise;
 
 /**
@@ -49,8 +50,7 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
     public function on(
         string $event,
         callable $listener,
-        ?int $priority = null,
-        bool $once = false
+        ?int $priority = ListenerPriority::NORMAL
     ): void {
         $event = strtolower($event);
 
@@ -58,7 +58,7 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
             $this->queues[$event] = new ListenersQueue();
         }
 
-        $this->queues[$event]->add($listener, $priority, $once);
+        $this->queues[$event]->add($listener, $priority);
     }
 
     /**
@@ -70,7 +70,7 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
             $events = $subscriber->getSubscribedEvents();
         } else {
             $methods = get_class_methods($subscriber);
-            $events = [];
+            $events  = [];
 
             foreach ($methods as $method) {
                 $events[$method] = [static::normalize($method), $priority];
@@ -79,29 +79,27 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
 
         foreach ($events as $event => $method) {
             // Register: ['eventName' => 'methodName']
-            if (is_string($method)) {
+            if (static::isCallable($subscriber, $method)) {
                 $this->on(
                     $event,
-                    [$subscriber, $method],
+                    static::toCallable($subscriber, $method),
                     $priority
                 );
             } elseif (is_array($method) && $method !== []) {
-                if (is_string($method[0])) {
-                    // Register: ['eventName' => ['methodName', $priority, $once = false]]
+                if (static::isCallable($subscriber, $method[0])) {
+                    // Register: ['eventName' => ['methodName or callable', $priority]]
                     $this->on(
                         $event,
-                        [$subscriber, $method[0]],
-                        $method[1] ?? $priority,
-                        $method[2] ?? false
+                        static::toCallable($subscriber, $method[0]),
+                        $method[1] ?? $priority
                     );
-                } elseif (is_array($method[0])) {
-                    // Register: ['eventName' => [['methodName1', $priority, $once = false], ['methodName2']]]
-                    foreach ($method as $method2) {
+                } else {
+                    // Register: ['eventName' => [['methodName1 or callable', $priority], ['methodName2']]]
+                    foreach ($method as $subMethod) {
                         $this->on(
                             $event,
-                            [$subscriber, $method2[0]],
-                            $method2[1] ?? $priority,
-                            $method2[2] ?? false
+                            static::toCallable($subscriber, $subMethod[0]),
+                            $subMethod[1] ?? $priority
                         );
                     }
                 }
@@ -131,5 +129,42 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
     public function &getQueues(): array
     {
         return $this->queues;
+    }
+
+    /**
+     * isCallable
+     *
+     * @param  object           $subscriber
+     * @param  string|callable  $methodName
+     *
+     * @return  bool
+     */
+    private static function isCallable(object $subscriber, $methodName): bool
+    {
+        if (is_callable($methodName)) {
+            return true;
+        }
+
+        if (is_string($methodName) && is_callable([$subscriber, $methodName])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static function toCallable(object $subscriber, $methodName)
+    {
+        if (is_callable($methodName)) {
+            return $methodName;
+        }
+
+        if (is_string($methodName) && is_callable([$subscriber, $methodName])) {
+            return [$subscriber, $methodName];
+        }
+
+        throw ArgumentsAssert::exception(
+            'MethodName should be callable, %2$s got',
+            $methodName
+        );
     }
 }
