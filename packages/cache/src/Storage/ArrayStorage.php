@@ -15,12 +15,19 @@ use Psr\Cache\CacheItemInterface;
 use Windwalker\Cache\CacheItem;
 
 /**
- * Class NullStorage
+ * Runtime Storage.
  *
  * @since 2.0
  */
-class NullPool extends AbstractCachePool
+class ArrayStorage
 {
+    /**
+     * Property storage.
+     *
+     * @var  array
+     */
+    protected $data = [];
+
     /**
      * Method to determine whether a storage entry has been set for a key.
      *
@@ -28,9 +35,9 @@ class NullPool extends AbstractCachePool
      *
      * @return  boolean
      */
-    public function exists($key)
+    public function exists($key): bool
     {
-        return false;
+        return isset($this->data[$key]);
     }
 
     /**
@@ -44,7 +51,17 @@ class NullPool extends AbstractCachePool
      */
     public function getItem($key)
     {
-        return new CacheItem($key);
+        if (!$this->exists($key)) {
+            return new CacheItem($key);
+        }
+
+        $item = new CacheItem($key);
+
+        if (isset($this->data[$key])) {
+            $item->set($this->data[$key]);
+        }
+
+        return $item;
     }
 
     /**
@@ -57,6 +74,11 @@ class NullPool extends AbstractCachePool
      */
     public function save(CacheItemInterface $item, $ttl = null)
     {
+        $key = $item->getKey();
+        $value = $item->get();
+
+        $this->data[$key] = $value;
+
         return $this;
     }
 
@@ -69,6 +91,10 @@ class NullPool extends AbstractCachePool
      */
     public function deleteItem($key)
     {
+        if (array_key_exists($key, $this->data)) {
+            unset($this->data[$key]);
+        }
+
         return $this;
     }
 
@@ -79,6 +105,32 @@ class NullPool extends AbstractCachePool
      */
     public function clear()
     {
+        $this->data = [];
+
+        return $this;
+    }
+
+    /**
+     * Method to get property Data
+     *
+     * @return  array
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
+     * Method to set property data
+     *
+     * @param   array $data
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setData($data)
+    {
+        $this->data = $data;
+
         return $this;
     }
 }

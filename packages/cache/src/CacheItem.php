@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project.
  *
@@ -6,9 +7,13 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\Cache\Item;
+declare(strict_types=1);
 
+namespace Windwalker\Cache;
+
+use DateTimeInterface;
 use Psr\Cache\CacheItemInterface;
+use Windwalker\Cache\Exception\InvalidArgumentException;
 
 /**
  * Class CacheItem
@@ -44,7 +49,7 @@ class CacheItem implements CacheItemInterface
     /**
      * Property expiration.
      *
-     * @var  \DateTimeInterface
+     * @var  DateTimeInterface
      */
     protected $expiration;
 
@@ -56,28 +61,25 @@ class CacheItem implements CacheItemInterface
     protected $defaultExpiration = 'now +1 year';
 
     /**
+     * @var callable
+     */
+    protected $getter;
+
+    /**
      * Class constructor.
      *
-     * @param   string            $key   The key for the cache item.
-     * @param   mixed             $value The value for the cache item.
-     * @param   \DateInterval|int $ttl   The expire time.
+     * @param  string         $key  The key for the cache item.
      *
-     * @throws \Exception
+     * @param  callable|null  $getter
+     *
      * @since   2.0
      */
-    public function __construct($key, $value = null, $ttl = null)
+    public function __construct(?string $key = null, ?callable $getter = null)
     {
-        if (strpbrk($key, '{}()/\@:')) {
-            throw new \InvalidArgumentException('Item key name contains invalid characters.' . $key);
-        }
+        $this->validateKey($key);
 
         $this->key = $key;
-
-        if ($value !== null) {
-            $this->set($value);
-        }
-
-        $this->expiresAfter($ttl);
+        $this->getter = $getter;
     }
 
     /**
@@ -97,6 +99,7 @@ class CacheItem implements CacheItemInterface
      *
      * @return  mixed
      *
+     * @throws \Exception
      * @since   2.0
      */
     public function get()
@@ -105,7 +108,7 @@ class CacheItem implements CacheItemInterface
             return null;
         }
 
-        return $this->value;
+        return $this->getGetter()();
     }
 
     /**
@@ -113,14 +116,18 @@ class CacheItem implements CacheItemInterface
      *
      * If the value is set, we are assuming that there was a valid hit on the cache for the given key.
      *
-     * @param   mixed $value The value for the cache item.
+     * @param  mixed  $value  The value for the cache item.
      *
      * @return  CacheItem
      */
     public function set($value)
     {
+        if ($this->key === null) {
+            return $this;
+        }
+
         $this->value = $value;
-        $this->hit = true;
+        $this->hit   = true;
 
         return $this;
     }
@@ -130,6 +137,7 @@ class CacheItem implements CacheItemInterface
      *
      * @return  boolean
      *
+     * @throws \Exception
      * @since   2.0
      */
     public function isHit()
@@ -144,7 +152,7 @@ class CacheItem implements CacheItemInterface
     /**
      * Sets the expiration time for this cache item.
      *
-     * @param \DateTimeInterface $expiration
+     * @param  DateTimeInterface  $expiration
      *   The point in time after which the item MUST be considered expired.
      *   If null is passed explicitly, a default value MAY be used. If none is set,
      *   the value should be stored permanently or for as long as the
@@ -152,13 +160,11 @@ class CacheItem implements CacheItemInterface
      *
      * @return static
      *   The called object.
+     * @throws \Exception
      */
     public function expiresAt($expiration)
     {
-        $tzBackup = @date_default_timezone_get();
-        date_default_timezone_set('UTC');
-
-        if ($expiration instanceof \DateTimeInterface) {
+        if ($expiration instanceof DateTimeInterface) {
             $this->expiration = $expiration;
         } elseif ($expiration === null) {
             $this->expiration = new \DateTime($this->defaultExpiration);
@@ -166,15 +172,13 @@ class CacheItem implements CacheItemInterface
             throw new \InvalidArgumentException('Invalid DateTime format.');
         }
 
-        date_default_timezone_set($tzBackup);
-
         return $this;
     }
 
     /**
      * Sets the expiration time for this cache item.
      *
-     * @param int|\DateInterval $time
+     * @param  int|\DateInterval  $time
      *   The period of time from the present after which the item MUST be considered
      *   expired. An integer parameter is understood to be the time in seconds until
      *   expiration. If null is passed explicitly, a default value MAY be used.
@@ -187,22 +191,17 @@ class CacheItem implements CacheItemInterface
      */
     public function expiresAfter($time)
     {
-        $tzBackup = @date_default_timezone_get();
-        date_default_timezone_set('UTC');
-
         if ($time instanceof \DateInterval) {
             $this->expiration = new \DateTime();
             $this->expiration->add($time);
-        } elseif (is_int($time)) {
+        } elseif (is_numeric($time)) {
             $this->expiration = new \DateTime();
             $this->expiration->add(new \DateInterval('PT' . $time . 'S'));
         } elseif ($time === null) {
             $this->expiration = new \DateTime($this->defaultExpiration);
         } else {
-            throw new \InvalidArgumentException('Invalid DateTime format.');
+            throw new InvalidArgumentException('Invalid DateTime format.');
         }
-
-        date_default_timezone_set($tzBackup);
 
         return $this;
     }
@@ -210,10 +209,48 @@ class CacheItem implements CacheItemInterface
     /**
      * Method to get property Expiration
      *
-     * @return  \DateTimeInterface
+     * @return  DateTimeInterface
      */
-    public function getExpiration()
+    public function getExpiration(): DateTimeInterface
     {
         return $this->expiration;
+    }
+
+    /**
+     * validateKey
+     *
+     * @param  string  $key
+     *
+     * @return  void:
+     */
+    private function validateKey(string $key): void
+    {
+        if (strpbrk($key, '{}()/\@:')) {
+            throw new InvalidArgumentException('Item key name contains reserved characters.' . $key);
+        }
+    }
+
+    /**
+     * Method to get property Getter
+     *
+     * @return  callable
+     */
+    public function getGetter(): callable
+    {
+        return $this->getter;
+    }
+
+    /**
+     * Method to set property getter
+     *
+     * @param  callable  $getter
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setGetter(callable $getter)
+    {
+        $this->getter = $getter;
+
+        return $this;
     }
 }

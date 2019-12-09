@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Cache\Pool;
 
 use Psr\Cache\CacheItemInterface;
-use Windwalker\Cache\Item\CacheItem;
+use Windwalker\Cache\CacheItem;
 
 /**
  * Class MemcachedStorage
