@@ -17,9 +17,9 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Windwalker\Cache\Exception\RuntimeException;
-use Windwalker\Cache\Pool\ArrayStorage;
 use Windwalker\Cache\Serializer\RawSerializer;
 use Windwalker\Cache\Serializer\SerializerInterface;
+use Windwalker\Cache\Storage\ArrayStorage;
 use Windwalker\Cache\Storage\StorageInterface;
 
 /**
@@ -147,6 +147,7 @@ class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
     public function save(CacheItemInterface $item)
     {
         try {
+            show($item->get(), $item);
             $this->storage->save($item->getKey(), $this->serializer->serialize($item->get()));
 
             return true;

@@ -9,9 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Cache\Pool;
-
-use Windwalker\Cache\Storage\StorageInterface;
+namespace Windwalker\Cache\Storage;
 
 /**
  * Runtime Storage.

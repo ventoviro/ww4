@@ -44,7 +44,7 @@ class CacheItem implements CacheItemInterface
      * @var    boolean
      * @since  2.0
      */
-    protected $hit;
+    protected $hit = false;
 
     /**
      * Property expiration.
@@ -69,7 +69,6 @@ class CacheItem implements CacheItemInterface
      * Class constructor.
      *
      * @param  string         $key  The key for the cache item.
-     *
      * @param  callable|null  $getter
      *
      * @since   2.0
@@ -80,6 +79,8 @@ class CacheItem implements CacheItemInterface
 
         $this->key = $key;
         $this->getter = $getter;
+
+        $this->expiresAfter(null);
     }
 
     /**
@@ -108,6 +109,10 @@ class CacheItem implements CacheItemInterface
             return null;
         }
 
+        if ($this->value !== null) {
+            return $this->value;
+        }
+
         return $this->getGetter()();
     }
 
@@ -118,7 +123,7 @@ class CacheItem implements CacheItemInterface
      *
      * @param  mixed  $value  The value for the cache item.
      *
-     * @return  CacheItem
+     * @return  static
      */
     public function set($value)
     {
@@ -137,7 +142,6 @@ class CacheItem implements CacheItemInterface
      *
      * @return  boolean
      *
-     * @throws \Exception
      * @since   2.0
      */
     public function isHit()
@@ -160,7 +164,6 @@ class CacheItem implements CacheItemInterface
      *
      * @return static
      *   The called object.
-     * @throws \Exception
      */
     public function expiresAt($expiration)
     {
@@ -187,7 +190,6 @@ class CacheItem implements CacheItemInterface
      *
      * @return static
      *   The called object.
-     * @throws \Exception
      */
     public function expiresAfter($time)
     {
