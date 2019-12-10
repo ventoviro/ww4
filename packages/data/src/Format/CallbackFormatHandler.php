@@ -36,8 +36,8 @@ class CallbackFormatHandler implements FormatInterface
      */
     public function __construct(?callable $parser = null, ?callable $dumper = null)
     {
-        $this->parser = $parser;
-        $this->dumper = $dumper;
+        $this->setParser($parser);
+        $this->setDumper($dumper);
     }
 
     /**
@@ -93,7 +93,9 @@ class CallbackFormatHandler implements FormatInterface
      */
     public function setParser(?callable $parser)
     {
-        $this->parser = $parser;
+        $this->parser = $parser ?? static function (): string {
+            return '';
+        };
 
         return $this;
     }
@@ -121,7 +123,9 @@ class CallbackFormatHandler implements FormatInterface
      */
     public function setDumper(?callable $dumper)
     {
-        $this->dumper = $dumper;
+        $this->dumper = $dumper ?? static function (): array {
+            return [];
+        };
 
         return $this;
     }

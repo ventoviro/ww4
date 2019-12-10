@@ -18,24 +18,24 @@ class StringSerializer implements SerializerInterface
     /**
      * Encode data.
      *
-     * @param   mixed $data
+     * @param  mixed  $data
      *
-     * @throws \InvalidArgumentException
      * @return  string
+     * @throws \InvalidArgumentException
      */
     public function serialize($data)
     {
-        if (is_array($data) || (is_object($data) && !method_exists($data, '_toString'))) {
+        if (!is_stringable($data)) {
             throw new \InvalidArgumentException(__CLASS__ . ' can not handle an array or non-stringable object.');
         }
 
-        return $data;
+        return (string) $data;
     }
 
     /**
      * Decode data.
      *
-     * @param   string $data
+     * @param  string  $data
      *
      * @return  mixed
      */

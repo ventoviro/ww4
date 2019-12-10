@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Utilities\Classes;
 
 use ArrayAccess;
+use Windwalker\Utilities\Arr;
 
 /**
  * The OptionAccessTrait class.
@@ -26,6 +27,19 @@ trait OptionAccessTrait
      * @var  array|ArrayAccess
      */
     protected $options = [];
+
+    /**
+     * prepareDefaultOptions
+     *
+     * @param  array  $defaults
+     * @param  array  $options
+     *
+     * @return  void
+     */
+    protected function prepareOptions(array $defaults = [], array $options = []): void
+    {
+        $this->options = Arr::mergeRecursive($this->options, $defaults, $options);
+    }
 
     /**
      * Method to get property Options

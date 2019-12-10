@@ -18,7 +18,7 @@ class PhpFileSerializer implements SerializerInterface
     /**
      * Encode data.
      *
-     * @param   mixed $data
+     * @param  mixed  $data
      *
      * @return  string
      */
@@ -30,7 +30,7 @@ class PhpFileSerializer implements SerializerInterface
     /**
      * Decode data.
      *
-     * @param   string $data
+     * @param  string  $data
      *
      * @return  mixed
      */

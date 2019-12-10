@@ -13,11 +13,14 @@ namespace Windwalker\Cache;
 
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Windwalker\Cache\Exception\RuntimeException;
+use Windwalker\Cache\Pool\ArrayStorage;
+use Windwalker\Cache\Serializer\RawSerializer;
+use Windwalker\Cache\Serializer\SerializerInterface;
+use Windwalker\Cache\Storage\StorageInterface;
 
 /**
  * The Pool class.
@@ -25,8 +28,6 @@ use Windwalker\Cache\Exception\RuntimeException;
 class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
-
-    protected $storage;
 
     /**
      * @var bool
@@ -39,13 +40,25 @@ class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
     protected $deferredItems = [];
 
     /**
+     * @var StorageInterface
+     */
+    protected $storage;
+
+    /**
+     * @var SerializerInterface
+     */
+    protected $serializer;
+
+    /**
      * CachePool constructor.
      *
-     * @param $storage
+     * @param  StorageInterface     $storage
+     * @param  SerializerInterface  $serializer
      */
-    public function __construct($storage)
+    public function __construct(?StorageInterface $storage = null, ?SerializerInterface $serializer = null)
     {
-        $this->storage = $storage;
+        $this->storage = $storage ?? new ArrayStorage();
+        $this->serializer = $serializer ?? new RawSerializer();
 
         $this->logger = new NullLogger();
     }
@@ -55,8 +68,8 @@ class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItem($key)
     {
-        return new CacheItem($key, function () {
-            return $this->storage->get();
+        return new CacheItem($key, function () use ($key) {
+            return $this->serializer->unserialize($this->storage->get($key));
         });
     }
 
@@ -134,7 +147,7 @@ class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
     public function save(CacheItemInterface $item)
     {
         try {
-            $this->storage->save($item->getKey(), $item->get());
+            $this->storage->save($item->getKey(), $this->serializer->serialize($item->get()));
 
             return true;
         } catch (RuntimeException $e) {
@@ -201,5 +214,61 @@ class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
                 'key' => $item ? $item->getKey() : null
             )
         );
+    }
+
+    /**
+     * Method to get property Storage
+     *
+     * @return  StorageInterface
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function getStorage(): StorageInterface
+    {
+        return $this->storage;
+    }
+
+    /**
+     * Method to set property storage
+     *
+     * @param  StorageInterface  $storage
+     *
+     * @return  static  Return self to support chaining.
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function setStorage(StorageInterface $storage)
+    {
+        $this->storage = $storage;
+
+        return $this;
+    }
+
+    /**
+     * Method to get property Serializer
+     *
+     * @return  SerializerInterface
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function getSerializer(): SerializerInterface
+    {
+        return $this->serializer;
+    }
+
+    /**
+     * Method to set property serializer
+     *
+     * @param  SerializerInterface  $serializer
+     *
+     * @return  static  Return self to support chaining.
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function setSerializer(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+
+        return $this;
     }
 }
