@@ -9,8 +9,6 @@
 
 declare(strict_types=1);
 
-declare(strict_types=1);
-
 namespace  Windwalker\Data\Test;
 
 use PHPUnit\Framework\TestCase;

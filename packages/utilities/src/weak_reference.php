@@ -21,7 +21,10 @@ class WeakReference
      * class. Weak references are to be instantiated with the factory method
      * <b>WeakReference::create()</b>.
      */
-    protected function __construct() {}
+    protected function __construct()
+    {
+        //
+    }
 
     /**
      * Create a new weak reference.

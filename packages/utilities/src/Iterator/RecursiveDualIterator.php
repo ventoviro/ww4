@@ -4,7 +4,7 @@
  * Part of windwalker project.
  *
  * @copyright  Copyright (C) 2019 LYRASOFT.
- * @license    LGPL-2.0-or-later
+ * @license    MIT
  */
 
 declare(strict_types=1);

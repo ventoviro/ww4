@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project.
  *
  * @copyright  Copyright (C) 2019 LYRASOFT.
- * @license    LGPL-2.0-or-later
+ * @license    MIT
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Cache\Serializer;
 

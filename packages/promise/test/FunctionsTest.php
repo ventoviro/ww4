@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
-
 use Swoole\Event;
 use Windwalker\Promise\Scheduler\SchedulerInterface;
 use Windwalker\Promise\Scheduler\ScheduleRunner;
@@ -20,10 +19,8 @@ use Windwalker\Promise\Scheduler\DeferredScheduler;
 use Windwalker\Promise\Scheduler\ImmediateScheduler;
 use Windwalker\Promise\Scheduler\SwooleScheduler;
 use Windwalker\Promise\Scheduler\TaskQueue;
-
 use Windwalker\Promise\ExtendedPromiseInterface;
 use Windwalker\Promise\Promise;
-
 use Windwalker\Reactor\Test\Traits\SwooleTestTrait;
 
 use function Windwalker\Promise\async;

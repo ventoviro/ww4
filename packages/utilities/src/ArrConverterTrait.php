@@ -4,7 +4,7 @@
  * Part of phoenix project.
  *
  * @copyright  Copyright (C) 2019 $Asikart.
- * @license    LGPL-2.0-or-later
+ * @license    MIT
  */
 
 declare(strict_types=1);

@@ -25,6 +25,7 @@ use Windwalker\Promise\Scheduler\EventLoopScheduler;
 use Windwalker\Utilities\Proxy\CallableProxy;
 use Windwalker\Utilities\Proxy\DisposableCallable;
 use Windwalker\Utilities\TypeCast;
+
 use function Windwalker\arr;
 use function Windwalker\disposable;
 

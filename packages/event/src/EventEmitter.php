@@ -16,6 +16,7 @@ use Psr\EventDispatcher\ListenerProviderInterface;
 use Rx\Observable;
 use Rx\ObserverInterface;
 use Windwalker\Event\Provider\CompositeListenerProvider;
+
 use function Windwalker\disposable;
 use function Windwalker\tap;
 
