@@ -147,7 +147,6 @@ class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
     public function save(CacheItemInterface $item)
     {
         try {
-            show($item->get(), $item);
             $this->storage->save($item->getKey(), $this->serializer->serialize($item->get()));
 
             return true;
