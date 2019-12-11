@@ -28,9 +28,21 @@ class ArrayStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function get(string $key, array $options = [])
+    public function get(string $key)
     {
-        return $this->storage[$key] ?? null;
+        $data = $this->storage[$key] ?? null;
+
+        if ($data === null) {
+            return null;
+        }
+
+        [$expiration, $value] = $data;
+
+        if (time() > $expiration) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**
@@ -38,30 +50,45 @@ class ArrayStorage implements StorageInterface
      */
     public function has(string $key): bool
     {
-        return isset($this->storage[$key]);
+        if (!isset($this->storage[$key])) {
+            return false;
+        }
+
+        [$expiration, $value] = $this->storage[$key];
+
+        return time() <= $expiration;
     }
 
     /**
      * @inheritDoc
      */
-    public function clear(): void
+    public function clear(): bool
     {
         $this->storage = [];
+
+        return true;
     }
 
     /**
      * @inheritDoc
      */
-    public function remove(string $key): void
+    public function remove(string $key): bool
     {
         unset($this->storage[$key]);
+
+        return true;
     }
 
     /**
      * @inheritDoc
      */
-    public function save(string $key, $value, array $options = []): void
+    public function save(string $key, $value, int $expiration = 0): bool
     {
-        $this->storage[$key] = $value;
+        $this->storage[$key] = [
+            $expiration,
+            $value,
+        ];
+
+        return true;
     }
 }

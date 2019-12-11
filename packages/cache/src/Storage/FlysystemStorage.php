@@ -11,40 +11,59 @@ declare(strict_types=1);
 
 namespace Windwalker\Cache\Storage;
 
+use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemInterface;
 
 /**
  * The FlysystemStorage class.
  */
-class FlysystemStorage implements StorageInterface
+class FlysystemStorage extends FileStorage
 {
     /**
-     * @var FilesystemInterface
+     * @var Filesystem
      */
     protected $driver;
 
     /**
+     * @var array
+     */
+    protected $options;
+
+    /**
      * FlysystemStorage constructor.
      *
-     * @param  FilesystemInterface  $driver
+     * @param  Filesystem  $driver
+     * @param  array       $options
+     *
+     * @throws \League\Flysystem\FileNotFoundException
      */
-    public function __construct(FilesystemInterface $driver)
+    public function __construct(Filesystem $driver, array $options = [])
     {
         $this->driver = $driver;
+
+        parent::__construct($driver->getMetadata('/')['path'], $options);
     }
 
     /**
      * @inheritDoc
      */
-    public function get(string $key, array $options = [])
+    protected function read(string $key): string
     {
-        return $this->getDriver()->read($key);
+        return (string) $this->getDriver()->read($key);
     }
 
     /**
      * @inheritDoc
      */
-    public function has(string $key): bool
+    protected function write(string $key, string $value): bool
+    {
+        return $this->getDriver()->write($key, $value);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function exists(string $key): bool
     {
         return $this->getDriver()->has($key);
     }
@@ -52,27 +71,31 @@ class FlysystemStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function clear(): void
+    public function clear(): bool
     {
+        $results = true;
+
         foreach ($this->getDriver()->listContents('/', true) as $metadata) {
-            $this->getDriver()->delete($metadata['path']);
+            $results = $this->getDriver()->delete($metadata['path']) && $results;
         }
+
+        return $results;
     }
 
     /**
      * @inheritDoc
      */
-    public function remove(string $key): void
+    public function remove(string $key): bool
     {
-        $this->getDriver()->delete($key);
+        return $this->getDriver()->delete($key);
     }
 
     /**
      * @inheritDoc
      */
-    public function save(string $key, $value, array $options = []): void
+    protected function checkFilePath($filePath): bool
     {
-        $this->getDriver()->write($key, $value, $options);
+        return true;
     }
 
     /**

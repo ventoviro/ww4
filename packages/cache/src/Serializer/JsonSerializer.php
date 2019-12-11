@@ -39,6 +39,6 @@ class JsonSerializer implements SerializerInterface
      */
     public function unserialize($data)
     {
-        return json_decode($data);
+        return json_decode($data, false);
     }
 }

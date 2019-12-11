@@ -19,12 +19,12 @@ class PhpFileStorage extends FileStorage
     /**
      * read
      *
-     * @param   string $filename
+     * @param   string $key
      *
      * @return  string
      */
-    protected function read(string $filename): string
+    protected function read(string $key): string
     {
-        return include $filename;
+        return include $this->fetchStreamUri($key);
     }
 }

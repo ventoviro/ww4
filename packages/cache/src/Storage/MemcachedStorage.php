@@ -40,7 +40,7 @@ class MemcachedStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function get(string $key, array $options = [])
+    public function get(string $key)
     {
         $this->connect();
 
@@ -69,33 +69,37 @@ class MemcachedStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function clear(): void
+    public function clear(): bool
     {
         $this->connect();
 
         $this->driver->flush();
+
+        return $this->driver->getResultCode() === \Memcached::RES_SUCCESS;
     }
 
     /**
      * @inheritDoc
      */
-    public function remove(string $key): void
+    public function remove(string $key): bool
     {
         $this->connect();
 
         $this->driver->delete($key);
+
+        return $this->driver->getResultCode() === \Memcached::RES_SUCCESS;
     }
 
     /**
      * @inheritDoc
      */
-    public function save(string $key, $value, array $options = []): void
+    public function save(string $key, $value, int $expiration = 0): bool
     {
         $this->connect();
 
-        $ttl = $options['ttl'] ?? null;
+        $this->driver->set($key, $value, $expiration);
 
-        $this->driver->set($key, $value, $ttl);
+        return $this->driver->getResultCode() === \Memcached::RES_SUCCESS;
     }
 
     /**

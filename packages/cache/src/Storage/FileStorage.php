@@ -39,7 +39,8 @@ class FileStorage implements StorageInterface
         $this->prepareOptions(
             [
                 'lock' => false,
-                'extension' => '.data'
+                'extension' => '.data',
+                'expiration_format' => '/////---------- Expired At: %s ----------/////%s'
             ],
             $options
         );
@@ -50,9 +51,13 @@ class FileStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function get(string $key, array $options = [])
+    public function get(string $key)
     {
-        return $this->read($this->fetchStreamUri($key));
+        $data = $this->read($key);
+
+        sscanf($this->getOption('expiration_format'), $data, $expiration, $value);
+
+        return $value;
     }
 
     /**
@@ -60,13 +65,27 @@ class FileStorage implements StorageInterface
      */
     public function has(string $key): bool
     {
-        return is_file($this->fetchStreamUri($key));
+        if (!$this->exists($key)) {
+            return false;
+        }
+
+        $data = $this->read($key);
+
+        sscanf($this->getOption('expiration_format'), $data, $expiration);
+
+        if ($expiration > time()) {
+            return true;
+        }
+
+        $this->remove($key);
+
+        return false;
     }
 
     /**
      * @inheritDoc
      */
-    public function clear(): void
+    public function clear(): bool
     {
         $filePath = $this->root;
         $this->checkFilePath($filePath);
@@ -78,46 +97,40 @@ class FileStorage implements StorageInterface
             '/' . preg_quote($this->getOption('extension')) . '$/i'
         );
 
+        $results = true;
+
         /* @var  \RecursiveDirectoryIterator $file */
         foreach ($iterator as $file) {
             if ($file->isFile()) {
-                unlink($file->getRealPath());
+                $results = unlink($file->getRealPath()) && $results;
             }
         }
+
+        return $results;
     }
 
     /**
      * @inheritDoc
      */
-    public function remove(string $key): void
+    public function remove(string $key): bool
     {
-        unlink($this->fetchStreamUri($key));
+        return unlink($this->fetchStreamUri($key));
     }
 
     /**
      * @inheritDoc
      */
-    public function save(string $key, $value, array $options = []): void
+    public function save(string $key, $value, int $expiration = 0): bool
     {
-        $fileName = $this->fetchStreamUri($key);
-
-        $filePath = pathinfo($fileName, PATHINFO_DIRNAME);
-
-        if (!is_dir($filePath)) {
-            if (!mkdir($filePath, 0770, true) && !is_dir($filePath)) {
-                throw new RuntimeException(sprintf('Directory "%s" was not created', $filePath));
-            }
-        }
-
         if ($this->getOption('deny_access', false)) {
             $value = $this->getOption('deny_code') . $value;
         }
 
-        $this->write(
-            $fileName,
-            $value,
-            ($this->getOption('lock', false) ? LOCK_EX : null)
-        );
+        $expirationFormat = $this->getOption('expiration_format');
+
+        $value = sprintf($expirationFormat, $expiration, $value);
+
+        return $this->write($key, $value);
     }
 
     /**
@@ -148,30 +161,33 @@ class FileStorage implements StorageInterface
     /**
      * write
      *
-     * @param  string  $filename
+     * @param  string  $key
      * @param  string  $value
-     * @param  int     $flags
      *
      * @return  boolean
      */
-    protected function write(string $filename, string $value, int $flags): bool
+    protected function write(string $key, string $value): bool
     {
+        $filename = $this->fetchStreamUri($key);
+
         return (bool) file_put_contents(
             $filename,
             $value,
-            $flags
+            ($this->getOption('lock', false) ? LOCK_EX : null)
         );
     }
 
     /**
      * read
      *
-     * @param  string  $filename
+     * @param  string  $key
      *
      * @return  string
      */
-    protected function read(string $filename): string
+    protected function read(string $key): string
     {
+        $filename = $this->fetchStreamUri($key);
+
         $resource = @fopen($filename, 'rb');
 
         if (!$resource) {
@@ -208,6 +224,18 @@ class FileStorage implements StorageInterface
         fclose($resource);
 
         return $data;
+    }
+
+    /**
+     * exists
+     *
+     * @param  string  $key
+     *
+     * @return  bool
+     */
+    protected function exists(string $key): bool
+    {
+        return is_file($this->fetchStreamUri($key));
     }
 
     /**

@@ -19,9 +19,9 @@ class NullStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function get(string $key, array $options = [])
+    public function get(string $key)
     {
-        //
+        return null;
     }
 
     /**
@@ -35,24 +35,24 @@ class NullStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function clear(): void
+    public function clear(): bool
     {
-        //
+        return true;
     }
 
     /**
      * @inheritDoc
      */
-    public function remove(string $key): void
+    public function remove(string $key): bool
     {
-        //
+        return true;
     }
 
     /**
      * @inheritDoc
      */
-    public function save(string $key, $value, array $options = []): void
+    public function save(string $key, $value, int $expiration = 0): bool
     {
-        //
+        return true;
     }
 }

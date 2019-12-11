@@ -19,17 +19,16 @@ interface StorageInterface
     /**
      * get
      *
-     * @param  string  $key
-     * @param  array   $options
+     * @param  string  $key The key to get value.
      *
      * @return  mixed
      */
-    public function get(string $key, array $options = []);
+    public function get(string $key);
 
     /**
      * has
      *
-     * @param  string  $key
+     * @param  string  $key  The key to check value existent.
      *
      * @return  bool
      */
@@ -38,27 +37,27 @@ interface StorageInterface
     /**
      * clear
      *
-     * @return  void
+     * @return bool
      */
-    public function clear(): void;
+    public function clear(): bool;
 
     /**
      * remove
      *
-     * @param  string  $key
+     * @param  string  $key  The key to be deleted.
      *
-     * @return  void
+     * @return bool
      */
-    public function remove(string $key): void;
+    public function remove(string $key): bool;
 
     /**
      * save
      *
-     * @param  string  $key
-     * @param  mixed   $value
-     * @param  array   $options
+     * @param  string  $key         The key under which to store the value.
+     * @param  mixed   $value       The value to store.
+     * @param  int     $expiration  The expiration time, should be unix timestamp. Set to 0 will never expired.
      *
-     * @return  void
+     * @return bool
      */
-    public function save(string $key, $value, array $options = []): void;
+    public function save(string $key, $value, int $expiration = 0): bool;
 }

@@ -50,7 +50,7 @@ class RedisStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function get(string $key, array $options = [])
+    public function get(string $key)
     {
         $this->connect();
 
@@ -70,39 +70,43 @@ class RedisStorage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function clear(): void
+    public function clear(): bool
     {
         $this->connect();
 
-        $this->driver->flushall();
+        return $this->driver->flushall();
     }
 
     /**
      * @inheritDoc
      */
-    public function remove(string $key): void
+    public function remove(string $key): bool
     {
         $this->connect();
 
         $this->driver->del($key);
+
+        return true;
     }
 
     /**
      * @inheritDoc
      */
-    public function save(string $key, $value, array $options = []): void
+    public function save(string $key, $value, int $expiration = 0): bool
     {
         $this->connect();
 
         if (!$this->driver->set($key, $value)) {
-            return;
+            return false;
         }
 
-        $ttl = $options['ttl'] ?? null;
+        if ($expiration !== 0) {
+            $ttl = $expiration - time();
 
-        if ($ttl) {
             $this->driver->expire($key, $ttl);
         }
+
+        return true;
     }
 
     /**
