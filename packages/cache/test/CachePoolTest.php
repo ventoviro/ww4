@@ -13,12 +13,16 @@ namespace Windwalker\Cache\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Cache\CachePool;
+use Windwalker\Cache\Serializer\RawSerializer;
+use Windwalker\Test\Traits\TestAccessorTrait;
 
 /**
  * The CachePoolTest class.
  */
 class CachePoolTest extends TestCase
 {
+    use TestAccessorTrait;
+
     /**
      * @var CachePool
      */
@@ -33,7 +37,7 @@ class CachePoolTest extends TestCase
      */
     public function testBasicUsage(): void
     {
-        $pool = new CachePool();
+        $pool = $this->instance;
 
         $item = $pool->getItem('hello');
 
@@ -49,51 +53,13 @@ class CachePoolTest extends TestCase
     }
 
     /**
-     * @see  CachePool::setStorage
-     */
-    public function testSetStorage(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  CachePool::getSerializer
-     */
-    public function testGetSerializer(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  CachePool::setSerializer
      */
-    public function testSetSerializer(): void
+    public function testGetSetSerializer(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
+        $this->instance->setSerializer($ser = new RawSerializer());
 
-    /**
-     * @see  CachePool::clear
-     */
-    public function testClear(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  CachePool::getStorage
-     */
-    public function testGetStorage(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  CachePool::__construct
-     */
-    public function testConstruct(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertSame($ser, $this->instance->getSerializer());
     }
 
     /**
@@ -105,33 +71,46 @@ class CachePoolTest extends TestCase
     }
 
     /**
-     * @see  CachePool::save
+     * @see  CachePool::set
      */
-    public function testSave(): void
+    public function testSetGet(): void
+    {
+        $this->instance->set('hello', 'RRR');
+
+        self::assertEquals('RRR', $this->instance->getStorage()->get('hello'));
+
+        $this->instance->set('hello2', 'RRR2', -5);
+
+        self::assertNull($this->instance->getStorage()->get('hello2'));
+
+        $this->instance->set('hello3', 'RRR3', 10);
+
+        self::assertEquals(
+            time() + 10,
+            $this->getValue($this->instance->getStorage(), 'storage')['hello3'][0]
+        );
+    }
+
+    /**
+     * @see  CachePool::deleteMultiple
+     */
+    public function testDeleteMultiple(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
 
     /**
-     * @see  CachePool::getItem
+     * @see  CachePool::setStorage
      */
-    public function testGetItem(): void
+    public function testSetStorage(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
 
     /**
-     * @see  CachePool::saveDeferred
+     * @see  CachePool::hasItem
      */
-    public function testSaveDeferred(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  CachePool::deleteItems
-     */
-    public function testDeleteItems(): void
+    public function testHasItem(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
@@ -145,6 +124,46 @@ class CachePoolTest extends TestCase
     }
 
     /**
+     * @see  CachePool::getMultiple
+     */
+    public function testGetMultiple(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::getItem
+     */
+    public function testGetItem(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::deleteItems
+     */
+    public function testDeleteItems(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::setMultiple
+     */
+    public function testSetMultiple(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::clear
+     */
+    public function testClear(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
      * @see  CachePool::deleteItem
      */
     public function testDeleteItem(): void
@@ -153,16 +172,64 @@ class CachePoolTest extends TestCase
     }
 
     /**
-     * @see  CachePool::hasItem
+     * @see  CachePool::has
      */
-    public function testHasItem(): void
+    public function testHas(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::__destruct
+     */
+    public function test__destruct(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::getStorage
+     */
+    public function testGetStorage(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::save
+     */
+    public function testSave(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::saveDeferred
+     */
+    public function testSaveDeferred(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::delete
+     */
+    public function testDelete(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  CachePool::__construct
+     */
+    public function test__construct(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
 
     protected function setUp(): void
     {
-        $this->instance = null;
+        $this->instance = new CachePool();
     }
 
     protected function tearDown(): void

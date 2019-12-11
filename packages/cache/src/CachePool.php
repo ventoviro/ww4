@@ -17,11 +17,13 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Psr\SimpleCache\CacheInterface;
+use Windwalker\Cache\Exception\InvalidArgumentException;
 use Windwalker\Cache\Exception\RuntimeException;
 use Windwalker\Cache\Serializer\RawSerializer;
 use Windwalker\Cache\Serializer\SerializerInterface;
 use Windwalker\Cache\Storage\ArrayStorage;
 use Windwalker\Cache\Storage\StorageInterface;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 
 /**
  * The Pool class.
@@ -157,7 +159,15 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     public function save(CacheItemInterface $item)
     {
         try {
-            $this->storage->save($item->getKey(), $this->serializer->serialize($item->get()));
+            if (!$item instanceof CacheItem) {
+                throw new InvalidArgumentException('Only support ' . CacheItem::class);
+            }
+
+            $this->storage->save(
+                $item->getKey(),
+                $this->serializer->serialize($item->get()),
+                $item->getExpiration()->getTimestamp()
+            );
 
             return true;
         } catch (RuntimeException $e) {
@@ -204,6 +214,97 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
         $this->commiting = false;
 
         return $result;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function get($key, $default = null)
+    {
+        $item = $this->getItem($key);
+
+        if (!$item->isHit()) {
+            return $default;
+        }
+
+        return $item->get();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function set($key, $value, $ttl = null)
+    {
+        $item = $this->getItem($key);
+
+        $item->expiresAfter($ttl);
+        $item->set($value);
+
+        return $this->save($item);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function delete($key)
+    {
+        return $this->deleteItem($key);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMultiple($keys, $default = null)
+    {
+        foreach ($this->getItems($keys) as $item) {
+            yield $item->get();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setMultiple($values, $ttl = null)
+    {
+        ArgumentsAssert::assert(
+            is_iterable($values),
+            '%s values must be iterable, %s given.'
+        );
+
+        $results = true;
+
+        foreach ($values as $key => $value) {
+            $results = $this->set($key, $value, $ttl) && $results;
+        }
+
+        return $results;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteMultiple($keys)
+    {
+        ArgumentsAssert::assert(
+            is_iterable($keys),
+            '%s keys must be iterable, %s given.'
+        );
+
+        $results = true;
+
+        foreach ($keys as $key) {
+            $results = $this->delete($key) && $results;
+        }
+
+        return $results;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function has($key)
+    {
+        return $this->hasItem($key);
     }
 
     /**
@@ -283,83 +384,10 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     }
 
     /**
-     * @inheritDoc
+     * Commit when destructing.
      */
-    public function get($key, $default = null)
+    public function __destruct()
     {
-        $item = $this->getItem($key);
-
-        if (!$item->isHit()) {
-            return $default;
-        }
-
-        return $item->get();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function set($key, $value, $ttl = null)
-    {
-        $item = $this->getItem($key);
-
-        $item->expiresAfter($ttl);
-        $item->set($value);
-
-        return $this->save($item);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function delete($key)
-    {
-        return $this->deleteItem($key);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getMultiple($keys, $default = null)
-    {
-        foreach ($this->getItems($keys) as $item) {
-            yield $item->get();
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setMultiple($values, $ttl = null)
-    {
-        $results = true;
-
-        foreach ($values as $key => $value) {
-            $results = $this->set($key, $value, $ttl) && $results;
-        }
-
-        return $results;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function deleteMultiple($keys)
-    {
-        $results = true;
-
-        foreach ($keys as $key) {
-            $results = $this->delete($key) && $results;
-        }
-
-        return $results;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function has($key)
-    {
-        return $this->hasItem($key);
+        $this->commit();
     }
 }

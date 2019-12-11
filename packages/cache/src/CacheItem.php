@@ -150,6 +150,7 @@ class CacheItem implements CacheItemInterface
                 'CacheItem::isHit() caused an error',
                 $e
             );
+            return false;
         }
     }
 

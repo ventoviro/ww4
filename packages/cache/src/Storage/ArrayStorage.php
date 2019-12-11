@@ -38,7 +38,7 @@ class ArrayStorage implements StorageInterface
 
         [$expiration, $value] = $data;
 
-        if (time() > $expiration) {
+        if ($expiration !== 0 && time() > $expiration) {
             return null;
         }
 
