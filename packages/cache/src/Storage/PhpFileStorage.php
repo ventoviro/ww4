@@ -14,7 +14,7 @@ namespace Windwalker\Cache\Storage;
 /**
  * The PhpFileStorage class.
  */
-class PhpFileStorage extends FilesystemStorage
+class PhpFileStorage extends FileStorage
 {
     /**
      * read

@@ -15,7 +15,6 @@ namespace Windwalker\Cache\Exception;
  * The InvalidArgumentException class.
  */
 class InvalidArgumentException extends \InvalidArgumentException implements
-    CacheExceptionInterface,
     \Psr\Cache\InvalidArgumentException,
     \Psr\SimpleCache\InvalidArgumentException
 {

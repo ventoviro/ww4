@@ -13,6 +13,8 @@ namespace Windwalker\Cache;
 
 use DateTimeInterface;
 use Psr\Cache\CacheItemInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 use Windwalker\Cache\Exception\InvalidArgumentException;
 
 /**
@@ -22,6 +24,8 @@ use Windwalker\Cache\Exception\InvalidArgumentException;
  */
 class CacheItem implements CacheItemInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * The key for the cache item.
      *
@@ -61,24 +65,18 @@ class CacheItem implements CacheItemInterface
     protected $defaultExpiration = 'now +1 year';
 
     /**
-     * @var callable
-     */
-    protected $getter;
-
-    /**
      * Class constructor.
      *
-     * @param  string         $key  The key for the cache item.
-     * @param  callable|null  $getter
+     * @param  string  $key  The key for the cache item.
      *
      * @since   2.0
      */
-    public function __construct(?string $key = null, ?callable $getter = null)
+    public function __construct(?string $key = null)
     {
         $this->validateKey($key);
 
         $this->key = $key;
-        $this->getter = $getter;
+        $this->logger = new NullLogger();
 
         $this->expiresAfter(null);
     }
@@ -100,7 +98,6 @@ class CacheItem implements CacheItemInterface
      *
      * @return  mixed
      *
-     * @throws \Exception
      * @since   2.0
      */
     public function get()
@@ -109,11 +106,7 @@ class CacheItem implements CacheItemInterface
             return null;
         }
 
-        if ($this->value !== null) {
-            return $this->value;
-        }
-
-        return $this->getGetter()();
+        return $this->value;
     }
 
     /**
@@ -146,11 +139,18 @@ class CacheItem implements CacheItemInterface
      */
     public function isHit()
     {
-        if (new \DateTime() > $this->expiration) {
-            $this->hit = false;
-        }
+        try {
+            if (new \DateTime() > $this->expiration) {
+                $this->hit = false;
+            }
 
-        return $this->hit;
+            return $this->hit;
+        } catch (\Throwable $e) {
+            $this->logException(
+                'CacheItem::isHit() caused an error',
+                $e
+            );
+        }
     }
 
     /**
@@ -167,12 +167,19 @@ class CacheItem implements CacheItemInterface
      */
     public function expiresAt($expiration)
     {
-        if ($expiration instanceof DateTimeInterface) {
-            $this->expiration = $expiration;
-        } elseif ($expiration === null) {
-            $this->expiration = new \DateTime($this->defaultExpiration);
-        } else {
-            throw new \InvalidArgumentException('Invalid DateTime format.');
+        try {
+            if ($expiration instanceof DateTimeInterface) {
+                $this->expiration = $expiration;
+            } elseif ($expiration === null) {
+                $this->expiration = new \DateTime($this->defaultExpiration);
+            } else {
+                throw new \InvalidArgumentException('Invalid DateTime format.');
+            }
+        } catch (\Throwable $e) {
+            $this->logException(
+                'CacheItem::expiresAt() causes an error',
+                $e
+            );
         }
 
         return $this;
@@ -193,16 +200,23 @@ class CacheItem implements CacheItemInterface
      */
     public function expiresAfter($time)
     {
-        if ($time instanceof \DateInterval) {
-            $this->expiration = new \DateTime();
-            $this->expiration->add($time);
-        } elseif (is_numeric($time)) {
-            $this->expiration = new \DateTime();
-            $this->expiration->add(new \DateInterval('PT' . $time . 'S'));
-        } elseif ($time === null) {
-            $this->expiration = new \DateTime($this->defaultExpiration);
-        } else {
-            throw new InvalidArgumentException('Invalid DateTime format.');
+        try {
+            if ($time instanceof \DateInterval) {
+                $this->expiration = new \DateTime();
+                $this->expiration->add($time);
+            } elseif (is_numeric($time)) {
+                $this->expiration = new \DateTime();
+                $this->expiration->add(new \DateInterval('PT' . $time . 'S'));
+            } elseif ($time === null) {
+                $this->expiration = new \DateTime($this->defaultExpiration);
+            } else {
+                throw new InvalidArgumentException('Invalid DateTime format.');
+            }
+        } catch (\Throwable $e) {
+            $this->logException(
+                'CacheItem::expiresAfter() caused an error.',
+                $e
+            );
         }
 
         return $this;
@@ -223,7 +237,9 @@ class CacheItem implements CacheItemInterface
      *
      * @param  string  $key
      *
-     * @return  void:
+     * @return  void
+     *
+     * @throws InvalidArgumentException
      */
     private function validateKey(string $key): void
     {
@@ -233,26 +249,21 @@ class CacheItem implements CacheItemInterface
     }
 
     /**
-     * Method to get property Getter
+     * logException
      *
-     * @return  callable
+     * @param  string                   $message
+     * @param  \Throwable               $e
+     *
+     * @return  void
      */
-    public function getGetter(): callable
+    protected function logException(string $message, \Throwable $e): void
     {
-        return $this->getter;
-    }
-
-    /**
-     * Method to set property getter
-     *
-     * @param  callable  $getter
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function setGetter(callable $getter)
-    {
-        $this->getter = $getter;
-
-        return $this;
+        $this->logger->critical(
+            $message,
+            [
+                'exception' => $e,
+                'key' => $this->getKey()
+            ]
+        );
     }
 }

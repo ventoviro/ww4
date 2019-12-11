@@ -11,13 +11,13 @@ declare(strict_types=1);
 
 namespace Windwalker\Cache\Storage;
 
-use Windwalker\Cache\Exception\StorageException;
+use RuntimeException;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
 
 /**
  * The FilesystemStorage class.
  */
-class FilesystemStorage implements StorageInterface
+class FileStorage implements StorageInterface
 {
     use OptionAccessTrait;
 
@@ -105,7 +105,7 @@ class FilesystemStorage implements StorageInterface
 
         if (!is_dir($filePath)) {
             if (!mkdir($filePath, 0770, true) && !is_dir($filePath)) {
-                throw new StorageException(sprintf('Directory "%s" was not created', $filePath));
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $filePath));
             }
         }
 
@@ -127,19 +127,19 @@ class FilesystemStorage implements StorageInterface
      *
      * @return  boolean  The method will always return true, if it returns.
      *
-     * @throws  StorageException if the file path is invalid.
+     * @throws  RuntimeException if the file path is invalid.
      * @since   2.0
      */
     protected function checkFilePath($filePath): bool
     {
         if (!is_dir($filePath)) {
             if (!mkdir($filePath, 0755, true) && !is_dir($filePath)) {
-                throw new StorageException(sprintf('Directory "%s" was not created', $filePath));
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $filePath));
             }
         }
 
         if (!is_writable($filePath)) {
-            throw new StorageException(sprintf('The base cache path `%s` is not writable.', $filePath));
+            throw new RuntimeException(sprintf('The base cache path `%s` is not writable.', $filePath));
         }
 
         return true;
@@ -175,7 +175,7 @@ class FilesystemStorage implements StorageInterface
         $resource = @fopen($filename, 'rb');
 
         if (!$resource) {
-            throw new StorageException(
+            throw new RuntimeException(
                 sprintf(
                     'Unable to fetch cache entry for %s.  Connot open the resource.',
                     $filename
@@ -185,7 +185,7 @@ class FilesystemStorage implements StorageInterface
 
         // If locking is enabled get a shared lock for reading on the resource.
         if ($this->getOption('lock', false) && !flock($resource, LOCK_SH)) {
-            throw new StorageException(
+            throw new RuntimeException(
                 sprintf(
                     'Unable to fetch cache entry for %s.  Connot obtain a lock.',
                     $filename
@@ -197,7 +197,7 @@ class FilesystemStorage implements StorageInterface
 
         // If locking is enabled release the lock on the resource.
         if ($this->getOption('lock', false) && !flock($resource, LOCK_UN)) {
-            throw new StorageException(
+            throw new RuntimeException(
                 sprintf(
                     'Unable to fetch cache entry for %s.  Connot release the lock.',
                     $filename

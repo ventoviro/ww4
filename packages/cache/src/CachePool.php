@@ -16,6 +16,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
+use Psr\SimpleCache\CacheInterface;
 use Windwalker\Cache\Exception\RuntimeException;
 use Windwalker\Cache\Serializer\RawSerializer;
 use Windwalker\Cache\Serializer\SerializerInterface;
@@ -25,7 +26,7 @@ use Windwalker\Cache\Storage\StorageInterface;
 /**
  * The Pool class.
  */
-class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
+class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -68,13 +69,22 @@ class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItem($key)
     {
-        return new CacheItem($key, function () use ($key) {
-            return $this->serializer->unserialize($this->storage->get($key));
-        });
+        $item = new CacheItem($key);
+        $item->setLogger($this->logger);
+
+        if (!$this->storage->has($key)) {
+            return $item;
+        }
+
+        $item->set($this->storage->get($key));
+
+        return $item;
     }
 
     /**
      * @inheritDoc
+     *
+     * @return \Traversable|CacheItemInterface[]
      */
     public function getItems(array $keys = [])
     {
@@ -270,5 +280,86 @@ class CachePool implements CacheItemPoolInterface, LoggerAwareInterface
         $this->serializer = $serializer;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function get($key, $default = null)
+    {
+        $item = $this->getItem($key);
+
+        if (!$item->isHit()) {
+            return $default;
+        }
+
+        return $item->get();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function set($key, $value, $ttl = null)
+    {
+        $item = $this->getItem($key);
+
+        $item->expiresAfter($ttl);
+        $item->set($value);
+
+        return $this->save($item);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function delete($key)
+    {
+        return $this->deleteItem($key);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMultiple($keys, $default = null)
+    {
+        foreach ($this->getItems($keys) as $item) {
+            yield $item->get();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setMultiple($values, $ttl = null)
+    {
+        $results = true;
+
+        foreach ($values as $key => $value) {
+            $results = $this->set($key, $value, $ttl) && $results;
+        }
+
+        return $results;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteMultiple($keys)
+    {
+        $results = true;
+
+        foreach ($keys as $key) {
+            $results = $this->delete($key) && $results;
+        }
+
+        return $results;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function has($key)
+    {
+        return $this->hasItem($key);
     }
 }
