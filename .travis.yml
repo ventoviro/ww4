@@ -13,8 +13,9 @@ matrix:
 #addons:
 #  postgresql: "9.3"
 #
-#services:
-#  - memcached # will start memcached
+services:
+  - memcached
+  - redis-server
 
 before_install:
   - composer global require phpunit/phpunit

@@ -54,7 +54,13 @@ class RedisStorage implements StorageInterface
     {
         $this->connect();
 
-        return $this->driver->get($key);
+        $value = $this->driver->get($key);
+
+        if ($value === false) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**
@@ -121,8 +127,10 @@ class RedisStorage implements StorageInterface
             return $this;
         }
 
+        $this->driver = new Redis();
+
         if (($this->defaultHost === 'localhost' || filter_var($this->defaultHost, FILTER_VALIDATE_IP))) {
-            $this->driver->connect('tcp://' . $this->defaultHost . ':' . $this->defaultPort, $this->defaultPort);
+            $this->driver->connect($this->defaultHost, $this->defaultPort);
         } else {
             $this->driver->connect($this->defaultHost, null);
         }

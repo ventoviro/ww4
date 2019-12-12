@@ -48,10 +48,10 @@ class MemcachedStorage implements StorageInterface
         $code = $this->driver->getResultCode();
 
         if ($code === \Memcached::RES_SUCCESS) {
-            return null;
+            return $value;
         }
 
-        return $value;
+        return null;
     }
 
     /**
@@ -115,6 +115,7 @@ class MemcachedStorage implements StorageInterface
         }
 
         $this->driver = new \Memcached();
+        $this->driver->addServer('localhost', 11211);
 
         $this->driver->setOption(\Memcached::OPT_COMPRESSION, false);
         $this->driver->setOption(\Memcached::OPT_LIBKETAMA_COMPATIBLE, true);

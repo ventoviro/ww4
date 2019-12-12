@@ -34,7 +34,17 @@ class FileStorageTest extends TestCase
      */
     public function testClear(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        foreach (range(1, 5) as $i) {
+            $this->instance->save('foo' . $i, 'FOO' . $i);
+        }
+
+        $this->instance->clear();
+
+        $path = $this->root . '/' . $this->instance::hashFilename('hello') . '.data';
+
+        $files = glob($path . '/*');
+
+        self::assertEmpty($files);
     }
 
     /**
