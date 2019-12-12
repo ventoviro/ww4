@@ -53,6 +53,11 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     protected $serializer;
 
     /**
+     * @var bool
+     */
+    private $autoCommit = true;
+
+    /**
      * CachePool constructor.
      *
      * @param  StorageInterface     $storage
@@ -163,10 +168,18 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
                 throw new InvalidArgumentException('Only support ' . CacheItem::class);
             }
 
+            $expiration = $item->getExpiration()->getTimestamp();
+
+            if ($expiration < time()) {
+                $this->deleteItem($item->getKey());
+                $item->setIsHit(false);
+                return false;
+            }
+
             $this->storage->save(
                 $item->getKey(),
                 $this->serializer->serialize($item->get()),
-                $item->getExpiration()->getTimestamp()
+                $expiration
             );
 
             return true;
@@ -185,11 +198,15 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
      */
     public function saveDeferred(CacheItemInterface $item)
     {
+        if (!$item instanceof CacheItem) {
+            throw new InvalidArgumentException('Only support ' . CacheItem::class);
+        }
+
         while ($this->commiting) {
             usleep(1);
         }
 
-        $this->deferredItems[] = $item;
+        $this->deferredItems[$item->getKey()] = $item;
 
         return true;
     }
@@ -202,18 +219,14 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
         $this->commiting = true;
 
         foreach ($this->deferredItems as $key => $item) {
-            $this->save($item);
-
-            if ($item->isHit()) {
+            if ($this->save($item)) {
                 unset($this->deferredItems[$key]);
             }
         }
 
-        $result = !count($this->deferredItems);
-
         $this->commiting = false;
 
-        return $result;
+        return !count($this->deferredItems);
     }
 
     /**
@@ -384,10 +397,40 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     }
 
     /**
+     * Method to get property DeferredItems
+     *
+     * @return  array
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function getDeferredItems(): array
+    {
+        return $this->deferredItems;
+    }
+
+    /**
+     * Method to set property autoCommit
+     *
+     * @param  bool  $autoCommit
+     *
+     * @return  static  Return self to support chaining.
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function autoCommit(bool $autoCommit)
+    {
+        $this->autoCommit = $autoCommit;
+
+        return $this;
+    }
+
+    /**
      * Commit when destructing.
      */
     public function __destruct()
     {
-        $this->commit();
+        if ($this->autoCommit) {
+            $this->commit();
+        }
     }
 }

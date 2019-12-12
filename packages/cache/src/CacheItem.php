@@ -67,16 +67,21 @@ class CacheItem implements CacheItemInterface
     /**
      * Class constructor.
      *
-     * @param  string  $key  The key for the cache item.
+     * @param  string  $key    The key for the cache item.
+     * @param  mixed   $value  The value to cache.
      *
      * @since   2.0
      */
-    public function __construct(?string $key = null)
+    public function __construct(?string $key = null, $value = null)
     {
         $this->validateKey($key);
 
         $this->key = $key;
         $this->logger = new NullLogger();
+
+        if ($value !== null) {
+            $this->set($value);
+        }
 
         $this->expiresAfter(null);
     }
@@ -88,7 +93,7 @@ class CacheItem implements CacheItemInterface
      *
      * @since   2.0
      */
-    public function getKey()
+    public function getKey(): string
     {
         return $this->key;
     }
@@ -137,7 +142,7 @@ class CacheItem implements CacheItemInterface
      *
      * @since   2.0
      */
-    public function isHit()
+    public function isHit(): bool
     {
         try {
             if (new \DateTime() > $this->expiration) {
@@ -231,6 +236,22 @@ class CacheItem implements CacheItemInterface
     public function getExpiration(): DateTimeInterface
     {
         return $this->expiration;
+    }
+
+    /**
+     * Method to set property hit
+     *
+     * @param  bool  $hit
+     *
+     * @return  static  Return self to support chaining.
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function setIsHit(bool $hit)
+    {
+        $this->hit = $hit;
+
+        return $this;
     }
 
     /**

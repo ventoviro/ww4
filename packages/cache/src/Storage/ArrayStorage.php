@@ -23,14 +23,14 @@ class ArrayStorage implements StorageInterface
      *
      * @var  array
      */
-    protected $storage = [];
+    protected $data = [];
 
     /**
      * @inheritDoc
      */
     public function get(string $key)
     {
-        $data = $this->storage[$key] ?? null;
+        $data = $this->data[$key] ?? null;
 
         if ($data === null) {
             return null;
@@ -50,11 +50,11 @@ class ArrayStorage implements StorageInterface
      */
     public function has(string $key): bool
     {
-        if (!isset($this->storage[$key])) {
+        if (!isset($this->data[$key])) {
             return false;
         }
 
-        [$expiration, $value] = $this->storage[$key];
+        [$expiration, $value] = $this->data[$key];
 
         return time() <= $expiration;
     }
@@ -64,7 +64,7 @@ class ArrayStorage implements StorageInterface
      */
     public function clear(): bool
     {
-        $this->storage = [];
+        $this->data = [];
 
         return true;
     }
@@ -74,7 +74,7 @@ class ArrayStorage implements StorageInterface
      */
     public function remove(string $key): bool
     {
-        unset($this->storage[$key]);
+        unset($this->data[$key]);
 
         return true;
     }
@@ -84,11 +84,39 @@ class ArrayStorage implements StorageInterface
      */
     public function save(string $key, $value, int $expiration = 0): bool
     {
-        $this->storage[$key] = [
+        $this->data[$key] = [
             $expiration,
             $value,
         ];
 
         return true;
+    }
+
+    /**
+     * Method to get property Data
+     *
+     * @return  array
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function getData(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Method to set property data
+     *
+     * @param  array  $data
+     *
+     * @return  static  Return self to support chaining.
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function setData(array $data)
+    {
+        $this->data = $data;
+
+        return $this;
     }
 }

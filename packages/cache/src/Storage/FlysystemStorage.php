@@ -25,11 +25,6 @@ class FlysystemStorage extends FileStorage
     protected $driver;
 
     /**
-     * @var array
-     */
-    protected $options;
-
-    /**
      * FlysystemStorage constructor.
      *
      * @param  Filesystem  $driver
@@ -41,7 +36,7 @@ class FlysystemStorage extends FileStorage
     {
         $this->driver = $driver;
 
-        parent::__construct($driver->getMetadata('/')['path'], $options);
+        parent::__construct('.', $options);
     }
 
     /**
@@ -49,7 +44,7 @@ class FlysystemStorage extends FileStorage
      */
     protected function read(string $key): string
     {
-        return (string) $this->getDriver()->read($key);
+        return (string) $this->getDriver()->read($this->fetchStreamUri($key));
     }
 
     /**
@@ -57,7 +52,7 @@ class FlysystemStorage extends FileStorage
      */
     protected function write(string $key, string $value): bool
     {
-        return $this->getDriver()->write($key, $value);
+        return $this->getDriver()->write($this->fetchStreamUri($key), $value);
     }
 
     /**
@@ -65,7 +60,7 @@ class FlysystemStorage extends FileStorage
      */
     protected function exists(string $key): bool
     {
-        return $this->getDriver()->has($key);
+        return $this->getDriver()->has($this->fetchStreamUri($key));
     }
 
     /**
@@ -87,7 +82,7 @@ class FlysystemStorage extends FileStorage
      */
     public function remove(string $key): bool
     {
-        return $this->getDriver()->delete($key);
+        return $this->getDriver()->delete($this->fetchStreamUri($key));
     }
 
     /**
@@ -101,11 +96,11 @@ class FlysystemStorage extends FileStorage
     /**
      * Method to get property Driver
      *
-     * @return  FilesystemInterface
+     * @return  Filesystem
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getDriver(): FilesystemInterface
+    public function getDriver(): Filesystem
     {
         return $this->driver;
     }
@@ -113,16 +108,53 @@ class FlysystemStorage extends FileStorage
     /**
      * Method to set property driver
      *
-     * @param  FilesystemInterface  $driver
+     * @param  Filesystem  $driver
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setDriver(FilesystemInterface $driver)
+    public function setDriver(Filesystem $driver)
     {
         $this->driver = $driver;
 
         return $this;
+    }
+
+    /**
+     * Get the full stream URI for the cache entry.
+     *
+     * @param  string  $key  The storage entry identifier.
+     *
+     * @return  string  The full stream URI for the cache entry.
+     *
+     * @throws  \RuntimeException if the cache path is invalid.
+     * @since   2.0
+     */
+    public function fetchStreamUri(string $key): string
+    {
+        $filePath = $this->getRoot();
+
+        $this->checkFilePath($filePath);
+
+        $ext = '.data';
+
+        if ($this->getOption('deny_access', false)) {
+            $ext = '.php';
+        }
+
+        return self::hashFilename($key) . $ext;
+    }
+
+    /**
+     * hashFilename
+     *
+     * @param  string  $key
+     *
+     * @return  string
+     */
+    public static function hashFilename(string $key): string
+    {
+        return '~' . hash('sha1', $key);
     }
 }

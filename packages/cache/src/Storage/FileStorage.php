@@ -55,7 +55,7 @@ class FileStorage implements StorageInterface
     {
         $data = $this->read($key);
 
-        sscanf($this->getOption('expiration_format'), $data, $expiration, $value);
+        sscanf($data, $this->getOption('expiration_format'), $expiration, $value);
 
         return $value;
     }
@@ -71,9 +71,9 @@ class FileStorage implements StorageInterface
 
         $data = $this->read($key);
 
-        sscanf($this->getOption('expiration_format'), $data, $expiration);
+        sscanf($data, $this->getOption('expiration_format'), $expiration, $value);
 
-        if ($expiration > time()) {
+        if ((int) $expiration === 0 || $expiration > time()) {
             return true;
         }
 
@@ -87,7 +87,7 @@ class FileStorage implements StorageInterface
      */
     public function clear(): bool
     {
-        $filePath = $this->root;
+        $filePath = $this->getRoot();
         $this->checkFilePath($filePath);
 
         $iterator = new \RegexIterator(
@@ -146,8 +146,14 @@ class FileStorage implements StorageInterface
     protected function checkFilePath($filePath): bool
     {
         if (!is_dir($filePath)) {
-            if (!mkdir($filePath, 0755, true) && !is_dir($filePath)) {
-                throw new RuntimeException(sprintf('Directory "%s" was not created', $filePath));
+            try {
+                mkdir($filePath, 0755, true);
+            } catch (\Throwable $e) {
+                throw new RuntimeException(
+                    sprintf('Directory "%s" was not created with error: %s', $filePath, $e->getMessage()),
+                    $e->getCode(),
+                    $e
+                );
             }
         }
 
@@ -173,7 +179,7 @@ class FileStorage implements StorageInterface
         return (bool) file_put_contents(
             $filename,
             $value,
-            ($this->getOption('lock', false) ? LOCK_EX : null)
+            $this->getOption('lock', false) ? LOCK_EX : 0
         );
     }
 
@@ -250,7 +256,7 @@ class FileStorage implements StorageInterface
      */
     public function fetchStreamUri(string $key): string
     {
-        $filePath = $this->root;
+        $filePath = $this->getRoot();
 
         $this->checkFilePath($filePath);
 
@@ -259,9 +265,31 @@ class FileStorage implements StorageInterface
         }
 
         return sprintf(
-            '%s/~%s' . $this->getOption('extension'),
+            '%s/%s' . $this->getOption('extension'),
             $filePath,
-            hash('sha1', $key)
+            self::hashFilename($key)
         );
+    }
+
+    /**
+     * hashFilename
+     *
+     * @param  string  $key
+     *
+     * @return  string
+     */
+    public static function hashFilename(string $key): string
+    {
+        return '~' . hash('sha1', $key);
+    }
+
+    /**
+     * getRoot
+     *
+     * @return  string
+     */
+    public function getRoot(): string
+    {
+        return $this->root;
     }
 }
