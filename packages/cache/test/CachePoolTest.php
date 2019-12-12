@@ -261,6 +261,28 @@ class CachePoolTest extends TestCase
     }
 
     /**
+     * @see  CachePool::call
+     */
+    public function testCall(): void
+    {
+        $i = 0;
+
+        $getter = function () use (&$i) {
+            return $this->instance->call('hello', static function () use (&$i) {
+                $i++;
+
+                return 'HELLO-' . $i;
+            });
+        };
+
+        $getter();
+        $getter();
+        $r = $getter();
+
+        self::assertEquals('HELLO-' . 1, $r);
+    }
+
+    /**
      * @see  CachePool::getMultiple
      */
     public function testGetMultiple(): void

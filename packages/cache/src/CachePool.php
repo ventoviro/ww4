@@ -65,7 +65,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
      */
     public function __construct(?StorageInterface $storage = null, ?SerializerInterface $serializer = null)
     {
-        $this->storage = $storage ?? new ArrayStorage();
+        $this->storage    = $storage ?? new ArrayStorage();
         $this->serializer = $serializer ?? new RawSerializer();
 
         $this->logger = new NullLogger();
@@ -122,6 +122,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
                 'Clearing cache pool caused exception.',
                 $e
             );
+
             return false;
         }
     }
@@ -140,6 +141,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
                 'Deleting cache item caused exception.',
                 $e
             );
+
             return false;
         }
     }
@@ -173,6 +175,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
             if ($expiration < time()) {
                 $this->deleteItem($item->getKey());
                 $item->setIsHit(false);
+
                 return false;
             }
 
@@ -189,6 +192,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
                 $e,
                 $item
             );
+
             return false;
         }
     }
@@ -321,6 +325,31 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     }
 
     /**
+     * call
+     *
+     * @param  string                  $key
+     * @param  callable                $handler
+     * @param  null|int|\DateInterval  $ttl
+     *
+     * @return  mixed
+     *
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    public function call(string $key, callable $handler, $ttl = null)
+    {
+        $item = $this->getItem($key);
+
+        if (!$item->isHit()) {
+            $item->set($handler());
+            $item->expiresAfter($ttl);
+
+            $this->save($item);
+        }
+
+        return $item->get();
+    }
+
+    /**
      * logException
      *
      * @param  string                   $message
@@ -333,10 +362,10 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     {
         $this->logger->critical(
             $message,
-            array(
+            [
                 'exception' => $e,
                 'key' => $item ? $item->getKey() : null
-            )
+            ]
         );
     }
 
