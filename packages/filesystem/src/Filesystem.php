@@ -1,371 +1,654 @@
-<?php
-
+<?php declare(strict_types=1);
 /**
- * Part of ww4 project.
+ * Part of Windwalker project.
  *
- * @copyright  Copyright (C) 2019 __ORGANIZATION__.
- * @license    __LICENSE__
+ * @copyright  Copyright (C) 2019 LYRASOFT.
+ * @license    LGPL-2.0-or-later
  */
-
-declare(strict_types=1);
 
 namespace Windwalker\Filesystem;
 
-use League\Flysystem\Adapter\CanOverwriteFiles;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\Config;
-use League\Flysystem\Filesystem as Flysystem;
-use League\Flysystem\FilesystemInterface;
-use League\Flysystem\RootViolationException;
-use League\Flysystem\Util;
-use Psr\Http\Message\StreamInterface;
-use Windwalker\Filesystem\Stream\FsStreamWrapper;
+use Windwalker\Filesystem\Exception\FilesystemException;
 
 /**
- * The Filesystem class.
+ * Class Filesystem
+ *
+ * @since 2.0
  */
 class Filesystem
 {
-    /**
-     * @var Flysystem
-     */
-    protected $fs;
+    public const PATH_ABSOLUTE = 1;
+
+    public const PATH_RELATIVE = 2;
+
+    public const PATH_BASENAME = 4;
 
     /**
-     * Filesystem constructor.
+     * Create a folder -- and all necessary parent folders.
      *
-     * @param  Flysystem|AdapterInterface|string  $source
-     * @param  array                              $options
+     * @param   string  $path A path to create from the base path.
+     * @param   integer $mode Directory permissions to set for folders created. 0755 by default.
+     *
+     * @return  boolean  True if successful.
+     *
+     * @since   2.0
+     * @throws  FilesystemException
      */
-    public function __construct($source = null, array $options = [])
+    public function mkdir(string $path = '', int $mode = 0755): bool
     {
-        $this->setSource($source, $options);
+        static $nested = 0;
+
+        // Check to make sure the path valid and clean
+        $path = Path::clean($path);
+
+        // Check if parent dir exists
+        $parent = dirname($path);
+
+        if (!is_dir($parent)) {
+            // Prevent infinite loops!
+            $nested++;
+
+            if ($nested > 20 || $parent === $path) {
+                throw new FilesystemException(__METHOD__ . ': Infinite loop detected');
+            }
+
+            // Create the parent directory
+            if ($this->mkdir($parent, $mode) !== true) {
+                // Folder::create throws an error
+                $nested--;
+
+                return false;
+            }
+
+            // OK, parent directory has been created
+            $nested--;
+        }
+
+        // Check if dir already exists
+        if (is_dir($path)) {
+            return true;
+        }
+
+        // First set umask
+        $origmask = @umask(0);
+
+        try {
+            if (!mkdir($path, $mode) && !is_dir($path)) {
+                throw new FilesystemException(sprintf('Directory "%s" was not created', $path));
+            }
+        } catch (\Throwable $e) {
+            throw new FilesystemException(
+                $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+        } finally {
+            @umask($origmask);
+        }
+
+        return true;
     }
 
     /**
-     * has
+     * copy
      *
-     * @param  string  $path
+     * @param string $src
+     * @param string $dest
+     * @param bool   $force
      *
      * @return  bool
      */
-    public function has(string $path): bool
+    public function copy($src, $dest, $force = false): bool
     {
-        return (bool) $this->getAdapter()->has(Path::normalize($path));
-    }
+        $result = null;
 
-    public function write(string $path, string $contents, array $options = [])
-    {
-        return $this->wrapFile(
-            $this->getAdapter()->write(Path::normalize($path), $contents, $this->prepareConfig($options))
-        );
-    }
-
-    public function writeStream(string $path, $resource, array $options = []): FileObject
-    {
-        return $this->wrapFile(
-            $this->getAdapter()
-                ->writeStream(Path::normalize($path), $this->wrapResource($resource), $this->prepareConfig($options))
-        );
-    }
-
-    public function put(string $path, string $contents, array $options = []): bool
-    {
-        $path = Path::normalize($path);
-
-        if (!$this->getAdapter() instanceof CanOverwriteFiles && $this->has($path)) {
-            return (bool) $this->getAdapter()->update($path, $contents, $this->prepareConfig($options));
+        if (is_dir($src)) {
+            $result = $this->copyFolder($src, $dest, $force);
+        } elseif (is_file($src)) {
+            $result = $this->copyFile($src, $dest, $force);
         }
 
-        return (bool) $this->getAdapter()
-            ->write($path, $contents, $this->prepareConfig($options));
+        return $result;
     }
 
-    public function putStream(string $path, $resource, array $options = []): bool
+    /**
+     * copyFolder
+     *
+     * @param  string  $src
+     * @param  string  $dest
+     * @param  bool    $force
+     *
+     * @return  bool
+     */
+    private function copyFolder(string $src, string $dest, bool $force = false): bool
     {
-        $resource = $this->wrapResource($resource);
+        // Eliminate trailing directory separators, if any
+        $src = rtrim($src, '/\\');
+        $dest = rtrim($dest, '/\\');
 
-        if (!$this->getAdapter() instanceof CanOverwriteFiles && $this->has($path)) {
-            return (bool) $this->getAdapter()
-                ->updateStream(Path::normalize($path), $this->wrapResource($resource), $this->prepareConfig($options));
+        if (!is_dir($src)) {
+            $this->throwException(
+                'Source folder not found',
+                $src
+            );
         }
 
-        return (bool) $this->getAdapter()
-            ->writeStream(Path::normalize($path), $this->wrapResource($resource), $this->prepareConfig($options));
-    }
-
-    public function update(string $path, string $contents, array $options = []): bool
-    {
-        return (bool) $this->getAdapter()
-            ->update(Path::normalize($path), $contents, $this->prepareConfig($options));
-    }
-
-    public function updateStream(string $path, $resource, array $options = []): bool
-    {
-        return (bool) $this->getAdapter()
-            ->updateStream(Path::normalize($path), $this->wrapResource($resource), $this->prepareConfig($options));
-    }
-
-    public function read($path)
-    {
-        if (!$result = $this->getAdapter()->read(Path::normalize($path))) {
-            return false;
+        if (is_dir($dest) && !$force) {
+            $this->throwException(
+                'Destination folder exists',
+                $dest
+            );
         }
 
-        return $result['contents'];
-    }
-
-    public function readStream($path)
-    {
-        $path = Path::normalize($path);
-
-        if (!$object = $this->getAdapter()->readStream($path)) {
-            return false;
+        // Make sure the destination exists
+        if (!$this->mkdir($dest)) {
+            $this->throwException(
+                'Cannot create destination folder',
+                $dest
+            );
         }
 
-        return $object['stream'];
+        $sources = $this->items($src, true);
+
+        // Walk through the directory copying files and recursing into folders.
+        /** @var FileObject $file */
+        foreach ($sources as $file) {
+            $rFile = $file->getRelativePathFrom($src);
+
+            $srcFile = $src . '/' . $rFile;
+            $destFile = $dest . '/' . $rFile;
+
+            if (is_dir($srcFile)) {
+                $this->mkdir($destFile);
+            } elseif (is_file($srcFile)) {
+                $this->copyFile($srcFile, $destFile, $force);
+            }
+        }
+
+        return true;
     }
 
+    /**
+     * Copies a file
+     *
+     * @param   string $src   The path to the source file
+     * @param   string $dest  The path to the destination file
+     * @param   bool   $force Force copy.
+     *
+     * @throws \UnexpectedValueException
+     * @throws Exception\FilesystemException
+     * @return  boolean  True on success
+     *
+     * @since   2.0
+     */
+    private function copyFile(string $src, string $dest, bool $force = false): bool
+    {
+        // Check src path
+        if (!is_readable($src)) {
+            throw new \UnexpectedValueException(__METHOD__ . ': Cannot find or read file: ' . $src);
+        }
+
+        // Check folder exists
+        $dir = dirname($dest);
+
+        if (!is_dir($dir)) {
+            $this->mkdir($dir);
+        }
+
+        // Check is a folder or file
+        if (file_exists($dest)) {
+            if ($force) {
+                $this->delete($dest);
+            } else {
+                throw new FilesystemException($dest . ' has exists, copy failed.');
+            }
+        }
+
+        return copy($src, $dest);
+    }
+
+    /**
+     * move
+     *
+     * @param string $src
+     * @param string $dest
+     * @param bool   $force
+     *
+     * @return  bool
+     */
+    public function move($src, $dest, $force = false)
+    {
+        // Check src path
+        if (!is_readable($src)) {
+            return 'Cannot find source file.';
+        }
+
+        // Delete first if exists
+        if (file_exists($dest)) {
+            if ($force) {
+                $this->delete($dest);
+            } else {
+                throw new FilesystemException('File: ' . $dest . ' exists, move failed.');
+            }
+        }
+
+        $dir = dirname($dest);
+
+        if (!is_dir($dir)) {
+            $this->mkdir($dir);
+        }
+
+        try {
+            rename($src, $dest);
+        } catch (\Throwable $e) {
+            throw new FilesystemException(
+                $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+        }
+
+        return true;
+    }
+
+    /**
+     * delete
+     *
+     * @param string $path
+     *
+     * @return  bool
+     */
     public function delete($path)
     {
-        return $this->getAdapter()->delete(Path::normalize($path));
-    }
+        $path = Path::clean(FileObject::unwrap($path));
 
-    public function readAndDelete(string $path)
-    {
-        $contents = $this->read($path);
+        if (is_dir($path)) {
+            // Delete children first
+            $files = $this->items($path, true);
 
-        if ($contents === false) {
-            return false;
+            /** @var FileObject $file */
+            foreach ($files as $file) {
+                $this->delete($file);
+            }
         }
 
-        $this->delete($path);
+        // Try making the file writable first. If it's read-only, it can't be deleted
+        // on Windows, even if the parent folder is writable
+        @chmod($path, 0777);
 
-        return $contents;
-    }
-
-    public function deleteDir($dirname): bool
-    {
-        $dirname = Path::normalize($dirname);
-
-        if ($dirname === '') {
-            throw new RootViolationException('Root directories can not be deleted.');
+        // In case of restricted permissions we zap it one way or the other
+        // as long as the owner is either the webserver or the ftp
+        try {
+            if (is_dir($path)) {
+                rmdir($path);
+            } else {
+                unlink($path);
+            }
+        } catch (\Throwable $e) {
+            throw new FilesystemException(
+                $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
         }
 
-        return (bool) $this->getAdapter()->deleteDir($dirname);
-    }
-
-    public function createDir(string $dirname, array $options = []): bool
-    {
-        $dirname = Path::normalize($dirname);
-
-        return (bool) $this->getAdapter()->createDir($dirname, $this->prepareConfig($options));
-    }
-
-    public function rename(string $path, string $newpath): bool
-    {
-        return (bool) $this->getAdapter()->rename(Path::normalize($path), Path::normalize($newpath));
-    }
-
-    public function copy(string $path, string $newpath)
-    {
-        return $this->getAdapter()->copy($path, $newpath);
-    }
-
-    public function listContents($directory = '', $recursive = false): \Traversable
-    {
-        $directory = Path::normalize($directory);
-        $contents  = $this->getAdapter()->listContents($directory, $recursive);
-
-        foreach ($contents as $content) {
-            yield $this->wrapFile($content);
-        }
+        return true;
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getMimetype($path)
-    {
-        $path = Path::normalize($path);
-
-        if ((!$object = $this->getAdapter()->getMimetype($path)) || !array_key_exists('mimetype', $object)) {
-            return false;
-        }
-
-        return $object['mimetype'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTimestamp($path)
-    {
-        $path = Path::normalize($path);
-
-        if ((!$object = $this->getAdapter()->getTimestamp($path)) || !array_key_exists('timestamp', $object)) {
-            return false;
-        }
-
-        return $object['timestamp'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getVisibility($path)
-    {
-        $path = Path::normalize($path);
-
-        if ((!$object = $this->getAdapter()->getVisibility($path)) || !array_key_exists('visibility', $object)) {
-            return false;
-        }
-
-        return $object['visibility'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSize($path)
-    {
-        $path = Path::normalize($path);
-
-        if ((!$object = $this->getAdapter()->getSize($path)) || !array_key_exists('size', $object)) {
-            return false;
-        }
-
-        return (int) $object['size'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setVisibility($path, $visibility)
-    {
-        $path = Path::normalize($path);
-
-        return (bool) $this->getAdapter()->setVisibility($path, $visibility);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMetadata($path)
-    {
-        $path = Path::normalize($path);
-
-        return $this->getAdapter()->getMetadata($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function get($path)
-    {
-        $path = Path::normalize($path);
-
-        return new FileObject($this, $path);
-    }
-
-    /**
-     * getFlysystem
+     * files
      *
-     * @return  FilesystemInterface
+     * @param   string $path
+     * @param   bool   $recursive
+     *
+     * @return  \CallbackFilterIterator|FileObject[]
      */
-    public function getFlysystem(): FilesystemInterface
+    public function files($path, $recursive = false): \Traversable
     {
-        return $this->fs;
+        /**
+         * Files callback
+         *
+         * @param \SplFileInfo                $current  Current item's value
+         * @param string                      $key      Current item's key
+         * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
+         *
+         * @return boolean   TRUE to accept the current item, FALSE otherwise
+         */
+        $callback = static function ($current, $key, $iterator) {
+            return $current->isFile();
+        };
+
+        return $this->findByCallback($path, $callback, $recursive);
     }
 
     /**
-     * setSource
+     * folders
      *
-     * @param  Flysystem|AdapterInterface|string  $source
-     * @param  array                              $options
+     * @param   string  $path
+     * @param   bool    $recursive
      *
-     * @return  static
+     * @return  \CallbackFilterIterator|FileObject[]
      */
-    public function setSource($source = null, array $options = [])
+    public function folders(string $path, bool $recursive = false): \Traversable
     {
-        if (is_string($source)) {
-            $fs = new Flysystem(new Local($source), $options);
-        } elseif ($source instanceof AdapterInterface) {
-            $fs = new Flysystem($source, $options);
-        } elseif ($source instanceof Flysystem) {
-            $fs = $source;
+        /**
+         * Files callback
+         *
+         * @param \SplFileInfo                $current  Current item's value
+         * @param string                      $key      Current item's key
+         * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
+         *
+         * @return boolean   TRUE to accept the current item, FALSE otherwise
+         */
+        $callback = static function ($current, $key, $iterator) use ($path, $recursive) {
+            if ($recursive) {
+                // Ignore self
+                if ($iterator->getRealPath() === Path::clean($path)) {
+                    return false;
+                }
+
+                // If set to recursive, every returned folder name will include a dot (.),
+                // so we can't using isDot() to detect folder.
+                return $iterator->isDir() && ($iterator->getBasename() !== '..');
+            }
+
+            return $iterator->isDir() && !$iterator->isDot();
+        };
+
+        return $this->findByCallback($path, $callback, $recursive);
+    }
+
+    /**
+     * items
+     *
+     * @param   string  $path
+     * @param   bool    $recursive
+     *
+     * @return  \CallbackFilterIterator|FileObject[]
+     */
+    public function items($path, $recursive = false): \Traversable
+    {
+        /**
+         * Files callback
+         *
+         * @param \SplFileInfo                $current  Current item's value
+         * @param string                      $key      Current item's key
+         * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
+         *
+         * @return boolean   TRUE to accept the current item, FALSE otherwise
+         */
+        $callback = static function ($current, $key, $iterator) use ($path, $recursive) {
+            if ($recursive) {
+                // Ignore self
+                $cPath = $current->isDir() ? $current->getPath() : $current->getPathname();
+
+                if ($cPath === Path::clean($path)) {
+                    return false;
+                }
+
+                // If set to recursive, every returned folder name will include a dot (.),
+                // so we can't using isDot() to detect folder.
+                return ($current->getBasename() !== '..');
+            }
+
+            return !$current->isDot();
+        };
+
+        return $this->findByCallback($path, $callback, $recursive);
+    }
+
+    /**
+     * Find one file and return.
+     *
+     * @param  string  $path          The directory path.
+     * @param  mixed   $condition     Finding condition, that can be a string, a regex or a callback function.
+     *                                Callback example:
+     *                                <code>
+     *                                function($current, $key, $iterator)
+     *                                {
+     *                                return @preg_match('^Foo', $current->getFilename())  && ! $iterator->isDot();
+     *                                }
+     *                                </code>
+     * @param  boolean $recursive     True to resursive.
+     *
+     * @return  \SplFileInfo  Finded file info object.
+     *
+     * @since  2.0
+     */
+    public function findOne($path, $condition, $recursive = false)
+    {
+        $iterator = new \LimitIterator($this->find($path, $condition, $recursive), 0, 1);
+
+        $iterator->rewind();
+
+        return $iterator->current();
+    }
+
+    /**
+     * Support node style double star finder.
+     *
+     * @param string $pattern
+     * @param int    $flags
+     *
+     * @return  array
+     *
+     * @since  3.5
+     */
+    public static function glob(string $pattern, int $flags = 0): array
+    {
+        $pattern = Path::clean($pattern);
+
+        if (strpos($pattern, '**') === false) {
+            $files = glob($pattern, $flags);
         } else {
-            $fs = new Flysystem(new Local('/'), $options);
+            $position = strpos($pattern, '**');
+            $rootPattern = substr($pattern, 0, $position - 1);
+            $restPattern = substr($pattern, $position + 2);
+            $patterns = [$rootPattern . $restPattern];
+            $rootPattern .= DIRECTORY_SEPARATOR . '*';
+
+            while ($dirs = glob($rootPattern, GLOB_ONLYDIR)) {
+                $rootPattern .= DIRECTORY_SEPARATOR . '*';
+
+                foreach ($dirs as $dir) {
+                    $patterns[] = $dir . $restPattern;
+                }
+            }
+
+            $files = [];
+
+            foreach ($patterns as $pat) {
+                $files[] = static::glob($pat, $flags);
+            }
+
+            $files = array_merge(...$files);
         }
 
-        $this->fs = $fs;
+        $files = array_unique($files);
 
-        return $this;
+        sort($files);
+
+        return $files;
     }
 
     /**
-     * getAdapter
+     * globAll
      *
-     * @return  AdapterInterface
+     * @param string $baseDir
+     * @param array  $patterns
+     * @param int    $flags
+     *
+     * @return  array
+     *
+     * @since  3.5
      */
-    public function getAdapter(): AdapterInterface
+    public static function globAll(string $baseDir, array $patterns, int $flags = 0): array
     {
-        return $this->fs->getAdapter();
-    }
+        $files = [];
+        $inverse = [];
 
-    /**
-     * Convert a config array to a Config object with the correct fallback.
-     *
-     * @param  array  $config
-     *
-     * @return Config
-     */
-    protected function prepareConfig(array $config): Config
-    {
-        $configObject = new Config($config);
-        $configObject->setFallback($this->fs->getConfig());
+        foreach ($patterns as $pattern) {
+            if (strpos($pattern, '!') === 0) {
+                $pattern = substr($pattern, 1);
 
-        return $configObject;
-    }
-
-    /**
-     * wrapFile
-     *
-     * @param  array|false  $metadata
-     *
-     * @return  FileObject|false
-     */
-    protected function wrapFile($metadata)
-    {
-        if ($metadata === false) {
-            return false;
+                $inverse[] = static::glob(
+                    rtrim($baseDir, '\\/') . '/' . ltrim($pattern, '\\/'),
+                    $flags
+                );
+            } else {
+                $files[] = static::glob(
+                    rtrim($baseDir, '\\/') . '/' . ltrim($pattern, '\\/'),
+                    $flags
+                );
+            }
         }
 
-        return new FileObject($this, $metadata['path']);
+        if ($files !== []) {
+            $files = array_unique(array_merge(...$files));
+        }
+
+        if ($inverse !== []) {
+            $inverse = array_unique(array_merge(...$inverse));
+        }
+
+        return array_diff($files, $inverse);
     }
 
     /**
-     * Re-wrap PSR StreamInterface as a native resource.
+     * Find all files which matches condition.
      *
-     * @param  resource|StreamInterface  $stream
+     * @param  string  $path        The directory path.
+     * @param  mixed   $condition   Finding condition, that can be a string, a regex or a callback function.
+     *                              Callback example:
+     *                              <code>
+     *                              function($current, $key, $iterator)
+     *                              {
+     *                              return @preg_match('^Foo', $current->getFilename())  && ! $iterator->isDot();
+     *                              }
+     *                              </code>
+     * @param  boolean $recursive   True to resursive.
+     * @param  boolean $toArray     True to convert iterator to array.
      *
-     * @return  resource
+     * @return  \CallbackFilterIterator|FileObject[]  Found files or paths iterator.
+     *
+     * @since  2.0
      */
-    private function wrapResource($stream)
+    public function find($path, $condition, $recursive = false, $toArray = false)
     {
-        if ($stream instanceof StreamInterface) {
-            $path = md5(uniqid('FS', true));
+        // If conditions is string or array, we make it to regex.
+        if (!($condition instanceof \Closure) && !($condition instanceof FileComparatorInterface)) {
+            if (is_array($condition)) {
+                $condition = '/(' . implode('|', $condition) . ')/';
+            } else {
+                $condition = '/' . (string) $condition . '/';
+            }
 
-            FsStreamWrapper::addStream($path, $stream);
-
-            FsStreamWrapper::register();
-
-            return fopen(FsStreamWrapper::fetchUri($path), 'rb+');
+            /**
+             * Files callback
+             *
+             * @param \SplFileInfo                $current  Current item's value
+             * @param string                      $key      Current item's key
+             * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
+             *
+             * @return boolean   TRUE to accept the current item, FALSE otherwise
+             */
+            $condition = function ($current, $key, $iterator) use ($condition) {
+                return @preg_match($condition, $iterator->getFilename()) && !$iterator->isDot();
+            };
+        } elseif ($condition instanceof FileComparatorInterface) {
+            // If condition is compare object, wrap it with callback.
+            /**
+             * Files callback
+             *
+             * @param \SplFileInfo                $current  Current item's value
+             * @param string                      $key      Current item's key
+             * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
+             *
+             * @return boolean   TRUE to accept the current item, FALSE otherwise
+             */
+            $condition = function ($current, $key, $iterator) use ($condition) {
+                return $condition->compare($current, $key, $iterator);
+            };
         }
 
-        rewind($stream);
+        return $this->findByCallback($path, $condition, $recursive, $toArray);
+    }
 
-        return $stream;
+    /**
+     * Using a closure function to filter file.
+     *
+     * Reference: http://www.php.net/manual/en/class.callbackfilteriterator.php
+     *
+     * @param  string   $path      The directory path.
+     * @param  \Closure $callback  A callback function to filter file.
+     * @param  boolean  $recursive True to recursive.
+     *
+     * @return  \CallbackFilterIterator|FileObject[]  Filtered file or path iteator.
+     *
+     * @since  2.0
+     */
+    public function findByCallback(string $path, \Closure $callback, $recursive = false): \CallbackFilterIterator
+    {
+        return new \CallbackFilterIterator($this->createIterator($path, $recursive), $callback);
+    }
+
+    /**
+     * Create file iterator of current dir.
+     *
+     * @param  string  $path      The directory path.
+     * @param  boolean $recursive True to recursive.
+     * @param  integer $options   FilesystemIterator Flags provides which will affect the behavior of some methods.
+     *
+     * @return  \Traversable|FileObject[]  File & dir iterator.
+     */
+    public function createIterator(string $path, bool $recursive = false, int $options = null): \Traversable
+    {
+        $path = Path::clean($path);
+
+        if ($recursive) {
+            $options = $options ?: (\FilesystemIterator::KEY_AS_PATHNAME | \FilesystemIterator::CURRENT_AS_FILEINFO);
+        } else {
+            $options = $options ?: (\FilesystemIterator::KEY_AS_PATHNAME | \FilesystemIterator::CURRENT_AS_FILEINFO
+                | \FilesystemIterator::SKIP_DOTS);
+        }
+
+        $iterator = new \RecursiveDirectoryIterator($path, $options);
+
+        $iterator->setInfoClass(FileObject::class);
+
+        // If rescurive set to true, use RecursiveIteratorIterator
+        return $recursive ? new \RecursiveIteratorIterator($iterator) : $iterator;
+    }
+
+    /**
+     * iteratorToArray
+     *
+     * @param \Traversable $iterator
+     *
+     * @return  array
+     */
+    public static function iteratorToArray(\Traversable $iterator)
+    {
+        $array = [];
+
+        foreach ($iterator as $key => $file) {
+            $array[] = FileObject::unwrap($file);
+        }
+
+        return $array;
+    }
+
+    /**
+     * throwException
+     *
+     * @param  string           $message
+     * @param  string|null      $path
+     * @param  \Throwable|null  $previous
+     *
+     * @return  void
+     */
+    public function throwException(string $message, ?string $path = null, ?\Throwable $previous = null): void
+    {
+        throw new FilesystemException($message, 0, $previous);
     }
 }

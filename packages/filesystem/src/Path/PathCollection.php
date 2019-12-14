@@ -8,7 +8,7 @@
 
 namespace Windwalker\Filesystem\Path;
 
-use Windwalker\Filesystem\Filesystem;
+use Windwalker\Filesystem\FilesystemBak;
 
 /**
  * A PathLocator collection class
@@ -221,7 +221,7 @@ class PathCollection extends ArrayObject
     {
         $iterator = $this->appendIterator(
             function ($path) use ($condition, $recursive) {
-                return Filesystem::find((string) $path, $condition, $recursive);
+                return FilesystemBak::find((string) $path, $condition, $recursive);
             }
         );
 
@@ -251,7 +251,7 @@ class PathCollection extends ArrayObject
     {
         return $this->appendIterator(
             function ($path) use ($condition, $recursive) {
-                return Filesystem::find((string) $path, $condition, $recursive);
+                return FilesystemBak::find((string) $path, $condition, $recursive);
             }
         );
     }
@@ -267,7 +267,7 @@ class PathCollection extends ArrayObject
     {
         return $this->appendIterator(
             function ($path) use ($recursive) {
-                return Filesystem::files((string) $path, $recursive);
+                return FilesystemBak::files((string) $path, $recursive);
             }
         );
     }
@@ -283,7 +283,7 @@ class PathCollection extends ArrayObject
     {
         return $this->appendIterator(
             function ($path) use ($recursive) {
-                return Filesystem::folders((string) $path, $recursive);
+                return FilesystemBak::folders((string) $path, $recursive);
             }
         );
     }
