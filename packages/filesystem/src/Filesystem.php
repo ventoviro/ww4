@@ -8,6 +8,7 @@
 
 namespace Windwalker\Filesystem;
 
+use Windwalker\Filesystem\Exception\FileNotFoundException;
 use Windwalker\Filesystem\Exception\FilesystemException;
 
 /**
@@ -73,15 +74,9 @@ class Filesystem
         $origmask = @umask(0);
 
         try {
-            if (!mkdir($path, $mode) && !is_dir($path)) {
-                throw new FilesystemException(sprintf('Directory "%s" was not created', $path));
+            if (@!mkdir($path, $mode) && !is_dir($path)) {
+                throw new FilesystemException(error_get_last()['message']);
             }
-        } catch (\Throwable $e) {
-            throw new FilesystemException(
-                $e->getMessage(),
-                $e->getCode(),
-                $e
-            );
         } finally {
             @umask($origmask);
         }
@@ -127,25 +122,25 @@ class Filesystem
         $dest = rtrim($dest, '/\\');
 
         if (!is_dir($src)) {
-            $this->throwException(
-                'Source folder not found',
+            throw new FileNotFoundException(sprintf(
+                'Source folder not found: %s',
                 $src
-            );
+            ));
         }
 
         if (is_dir($dest) && !$force) {
-            $this->throwException(
-                'Destination folder exists',
+            throw new FileNotFoundException(sprintf(
+                'Destination folder exists: %s',
                 $dest
-            );
+            ));
         }
 
         // Make sure the destination exists
         if (!$this->mkdir($dest)) {
-            $this->throwException(
-                'Cannot create destination folder',
+            throw new FilesystemException(sprintf(
+                'Cannot create destination folder: %s',
                 $dest
-            );
+            ));
         }
 
         $sources = $this->items($src, true);
@@ -238,13 +233,9 @@ class Filesystem
             $this->mkdir($dir);
         }
 
-        try {
-            rename($src, $dest);
-        } catch (\Throwable $e) {
+        if (!@rename($src, $dest)) {
             throw new FilesystemException(
-                $e->getMessage(),
-                $e->getCode(),
-                $e
+                error_get_last()['message']
             );
         }
 
@@ -258,17 +249,25 @@ class Filesystem
      *
      * @return  bool
      */
-    public function delete($path)
+    public function delete($path): bool
     {
         $path = Path::clean(FileObject::unwrap($path));
 
         if (is_dir($path)) {
-            // Delete children first
-            $files = $this->items($path, true);
+            // Delete children files
+            $files = $this->files($path, true);
 
             /** @var FileObject $file */
             foreach ($files as $file) {
                 $this->delete($file);
+            }
+
+            // Delete children folders
+            $folders = $this->folders($path, true);
+
+            /** @var FileObject $folder */
+            foreach ($folders as $folder) {
+                $this->delete($folder);
             }
         }
 
@@ -278,21 +277,17 @@ class Filesystem
 
         // In case of restricted permissions we zap it one way or the other
         // as long as the owner is either the webserver or the ftp
-        try {
-            if (is_dir($path)) {
-                rmdir($path);
-            } else {
-                unlink($path);
-            }
-        } catch (\Throwable $e) {
-            throw new FilesystemException(
-                $e->getMessage(),
-                $e->getCode(),
-                $e
-            );
+        if (is_dir($path)) {
+            $result = @rmdir($path);
+        } else {
+            $result = @unlink($path);
         }
 
-        return true;
+        if (!$result) {
+            new FilesystemException(error_get_last()['message']);
+        }
+
+        return $result;
     }
 
     /**
@@ -612,7 +607,15 @@ class Filesystem
                 | \FilesystemIterator::SKIP_DOTS);
         }
 
-        $iterator = new \RecursiveDirectoryIterator($path, $options);
+        try {
+            $iterator = new \RecursiveDirectoryIterator($path, $options);
+        } catch (\UnexpectedValueException $e) {
+            throw new FileNotFoundException(
+                sprintf('Failed to open dir: %s', $path),
+                $e->getCode(),
+                $e
+            );
+        }
 
         $iterator->setInfoClass(FileObject::class);
 
@@ -627,7 +630,7 @@ class Filesystem
      *
      * @return  array
      */
-    public static function iteratorToArray(\Traversable $iterator)
+    public static function toArray(\Traversable $iterator): array
     {
         $array = [];
 
@@ -647,8 +650,8 @@ class Filesystem
      *
      * @return  void
      */
-    public function throwException(string $message, ?string $path = null, ?\Throwable $previous = null): void
+    public function throwException(string $message, string $path = '', ?\Throwable $previous = null): void
     {
-        throw new FilesystemException($message, 0, $previous);
+        throw new FilesystemException($message, 0, $previous, $path);
     }
 }

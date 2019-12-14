@@ -66,22 +66,6 @@ abstract class AbstractFilesystemTest extends TestCase
     }
 
     /**
-     * @inheritDoc
-     */
-    protected function runTest()
-    {
-        try {
-            return parent::runTest();
-        } catch (FilesystemException $e) {
-            throw new FilesystemException(sprintf(
-                $e->getMessage() . ' - Path: ' . $e->getPath(),
-                $e->getCode(),
-                $e
-            ));
-        }
-    }
-
-    /**
      * setUp
      *
      * @return  void
@@ -109,6 +93,7 @@ abstract class AbstractFilesystemTest extends TestCase
     protected static function deleteDestFiles(): void
     {
         if (is_dir(static::$dest)) {
+            chmod(static::$dest, 0777);
             (new Filesystem())->delete(static::$dest);
         }
     }

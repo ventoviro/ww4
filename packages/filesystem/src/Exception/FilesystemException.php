@@ -18,29 +18,10 @@ use Throwable;
 class FilesystemException extends \RuntimeException
 {
     /**
-     * @var string
-     */
-    protected $path;
-
-    /**
      * @inheritDoc
      */
-    public function __construct($message = '', $code = 0, Throwable $previous = null, ?string $path = null)
+    public function __construct($message = '', $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
-
-        $this->path = $path;
-    }
-
-    /**
-     * Method to get property Dest
-     *
-     * @return  string
-     *
-     * @since  __DEPLOY_VERSION__
-     */
-    public function getPath(): string
-    {
-        return $this->path;
     }
 }
