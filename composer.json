@@ -21,7 +21,8 @@
         "psr/event-dispatcher": "^1.0",
         "ext-json": "*",
         "symfony/polyfill-php73": "^1.12",
-        "symfony/polyfill-php74": "^1.12"
+        "symfony/polyfill-php74": "^1.12",
+        "league/flysystem": "^1.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -36,8 +37,7 @@
         "squizlabs/php_codesniffer": "^3.5",
         "swoole/ide-helper": "^4.4",
         "reactivex/rxphp": "^2.0",
-        "react/event-loop": "^1.1",
-        "league/flysystem": "^1.0"
+        "react/event-loop": "^1.1"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",
@@ -51,6 +51,7 @@
             "Windwalker\\Filesystem\\": "packages/filesystem/src",
             "Windwalker\\Promise\\": "packages/promise/src",
             "Windwalker\\Scalars\\": "packages/scalars/src",
+            "Windwalker\\Stream\\": "packages/stream/src",
             "Windwalker\\Reactor\\": "packages/reactor/src",
             "Windwalker\\Test\\": "packages/test/src",
             "Windwalker\\Utilities\\": "packages/utilities/src"
@@ -67,6 +68,7 @@
             "Windwalker\\Filesystem\\Test\\": "packages/filesystem/test",
             "Windwalker\\Promise\\Test\\": "packages/promise/test",
             "Windwalker\\Scalars\\Test\\": "packages/scalars/test",
+            "Windwalker\\Stream\\Test\\": "packages/stream/test",
             "Windwalker\\Reactor\\Test\\": "packages/reactor/test",
             "Windwalker\\Test\\Test\\": "packages/test/test",
             "Windwalker\\Utilities\\Test\\": "packages/utilities/test"
