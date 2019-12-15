@@ -10,9 +10,22 @@ namespace Windwalker\Filesystem;
 
 use Windwalker\Filesystem\Exception\FileNotFoundException;
 use Windwalker\Filesystem\Exception\FilesystemException;
+use Windwalker\Promise\Promise;
+use Windwalker\Validator\ValidatorInterface;
 
 /**
  * Class Filesystem
+ *
+ * @method Promise mkdirAsync(string $path = '', int $mode = 0755)
+ * @method Promise copyAsync(string $src, string $dest, bool $force = false)
+ * @method Promise moveAsync(string $src, string $dest, bool $force = false)
+ * @method Promise deleteAsync(string $path)
+ * @method Promise filesAsync(string $path, $recursive = false)
+ * @method Promise foldersAsync(string $path, $recursive = false)
+ * @method Promise itemsAsync(string $path, $recursive = false)
+ * @method Promise findOneAsync(string $path, $condition, $recursive = false)
+ * @method Promise findAsync(string $path, $condition, $recursive = false)
+ * @method Promise findBy(string $path, $condition, $recursive = false)
  *
  * @since 2.0
  */
@@ -93,7 +106,7 @@ class Filesystem
      *
      * @return  bool
      */
-    public function copy($src, $dest, $force = false): bool
+    public function copy(string $src, string $dest, bool $force = false): bool
     {
         $result = null;
 
@@ -211,11 +224,11 @@ class Filesystem
      *
      * @return  bool
      */
-    public function move($src, $dest, $force = false)
+    public function move(string $src, string $dest, bool $force = false): bool
     {
         // Check src path
         if (!is_readable($src)) {
-            return 'Cannot find source file.';
+            throw new FilesystemException('Cannot find source file: ' . $dest);
         }
 
         // Delete first if exists
@@ -249,7 +262,7 @@ class Filesystem
      *
      * @return  bool
      */
-    public function delete($path): bool
+    public function delete(string $path): bool
     {
         $path = Path::clean(FileObject::unwrap($path));
 
@@ -406,107 +419,17 @@ class Filesystem
      *                                </code>
      * @param  boolean $recursive     True to resursive.
      *
-     * @return  \SplFileInfo  Finded file info object.
+     * @return  FileObject  Found file info object.
      *
      * @since  2.0
      */
-    public function findOne($path, $condition, $recursive = false)
+    public function findOne(string $path, $condition, bool $recursive = false): FileObject
     {
         $iterator = new \LimitIterator($this->find($path, $condition, $recursive), 0, 1);
 
         $iterator->rewind();
 
         return $iterator->current();
-    }
-
-    /**
-     * Support node style double star finder.
-     *
-     * @param string $pattern
-     * @param int    $flags
-     *
-     * @return  array
-     *
-     * @since  3.5
-     */
-    public static function glob(string $pattern, int $flags = 0): array
-    {
-        $pattern = Path::clean($pattern);
-
-        if (strpos($pattern, '**') === false) {
-            $files = glob($pattern, $flags);
-        } else {
-            $position = strpos($pattern, '**');
-            $rootPattern = substr($pattern, 0, $position - 1);
-            $restPattern = substr($pattern, $position + 2);
-            $patterns = [$rootPattern . $restPattern];
-            $rootPattern .= DIRECTORY_SEPARATOR . '*';
-
-            while ($dirs = glob($rootPattern, GLOB_ONLYDIR)) {
-                $rootPattern .= DIRECTORY_SEPARATOR . '*';
-
-                foreach ($dirs as $dir) {
-                    $patterns[] = $dir . $restPattern;
-                }
-            }
-
-            $files = [];
-
-            foreach ($patterns as $pat) {
-                $files[] = static::glob($pat, $flags);
-            }
-
-            $files = array_merge(...$files);
-        }
-
-        $files = array_unique($files);
-
-        sort($files);
-
-        return $files;
-    }
-
-    /**
-     * globAll
-     *
-     * @param string $baseDir
-     * @param array  $patterns
-     * @param int    $flags
-     *
-     * @return  array
-     *
-     * @since  3.5
-     */
-    public static function globAll(string $baseDir, array $patterns, int $flags = 0): array
-    {
-        $files = [];
-        $inverse = [];
-
-        foreach ($patterns as $pattern) {
-            if (strpos($pattern, '!') === 0) {
-                $pattern = substr($pattern, 1);
-
-                $inverse[] = static::glob(
-                    rtrim($baseDir, '\\/') . '/' . ltrim($pattern, '\\/'),
-                    $flags
-                );
-            } else {
-                $files[] = static::glob(
-                    rtrim($baseDir, '\\/') . '/' . ltrim($pattern, '\\/'),
-                    $flags
-                );
-            }
-        }
-
-        if ($files !== []) {
-            $files = array_unique(array_merge(...$files));
-        }
-
-        if ($inverse !== []) {
-            $inverse = array_unique(array_merge(...$inverse));
-        }
-
-        return array_diff($files, $inverse);
     }
 
     /**
@@ -522,51 +445,20 @@ class Filesystem
      *                              }
      *                              </code>
      * @param  boolean $recursive   True to resursive.
-     * @param  boolean $toArray     True to convert iterator to array.
      *
      * @return  \CallbackFilterIterator|FileObject[]  Found files or paths iterator.
      *
      * @since  2.0
      */
-    public function find($path, $condition, $recursive = false, $toArray = false)
+    public function find($path, $condition, $recursive = false)
     {
-        // If conditions is string or array, we make it to regex.
-        if (!($condition instanceof \Closure) && !($condition instanceof FileComparatorInterface)) {
-            if (is_array($condition)) {
-                $condition = '/(' . implode('|', $condition) . ')/';
-            } else {
-                $condition = '/' . (string) $condition . '/';
-            }
-
-            /**
-             * Files callback
-             *
-             * @param \SplFileInfo                $current  Current item's value
-             * @param string                      $key      Current item's key
-             * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
-             *
-             * @return boolean   TRUE to accept the current item, FALSE otherwise
-             */
-            $condition = function ($current, $key, $iterator) use ($condition) {
-                return @preg_match($condition, $iterator->getFilename()) && !$iterator->isDot();
-            };
-        } elseif ($condition instanceof FileComparatorInterface) {
-            // If condition is compare object, wrap it with callback.
-            /**
-             * Files callback
-             *
-             * @param \SplFileInfo                $current  Current item's value
-             * @param string                      $key      Current item's key
-             * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
-             *
-             * @return boolean   TRUE to accept the current item, FALSE otherwise
-             */
-            $condition = function ($current, $key, $iterator) use ($condition) {
-                return $condition->compare($current, $key, $iterator);
+        if ($condition instanceof ValidatorInterface) {
+            $condition = static function (\SplFileInfo $file, string $key) use ($condition) {
+                return $condition->test($file->getFilename());
             };
         }
 
-        return $this->findByCallback($path, $condition, $recursive, $toArray);
+        return $this->findByCallback($path, $condition, $recursive);
     }
 
     /**
@@ -575,14 +467,14 @@ class Filesystem
      * Reference: http://www.php.net/manual/en/class.callbackfilteriterator.php
      *
      * @param  string   $path      The directory path.
-     * @param  \Closure $callback  A callback function to filter file.
+     * @param  callable $callback  A callback function to filter file.
      * @param  boolean  $recursive True to recursive.
      *
      * @return  \CallbackFilterIterator|FileObject[]  Filtered file or path iteator.
      *
      * @since  2.0
      */
-    public function findByCallback(string $path, \Closure $callback, $recursive = false): \CallbackFilterIterator
+    public function findByCallback(string $path, callable $callback, $recursive = false): \CallbackFilterIterator
     {
         return new \CallbackFilterIterator($this->createIterator($path, $recursive), $callback);
     }
@@ -594,9 +486,9 @@ class Filesystem
      * @param  boolean $recursive True to recursive.
      * @param  integer $options   FilesystemIterator Flags provides which will affect the behavior of some methods.
      *
-     * @return  \Traversable|FileObject[]  File & dir iterator.
+     * @return  \Iterator|FileObject[]  File & dir iterator.
      */
-    public function createIterator(string $path, bool $recursive = false, int $options = null): \Traversable
+    public function createIterator(string $path, bool $recursive = false, int $options = null): \Iterator
     {
         $path = Path::clean($path);
 
@@ -642,16 +534,40 @@ class Filesystem
     }
 
     /**
-     * throwException
+     * doAsync
      *
-     * @param  string           $message
-     * @param  string|null      $path
-     * @param  \Throwable|null  $previous
+     * @param  string  $name
+     * @param  array   $args
      *
-     * @return  void
+     * @return  Promise
      */
-    public function throwException(string $message, string $path = '', ?\Throwable $previous = null): void
+    protected function doAsync(string $name, array $args = []): Promise
     {
-        throw new FilesystemException($message, 0, $previous, $path);
+        return new Promise(function ($resolve) use ($name, $args) {
+            $resolve($this->$name(...$args));
+        });
+    }
+
+    public function __call(string $name, $args)
+    {
+        $allows = [
+            'mkdir',
+            'copy',
+            'move',
+            'delete',
+            'files',
+            'folders',
+            'items',
+            'findOne',
+            'find',
+            'findBy'
+        ];
+
+        if (
+            strpos($name, 'Async') !== false
+            && in_array($method = substr($name, 0, -5), $allows, true)
+        ) {
+            return $this->doAsync($method, $args);
+        }
     }
 }

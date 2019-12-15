@@ -18,3 +18,4 @@ include_once __DIR__ . '/stream/src/bootstrap.php';
 include_once __DIR__ . '/reactor/src/bootstrap.php';
 include_once __DIR__ . '/test/src/bootstrap.php';
 include_once __DIR__ . '/utilities/src/bootstrap.php';
+include_once __DIR__ . '/validator/src/bootstrap.php';

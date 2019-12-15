@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/reactor/test" isTestSource="true" packagePrefix="Windwalker\Reactor\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/utilities/test" isTestSource="true" packagePrefix="Windwalker\Utilities\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/stream/src" isTestSource="false" packagePrefix="Windwalker\Stream\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/validator/test" isTestSource="true" packagePrefix="Windwalker\Validator\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/reactor/src" isTestSource="false" packagePrefix="Windwalker\Reactor\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/event/test" isTestSource="true" packagePrefix="Windwalker\Event\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/scalars/src" isTestSource="false" packagePrefix="Windwalker\Scalars\" />
@@ -20,6 +21,7 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/src" isTestSource="false" packagePrefix="Windwalker\Filesystem\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/test/test" isTestSource="true" packagePrefix="Windwalker\Test\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/test/src" isTestSource="false" packagePrefix="Windwalker\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/validator/src" isTestSource="false" packagePrefix="Windwalker\Validator\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/data/src" isTestSource="false" packagePrefix="Windwalker\Data\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/promise/src" isTestSource="false" packagePrefix="Windwalker\Promise\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/scalars/test" isTestSource="true" packagePrefix="Windwalker\Scalars\Test\" />

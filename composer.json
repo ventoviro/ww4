@@ -54,7 +54,8 @@
             "Windwalker\\Stream\\": "packages/stream/src",
             "Windwalker\\Reactor\\": "packages/reactor/src",
             "Windwalker\\Test\\": "packages/test/src",
-            "Windwalker\\Utilities\\": "packages/utilities/src"
+            "Windwalker\\Utilities\\": "packages/utilities/src",
+            "Windwalker\\Validator\\": "packages/validator/src"
         },
         "files": [
             "packages/bootstrap.php"
@@ -71,7 +72,8 @@
             "Windwalker\\Stream\\Test\\": "packages/stream/test",
             "Windwalker\\Reactor\\Test\\": "packages/reactor/test",
             "Windwalker\\Test\\Test\\": "packages/test/test",
-            "Windwalker\\Utilities\\Test\\": "packages/utilities/test"
+            "Windwalker\\Utilities\\Test\\": "packages/utilities/test",
+            "Windwalker\\Validator\\Test\\": "packages/validator/test"
         }
     },
     "config": {
