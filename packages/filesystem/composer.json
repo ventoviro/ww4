@@ -10,10 +10,12 @@
     "homepage": "https://github.com/ventoviro/windwalker-filesystem",
     "license": "MIT",
     "require": {
-        "php": ">=7.2"
+        "php": ">=7.2",
+        "windwalker/utilities": "~4.0"
     },
     "require-dev": {
-        "windwalker/test": "~4.0"
+        "windwalker/test": "~4.0",
+        "windwalker/validator": "~4.0"
     },
     "suggest": {
     },

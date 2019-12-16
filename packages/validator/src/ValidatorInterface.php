@@ -25,6 +25,15 @@ interface ValidatorInterface
     public function test($value): bool;
 
     /**
+     * Just invoke this object to test value.
+     *
+     * @param mixed $value
+     *
+     * @return  bool
+     */
+    public function __invoke($value): bool;
+
+    /**
      * Get error message.
      *
      * @return  string

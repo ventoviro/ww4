@@ -107,4 +107,16 @@ class RegexValidator extends AbstractValidator
         // Test the value against the regular expression.
         return (bool) preg_match(chr(1) . $this->regex . chr(1) . $this->modifiers, (string) $value);
     }
+
+    /**
+     * Just invoke this object to test value.
+     *
+     * @param mixed $value
+     *
+     * @return  bool
+     */
+    public function __invoke($value): bool
+    {
+        return $this->test($value);
+    }
 }

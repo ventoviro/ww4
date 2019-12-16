@@ -16,6 +16,7 @@ use Windwalker\Filesystem\Exception\FileNotFoundException;
 use Windwalker\Filesystem\Exception\FilesystemException;
 use Windwalker\Filesystem\FileObject;
 use Windwalker\Filesystem\Filesystem;
+use Windwalker\Filesystem\Iterator\FilesIterator;
 
 /**
  * The FilesystemTest class.
@@ -175,7 +176,7 @@ class FilesystemTest extends AbstractFilesystemTest
         // Iterator
         $items = $fs->items(static::$dest, true);
 
-        $this->assertInstanceOf(\CallbackFilterIterator::class, $items);
+        $this->assertInstanceOf(FilesIterator::class, $items);
 
         $items2 = Filesystem::toArray($items);
 
@@ -184,7 +185,7 @@ class FilesystemTest extends AbstractFilesystemTest
             static::cleanPaths($items2)
         );
 
-        $items->rewind();
+        $items = $fs->items(static::$dest, true);
 
         $this->assertInstanceOf(\SplFileInfo::class, $items->current());
 
@@ -231,7 +232,7 @@ class FilesystemTest extends AbstractFilesystemTest
         // Iterator
         $folders = $fs->folders(static::$dest, true);
 
-        $this->assertInstanceOf('CallbackFilterIterator', $folders);
+        $this->assertInstanceOf(FilesIterator::class, $folders);
 
         $folders2 = Filesystem::toArray($folders);
 
@@ -240,7 +241,7 @@ class FilesystemTest extends AbstractFilesystemTest
             static::cleanPaths($folders2)
         );
 
-        $folders->rewind();
+        $folders = $fs->folders(static::$dest, true);
 
         $this->assertInstanceOf(FileObject::class, $folders->current());
     }

@@ -27,10 +27,10 @@ class FileObject extends \SplFileInfo
     {
         if ($file instanceof \SplFileInfo) {
             if ($file->isDir()) {
-                return $file->getPath();
+                return rtrim(Path::normalize($file->getPathname()), '/.');
             }
 
-            return $file->getPathname();
+            return Path::normalize($file->getPathname());
         }
 
         return (string) $file;
@@ -47,7 +47,7 @@ class FileObject extends \SplFileInfo
     {
         $src = Path::normalize(static::unwrap($src));
 
-        $path = $this->getPathname();
+        $path = Path::normalize($this->getPathname());
 
         if ($path === $src) {
             return $path;
@@ -67,6 +67,6 @@ class FileObject extends \SplFileInfo
      */
     public function getPathname(): string
     {
-        return rtrim(parent::getPathname(), '.');
+        return rtrim(parent::getPathname(), '/.');
     }
 }

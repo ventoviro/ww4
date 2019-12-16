@@ -72,8 +72,8 @@ abstract class AbstractFilesystemTest extends TestCase
      */
     protected function setUp(): void
     {
-        static::$dest = __DIR__ . '/dest';
-        static::$src = __DIR__ . '/files';
+        static::$dest = static::$dest ?: __DIR__ . '/dest';
+        static::$src = static::$src ?: __DIR__ . '/files';
 
         (new Filesystem())->copy(static::$src, static::$dest, true);
     }
@@ -94,7 +94,7 @@ abstract class AbstractFilesystemTest extends TestCase
     {
         if (is_dir(static::$dest)) {
             chmod(static::$dest, 0777);
-            (new Filesystem())->delete(static::$dest);
+            // (new Filesystem())->delete(static::$dest);
         }
     }
 

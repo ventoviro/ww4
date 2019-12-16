@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project.
  *
@@ -6,9 +7,9 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\Filesystem\Exception;
+declare(strict_types=1);
 
-use Throwable;
+namespace Windwalker\Filesystem\Exception;
 
 /**
  * Exception class for handling errors in the Filesystem package
@@ -17,11 +18,5 @@ use Throwable;
  */
 class FilesystemException extends \RuntimeException
 {
-    /**
-     * @inheritDoc
-     */
-    public function __construct($message = '', $code = 0, Throwable $previous = null)
-    {
-        parent::__construct($message, $code, $previous);
-    }
+    //
 }
