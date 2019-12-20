@@ -35,12 +35,13 @@ class FilesIterator extends NestedIterator
     {
         $instance = new static(static::createInnerIterator($path, $recursive, $options));
 
-        return $instance->filter(function ($file) use ($recursive, $path){
+        return $instance->filter(static function (\SplFileInfo $file) use ($recursive, $path) {
             if ($file->getBasename() === '..') {
                 return false;
             }
 
             if ($recursive) {
+                // show($file->getRealPath(), Path::normalize($path));
                 if ($file->getRealPath() === Path::normalize($path)) {
                     return false;
                 }
@@ -53,9 +54,9 @@ class FilesIterator extends NestedIterator
     /**
      * Create file iterator of current dir.
      *
-     * @param  string  $path      The directory path.
-     * @param  boolean $recursive True to recursive.
-     * @param  integer $options   FilesystemIterator Flags provides which will affect the behavior of some methods.
+     * @param  string   $path       The directory path.
+     * @param  boolean  $recursive  True to recursive.
+     * @param  integer  $options    FilesystemIterator Flags provides which will affect the behavior of some methods.
      *
      * @return  \Iterator  File & dir iterator.
      */

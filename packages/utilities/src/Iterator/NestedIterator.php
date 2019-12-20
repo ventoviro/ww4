@@ -14,8 +14,18 @@ namespace Windwalker\Utilities\Iterator;
 /**
  * The MultiLevelIterator class.
  */
-class NestedIterator extends \IteratorIterator
+class NestedIterator implements \OuterIterator
 {
+    /**
+     * @var \Traversable
+     */
+    protected $innerIterator;
+
+    /**
+     * @var \Generator
+     */
+    protected $compiledIterator;
+
     /**
      * @var callable[]
      */
@@ -28,15 +38,9 @@ class NestedIterator extends \IteratorIterator
      */
     public function __construct(iterable $iterator)
     {
-        parent::__construct(
-            $iterator instanceof \Iterator && !$iterator instanceof \Generator
-                ? $iterator
-                : (static function () use ($iterator) {
-                    foreach ($iterator as $item) {
-                        yield $item;
-                    }
-                })()
-        );
+        $this->innerIterator = $iterator instanceof \Traversable
+            ? $iterator
+            : new \ArrayIterator($iterator);
     }
 
     /**
@@ -75,15 +79,31 @@ class NestedIterator extends \IteratorIterator
      */
     public function getInnerIterator(): \Iterator
     {
-        $iterator = parent::getInnerIterator();
+        return  $this->innerIterator;
+    }
 
-        foreach ($this->callbacks as $callback) {
-            $iterator = (static function () use ($iterator, $callback) {
-                return $callback($iterator);
-            })();
+    /**
+     * compileIterator
+     *
+     * @param  bool  $refresh
+     *
+     * @return  \Generator
+     */
+    protected function compileIterator($refresh = false): \Generator
+    {
+        if ($this->compiledIterator === null || $refresh) {
+            $iterator = $this->innerIterator;
+
+            foreach ($this->callbacks as $callback) {
+                $iterator = (static function () use ($iterator, $callback) {
+                    return $callback($iterator);
+                })();
+            }
+
+            $this->compiledIterator = $iterator;
         }
 
-        return $iterator;
+        return $this->compiledIterator;
     }
 
     /**
@@ -118,5 +138,61 @@ class NestedIterator extends \IteratorIterator
                 yield $key => $callback($file, $key, $this);
             }
         });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function current()
+    {
+        return $this->compileIterator()->current();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function next()
+    {
+        $this->compileIterator()->next();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function key()
+    {
+        return $this->compileIterator()->key();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function valid()
+    {
+        return $this->compileIterator()->valid();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function rewind()
+    {
+        $this->compileIterator(true);
+    }
+
+    /**
+     * Method to set property innerIterator
+     *
+     * @param  \Traversable  $innerIterator
+     *
+     * @return  static  Return self to support chaining.
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function setInnerIterator(\Traversable $innerIterator)
+    {
+        $this->innerIterator = $innerIterator;
+
+        return $this;
     }
 }

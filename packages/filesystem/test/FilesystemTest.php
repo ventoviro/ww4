@@ -76,17 +76,19 @@ class FilesystemTest extends AbstractFilesystemTest
         }
 
         // Delete no-permissions folders
-        $dir = __DIR__ . '/dest';
-        $fs->mkdir($dir);
-        chmod($dir, 0000);
+        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $dir = __DIR__ . '/dest';
+            $fs->mkdir($dir);
+            chmod($dir, 0000);
 
-        try {
-            $fs->delete($dir);
-        } catch (FilesystemException $e) {
-            self::assertInstanceOf(FilesystemException::class, $e);
+            try {
+                $fs->delete($dir);
+            } catch (FilesystemException $e) {
+                self::assertInstanceOf(FilesystemException::class, $e);
+            }
+
+            chmod($dir, 0777);
         }
-
-        chmod($dir, 0777);
     }
 
     /**
@@ -185,7 +187,7 @@ class FilesystemTest extends AbstractFilesystemTest
             static::cleanPaths($items2)
         );
 
-        $items = $fs->items(static::$dest, true);
+        $items->rewind();
 
         $this->assertInstanceOf(\SplFileInfo::class, $items->current());
 
@@ -281,7 +283,7 @@ class FilesystemTest extends AbstractFilesystemTest
         // Iterator
         $files = $fs->files(static::$dest, true);
 
-        $this->assertInstanceOf('CallbackFilterIterator', $files);
+        $this->assertInstanceOf(FilesIterator::class, $files);
 
         $files2 = Filesystem::toArray($files);
 

@@ -229,7 +229,7 @@ class Path
             }
         }
 
-        return implode($ds, $parts);
+        return rtrim(implode($ds, $parts), '.' . DIRECTORY_SEPARATOR);
     }
 
     /**

@@ -30,7 +30,7 @@ class NestedIteratorTest extends TestCase
     public function testNestedWrap(): void
     {
         $iter = new NestedIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-        $iter->wrap(static function ($iterator) {
+        $iter = $iter->wrap(static function ($iterator) {
             foreach ($iterator as $item) {
                 yield strtoupper($item);
             }

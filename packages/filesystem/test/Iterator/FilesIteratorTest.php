@@ -50,7 +50,7 @@ class FilesIteratorTest extends AbstractFilesystemTest
         $it = FilesIterator::create(__DIR__ . '/../dest', true);
 
         self::assertEquals(
-            static::getItemsRecursive('dest'),
+            static::cleanPaths(static::getItemsRecursive('dest')),
             static::cleanPaths($it->toArray())
         );
     }
