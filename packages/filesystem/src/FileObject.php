@@ -128,9 +128,13 @@ class FileObject extends \SplFileInfo
             $root = (string) $this->root;
         }
 
-        $root = Path::normalize(static::unwrap($root));
-
         $path = Path::normalize($this->getPathname());
+
+        if ($root === '') {
+            return $path;
+        }
+
+        $root = Path::normalize(static::unwrap($root));
 
         if ($path === $root) {
             return $path;
@@ -379,6 +383,10 @@ class FileObject extends \SplFileInfo
         int $offset = 0,
         ?int $maxlen = null
     ): StringObject {
+        if (!$this->exists()) {
+            throw new FileNotFoundException('Try to read from a non-exists file: ' . $this->getPathname());
+        }
+
         try {
             if ($maxlen) {
                 $content = file_get_contents($this->getPathname(), $useIncludePath, $context, $offset, $maxlen);
@@ -485,7 +493,7 @@ class FileObject extends \SplFileInfo
 
         // In case of restricted permissions we zap it one way or the other
         // as long as the owner is either the webserver or the ftp
-        if (is_dir($path)) {
+        if ($this->isDir()) {
             $result = @rmdir($path);
         } else {
             $result = @unlink($path);
@@ -571,7 +579,65 @@ class FileObject extends \SplFileInfo
      */
     public function getStream(string $mode = Stream::MODE_READ_WRITE_FROM_BEGIN): StreamInterface
     {
+        if (!$this->exists()) {
+            throw new FileNotFoundException('Try to read from a non-exists file: ' . $this->getPathname());
+        }
+
         return new Stream($this->getPathname(), $mode);
+    }
+
+    /**
+     * Append path and return a new instance.
+     *
+     * @param  string  $path
+     *
+     * @return  static
+     */
+    public function appendPath(string $path)
+    {
+        $newPath = $this->getPathname() . ltrim($path, DIRECTORY_SEPARATOR);
+
+        return static::wrap($newPath);
+    }
+
+    /**
+     * Prepend path and return a new instance.
+     *
+     * @param  string  $path
+     *
+     * @return  static
+     */
+    public function prependPath(string $path)
+    {
+        $newPath = rtrim($path, DIRECTORY_SEPARATOR) . $this->getPathname();
+
+        return static::wrap($newPath);
+    }
+
+    /**
+     * Is this path a subdir or child of given path?
+     *
+     * @param  string|\SplFileInfo $parent Given path to detect.
+     *
+     * @return  boolean  Is subdir or not.
+     */
+    public function isChildOf($parent): bool
+    {
+        $self = Path::normalize($this->getPathname());
+
+        $parent = Path::normalize(static::unwrap($parent));
+
+        // Path is self
+        if ($self === $parent) {
+            return false;
+        }
+
+        // Path is parent
+        if (strpos($self, $parent) === 0) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -587,33 +653,6 @@ class FileObject extends \SplFileInfo
         return new Promise(function ($resolve) use ($name, $args) {
             $resolve(static::$name(...$args));
         });
-    }
-
-    public static function __callStatic(string $name, $args)
-    {
-        $allows = [
-            'read',
-            'readStream',
-            'write',
-            'writeStream',
-            'mkdir',
-            'copyTo',
-            'moveTo',
-            'delete',
-            'files',
-            'folders',
-            'items',
-            'getStream',
-        ];
-
-        if (
-            strpos($name, 'Async') !== false
-            && in_array($method = substr($name, 0, -5), $allows, true)
-        ) {
-            return static::doAsync($method, $args);
-        }
-
-        throw new \BadMethodCallException(sprintf('Method %s::%s not exists.', static::class, $name));
     }
 
     /**
@@ -642,5 +681,32 @@ class FileObject extends \SplFileInfo
         $this->root = $root;
 
         return $this;
+    }
+
+    public static function __callStatic(string $name, $args)
+    {
+        $allows = [
+            'read',
+            'readStream',
+            'write',
+            'writeStream',
+            'mkdir',
+            'copyTo',
+            'moveTo',
+            'delete',
+            'files',
+            'folders',
+            'items',
+            'getStream',
+        ];
+
+        if (
+            strpos($name, 'Async') !== false
+            && in_array($method = substr($name, 0, -5), $allows, true)
+        ) {
+            return static::doAsync($method, $args);
+        }
+
+        throw new \BadMethodCallException(sprintf('Method %s::%s not exists.', static::class, $name));
     }
 }

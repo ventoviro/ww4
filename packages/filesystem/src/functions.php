@@ -13,6 +13,7 @@ namespace Windwalker;
 
 use FilesystemIterator;
 use Webmozart\Glob\Glob;
+use Windwalker\Filesystem\FileObject;
 use Windwalker\Filesystem\Filesystem;
 
 /**
@@ -39,8 +40,8 @@ function glob(string $pattern, int $flags = 0): array
 /**
  * glob_all
  *
- * @param  array   $patterns
- * @param  int     $flags
+ * @param  array  $patterns
+ * @param  int    $flags
  *
  * @return  array
  */
@@ -48,5 +49,18 @@ function glob_all(
     array $patterns,
     int $flags = FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO
 ): array {
-    return (new Filesystem())->globAll($patterns, $flags)->toArray();
+    return Filesystem::globAll($patterns, $flags)->toArray();
+}
+
+/**
+ * Create a file object from file or dir path.
+ *
+ * @param  string|\SplFileInfo  $path
+ * @param  string|null          $root
+ *
+ * @return  FileObject
+ */
+function fs($path, ?string $root = null): FileObject
+{
+    return FileObject::wrap($path, $root);
 }
