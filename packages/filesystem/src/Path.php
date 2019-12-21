@@ -18,30 +18,6 @@ use Windwalker\Filesystem\Path\PathCollection;
 class Path
 {
     /**
-     * Checks if a path's permissions can be changed.
-     *
-     * @param   string $path Path to check.
-     *
-     * @return  boolean  True if path can have mode changed.
-     *
-     * @since   2.0
-     */
-    public static function canChmod($path)
-    {
-        $perms = fileperms($path);
-
-        if ($perms !== false) {
-            if (@chmod($path, $perms ^ 0001)) {
-                @chmod($path, $perms);
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Chmods files and directories recursively to given permissions.
      *
      * @param   string $path       Root path to begin changing mode [without trailing slash].
@@ -134,32 +110,6 @@ class Path
     }
 
     /**
-     * Checks for snooping outside of the file system root.
-     *
-     * @param   string $path A file system path to check.
-     * @param   string $root System root path.
-     *
-     * @throws  \InvalidArgumentException
-     * @return  string  A cleaned version of the path or exit on error.
-     *
-     * @since   2.0
-     */
-    public static function check($path, $root)
-    {
-        if (strpos($path, '..') !== false) {
-            throw new \InvalidArgumentException(__CLASS__ . '::check Use of relative paths not permitted', 20);
-        }
-
-        $path = self::clean($path);
-
-        if (($root !== '') && strpos($path, self::clean($root)) !== 0) {
-            throw new \InvalidArgumentException(__CLASS__ . '::check Snooping out of bounds @ ' . $path, 20);
-        }
-
-        return $path;
-    }
-
-    /**
      * Function to strip additional / or \ in a path name.
      *
      * @param   string $path The path to clean.
@@ -177,6 +127,26 @@ class Path
             return $path;
         }
 
+        $prefix = '';
+
+        if (strpos($path, '://') !== false) {
+            $extracted = explode('://', $path, 2);
+
+            if (count($extracted) === 1) {
+                return $extracted[0];
+            }
+
+            $prefix = $extracted[0] . '://';
+            $path = $extracted[1];
+        } elseif (preg_match('/(\w+):[\/\\\\](.*)/', $path, $matches)) {
+            if ($matches[2] === '') {
+                return $path;
+            }
+
+            $prefix = $matches[1] . ':\\';
+            $path = $matches[2];
+        }
+
         $path = trim($path);
 
         if (($ds === '\\') && ($path[0] === '\\') && ($path[1] === '\\')) {
@@ -187,7 +157,7 @@ class Path
             $path = preg_replace('#[/\\\\]+#', $ds, $path);
         }
 
-        return $path;
+        return $prefix . $path;
     }
 
     /**
@@ -233,38 +203,7 @@ class Path
     }
 
     /**
-     * Searches the directory paths for a given file.
-     *
-     * @param   mixed  $paths An path string or array of path strings to search in
-     * @param   string $file  The file name to look for.
-     *
-     * @return  mixed   The full path and file name for the target file, or boolean false if the file is not found in
-     *                  any of the paths.
-     *
-     * @since   2.0
-     */
-    public static function find($paths, $file)
-    {
-        /**
-         * Files callback
-         *
-         * @param \SplFileInfo                $current  Current item's value
-         * @param string                      $key      Current item's key
-         * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
-         *
-         * @return boolean   TRUE to accept the current item, FALSE otherwise
-         */
-        $filter = function ($current, $key, $iterator) use ($file) {
-            return ($current->getBasename() === $file);
-        };
-
-        $collection = new PathCollection($paths);
-
-        return $collection->findOne($filter);
-    }
-
-    /**
-     * Check file exists.
+     * Check file exists and also the filename cases.
      *
      * @param string $path      The file path to check.
      * @param bool   $sensitive Sensitive file name case.
@@ -272,13 +211,13 @@ class Path
      * @return  bool
      * @throws \UnexpectedValueException
      */
-    public static function exists($path, $sensitive = false)
+    public static function exists(string $path, bool $sensitive = false): bool
     {
         if ($sensitive === null) {
             return file_exists($path);
         }
 
-        $path = Path::clean($path, DIRECTORY_SEPARATOR);
+        $path = static::normalize($path, DIRECTORY_SEPARATOR);
 
         if (!$sensitive) {
             $lowerfile = strtolower($path);
@@ -300,15 +239,15 @@ class Path
     }
 
     /**
-     * fixCase
+     * Fix a path with correct file name cases.
      *
      * @param string $path
      *
      * @return  string
      */
-    public static function fixCase($path)
+    public static function fixCase(string $path): string
     {
-        $path = Path::clean($path, DIRECTORY_SEPARATOR);
+        $path = static::normalize($path, DIRECTORY_SEPARATOR);
 
         $lowerfile = strtolower($path);
 

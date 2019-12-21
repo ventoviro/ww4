@@ -11,7 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker;
 
-use Windwalker\Filesystem\Path;
+use FilesystemIterator;
+use Webmozart\Glob\Glob;
+use Windwalker\Filesystem\Filesystem;
 
 /**
  * Support node style double star finder.
@@ -27,78 +29,24 @@ use Windwalker\Filesystem\Path;
  */
 function glob(string $pattern, int $flags = 0): array
 {
-    $pattern = Path::clean($pattern);
-
-    if (strpos($pattern, '**') === false) {
-        $files = \glob($pattern, $flags);
-    } else {
-        $position = strpos($pattern, '**');
-        $rootPattern = substr($pattern, 0, $position - 1);
-        $restPattern = substr($pattern, $position + 2);
-        $patterns = [$rootPattern . $restPattern];
-        $rootPattern .= DIRECTORY_SEPARATOR . '*';
-
-        while ($dirs = \glob($rootPattern, GLOB_ONLYDIR)) {
-            $rootPattern .= DIRECTORY_SEPARATOR . '*';
-
-            foreach ($dirs as $dir) {
-                $patterns[] = $dir . $restPattern;
-            }
-        }
-
-        $files = [];
-
-        foreach ($patterns as $pat) {
-            $files[] = glob($pat, $flags);
-        }
-
-        $files = array_merge(...$files);
+    if (!class_exists(Glob::class)) {
+        throw new \DomainException('Please install webmozart/glob first');
     }
 
-    $files = array_unique($files);
-
-    sort($files);
-
-    return $files;
+    return Glob::glob($pattern, $flags);
 }
 
 /**
  * glob_all
  *
- * @param  string  $baseDir
  * @param  array   $patterns
  * @param  int     $flags
  *
  * @return  array
  */
-function glob_all(string $baseDir, array $patterns, int $flags = 0): array
-{
-    $files = [];
-    $inverse = [];
-
-    foreach ($patterns as $pattern) {
-        if (strpos($pattern, '!') === 0) {
-            $pattern = substr($pattern, 1);
-
-            $inverse[] = glob(
-                rtrim($baseDir, '\\/') . '/' . ltrim($pattern, '\\/'),
-                $flags
-            );
-        } else {
-            $files[] = glob(
-                rtrim($baseDir, '\\/') . '/' . ltrim($pattern, '\\/'),
-                $flags
-            );
-        }
-    }
-
-    if ($files !== []) {
-        $files = array_unique(array_merge(...$files));
-    }
-
-    if ($inverse !== []) {
-        $inverse = array_unique(array_merge(...$inverse));
-    }
-
-    return array_diff($files, $inverse);
+function glob_all(
+    array $patterns,
+    int $flags = FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO
+): array {
+    return (new Filesystem())->globAll($patterns, $flags)->toArray();
 }

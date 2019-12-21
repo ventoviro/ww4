@@ -37,11 +37,14 @@
         "squizlabs/php_codesniffer": "^3.5",
         "swoole/ide-helper": "^4.4",
         "reactivex/rxphp": "^2.0",
-        "react/event-loop": "^1.1"
+        "react/event-loop": "^1.1",
+        "mikey179/vfsstream": "^1.6",
+        "webmozart/glob": "^4.1"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",
-        "php-http/httplug": "Install ~2.0 if you require HttpClient as HttpPlug implementation."
+        "php-http/httplug": "Install ~2.0 if you require HttpClient as HttpPlug implementation.",
+        "webmozart/glob": "Install ^4.0 to support Ant-like glob()."
     },
     "autoload": {
         "psr-4": {

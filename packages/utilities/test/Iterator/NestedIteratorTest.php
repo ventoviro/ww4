@@ -49,6 +49,81 @@ class NestedIteratorTest extends TestCase
         );
     }
 
+    public function testRewind()
+    {
+        $iter = new NestedIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+        $iter = $iter->wrap(static function ($iterator) {
+            foreach ($iterator as $item) {
+                yield strtoupper($item);
+            }
+        })
+            ->wrap(static function ($iterator) {
+                foreach ($iterator as $item) {
+                    if ($item !== 'D') {
+                        yield $item;
+                    }
+                }
+            });
+
+        iterator_to_array($iter);
+
+        self::assertNull($iter->current());
+
+        $iter->rewind();
+
+        self::assertEquals('A', $iter->current());
+    }
+
+    public function testRewindGenerator(): void
+    {
+        $gen = function () {
+            foreach (['a', 'b', 'c', 'd', 'e', 'f'] as $item) {
+                yield $item;
+            }
+        };
+
+        $iter = new NestedIterator($gen());
+        $iter = $iter->wrap(static function ($iterator) {
+            foreach ($iterator as $item) {
+                yield strtoupper($item);
+            }
+        });
+
+        iterator_to_array($iter);
+
+        self::assertNull($iter->current());
+
+        $iter->rewind();
+
+        $this->expectExceptionMessage('Cannot traverse an already closed generator');
+
+        self::assertEquals('A', $iter->current());
+    }
+
+    public function testRewindCallback(): void
+    {
+        $gen = function () {
+            foreach (['a', 'b', 'c', 'd', 'e', 'f'] as $item) {
+                yield $item;
+            }
+        };
+
+        $iter = new NestedIterator($gen);
+        $iter = $iter->wrap(static function ($iterator) {
+            foreach ($iterator as $item) {
+                yield strtoupper($item);
+            }
+        });
+
+        iterator_to_array($iter);
+
+        self::assertNull($iter->current());
+
+        $iter->rewind();
+
+        self::assertEquals('A', $iter->current());
+    }
+
     protected function setUp(): void
     {
         $this->instance = null;

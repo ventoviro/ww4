@@ -8,409 +8,108 @@
 
 namespace Windwalker\Filesystem;
 
-use Windwalker\Filesystem\Exception\FileNotFoundException;
-use Windwalker\Filesystem\Exception\FilesystemException;
+use FilesystemIterator;
+use Psr\Http\Message\StreamInterface;
+use Webmozart\Glob\Iterator\GlobIterator;
 use Windwalker\Filesystem\Iterator\FilesIterator;
 use Windwalker\Promise\Promise;
-use Windwalker\Validator\ValidatorInterface;
+use Windwalker\Scalars\StringObject;
+use Windwalker\Stream\Stream;
+use Windwalker\Utilities\Iterator\UniqueIterator;
 
 /**
  * Class Filesystem
  *
- * @method Promise mkdirAsync(string $path = '', int $mode = 0755)
- * @method Promise copyAsync(string $src, string $dest, bool $force = false)
- * @method Promise moveAsync(string $src, string $dest, bool $force = false)
- * @method Promise deleteAsync(string $path)
- * @method Promise filesAsync(string $path, bool $recursive = false)
- * @method Promise foldersAsync(string $path, bool $recursive = false)
- * @method Promise itemsAsync(string $path, bool $recursive = false)
- * @method Promise findOneAsync(string $path, $condition, bool $recursive = false)
- * @method Promise findAsync(string $path, $condition, bool $recursive = false)
+ * @see FileObject
+ *
+ * @method static FileObject      mkdir(string $path = '', int $mode = 0755)
+ * @method static FileObject      copy(string $src, string $dest, bool $force = false)
+ * @method static FileObject      move(string $src, string $dest, bool $force = false)
+ * @method static StringObject    read(string $path)
+ * @method static StreamInterface readStream(string $path, string $mode = Stream::MODE_READ_ONLY_FROM_BEGIN)
+ * @method static FileObject      write(string $path, string $buffer)
+ * @method static FileObject      writeStream(string $path, string|resource|StreamInterface $stream)
+ * @method static FileObject      delete(string $path)
+ * @method static FilesIterator   files(string $path, bool $recursive = false)
+ * @method static FilesIterator   folders(string $path, bool $recursive = false)
+ * @method static FilesIterator   items(string $path, bool $recursive = false)
+ * @method static Promise mkdirAsync(string $path = '', int $mode = 0755)
+ * @method static Promise copyAsync(string $src, string $dest, bool $force = false)
+ * @method static Promise moveAsync(string $src, string $dest, bool $force = false)
+ * @method static Promise readAsync(string $path)
+ * @method static Promise readStreamAsync(string $path, string $mode = Stream::MODE_READ_ONLY_FROM_BEGIN)
+ * @method static Promise writeAsync(string $path, string $buffer)
+ * @method static Promise writeStreamAsync(string $path, string|resource|StreamInterface $stream)
+ * @method static Promise deleteAsync(string $path)
+ * @method static Promise filesAsync(string $path, bool $recursive = false)
+ * @method static Promise foldersAsync(string $path, bool $recursive = false)
+ * @method static Promise itemsAsync(string $path, bool $recursive = false)
  *
  * @since 2.0
  */
 class Filesystem
 {
-    public const PATH_ABSOLUTE = 1;
-
-    public const PATH_RELATIVE = 2;
-
-    public const PATH_BASENAME = 4;
-
     /**
-     * Create a folder -- and all necessary parent folders.
+     * Get a path as FileObject.
      *
-     * @param   string  $path A path to create from the base path.
-     * @param   integer $mode Directory permissions to set for folders created. 0755 by default.
+     * @param  string       $path
+     * @param  string|null  $root
      *
-     * @return  boolean  True if successful.
-     *
-     * @since   2.0
-     * @throws  FilesystemException
+     * @return  FileObject
      */
-    public function mkdir(string $path = '', int $mode = 0755): bool
+    public static function get(string $path, ?string $root = null): FileObject
     {
-        static $nested = 0;
-
-        // Check to make sure the path valid and clean
-        $path = Path::clean($path);
-
-        // Check if parent dir exists
-        $parent = dirname($path);
-
-        if (!is_dir($parent)) {
-            // Prevent infinite loops!
-            $nested++;
-
-            if ($nested > 20 || $parent === $path) {
-                throw new FilesystemException(__METHOD__ . ': Infinite loop detected');
-            }
-
-            // Create the parent directory
-            if ($this->mkdir($parent, $mode) !== true) {
-                // Folder::create throws an error
-                $nested--;
-
-                return false;
-            }
-
-            // OK, parent directory has been created
-            $nested--;
-        }
-
-        // Check if dir already exists
-        if (is_dir($path)) {
-            return true;
-        }
-
-        // First set umask
-        $origmask = @umask(0);
-
-        try {
-            if (@!mkdir($path, $mode) && !is_dir($path)) {
-                throw new FilesystemException(error_get_last()['message']);
-            }
-        } finally {
-            @umask($origmask);
-        }
-
-        return true;
+        return new FileObject($path, $root);
     }
 
     /**
-     * copy
+     * Glob with Ant-like pattern. This method based on webmozart/glob.
      *
-     * @param string $src
-     * @param string $dest
-     * @param bool   $force
+     * @param  string  $path
+     * @param  int     $flags
      *
-     * @return  bool
+     * @return  FilesIterator
      */
-    public function copy(string $src, string $dest, bool $force = false): bool
-    {
-        $result = null;
-
-        if (is_dir($src)) {
-            $result = $this->copyFolder($src, $dest, $force);
-        } elseif (is_file($src)) {
-            $result = $this->copyFile($src, $dest, $force);
-        } else {
-            throw new FilesystemException('Trying to copy a non-exists path: ' . $src);
+    public static function glob(
+        string $path,
+        int $flags = FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO
+    ): FilesIterator {
+        if (!class_exists(GlobIterator::class)) {
+            throw new \DomainException('Please install webmozart/glob first');
         }
 
-        return $result;
+        return new FilesIterator(new GlobIterator($path, $flags));
     }
 
     /**
-     * copyFolder
+     * Glob multiple paths with unique return paths.
      *
-     * @param  string  $src
-     * @param  string  $dest
-     * @param  bool    $force
+     * @param  array  $paths
+     * @param  int    $flags
      *
-     * @return  bool
+     * @return  FilesIterator
      */
-    private function copyFolder(string $src, string $dest, bool $force = false): bool
-    {
-        // Eliminate trailing directory separators, if any
-        $src = rtrim($src, '/\\');
-        $dest = rtrim($dest, '/\\');
-
-        if (!is_dir($src)) {
-            throw new FileNotFoundException(sprintf(
-                'Source folder not found: %s',
-                $src
-            ));
+    public static function globAll(
+        array $paths,
+        int $flags = FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO
+    ): FilesIterator {
+        if (!class_exists(GlobIterator::class)) {
+            throw new \DomainException('Please install webmozart/glob first');
         }
 
-        if (is_dir($dest) && !$force) {
-            throw new FileNotFoundException(sprintf(
-                'Destination folder exists: %s',
-                $dest
-            ));
+        $iter = new \AppendIterator();
+
+        foreach ($paths as $path) {
+            $iter->append(new GlobIterator($path, $flags));
         }
 
-        // Make sure the destination exists
-        if (!$this->mkdir($dest)) {
-            throw new FilesystemException(sprintf(
-                'Cannot create destination folder: %s',
-                $dest
-            ));
-        }
-
-        $sources = $this->items($src, true);
-
-        // Walk through the directory copying files and recursing into folders.
-        /** @var FileObject $file */
-        foreach ($sources as $file) {
-            $rFile = $file->getRelativePathFrom($src);
-
-            $srcFile = $src . '/' . $rFile;
-            $destFile = $dest . '/' . $rFile;
-
-            if (is_dir($srcFile)) {
-                $this->mkdir($destFile);
-            } elseif (is_file($srcFile)) {
-                $this->copyFile($srcFile, $destFile, $force);
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Copies a file
-     *
-     * @param   string $src   The path to the source file
-     * @param   string $dest  The path to the destination file
-     * @param   bool   $force Force copy.
-     *
-     * @throws \UnexpectedValueException
-     * @throws Exception\FilesystemException
-     * @return  boolean  True on success
-     *
-     * @since   2.0
-     */
-    private function copyFile(string $src, string $dest, bool $force = false): bool
-    {
-        // Check src path
-        if (!is_readable($src)) {
-            throw new \UnexpectedValueException(__METHOD__ . ': Cannot find or read file: ' . $src);
-        }
-
-        // Check folder exists
-        $dir = dirname($dest);
-
-        if (!is_dir($dir)) {
-            $this->mkdir($dir);
-        }
-
-        // Check is a folder or file
-        if (file_exists($dest)) {
-            if ($force) {
-                $this->delete($dest);
-            } else {
-                throw new FilesystemException($dest . ' has exists, copy failed.');
-            }
-        }
-
-        return copy($src, $dest);
-    }
-
-    /**
-     * move
-     *
-     * @param string $src
-     * @param string $dest
-     * @param bool   $force
-     *
-     * @return  bool
-     */
-    public function move(string $src, string $dest, bool $force = false): bool
-    {
-        // Check src path
-        if (!is_readable($src)) {
-            throw new FilesystemException('Cannot find source file: ' . $dest);
-        }
-
-        // Delete first if exists
-        if (file_exists($dest)) {
-            if ($force) {
-                $this->delete($dest);
-            } else {
-                throw new FilesystemException('File: ' . $dest . ' exists, move failed.');
-            }
-        }
-
-        $dir = dirname($dest);
-
-        if (!is_dir($dir)) {
-            $this->mkdir($dir);
-        }
-
-        if (!@rename($src, $dest)) {
-            throw new FilesystemException(
-                error_get_last()['message']
-            );
-        }
-
-        return true;
-    }
-
-    /**
-     * delete
-     *
-     * @param string $path
-     *
-     * @return  bool
-     */
-    public function delete(string $path): bool
-    {
-        $path = Path::clean(FileObject::unwrap($path));
-
-        if (is_dir($path)) {
-            // Delete children files
-            $files = $this->files($path, true);
-
-            /** @var FileObject $file */
-            foreach ($files as $file) {
-                $this->delete($file->getPathname());
-            }
-
-            // Delete children folders
-            $folders = $this->folders($path, true);
-
-            /** @var FileObject $folder */
-            foreach ($folders as $folder) {
-                $this->delete($folder->getPathname());
-            }
-        }
-
-        // Try making the file writable first. If it's read-only, it can't be deleted
-        // on Windows, even if the parent folder is writable
-        @chmod($path, 0777);
-
-        // In case of restricted permissions we zap it one way or the other
-        // as long as the owner is either the webserver or the ftp
-        if (is_dir($path)) {
-            $result = @rmdir($path);
-        } else {
-            $result = @unlink($path);
-        }
-
-        if (!$result) {
-            new FilesystemException(error_get_last()['message']);
-        }
-
-        return $result;
-    }
-
-    /**
-     * files
-     *
-     * @param   string $path
-     * @param   bool   $recursive
-     *
-     * @return  \CallbackFilterIterator|FileObject[]
-     */
-    public function files(string $path, bool $recursive = false): \Traversable
-    {
-        /**
-         * Files callback
-         *
-         * @param \SplFileInfo                $current  Current item's value
-         * @param string                      $key      Current item's key
-         * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
-         *
-         * @return boolean   TRUE to accept the current item, FALSE otherwise
-         */
-        $callback = static function ($current, $key, $iterator) {
-            return $current->isFile();
-        };
-
-        return FilesIterator::create($path, $recursive)->filter($callback);
-    }
-
-    /**
-     * folders
-     *
-     * @param   string  $path
-     * @param   bool    $recursive
-     *
-     * @return  FilesIterator|FileObject[]
-     */
-    public function folders(string $path, bool $recursive = false): FilesIterator
-    {
-        /**
-         * Files callback
-         *
-         * @param \SplFileInfo                $file  Current item's value
-         * @param string                      $key      Current item's key
-         * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
-         *
-         * @return boolean   TRUE to accept the current item, FALSE otherwise
-         */
-        $callback = static function (\SplFileInfo $file, $key, $iterator) use ($path, $recursive) {
-            if ($recursive) {
-                // Ignore self
-                if ($file->getRealPath() === Path::normalize($path)) {
-                    return false;
-                }
-
-                // If set to recursive, every returned folder name will include a dot (.),
-                // so we can't using isDot() to detect folder.
-                return $file->isDir() && ($file->getBasename() !== '..');
-            }
-
-            return $file->isDir() && !$file->isDot();
-        };
-
-        return FilesIterator::create($path, $recursive)->filter($callback);
-    }
-
-    /**
-     * items
-     *
-     * @param   string  $path
-     * @param   bool    $recursive
-     *
-     * @return  FilesIterator|FileObject[]
-     */
-    public function items($path, $recursive = false): FilesIterator
-    {
-        /**
-         * Files callback
-         *
-         * @param \SplFileInfo                $file     Current item's value
-         * @param string                      $key      Current item's key
-         * @param \RecursiveDirectoryIterator $iterator Iterator being filtered
-         *
-         * @return boolean   TRUE to accept the current item, FALSE otherwise
-         */
-        $callback = static function (\SplFileInfo $file, $key, $iterator) use ($path, $recursive) {
-            if ($recursive) {
-                // Ignore self
-                $cPath = $file->isDir() ? $file->getPath() : $file->getPathname();
-
-                if ($cPath === Path::clean($path)) {
-                    return false;
-                }
-
-                // If set to recursive, every returned folder name will include a dot (.),
-                // so we can't using isDot() to detect folder.
-                return ($file->getBasename() !== '..');
-            }
-
-            return !$file->isDot();
-        };
-
-        return FilesIterator::create($path, $recursive)->filter($callback);
+        return new FilesIterator(new UniqueIterator($iter));
     }
 
     /**
      * iteratorToArray
      *
-     * @param \Traversable $iterator
+     * @param  \Traversable  $iterator
      *
      * @return  array
      */
@@ -426,40 +125,52 @@ class Filesystem
     }
 
     /**
-     * doAsync
+     * __callStatic
      *
      * @param  string  $name
      * @param  array   $args
      *
-     * @return  Promise
+     * @return  void
      */
-    protected function doAsync(string $name, array $args = []): Promise
+    public static function __callStatic(string $name, $args)
     {
-        return new Promise(function ($resolve) use ($name, $args) {
-            $resolve($this->$name(...$args));
-        });
-    }
-
-    public function __call(string $name, $args)
-    {
-        $allows = [
+        $maps = [
+            'read',
+            'readStream',
+            'write',
+            'writeStream',
             'mkdir',
-            'copy',
-            'move',
+            'copy' => 'copyTo',
+            'move' => 'moveTo',
             'delete',
             'files',
             'folders',
             'items',
-            'findOne',
-            'find',
-            'findBy'
+            'readAsync',
+            'readStreamAsync',
+            'writeAsync',
+            'writeStreamAsync',
+            'mkdirAsync',
+            'copyAsync' => 'copyToAsync',
+            'moveAsync' => 'moveToAsync',
+            'deleteAsync',
+            'filesAsync',
+            'foldersAsync',
+            'itemsAsync',
         ];
 
-        if (
-            strpos($name, 'Async') !== false
-            && in_array($method = substr($name, 0, -5), $allows, true)
-        ) {
-            return $this->doAsync($method, $args);
+        if (isset($maps[$name])) {
+            $method = $maps[$name];
+        } elseif (in_array($name, $maps, true)) {
+            $method = $name;
         }
+
+        if (isset($method)) {
+            $path = array_shift($args);
+
+            return static::get($path)->$method(...$args);
+        }
+
+        throw new \BadMethodCallException(sprintf('Method %s::%s not exists.', static::class, $name));
     }
 }

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Filesystem\Test;
 
+use Windwalker\Filesystem\Path;
 use Windwalker\Filesystem\Path\PathLocator;
 
 /**
@@ -30,8 +31,8 @@ trait FilesystemTestTrait
     public static function assertPathEquals($expect, $actual, string $message = '')
     {
         return self::assertEquals(
-            PathLocator::clean($expect),
-            PathLocator::clean($actual),
+            Path::clean($expect),
+            Path::clean($actual),
             $message
         );
     }
@@ -48,8 +49,8 @@ trait FilesystemTestTrait
     public static function assertRealpathEquals($expect, $actual, string $message = '')
     {
         return self::assertEquals(
-            PathLocator::normalize($expect),
-            PathLocator::normalize($actual),
+            Path::normalize($expect),
+            Path::normalize($actual),
             $message
         );
     }

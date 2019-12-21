@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Filesystem\Test;
 
-use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\Exception\FileNotFoundException;
 use Windwalker\Filesystem\Exception\FilesystemException;
 use Windwalker\Filesystem\FileObject;
@@ -21,7 +20,7 @@ use Windwalker\Filesystem\Iterator\FilesIterator;
 /**
  * The FilesystemTest class.
  */
-class FilesystemTest extends AbstractFilesystemTest
+class FilesystemTest extends AbstractVfsTestCase
 {
     use FilesystemTestTrait;
 
@@ -30,28 +29,36 @@ class FilesystemTest extends AbstractFilesystemTest
      */
     protected $instance;
 
-    /**
-     * @see  Filesystem::globAll
-     */
-    public function testGlobAll(): void
+    public function testItemsFirst(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $fs = new Filesystem();
+        $files = $fs::files('vfs://root/files', true);
+
+        self::assertEquals('vfs://root/files/folder1/level2/file3', $files->first()->getPathname());
     }
 
     /**
-     * @see  Filesystem::findOne
+     * @see  Filesystem::get
      */
-    public function testFindOne(): void
+    public function testGet(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $fs = new Filesystem();
+        $file = $fs::get('vfs://root/files/folder2/file2.html');
+
+        self::assertEquals('file2.html', (string) $file->read());
     }
 
     /**
-     * @see  Filesystem::findByCallback
+     * testRead
+     *
+     * @return  void
      */
-    public function testFindByCallback(): void
+    public function testRead(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $fs = new Filesystem();
+        $str = $fs::read('vfs://root/files/folder2/file2.html');
+
+        self::assertEquals('file2.html', (string) $str);
     }
 
     /**
@@ -61,16 +68,16 @@ class FilesystemTest extends AbstractFilesystemTest
     {
         $fs = new Filesystem();
 
-        $fs->delete(static::$dest);
+        $fs::delete(static::$baseDir . '');
 
-        $this->assertDirectoryNotExists(static::$dest);
-        $this->assertFileNotExists(static::$dest . '/folder1/level2/file3');
+        $this->assertDirectoryNotExists(static::$baseDir . '');
+        $this->assertFileNotExists(static::$baseDir . '/folder1/level2/file3');
 
         restore_error_handler();
 
         // Delete non-exists folders
         try {
-            $fs->delete(static::$dest . '/hello/no/exists');
+            $fs::delete(static::$baseDir . '/hello/no/exists');
         } catch (FilesystemException $e) {
             self::assertInstanceOf(FilesystemException::class, $e);
         }
@@ -78,16 +85,17 @@ class FilesystemTest extends AbstractFilesystemTest
         // Delete no-permissions folders
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
             $dir = __DIR__ . '/dest';
-            $fs->mkdir($dir);
+            $fs::mkdir($dir);
             chmod($dir, 0000);
 
             try {
-                $fs->delete($dir);
+                $fs::delete($dir);
             } catch (FilesystemException $e) {
                 self::assertInstanceOf(FilesystemException::class, $e);
             }
 
             chmod($dir, 0777);
+            $fs::delete($dir);
         }
     }
 
@@ -96,7 +104,12 @@ class FilesystemTest extends AbstractFilesystemTest
      */
     public function testMkdir(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $fs   = new Filesystem();
+        $dest = 'vfs://root/dest';
+
+        $fs::mkdir($dest);
+
+        static::assertDirectoryExists('vfs://root/dest');
     }
 
     /**
@@ -122,12 +135,16 @@ class FilesystemTest extends AbstractFilesystemTest
     {
         $fs = new Filesystem();
 
-        $fs->delete(static::$dest);
+        $dest = 'vfs://root/dest';
 
-        $fs->copy(static::$src, static::$dest);
+        if (is_dir($dest)) {
+            $fs::delete($dest);
+        }
 
-        $this->assertDirectoryExists(static::$dest);
-        $this->assertFileExists(__DIR__ . '/dest/folder1/level2/file3');
+        $fs::copy(static::$baseDir, $dest);
+
+        $this->assertDirectoryExists($dest);
+        $this->assertFileExists($dest . '/folder1/level2/file3');
     }
 
     /**
@@ -137,18 +154,18 @@ class FilesystemTest extends AbstractFilesystemTest
     {
         $fs = new Filesystem();
 
-        $dest2 = __DIR__ . '/dest2';
+        $dest = 'vfs://root/files2';
 
-        if (is_dir($dest2)) {
-            $fs->delete($dest2);
+        if (is_dir($dest)) {
+            $fs::delete($dest);
         }
 
-        $fs->move(static::$dest, $dest2);
+        $fs::move(static::$baseDir, $dest);
 
-        $this->assertDirectoryExists($dest2);
-        $this->assertFileExists($dest2 . '/folder1/level2/file3');
+        $this->assertDirectoryExists($dest);
+        $this->assertFileExists($dest . '/folder1/level2/file3');
 
-        $fs->delete($dest2);
+        $fs::delete($dest);
     }
 
     /**
@@ -158,17 +175,17 @@ class FilesystemTest extends AbstractFilesystemTest
     {
         $fs = new Filesystem();
 
-        $items = $fs->items(static::$dest . '/folder1/level2', true);
+        $items = $fs::items(static::$baseDir . '/folder1/level2', true);
 
         $this->assertEquals(
-            static::cleanPaths([static::$dest . '/folder1/level2/file3']),
+            static::cleanPaths([static::$baseDir . '/folder1/level2/file3']),
             static::cleanPaths($items)
         );
 
         // Recursive
-        $items = $fs->items(static::$dest, true);
+        $items = $fs::items(static::$baseDir . '', true);
 
-        $compare = static::getItemsRecursive('dest');
+        $compare = static::getItemsRecursive();
 
         $this->assertEquals(
             static::cleanPaths($compare),
@@ -176,7 +193,7 @@ class FilesystemTest extends AbstractFilesystemTest
         );
 
         // Iterator
-        $items = $fs->items(static::$dest, true);
+        $items = $fs::items(static::$baseDir, true);
 
         $this->assertInstanceOf(FilesIterator::class, $items);
 
@@ -196,7 +213,7 @@ class FilesystemTest extends AbstractFilesystemTest
 
         $this->expectException(FileNotFoundException::class);
 
-        $items = $fs->items(__DIR__ . '/not/exists');
+        $items = $fs::items(__DIR__ . '/not/exists');
     }
 
     /**
@@ -204,7 +221,36 @@ class FilesystemTest extends AbstractFilesystemTest
      */
     public function testGlob(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $fs    = new Filesystem();
+        $files = $fs::glob('vfs://root/**/*');
+
+        static::assertEquals(
+            static::cleanPaths($fs::items('vfs://root', true)),
+            static::cleanPaths($files->toArray())
+        );
+    }
+
+    /**
+     * @see  Filesystem::globAll
+     */
+    public function testGlobAll(): void
+    {
+        $fs = new Filesystem();
+
+        $iter = $fs::globAll([
+            'vfs://root/files/folder1/**/*',
+            'vfs://root/files/folder2/**/*',
+        ]);
+
+        self::assertEquals(
+            [
+                'vfs://root/files/folder1/level2',
+                'vfs://root/files/folder1/level2/file3',
+                'vfs://root/files/folder1/path1',
+                'vfs://root/files/folder2/file2.html',
+            ],
+            $iter->toArray()
+        );
     }
 
     /**
@@ -214,15 +260,15 @@ class FilesystemTest extends AbstractFilesystemTest
     {
         $fs = new Filesystem();
 
-        $folders = $fs->folders(static::$dest . '/folder1', true);
+        $folders = $fs::folders(static::$baseDir . '/folder1', true);
 
         $this->assertEquals(
-            static::cleanPaths([static::$dest . '/folder1/level2']),
+            static::cleanPaths([static::$baseDir . '/folder1/level2']),
             static::cleanPaths($folders)
         );
 
         // Recursive
-        $folders = $fs->folders(static::$dest, true);
+        $folders = $fs::folders(static::$baseDir, true);
 
         $compare = static::getFoldersRecursive('dest');
 
@@ -232,7 +278,7 @@ class FilesystemTest extends AbstractFilesystemTest
         );
 
         // Iterator
-        $folders = $fs->folders(static::$dest, true);
+        $folders = $fs::folders(static::$baseDir, true);
 
         $this->assertInstanceOf(FilesIterator::class, $folders);
 
@@ -243,17 +289,9 @@ class FilesystemTest extends AbstractFilesystemTest
             static::cleanPaths($folders2)
         );
 
-        $folders = $fs->folders(static::$dest, true);
+        $folders = $fs::folders(static::$baseDir, true);
 
         $this->assertInstanceOf(FileObject::class, $folders->current());
-    }
-
-    /**
-     * @see  Filesystem::createIterator
-     */
-    public function testCreateIterator(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
     }
 
     /**
@@ -263,17 +301,17 @@ class FilesystemTest extends AbstractFilesystemTest
     {
         $fs = new Filesystem();
 
-        $files = $fs->files(__DIR__ . '/dest/folder1/level2', true);
+        $files = $fs::files('vfs://root/files/folder1/level2', true);
 
         $this->assertEquals(
-            static::cleanPaths([__DIR__ . '/dest/folder1/level2/file3']),
+            static::cleanPaths(['vfs://root/files/folder1/level2/file3']),
             static::cleanPaths($files)
         );
 
         // Recursive
-        $files = $fs->files(static::$dest, true);
+        $files = $fs::files(static::$baseDir, true);
 
-        $compare = static::getFilesRecursive('dest');
+        $compare = static::getFilesRecursive();
 
         $this->assertEquals(
             static::cleanPaths($compare),
@@ -281,7 +319,7 @@ class FilesystemTest extends AbstractFilesystemTest
         );
 
         // Iterator
-        $files = $fs->files(static::$dest, true);
+        $files = $fs::files(static::$baseDir, true);
 
         $this->assertInstanceOf(FilesIterator::class, $files);
 

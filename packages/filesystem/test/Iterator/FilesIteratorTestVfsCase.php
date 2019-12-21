@@ -15,14 +15,14 @@ use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\FileObject;
 use Windwalker\Filesystem\Iterator\FilesIterator;
 use Windwalker\Filesystem\Path;
-use Windwalker\Filesystem\Test\AbstractFilesystemTest;
+use Windwalker\Filesystem\Test\AbstractVfsTestCase;
 use Windwalker\Test\Traits\BaseAssertionTrait;
 use function Windwalker\regex;
 
 /**
  * The FilesIteratorTest class.
  */
-class FilesIteratorTest extends AbstractFilesystemTest
+class FilesIteratorTestVfsCase extends AbstractVfsTestCase
 {
     use BaseAssertionTrait;
 
@@ -50,11 +50,21 @@ class FilesIteratorTest extends AbstractFilesystemTest
      */
     public function testIter(): void
     {
-        $it = FilesIterator::create(__DIR__ . '/../dest', true);
+        $it = FilesIterator::create(static::$baseDir, true);
 
         self::assertEquals(
-            static::cleanPaths(static::getItemsRecursive('dest')),
+            static::cleanPaths(static::getItemsRecursive()),
             static::cleanPaths($it->toArray())
+        );
+    }
+
+    public function testFirst()
+    {
+        $it = FilesIterator::create(static::$baseDir, true);
+
+        self::assertEquals(
+            'vfs://root/files/folder1',
+            $it->current()->getPathname()
         );
     }
 
@@ -63,7 +73,7 @@ class FilesIteratorTest extends AbstractFilesystemTest
      */
     public function testMap(): void
     {
-        $it = FilesIterator::create(__DIR__ . '/../dest');
+        $it = FilesIterator::create('vfs://root/files');
 
         $it = $it->map(static function (FileObject $file) {
             return $file->getFilename();
@@ -80,7 +90,7 @@ class FilesIteratorTest extends AbstractFilesystemTest
      */
     public function testFilter(): void
     {
-        $it = FilesIterator::create(__DIR__ . '/../dest');
+        $it = FilesIterator::create('vfs://root/files');
 
         $it = $it
             ->filter(static function (FileObject $file) {
@@ -95,7 +105,7 @@ class FilesIteratorTest extends AbstractFilesystemTest
             $it->toArray()
         );
 
-        $it = FilesIterator::create(__DIR__ . '/../dest');
+        $it = FilesIterator::create('vfs://root/files');
 
         $it = $it
             ->filter(regex('folder2'))

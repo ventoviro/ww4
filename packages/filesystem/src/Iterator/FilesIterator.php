@@ -23,6 +23,11 @@ use Windwalker\Utilities\Iterator\NestedIterator;
 class FilesIterator extends NestedIterator
 {
     /**
+     * @var string|null
+     */
+    protected $path;
+
+    /**
      * create
      *
      * @param  string    $path
@@ -35,14 +40,15 @@ class FilesIterator extends NestedIterator
     {
         $instance = new static(static::createInnerIterator($path, $recursive, $options));
 
+        $instance->path = $path;
+
         return $instance->filter(static function (\SplFileInfo $file) use ($recursive, $path) {
             if ($file->getBasename() === '..') {
                 return false;
             }
 
             if ($recursive) {
-                // show($file->getRealPath(), Path::normalize($path));
-                if ($file->getRealPath() === Path::normalize($path)) {
+                if (Path::normalize($file->getPathname()) === Path::normalize($path)) {
                     return false;
                 }
             }
@@ -88,6 +94,26 @@ class FilesIterator extends NestedIterator
     }
 
     /**
+     * @inheritDoc
+     *
+     * @return FileObject
+     */
+    public function current(): ?FileObject
+    {
+        return FileObject::wrapIfNotNull(parent::current(), $this->getPath());
+    }
+
+    /**
+     * first
+     *
+     * @return  FileObject
+     */
+    public function first(): ?FileObject
+    {
+        return $this->current();
+    }
+
+    /**
      * toArray
      *
      * @return  array
@@ -95,5 +121,29 @@ class FilesIterator extends NestedIterator
     public function toArray(): array
     {
         return Filesystem::toArray($this);
+    }
+
+    /**
+     * Method to get property Path
+     *
+     * @return  string|null
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function getPath(): ?string
+    {
+        return $this->path;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function cloneNew()
+    {
+        $iter = parent::cloneNew();
+
+        $iter->path = $this->path;
+
+        return $iter;
     }
 }

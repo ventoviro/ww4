@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Utilities\Iterator;
 
+use Windwalker\Filesystem\FileObject;
+
 /**
  * The MultiLevelIterator class.
  */
@@ -34,10 +36,14 @@ class NestedIterator implements \OuterIterator
     /**
      * FilesIterator constructor.
      *
-     * @param  iterable  $iterator
+     * @param  iterable|callable  $iterator
      */
-    public function __construct(iterable $iterator)
+    public function __construct($iterator)
     {
+        if (is_callable($iterator)) {
+            $iterator = new RewindableGenerator($iterator);
+        }
+
         $this->innerIterator = $iterator instanceof \Traversable
             ? $iterator
             : new \ArrayIterator($iterator);
@@ -66,7 +72,7 @@ class NestedIterator implements \OuterIterator
      */
     public function with($callback)
     {
-        $new = new static($this->getInnerIterator());
+        $new = $this->cloneNew();
 
         $new->callbacks = $this->callbacks;
         $new->callbacks[] = $callback;
@@ -87,11 +93,15 @@ class NestedIterator implements \OuterIterator
      *
      * @param  bool  $refresh
      *
-     * @return  \Generator
+     * @return  \Traversable
      */
-    protected function compileIterator($refresh = false): \Generator
+    protected function compileIterator($refresh = false): \Traversable
     {
         if ($this->compiledIterator === null || $refresh) {
+            if ($this->checkRewindable($this->innerIterator)) {
+                $this->innerIterator->rewind();
+            }
+
             $iterator = $this->innerIterator;
 
             foreach ($this->callbacks as $callback) {
@@ -181,6 +191,16 @@ class NestedIterator implements \OuterIterator
     }
 
     /**
+     * This iterator unable to use native clone. We clone it manually.
+     *
+     * @return  static
+     */
+    protected function cloneNew()
+    {
+        return new static($this->getInnerIterator());
+    }
+
+    /**
      * Method to set property innerIterator
      *
      * @param  \Traversable  $innerIterator
@@ -194,5 +214,25 @@ class NestedIterator implements \OuterIterator
         $this->innerIterator = $innerIterator;
 
         return $this;
+    }
+
+    /**
+     * checkRewindable
+     *
+     * @param  \Traversable  $iter
+     *
+     * @return  bool
+     */
+    protected function checkRewindable(\Traversable $iter): bool
+    {
+        if ($iter instanceof \Generator) {
+            return false;
+        }
+
+        if ($iter instanceof \OuterIterator) {
+            return $this->checkRewindable($iter->getInnerIterator());
+        }
+
+        return $iter instanceof \Iterator;
     }
 }
