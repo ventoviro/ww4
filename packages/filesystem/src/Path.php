@@ -8,7 +8,7 @@
 
 namespace Windwalker\Filesystem;
 
-use Windwalker\Filesystem\Path\PathCollection;
+use Windwalker\Utilities\Str;
 
 /**
  * A Path handling class
@@ -17,6 +17,10 @@ use Windwalker\Filesystem\Path\PathCollection;
  */
 class Path
 {
+    public const CASE_OS_DEFAULT = 1;
+    public const CASE_SENSITIVE = 2;
+    public const CASE_INSENSITIVE = 3;
+
     /**
      * Chmods files and directories recursively to given permissions.
      *
@@ -154,7 +158,7 @@ class Path
             // If dealing with a UNC path don't forget to prepend the path with a backslash.
             $path = "\\" . preg_replace('#[/\\\\]+#', $ds, $path);
         } else {
-            $path = preg_replace('#[/\\\\]+#', $ds, $path);
+            $path = (string) preg_replace('#[/\\\\]+#', $ds, $path);
         }
 
         return $prefix . $path;
@@ -170,9 +174,8 @@ class Path
      * @return  string  The normalized path.
      *
      * @since   2.0.4
-     * @throws  \UnexpectedValueException If $path is not a string.
      */
-    public static function normalize($path, $ds = DIRECTORY_SEPARATOR)
+    public static function normalize(string $path, string $ds = DIRECTORY_SEPARATOR): string
     {
         $parts = [];
         $path = static::clean($path, $ds);
@@ -206,30 +209,31 @@ class Path
      * Check file exists and also the filename cases.
      *
      * @param string $path      The file path to check.
-     * @param bool   $sensitive Sensitive file name case.
+     * @param int   $sensitive  Sensitive file name case.
      *
      * @return  bool
      * @throws \UnexpectedValueException
      */
-    public static function exists(string $path, bool $sensitive = false): bool
+    public static function exists(string $path, int $sensitive = self::CASE_OS_DEFAULT): bool
     {
-        if ($sensitive === null) {
+        if ($sensitive === static::CASE_OS_DEFAULT) {
             return file_exists($path);
         }
 
         $path = static::normalize($path, DIRECTORY_SEPARATOR);
+        $it = Filesystem::items(dirname($path));
 
-        if (!$sensitive) {
+        if (static::CASE_INSENSITIVE === $sensitive) {
             $lowerfile = strtolower($path);
 
-            foreach (glob(dirname($path) . DIRECTORY_SEPARATOR . '*') as $file) {
-                if (strtolower($file) === $lowerfile) {
+            foreach ($it as $file) {
+                if (strtolower($file->getPathname()) === $lowerfile) {
                     return true;
                 }
             }
         } else {
-            foreach (glob(dirname($path) . DIRECTORY_SEPARATOR . '*') as $file) {
-                if ($file === $path) {
+            foreach ($it as $file) {
+                if ($file->getPathname() === $path) {
                     return true;
                 }
             }
@@ -258,5 +262,18 @@ class Path
         }
 
         return $path;
+    }
+
+    /**
+     * stripTrailingDot
+     *
+     * @param  string  $path
+     * @param  string  $ds
+     *
+     * @return  string
+     */
+    public static function stripTrailingDot(string $path, string $ds = DIRECTORY_SEPARATOR): string
+    {
+        return Str::removeRight($path, DIRECTORY_SEPARATOR . '.');
     }
 }

@@ -14,10 +14,11 @@ declare(strict_types=1);
 namespace Windwalker\Filesystem\Stream;
 
 use Psr\Http\Message\StreamInterface;
-use Windwalker\Stream\Stream;
 
 /**
- * The FsStreamWrapper class.
+ * This class is for test use, do not use in production code.
+ *
+ * @deprecated
  */
 class FsStreamWrapper
 {

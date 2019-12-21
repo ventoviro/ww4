@@ -34,7 +34,7 @@ class FilesystemTest extends AbstractVfsTestCase
         $fs = new Filesystem();
         $files = $fs::files('vfs://root/files', true);
 
-        self::assertEquals('vfs://root/files/folder1/level2/file3', $files->first()->getPathname());
+        self::assertPathEquals('vfs://root/files/folder1/level2/file3', $files->first()->getPathname());
     }
 
     /**
@@ -227,13 +227,15 @@ class FilesystemTest extends AbstractVfsTestCase
         ]);
 
         self::assertEquals(
-            [
+            static::cleanPaths([
                 'vfs://root/files/folder1/level2',
                 'vfs://root/files/folder1/level2/file3',
                 'vfs://root/files/folder1/path1',
                 'vfs://root/files/folder2/file2.html',
-            ],
-            $iter->toArray()
+            ]),
+            static::cleanPaths(
+                $iter->toArray()
+            )
         );
     }
 

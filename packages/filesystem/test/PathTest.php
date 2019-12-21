@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
- * Part of Windwalker project Test files.  @codingStandardsIgnoreStart
+ * Part of Windwalker project Test files.
  *
  * @copyright  Copyright (C) 2019 LYRASOFT Taiwan, Inc.
  * @license    LGPL-2.0-or-later
  */
+
+declare(strict_types=1);
 
 namespace Windwalker\Filesystem\Test;
 
@@ -103,17 +106,17 @@ class PathTest extends TestCase
     /**
      * testExistsInsensitive
      *
-     * @param string $path
-     * @param bool   $sExists
-     * @param bool   $isExists
+     * @param string  $path
+     * @param bool    $sExists
+     * @param bool    $iExists
      *
      * @return void
      * @dataProvider existsProvider
      */
-    public function testExists($path, $sExists, $isExists)
+    public function testExists($path, $sExists, $iExists)
     {
-        self::assertSame($sExists, Path::exists($path, true));
-        self::assertSame($isExists, Path::exists($path, false));
+        self::assertSame($sExists, Path::exists($path, Path::CASE_SENSITIVE));
+        self::assertSame($iExists, Path::exists($path, Path::CASE_INSENSITIVE));
     }
 
     /**
@@ -121,7 +124,7 @@ class PathTest extends TestCase
      *
      * @return  array
      */
-    public function existsProvider()
+    public function existsProvider(): array
     {
         return [
             [
@@ -143,6 +146,11 @@ class PathTest extends TestCase
                 __DIR__ . '/case/Flower/Olive',
                 false,
                 false,
+            ],
+            [
+                'vfs://root/files',
+                true,
+                true,
             ],
         ];
     }

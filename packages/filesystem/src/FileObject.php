@@ -18,7 +18,10 @@ use Windwalker\Filesystem\Iterator\FilesIterator;
 use Windwalker\Promise\Promise;
 use Windwalker\Scalars\StringObject;
 use Windwalker\Stream\Stream;
+use Windwalker\Stream\StreamHelper;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Str;
+use function Windwalker\fs;
 
 /**
  * The FileObject class.
@@ -55,10 +58,10 @@ class FileObject extends \SplFileInfo
     {
         if ($file instanceof \SplFileInfo) {
             if ($file->isDir()) {
-                return rtrim(Path::normalize($file->getPathname()), '/.');
+                return Path::stripTrailingDot($file->getPathname());
             }
 
-            return Path::normalize($file->getPathname());
+            return Path::stripTrailingDot($file->getPathname());
         }
 
         return (string) $file;
@@ -122,22 +125,21 @@ class FileObject extends \SplFileInfo
      *
      * @return  string
      */
-    public function getRelativePathname($root = ''): string
+    public function getRelativePathname($root = null): string
     {
-        if ((string) $this->root) {
-            $root = (string) $this->root;
+        if ($root === null) {
+            $root = $this->root;
         }
 
         $path = Path::normalize($this->getPathname());
+        $root = Path::normalize(static::unwrap($root));
 
-        if ($root === '') {
+        if ((string) $root === '') {
             return $path;
         }
 
-        $root = Path::normalize(static::unwrap($root));
-
         if ($path === $root) {
-            return $path;
+            return '';
         }
 
         if (strpos($path, $root) !== 0) {
@@ -354,7 +356,7 @@ class FileObject extends \SplFileInfo
 
         $dir = $dest->getParent();
 
-        if ($dir->isDir()) {
+        if (!$dir->isDir()) {
             $dir->mkdir();
         }
 
@@ -428,20 +430,21 @@ class FileObject extends \SplFileInfo
     /**
      * Write contents to a file
      *
-     * @param  string  $buffer
+     * @param  string|StreamInterface  $buffer
      *
      * @return  static
      */
-    public function write(string $buffer)
+    public function write($buffer)
     {
+        ArgumentsAssert::assert(
+            is_stringable($buffer),
+            '%s argument 1 should be string or stringable object, %s given.'
+        );
+
         // If the destination directory doesn't exist we need to create it
-        $parent = $this->getParent();
+        $this->getParent()->mkdir();
 
-        if (!$parent->exists()) {
-            $parent->mkdir();
-        }
-
-        $result = file_put_contents($this->getPathname(), $buffer);
+        $result = file_put_contents($this->getPathname(), (string) $buffer);
 
         if (!$result) {
             throw new FilesystemException(error_get_last()['message']);
@@ -463,7 +466,14 @@ class FileObject extends \SplFileInfo
             $stream = new Stream($stream, Stream::MODE_READ_ONLY_FROM_BEGIN);
         }
 
-        return $this->write((string) $stream);
+        // If the destination directory doesn't exist we need to create it
+        $this->getParent()->mkdir();
+
+        StreamHelper::copy($stream, $dest = $this->getStream());
+
+        $dest->close();
+
+        return $this;
     }
 
     /**
@@ -551,11 +561,13 @@ class FileObject extends \SplFileInfo
     /**
      * exists
      *
+     * @param  int  $sensitive
+     *
      * @return  bool
      */
-    public function exists(): bool
+    public function exists(int $sensitive = Path::CASE_OS_DEFAULT): bool
     {
-        return file_exists($this->getPathname());
+        return Path::exists($this->getPathname(), $sensitive);
     }
 
     /**
@@ -580,10 +592,25 @@ class FileObject extends \SplFileInfo
     public function getStream(string $mode = Stream::MODE_READ_WRITE_FROM_BEGIN): StreamInterface
     {
         if (!$this->exists()) {
-            throw new FileNotFoundException('Try to read from a non-exists file: ' . $this->getPathname());
+            $this->touch();
         }
 
         return new Stream($this->getPathname(), $mode);
+    }
+
+    /**
+     * touch
+     *
+     * @param  int|null  $time
+     * @param  int|null  $atime
+     *
+     * @return  static
+     */
+    public function touch(?int $time = null, ?int $atime = null)
+    {
+        touch($this->getPathname(), ...func_get_args());
+
+        return $this;
     }
 
     /**
@@ -595,7 +622,7 @@ class FileObject extends \SplFileInfo
      */
     public function appendPath(string $path)
     {
-        $newPath = $this->getPathname() . ltrim($path, DIRECTORY_SEPARATOR);
+        $newPath = $this->getPathname() . $path;
 
         return static::wrap($newPath);
     }
@@ -609,7 +636,7 @@ class FileObject extends \SplFileInfo
      */
     public function prependPath(string $path)
     {
-        $newPath = rtrim($path, DIRECTORY_SEPARATOR) . $this->getPathname();
+        $newPath = $path . $this->getPathname();
 
         return static::wrap($newPath);
     }

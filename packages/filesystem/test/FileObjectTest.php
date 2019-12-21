@@ -16,6 +16,8 @@ use Windwalker\Filesystem\Exception\FilesystemException;
 use Windwalker\Filesystem\FileObject;
 use Windwalker\Filesystem\Filesystem;
 use Windwalker\Filesystem\Iterator\FilesIterator;
+use Windwalker\Stream\StringStream;
+use function Windwalker\fs;
 
 /**
  * The FilesystemTest class.
@@ -34,7 +36,7 @@ class FileObjectTest extends AbstractVfsTestCase
         $fs    = new FileObject('vfs://root/files');
         $files = $fs->files(true);
 
-        self::assertEquals('vfs://root/files/folder1/level2/file3', $files->first()->getPathname());
+        self::assertPathEquals('vfs://root/files/folder1/level2/file3', $files->first()->getPathname());
     }
 
     /**
@@ -47,6 +49,29 @@ class FileObjectTest extends AbstractVfsTestCase
         $str = (new FileObject('vfs://root/files/folder2/file2.html'))->read();
 
         self::assertEquals('file2.html', (string) $str);
+    }
+
+    public function testReadStream(): void
+    {
+        $stream = (new FileObject('vfs://root/files/folder2/file2.html'))->readStream();
+
+        self::assertEquals('file2.html', (string) $stream);
+    }
+
+    public function testWrite(): void
+    {
+        (new FileObject('vfs://root/files/folder2/foo/bar/new-file.txt'))->write('Hello');
+
+        self::assertEquals('Hello', file_get_contents('vfs://root/files/folder2/foo/bar/new-file.txt'));
+    }
+
+    public function testWriteStream(): void
+    {
+        $stream = new StringStream('Hello');
+
+        (new FileObject('vfs://root/files/folder2/foo/bar/new-file.txt'))->writeStream($stream);
+
+        self::assertEquals('Hello', file_get_contents('vfs://root/files/folder2/foo/bar/new-file.txt'));
     }
 
     /**
@@ -91,12 +116,11 @@ class FileObjectTest extends AbstractVfsTestCase
      */
     public function testMkdir(): void
     {
-        $fs   = new Filesystem();
-        $dest = 'vfs://root/dest';
+        $dest = fs('vfs://root/dest/foo/bar');
 
-        $fs::mkdir($dest);
+        $dest->mkdir();
 
-        static::assertDirectoryExists('vfs://root/dest');
+        static::assertDirectoryExists('vfs://root/dest/foo/bar');
     }
 
     /**
@@ -257,5 +281,44 @@ class FileObjectTest extends AbstractVfsTestCase
         $files->rewind();
 
         $this->assertInstanceOf(FileObject::class, $files->current());
+    }
+
+    public function testWrapIfNotNull(): void
+    {
+        self::assertNull(FileObject::wrapIfNotNull(null));
+    }
+
+    public function testGetRelativePathname()
+    {
+        $file = fs('vfs://root/files\\folder1/foo/bar', 'vfs://root\\files');
+
+        self::assertPathEquals('folder1/foo/bar', $file->getRelativePathname());
+        self::assertPathEquals('foo/bar', $file->getRelativePathname('vfs://root\\files/folder1'));
+
+        $file = fs('vfs://root/files\\folder1/foo/bar', '');
+
+        self::assertPathEquals('vfs://root/files/folder1/foo/bar', $file->getRelativePathname());
+        self::assertPathEquals(
+            '',
+            $file->getRelativePathname('vfs://root/files\\folder1/foo/bar')
+        );
+        self::assertPathEquals(
+            'vfs://root/files/folder1/foo/bar',
+            $file->getRelativePathname('vfs://root/files\\folder1/foo/yoo')
+        );
+    }
+
+    public function testAppendPath()
+    {
+        $file = fs('vfs://root')->appendPath('/files/folder1');
+
+        self::assertPathEquals('vfs://root\files/folder1', $file->getPathname());
+    }
+
+    public function testPrependPath()
+    {
+        $file = fs('root/files/folder1')->prependPath('vfs://');
+
+        self::assertPathEquals('vfs://root\files/folder1', $file->getPathname());
     }
 }

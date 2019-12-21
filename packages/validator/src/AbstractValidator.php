@@ -56,6 +56,18 @@ abstract class AbstractValidator implements ValidatorInterface
     }
 
     /**
+     * Just invoke this object to test value.
+     *
+     * @param mixed $value
+     *
+     * @return  bool
+     */
+    public function __invoke($value): bool
+    {
+        return $this->test($value);
+    }
+
+    /**
      * Test value and return boolean
      *
      * @param  mixed  $value
