@@ -36,7 +36,7 @@ class PathCollection
     /**
      * PathCollection constructor.
      *
-     * @param  array $paths The PathLocator array.
+     * @param  array  $paths  The PathLocator array.
      *
      * @since  2.0
      */
@@ -48,7 +48,7 @@ class PathCollection
     /**
      * Batch add paths to bag.
      *
-     * @param  array $paths Paths to add to path bag, string will be converted to PathLocator object.
+     * @param  array  $paths  Paths to add to path bag, string will be converted to PathLocator object.
      *
      * @return  static  Return this object to support chaining.
      *
@@ -56,29 +56,33 @@ class PathCollection
      */
     public function addPaths(array $paths)
     {
+        $new = clone $this;
+
         foreach ($paths as $path) {
-            $this->add($path);
+            $new = $new->add($path);
         }
 
-        return $this;
+        return $new;
     }
 
     /**
      * Add one path to bag.
      *
-     * @param   mixed  $path   The path your want to store in bag,
-     *                         have to be a string or PathLocator object.
+     * @param  string|\SplFileInfo  $path  The path your want to store in bag,
+     *                                     have to be a string or FileObject.
+     *
+     * @return  static  Return new object to support chaining.
      *
      * @throws \InvalidArgumentException
-     * @return  PathCollection  Return this object to support chaining.
-     *
      * @since  2.0
      */
     public function add($path)
     {
-        $this->paths[] = FileObject::wrap($path);
+        $new = clone $this;
 
-        return $this;
+        $new->paths[] = FileObject::wrap($path);
+
+        return $new;
     }
 
     /**
@@ -96,7 +100,7 @@ class PathCollection
     /**
      * Using key to get a path.
      *
-     * @param  int $key The key of path you want to get.
+     * @param  int  $key  The key of path you want to get.
      *
      * @return  FileObject
      *
@@ -116,11 +120,13 @@ class PathCollection
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setPaths(array $paths)
+    public function withPaths(array $paths)
     {
-        $this->paths = $paths;
+        $new = clone $this;
 
-        return $this;
+        $new->paths = $paths;
+
+        return $new;
     }
 
     /**
@@ -150,7 +156,7 @@ class PathCollection
     /**
      * Get all files and folders as an iterator.
      *
-     * @param  boolean $recursive True to support recrusive.
+     * @param  boolean  $recursive  True to support recrusive.
      *
      * @return  FilesIterator  An OutterIterator contains all paths' iterator.
      *
@@ -168,7 +174,7 @@ class PathCollection
     /**
      * Get file iterator of all paths
      *
-     * @param  boolean $recursive True to resursive.
+     * @param  boolean  $recursive  True to resursive.
      *
      * @return  FilesIterator  Iterator only include files.
      */
@@ -184,7 +190,7 @@ class PathCollection
     /**
      * Get folder iterator of all paths
      *
-     * @param  boolean $recursive True to resursive.
+     * @param  boolean  $recursive  True to resursive.
      *
      * @return  FilesIterator  Iterator only include dirs.
      */
@@ -200,7 +206,7 @@ class PathCollection
     /**
      * Set prefix to all paths.
      *
-     * @param  string $prefix The prefix path you want to prepend when path convert to string.
+     * @param  string  $prefix  The prefix path you want to prepend when path convert to string.
      *
      * @return  static  Return new object.
      */
@@ -216,7 +222,7 @@ class PathCollection
     /**
      * Append a new path to all paths.
      *
-     * @param   string $appended Path to append.
+     * @param  string  $appended  Path to append.
      *
      * @return  static  Return new object.
      */
@@ -230,7 +236,7 @@ class PathCollection
     /**
      * Prepend a new path to all paths.
      *
-     * @param  string $prepended Path to prepend.
+     * @param  string  $prepended  Path to prepend.
      *
      * @return  static  Return new object.
      *
@@ -282,7 +288,7 @@ class PathCollection
      *
      * When running recursive scan dir, we have to avoid to re scan same dir.
      *
-     * @param  string|\SplFileInfo $path The path to detect is subdir or not.
+     * @param  string|\SplFileInfo  $path  The path to detect is subdir or not.
      *
      * @return  boolean  Is subdir or not.
      *
