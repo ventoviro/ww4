@@ -16,6 +16,7 @@ use Windwalker\Filesystem\FileObject;
 use Windwalker\Filesystem\Iterator\FilesIterator;
 use Windwalker\Filesystem\Path;
 use Windwalker\Filesystem\Test\AbstractFilesystemTest;
+use Windwalker\Test\Traits\BaseAssertionTrait;
 use function Windwalker\regex;
 
 /**
@@ -23,6 +24,8 @@ use function Windwalker\regex;
  */
 class FilesIteratorTest extends AbstractFilesystemTest
 {
+    use BaseAssertionTrait;
+
     /**
      * Property dest.
      *
@@ -66,7 +69,7 @@ class FilesIteratorTest extends AbstractFilesystemTest
             return $file->getFilename();
         });
 
-        self::assertEquals(
+        self::assertArraySimilar(
             ['file1.txt', 'folder2', 'folder1'],
             $it->toArray()
         );
@@ -87,7 +90,7 @@ class FilesIteratorTest extends AbstractFilesystemTest
                 return $file->getFilename();
             });
 
-        self::assertEquals(
+        self::assertArraySimilar(
             ['folder2', 'folder1'],
             $it->toArray()
         );

@@ -103,4 +103,26 @@ trait BaseAssertionTrait
 
         static::fail('No exception or throwable caught.');
     }
+
+    /**
+     * Asserts that two associative arrays are similar.
+     *
+     * Both arrays must have the same indexes with identical values
+     * without respect to key ordering
+     *
+     * @param array $expected
+     * @param array $array
+     */
+    public static function assertArraySimilar(array $expected, array $array): void
+    {
+        static::assertEquals([], array_diff_key($array, $expected));
+
+        foreach ($expected as $key => $value) {
+            if (is_array($value)) {
+                static::assertArraySimilar($value, $array[$key]);
+            } else {
+                static::assertContains($value, $array);
+            }
+        }
+    }
 }
