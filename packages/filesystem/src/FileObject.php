@@ -122,7 +122,7 @@ class FileObject extends \SplFileInfo
      *
      * @return  string
      */
-    public function getRelativePath($root = ''): string
+    public function getRelativePathname($root = ''): string
     {
         if ((string) $this->root) {
             $root = (string) $this->root;
@@ -271,7 +271,7 @@ class FileObject extends \SplFileInfo
         // Walk through the directory copying files and recursing into folders.
         /** @var FileObject $file */
         foreach ($this->items(true) as $file) {
-            $rFile = $file->getRelativePath();
+            $rFile = $file->getRelativePathname();
 
             $srcFile = static::wrap($src . '/' . $rFile);
             $destFile = static::wrap($dest . '/' . $rFile);

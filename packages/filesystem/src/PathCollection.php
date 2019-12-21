@@ -57,7 +57,7 @@ class PathCollection
     public function addPaths(array $paths)
     {
         foreach ($paths as $path) {
-            $this->addPath($path);
+            $this->add($path);
         }
 
         return $this;
@@ -74,7 +74,7 @@ class PathCollection
      *
      * @since  2.0
      */
-    public function addPath($path)
+    public function add($path)
     {
         $this->paths[] = FileObject::wrap($path);
 
@@ -126,13 +126,13 @@ class PathCollection
     /**
      * Append all paths' iterator into an OuterIterator.
      *
-     * @param  \Closure $callback Contains the logic of how to get iterator from path object.
+     * @param  \Closure  $getter  Contains the logic that how to get iterator from file object.
      *
      * @return  FilesIterator  Appended iterators.
      *
      * @since  2.0
      */
-    private function appendIterator(\Closure $callback = null): FilesIterator
+    private function createIterator(\Closure $getter = null): FilesIterator
     {
         $iter = new \AppendIterator();
 
@@ -141,7 +141,7 @@ class PathCollection
                 continue;
             }
 
-            $iter->append($callback($path));
+            $iter->append($getter($path));
         }
 
         return new FilesIterator(new UniqueIterator($iter));
@@ -158,7 +158,7 @@ class PathCollection
      */
     public function items($recursive = false): FilesIterator
     {
-        return $this->appendIterator(
+        return $this->createIterator(
             static function (FileObject $path) use ($recursive) {
                 return $path->items($recursive);
             }
@@ -174,7 +174,7 @@ class PathCollection
      */
     public function files($recursive = false): FilesIterator
     {
-        return $this->appendIterator(
+        return $this->createIterator(
             static function (FileObject $path) use ($recursive) {
                 return $path->files($recursive);
             }
@@ -190,7 +190,7 @@ class PathCollection
      */
     public function folders($recursive = false): FilesIterator
     {
-        return $this->appendIterator(
+        return $this->createIterator(
             static function (FileObject $path) use ($recursive) {
                 return $path->folders($recursive);
             }

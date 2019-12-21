@@ -47,10 +47,8 @@ class FilesIterator extends NestedIterator
                 return false;
             }
 
-            if ($recursive) {
-                if (Path::normalize($file->getPathname()) === Path::normalize($path)) {
-                    return false;
-                }
+            if ($recursive && Path::normalize($file->getPathname()) === Path::normalize($path)) {
+                return false;
             }
 
             return true;
