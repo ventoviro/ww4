@@ -29,11 +29,6 @@ class PathCollection
     protected $paths = [];
 
     /**
-     * @var string
-     */
-    protected $prefix = '';
-
-    /**
      * PathCollection constructor.
      *
      * @param  array  $paths  The PathLocator array.
@@ -42,7 +37,9 @@ class PathCollection
      */
     public function __construct(array $paths = [])
     {
-        $this->addPaths($paths);
+        foreach ($paths as $path) {
+            $this->paths[] = FileObject::wrap($path);
+        }
     }
 
     /**
@@ -92,7 +89,7 @@ class PathCollection
      *
      * @since  2.0
      */
-    public function &getPaths()
+    public function &getPaths(): array
     {
         return $this->paths;
     }
@@ -124,9 +121,9 @@ class PathCollection
     {
         $new = clone $this;
 
-        $new->paths = $paths;
+        $new->paths = [];
 
-        return $new;
+        return $new->addPaths($paths);
     }
 
     /**
@@ -201,22 +198,6 @@ class PathCollection
                 return $path->folders($recursive);
             }
         );
-    }
-
-    /**
-     * Set prefix to all paths.
-     *
-     * @param  string  $prefix  The prefix path you want to prepend when path convert to string.
-     *
-     * @return  static  Return new object.
-     */
-    public function withPrefix(string $prefix)
-    {
-        $new = clone $this;
-
-        $new->prefix = $prefix;
-
-        return $new;
     }
 
     /**
@@ -296,8 +277,10 @@ class PathCollection
      */
     public function isChild($path): bool
     {
+        $path = FileObject::wrap($path);
+
         foreach ($this->paths as $member) {
-            if ($member->isChildOf($path)) {
+            if ($path->isChildOf($member)) {
                 return true;
             }
         }
