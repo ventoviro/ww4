@@ -147,7 +147,7 @@ class PathCollection
             $iter->append($getter($path));
         }
 
-        return new FilesIterator(new UniqueIterator($iter));
+        return new FilesIterator(new UniqueIterator($iter, SORT_STRING));
     }
 
     /**
@@ -220,8 +220,6 @@ class PathCollection
      * @param  string  $prepended  Path to prepend.
      *
      * @return  static  Return new object.
-     *
-     * @since  2.0
      */
     public function prependAll(string $prepended)
     {

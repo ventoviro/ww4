@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Utilities\Iterator;
 
 use Iterator;
+use Windwalker\Utilities\TypeCast;
 
 /**
  * The UniqueIterator class.
@@ -24,18 +25,18 @@ class UniqueIterator extends \FilterIterator
     protected $exists = [];
 
     /**
-     * @var bool
+     * @var int
      */
-    protected $strict = false;
+    protected $flags = SORT_STRING;
 
     /**
      * @inheritDoc
      */
-    public function __construct(Iterator $iterator, bool $strict = false)
+    public function __construct(Iterator $iterator, int $flags = SORT_STRING)
     {
         parent::__construct($iterator);
 
-        $this->strict = $strict;
+        $this->flags = $flags;
     }
 
     /**
@@ -45,13 +46,36 @@ class UniqueIterator extends \FilterIterator
     {
         $current = $this->current();
 
-        $result = !in_array($current, $this->exists, $this->strict);
+        $result = !in_array($this->formatValue($current), $this->exists);
 
         if ($result) {
             $this->exists[] = $current;
         }
 
         return $result;
+    }
+
+    /**
+     * formatValue
+     *
+     * @param mixed $value
+     *
+     * @return  mixed
+     */
+    protected function formatValue($value)
+    {
+        switch ($this->flags) {
+            case SORT_NUMERIC:
+                return (float) $value;
+
+            case SORT_STRING:
+            case SORT_LOCALE_STRING:
+                return (string) $value;
+
+            case SORT_REGULAR:
+            default:
+                return $value;
+        }
     }
 
     /**
@@ -67,15 +91,15 @@ class UniqueIterator extends \FilterIterator
     /**
      * Method to set property strict
      *
-     * @param  bool  $strict
+     * @param  bool  $flags
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setStrict(bool $strict)
+    public function setFlags(bool $flags)
     {
-        $this->strict = $strict;
+        $this->flags = $flags;
 
         return $this;
     }

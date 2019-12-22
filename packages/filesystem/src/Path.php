@@ -276,4 +276,92 @@ class Path
     {
         return Str::removeRight($path, DIRECTORY_SEPARATOR . '.');
     }
+
+    /**
+     * Strips the last extension off of a file name
+     *
+     * @param   string $file The file name
+     *
+     * @return  string  The file name without the extension
+     *
+     * @since   2.0
+     */
+    public static function stripExtension($file)
+    {
+        return preg_replace('#\.[^.]*$#', '', $file);
+    }
+
+    /**
+     * getExtension
+     *
+     * @param   string $file The file path to get extension.
+     *
+     * @return  string  The ext of file path.
+     *
+     * @since   2.0
+     */
+    public static function getExtension($file)
+    {
+        return pathinfo($file, PATHINFO_EXTENSION);
+    }
+
+    /**
+     * Get file name from a path.
+     *
+     * @param   string $path The file path to get basename.
+     *
+     * @return  string  The file name.
+     *
+     * @since   2.0
+     */
+    public static function getFilename($path)
+    {
+        $name = pathinfo($path, PATHINFO_FILENAME);
+
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+
+        if ($ext) {
+            $name .= '.' . $ext;
+        }
+
+        return $name;
+    }
+
+    /**
+     * Makes the file name safe to use
+     *
+     * @param   string $file       The name of the file [not full path]
+     * @param   array  $stripChars Array of regex (by default will remove any leading periods)
+     *
+     * @return  string  The sanitised string
+     *
+     * @since   2.0
+     */
+    public static function makeSafe($file, array $stripChars = ['#^\.#'])
+    {
+        $regex = array_merge(['#(\.){2,}#', '#[^A-Za-z0-9\.\_\- ]#'], $stripChars);
+
+        $file = preg_replace($regex, '', $file);
+
+        // Remove any trailing dots, as those aren't ever valid file names.
+        $file = rtrim($file, '.');
+
+        return $file;
+    }
+
+    /**
+     * Make file name safe with UTF8 name.
+     *
+     * @param string $file The file name.
+     *
+     * @return  false|string
+     *
+     * @since  3.4.5
+     */
+    public static function makeUtf8Safe($file)
+    {
+        $file = mb_ereg_replace("([^\w\s\d\-_~,;\[\]\(\).])", '', $file);
+
+        return mb_ereg_replace("([\.]{2,})", '', $file);
+    }
 }

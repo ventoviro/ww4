@@ -11,8 +11,10 @@ declare(strict_types=1);
 
 namespace Windwalker\Filesystem\Test;
 
+use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\PathCollection;
+use function Windwalker\fs;
 
 /**
  * The PathCollectionTest class.
@@ -182,12 +184,22 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testItems(): void
     {
+        $this->setUpNestedFiles();
+
         $p = new PathCollection([
-            'vfs://root/files/folder1',
-            'vfs://root/files/folder2',
+            'vfs://root/folder1',
+            'vfs://root/folder2',
         ]);
 
-        show($p->items(true)->toArray());
+        self::assertEquals(
+            static::cleanPaths(
+                array_merge(
+                    fs('vfs://root/folder1')->items(true)->toArray(),
+                    fs('vfs://root/folder2')->items(true)->toArray()
+                )
+            ),
+            static::cleanPaths($p->items(true)->toArray())
+        );
     }
 
     /**
@@ -195,7 +207,22 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testFiles(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $this->setUpNestedFiles();
+
+        $p = new PathCollection([
+            'vfs://root/folder1',
+            'vfs://root/folder2',
+        ]);
+
+        self::assertEquals(
+            static::cleanPaths(
+                array_merge(
+                    fs('vfs://root/folder1')->files(true)->toArray(),
+                    fs('vfs://root/folder2')->files(true)->toArray()
+                )
+            ),
+            static::cleanPaths($p->files(true)->toArray())
+        );
     }
 
     /**
@@ -203,7 +230,22 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testFolders(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $this->setUpNestedFiles();
+
+        $p = new PathCollection([
+            'vfs://root/folder1',
+            'vfs://root/folder2',
+        ]);
+
+        self::assertEquals(
+            static::cleanPaths(
+                array_merge(
+                    fs('vfs://root/folder1')->folders(true)->toArray(),
+                    fs('vfs://root/folder2')->folders(true)->toArray()
+                )
+            ),
+            static::cleanPaths($p->folders(true)->toArray())
+        );
     }
 
     /**
@@ -220,6 +262,36 @@ class PathCollectionTest extends AbstractVfsTestCase
     public function testMap(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    protected function setUpNestedFiles(): \org\bovigo\vfs\vfsStreamDirectory
+    {
+        return vfsStream::setup('root', null, [
+            'folder1' => [
+                'sub1' => [
+                    'file1.txt' => '',
+                    'file2.txt' => '',
+                    'file3.txt' => '',
+                ],
+                'sub2' => [
+                    'file1.txt' => '',
+                    'file2.txt' => '',
+                    'file3.txt' => '',
+                ],
+            ],
+            'folder2' => [
+                'sub1' => [
+                    'file1.txt' => '',
+                    'file2.txt' => '',
+                    'file3.txt' => '',
+                ],
+                'sub2' => [
+                    'file1.txt' => '',
+                    'file2.txt' => '',
+                    'file3.txt' => '',
+                ],
+            ],
+        ]);
     }
 
     protected function setUp(): void

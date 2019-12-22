@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Filesystem\Test;
 
+use Windwalker\Environment\PlatformHelper;
 use Windwalker\Filesystem\Exception\FileNotFoundException;
 use Windwalker\Filesystem\Exception\FilesystemException;
 use Windwalker\Filesystem\FileObject;
@@ -279,6 +280,8 @@ class FilesystemTest extends AbstractVfsTestCase
 
         $this->assertInstanceOf(FileObject::class, $folders->current());
     }
+
+
 
     /**
      * @see  Filesystem::files

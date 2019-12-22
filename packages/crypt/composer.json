@@ -1,32 +1,37 @@
 {
-    "name": "windwalker/data",
+    "name": "windwalker/crypt",
     "type": "windwalker-package",
-    "description": "Windwalker Data package",
+    "description": "Windwalker Crypt package",
     "keywords": [
         "windwalker",
         "framework",
-        "utilities"
+        "crypt",
+        "sodium",
+        "password"
     ],
-    "homepage": "https://github.com/ventoviro/windwalker-data",
+    "homepage": "https://github.com/ventoviro/windwalker-crypt",
     "license": "MIT",
     "require": {
         "php": ">=7.2"
     },
     "require-dev": {
-        "windwalker/test": "~4.0",
-        "windwalker/scalars": "~4.0",
-        "windwalker/utilities": "~4.0"
+        "windwalker/test": "~4.0"
     },
     "suggest": {
     },
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\Data\\": "src/"
+            "Windwalker\\Crypt\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Windwalker\\Crypt\\Test\\": "test/"
+        }
     },
     "extra": {
         "branch-alias": {

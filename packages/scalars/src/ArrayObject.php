@@ -373,7 +373,7 @@ class ArrayObject implements AccessibleInterface
      *
      * @since  3.5
      */
-    public function unique($sortFlags = SORT_STRING)
+    public function unique(int $sortFlags = SORT_STRING)
     {
         return new static(array_unique($this->storage, $sortFlags));
     }

@@ -11,6 +11,7 @@ namespace Windwalker\Filesystem;
 use FilesystemIterator;
 use Psr\Http\Message\StreamInterface;
 use Webmozart\Glob\Iterator\GlobIterator;
+use Windwalker\Filesystem\Exception\FilesystemException;
 use Windwalker\Filesystem\Iterator\FilesIterator;
 use Windwalker\Promise\Promise;
 use Windwalker\Scalars\StringObject;
@@ -44,6 +45,7 @@ use Windwalker\Utilities\Iterator\UniqueIterator;
  * @method static Promise filesAsync(string $path, bool $recursive = false)
  * @method static Promise foldersAsync(string $path, bool $recursive = false)
  * @method static Promise itemsAsync(string $path, bool $recursive = false)
+ * @method static Promise createTempAsync(?string $dir = null, ?string $prefix = null)
  *
  * @since 2.0
  */
@@ -125,6 +127,68 @@ class Filesystem
     }
 
     /**
+     * createTemp
+     *
+     * @param string|null $dir
+     * @param string|null $prefix
+     *
+     * @return  FileObject
+     *
+     * @since  3.5.12
+     */
+    public static function createTemp(?string $dir = null, ?string $prefix = null): FileObject
+    {
+        $dir = $dir ?? sys_get_temp_dir();
+        $prefix = $prefix ?? 'Windwalker-Temp-';
+
+        if (!is_dir($dir)) {
+            static::mkdir($dir);
+        }
+
+        $temp = tempnam($dir, $prefix);
+
+        if (!$temp) {
+            throw new FilesystemException(sprintf(
+                'Create temp file on %s failure.',
+                $dir
+            ));
+        }
+
+        return static::get($temp);
+    }
+
+    /**
+     * Make a symlink. In Windows, if is directory, will try to make it with Junction, that can not required
+     * the admin permissions.
+     *
+     * @param  string  $target
+     * @param  string  $link
+     *
+     * @return  bool
+     */
+    public static function symlink(string $target, string $link): bool
+    {
+        $windows = defined('PHP_WINDOWS_VERSION_BUILD');
+
+        $target = Path::normalize($target);
+        $link   = Path::normalize($link);
+
+        if ($windows) {
+            if (is_file($target)) {
+                // Files can only use symbolic link.
+                exec("mklink /D {$link} {$target}", $output, $returnVar);
+            } else {
+                // Try make dir link by junction.
+                exec("mklink /j {$link} {$target}", $output, $returnVar);
+            }
+
+            return $returnVar === 0;
+        }
+
+        return symlink($target, $link);
+    }
+
+    /**
      * __callStatic
      *
      * @param  string  $name
@@ -157,6 +221,7 @@ class Filesystem
             'filesAsync',
             'foldersAsync',
             'itemsAsync',
+            'createTempAsync',
         ];
 
         if (isset($maps[$name])) {

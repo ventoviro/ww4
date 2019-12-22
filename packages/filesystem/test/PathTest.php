@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Filesystem\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Filesystem\File;
 use Windwalker\Filesystem\Path;
 
 /**
@@ -19,7 +20,7 @@ use Windwalker\Filesystem\Path;
  *
  * @since 2.0
  */
-class PathTest extends TestCase
+class PathTest extends AbstractVfsTestCase
 {
     /**
      * Data provider for testClean() method.
@@ -95,7 +96,7 @@ class PathTest extends TestCase
      *
      * @dataProvider  cleanProvider
      */
-    public function testClean($input, $ds, $expected)
+    public function testClean(string $input, string $ds, string $expected): void
     {
         $this->assertEquals(
             $expected,
@@ -113,7 +114,7 @@ class PathTest extends TestCase
      * @return void
      * @dataProvider existsProvider
      */
-    public function testExists($path, $sExists, $iExists)
+    public function testExists(string $path, bool $sExists, bool $iExists): void
     {
         self::assertSame($sExists, Path::exists($path, Path::CASE_SENSITIVE));
         self::assertSame($iExists, Path::exists($path, Path::CASE_INSENSITIVE));
@@ -165,5 +166,111 @@ class PathTest extends TestCase
         $path = __DIR__ . '/case/Flower/saKura/test.txt';
 
         self::assertEquals(Path::clean(__DIR__ . '/case/Flower/saKura/TEST.txt'), Path::fixCase($path));
+    }
+
+    /**
+     * Method to test stripExtension().
+     *
+     * @return void
+     */
+    public function testStripExtension()
+    {
+        $name = Path::stripExtension('Wu-la.la');
+
+        $this->assertEquals('Wu-la', $name);
+
+        $name = Path::stripExtension(__DIR__ . '/Wu-la.la');
+
+        $this->assertEquals(__DIR__ . '/Wu-la', $name);
+    }
+
+    /**
+     * Method to test getExtension().
+     *
+     * @return void
+     */
+    public function testGetExtension()
+    {
+        $ext = Path::getExtension('Wu-la.la');
+
+        $this->assertEquals('la', $ext);
+    }
+
+    /**
+     * Method to test getFilename().
+     *
+     * @return void
+     */
+    public function testGetFilename()
+    {
+        $name = Path::getFilename(__DIR__ . '/Wu-la.la');
+
+        $this->assertEquals('Wu-la.la', $name);
+    }
+
+    /**
+     * Provides the data to test the makeSafe method.
+     *
+     * @return  array
+     *
+     * @since   2.0
+     */
+    public function dataTestMakeSafe()
+    {
+        return [
+            [
+                'windwalker.',
+                ['#^\.#'],
+                'windwalker',
+                'There should be no fullstop on the end of a filename',
+            ],
+            [
+                'Test w1ndwa1ker_5-1.html',
+                ['#^\.#'],
+                'Test w1ndwa1ker_5-1.html',
+                'Alphanumeric symbols, dots, dashes, spaces and underscores should not be filtered',
+            ],
+            [
+                'Test w1ndwa1ker_5-1.html',
+                ['#^\.#', '/\s+/'],
+                'Testw1ndwa1ker_5-1.html',
+                'Using strip chars parameter here to strip all spaces',
+            ],
+            [
+                'windwalker.php!.',
+                ['#^\.#'],
+                'windwalker.php',
+                'Non-alphanumeric symbols should be filtered to avoid disguising file extensions',
+            ],
+            [
+                'windwalker.php.!',
+                ['#^\.#'],
+                'windwalker.php',
+                'Non-alphanumeric symbols should be filtered to avoid disguising file extensions',
+            ],
+            [
+                '.gitignore',
+                [],
+                '.gitignore',
+                'Files starting with a fullstop should be allowed when strip chars parameter is empty',
+            ],
+        ];
+    }
+
+    /**
+     * Method to test makeSafe().
+     *
+     * @param   string $name       The name of the file to test filtering of
+     * @param   array  $stripChars Whether to filter spaces out the name or not
+     * @param   string $expected   The expected safe file name
+     * @param   string $message    The message to show on failure of test
+     *
+     * @return void
+     *
+     * @dataProvider  dataTestMakeSafe
+     */
+    public function testMakeSafe($name, $stripChars, $expected, $message)
+    {
+        $this->assertEquals(Path::makeSafe($name, $stripChars), $expected, $message);
     }
 }

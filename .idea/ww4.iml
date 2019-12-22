@@ -5,27 +5,29 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/utilities/src" isTestSource="false" packagePrefix="Windwalker\Utilities\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/reactor/test" isTestSource="true" packagePrefix="Windwalker\Reactor\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/utilities/test" isTestSource="true" packagePrefix="Windwalker\Utilities\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/stream/src" isTestSource="false" packagePrefix="Windwalker\Stream\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/validator/test" isTestSource="true" packagePrefix="Windwalker\Validator\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/reactor/src" isTestSource="false" packagePrefix="Windwalker\Reactor\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/event/test" isTestSource="true" packagePrefix="Windwalker\Event\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/scalars/src" isTestSource="false" packagePrefix="Windwalker\Scalars\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/promise/test" isTestSource="true" packagePrefix="Windwalker\Promise\Test\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/event/src" isTestSource="false" packagePrefix="Windwalker\Event\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/test" isTestSource="true" packagePrefix="Windwalker\Filesystem\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/stream/test" isTestSource="true" packagePrefix="Windwalker\Stream\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/cache/test" isTestSource="true" packagePrefix="Windwalker\Cache\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/data/test" isTestSource="true" packagePrefix="Windwalker\Data\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/cache/src" isTestSource="false" packagePrefix="Windwalker\Cache\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/src" isTestSource="false" packagePrefix="Windwalker\Filesystem\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/test/test" isTestSource="true" packagePrefix="Windwalker\Test\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/test/src" isTestSource="false" packagePrefix="Windwalker\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/validator/src" isTestSource="false" packagePrefix="Windwalker\Validator\" />
-      <sourceFolder url="file://$MODULE_DIR$/packages/data/src" isTestSource="false" packagePrefix="Windwalker\Data\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/promise/src" isTestSource="false" packagePrefix="Windwalker\Promise\" />
       <sourceFolder url="file://$MODULE_DIR$/packages/scalars/test" isTestSource="true" packagePrefix="Windwalker\Scalars\Test\" />
       <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/stream/src" isTestSource="false" packagePrefix="Windwalker\Stream\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/reactor/src" isTestSource="false" packagePrefix="Windwalker\Reactor\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/event/test" isTestSource="true" packagePrefix="Windwalker\Event\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/scalars/src" isTestSource="false" packagePrefix="Windwalker\Scalars\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/event/src" isTestSource="false" packagePrefix="Windwalker\Event\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/cache/test" isTestSource="true" packagePrefix="Windwalker\Cache\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/filesystem/src" isTestSource="false" packagePrefix="Windwalker\Filesystem\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/crypt/test" isTestSource="true" packagePrefix="Windwalker\Crypt\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/test/test" isTestSource="true" packagePrefix="Windwalker\Test\Test\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/crypt/src" isTestSource="false" packagePrefix="Windwalker\Crypt\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/data/src" isTestSource="false" packagePrefix="Windwalker\Data\" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/inflector" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/instantiator" />
@@ -36,6 +38,11 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/mockery/mockery" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/myclabs/deep-copy" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/opis/closure" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/paragonie/constant_time_encoding" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/paragonie/halite" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/paragonie/hidden-string" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/paragonie/random_compat" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/paragonie/sodium_compat" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phar-io/manifest" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phar-io/version" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpdocumentor/reflection-common" />
@@ -72,7 +79,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/version" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/squizlabs/php_codesniffer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/swoole/ide-helper" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/finder" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-ctype" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-mbstring" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php72" />
