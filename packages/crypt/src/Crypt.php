@@ -8,7 +8,7 @@
 
 namespace Windwalker\Crypt;
 
-use Windwalker\Crypt\Cipher\CipherInterface;
+use Windwalker\Crypt\Cipher2\CipherInterface;
 
 /**
  * The Crypt class.

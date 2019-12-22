@@ -33,6 +33,13 @@ abstract class TypeCast
 {
     use PreventInitialTrait;
 
+    public const TYPE_INT = 'int';
+    public const TYPE_FLOAT = 'float';
+    public const TYPE_STRING = 'string';
+    public const TYPE_BOOL = 'bool';
+    public const TYPE_ARRAY = 'array';
+    public const TYPE_OBJECT = 'object';
+
     /**
      * Utility function to convert all types to an array.
      *
@@ -181,11 +188,20 @@ abstract class TypeCast
      */
     public static function mapAs(array $src, string $typeOrClass): array
     {
+        if (class_exists($typeOrClass)) {
+            return array_map(
+                static function ($value) use ($typeOrClass) {
+                    return new $typeOrClass($value);
+                },
+                $src
+            );
+        }
+
+        $typeOrClass = strtolower($typeOrClass);
+
         if ($typeOrClass === 'array') {
             return array_map(
-                static function ($value) {
-                    return TypeCast::toArray($value);
-                },
+                [static::class, 'toArray'],
                 $src
             );
         }
@@ -226,16 +242,7 @@ abstract class TypeCast
             );
         }
 
-        if (class_exists($typeOrClass)) {
-            return array_map(
-                static function ($value) use ($typeOrClass) {
-                    return new $typeOrClass($value);
-                },
-                $src
-            );
-        }
-
-        throw new InvalidArgumentException(sprintf('Class %s not exists', $typeOrClass));
+        throw new InvalidArgumentException(sprintf('%s is not a valid type or class name.', $typeOrClass));
     }
 
     /**

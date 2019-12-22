@@ -9,6 +9,8 @@
 
 declare(strict_types=1);
 
+include_once __DIR__ . '/cache/src/bootstrap.php';
+include_once __DIR__ . '/crypt/src/bootstrap.php';
 include_once __DIR__ . '/data/src/bootstrap.php';
 include_once __DIR__ . '/event/src/bootstrap.php';
 include_once __DIR__ . '/filesystem/src/bootstrap.php';

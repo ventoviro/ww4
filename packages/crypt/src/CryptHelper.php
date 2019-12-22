@@ -8,6 +8,10 @@
 
 namespace Windwalker\Crypt;
 
+use ParagonIE\ConstantTime\Binary;
+use ParagonIE\Halite\Alerts\CannotPerformOperation;
+use ParagonIE\Halite\Alerts\InvalidDigestLength;
+
 /**
  * The CryptHelper class.
  *
@@ -18,9 +22,9 @@ class CryptHelper
     /**
      * limitInteger
      *
-     * @param integer $int
-     * @param integer $min
-     * @param integer $max
+     * @param  integer  $int
+     * @param  integer  $min
+     * @param  integer  $max
      *
      * @return  integer
      */
@@ -42,9 +46,9 @@ class CryptHelper
     /**
      * repeatToLength
      *
-     * @param string  $string
-     * @param integer $length
-     * @param bool    $cut
+     * @param  string   $string
+     * @param  integer  $length
+     * @param  bool     $cut
      *
      * @return  string
      */
@@ -66,11 +70,12 @@ class CryptHelper
     /**
      * Generate random bytes.
      *
-     * @param   integer $length Length of the random data to generate
+     * @param  integer  $length  Length of the random data to generate
      *
      * @note    This method is based on Joomla Crypt.
      * @return  string  Random binary data
      *
+     * @throws \Exception
      * @since   2.0
      */
     public static function genRandomBytes($length = 16)
@@ -96,15 +101,15 @@ class CryptHelper
          * Collect any entropy available in the system along with a number
          * of time measurements of operating system randomness.
          */
-        $bitsPerRound = 2;
-        $maxTimeMicro = 400;
+        $bitsPerRound  = 2;
+        $maxTimeMicro  = 400;
         $shaHashLength = 20;
-        $randomStr = '';
-        $total = $length;
+        $randomStr     = '';
+        $total         = $length;
 
         // Check if we can use /dev/urandom.
         $urandom = false;
-        $handle = null;
+        $handle  = null;
 
         if (@is_readable('/dev/urandom')) {
             $handle = @fopen('/dev/urandom', 'rb');
@@ -124,7 +129,7 @@ class CryptHelper
             $entropy = mt_rand() . uniqid(mt_rand(), true) . $sslStr;
             $entropy .= implode('', @fstat(fopen(__FILE__, 'r')));
             $entropy .= memory_get_usage();
-            $sslStr = '';
+            $sslStr  = '';
 
             if ($urandom) {
                 stream_set_read_buffer($handle, 0);
@@ -137,19 +142,19 @@ class CryptHelper
                  *
                  * Measure the time that the operations will take on average.
                  */
-                $samples = 3;
+                $samples  = 3;
                 $duration = 0;
 
                 for ($pass = 0; $pass < $samples; ++$pass) {
                     $microStart = microtime(true) * 1000000;
-                    $hash = sha1(mt_rand(), true);
+                    $hash       = sha1(mt_rand(), true);
 
                     for ($count = 0; $count < 50; ++$count) {
                         $hash = sha1($hash, true);
                     }
 
                     $microEnd = microtime(true) * 1000000;
-                    $entropy .= $microStart . $microEnd;
+                    $entropy  .= $microStart . $microEnd;
 
                     if ($microStart >= $microEnd) {
                         $microEnd += 1000000;
@@ -174,7 +179,7 @@ class CryptHelper
 
                 for ($pass = 0; $pass < $iter; ++$pass) {
                     $microStart = microtime(true);
-                    $hash = sha1(mt_rand(), true);
+                    $hash       = sha1(mt_rand(), true);
 
                     for ($count = 0; $count < $rounds; ++$count) {
                         $hash = sha1($hash, true);
@@ -195,20 +200,128 @@ class CryptHelper
     }
 
     /**
+     * Use a derivative of HKDF to derive multiple keys from one.
+     * http://tools.ietf.org/html/rfc5869
+     *
+     * This is a variant from hash_hkdf() and instead uses BLAKE2b provided by
+     * libsodium.
+     *
+     * Important: instead of a true HKDF (from HMAC) construct, this uses the
+     * crypto_generichash() key parameter. This is *probably* okay.
+     *
+     * @note This method is port of Halite.
+     *
+     * @param  string  $ikm     Initial Keying Material
+     * @param  int     $length  How many bytes?
+     * @param  string  $info    What sort of key are we deriving?
+     * @param  string  $salt
+     *
+     * @return string
+     *
+     * @throws \SodiumException
+     */
+    public static function hkdfBlake2b(
+        string $ikm,
+        int $length,
+        string $info = '',
+        string $salt = ''
+    ): string {
+        // Sanity-check the desired output length.
+        if ($length < 0 || $length > (255 * \SODIUM_CRYPTO_GENERICHASH_KEYBYTES)) {
+            throw new \InvalidArgumentException(
+                'Argument 2: Bad HKDF Digest Length'
+            );
+        }
+
+        // "If [salt] not provided, is set to a string of HashLen zeroes."
+        if (empty($salt)) {
+            $salt = \str_repeat("\x00", \SODIUM_CRYPTO_GENERICHASH_KEYBYTES);
+        }
+
+        // HKDF-Extract:
+        // PRK = HMAC-Hash(salt, IKM)
+        // The salt is the HMAC key.
+        $prk = \sodium_crypto_generichash($ikm, $salt);
+
+        // @note $prk should less than SODIUM_CRYPTO_GENERICHASH_KEYBYTES.
+
+        // HKDF-Expand:
+        // T(0) = ''
+        $t          = '';
+        $last_block = '';
+
+        for ($block_index = 1; static::strlen($t) < $length; ++$block_index) {
+            // T(i) = HMAC-Hash(PRK, T(i-1) | info | 0x??)
+            $last_block = \sodium_crypto_generichash(
+                $last_block . $info . \chr($block_index),
+                $prk,
+                \SODIUM_CRYPTO_GENERICHASH_BYTES
+            );
+            // T = T(1) | T(2) | T(3) | ... | T(N)
+            $t .= $last_block;
+        }
+
+        // ORM = first L octets of T
+        /** @var string $orm */
+        $orm = static::substr($t, 0, $length);
+
+        return $orm;
+    }
+
+    /**
      * mb safe string length calculator
      *
-     * @param   string $binaryString The binary string return from crypt().
+     * @param  string  $binaryString  The binary string return from crypt().
      *
      * @return  integer  String length.
      *
      * @since   2.0.4
      */
-    public static function getLength($binaryString)
+    public static function strlen(string $binaryString): int
     {
-        if (function_exists('mb_strlen')) {
-            return mb_strlen($binaryString, '8bit');
+        return mb_strlen($binaryString, '8bit');
+    }
+
+    /**
+     * substr
+     *
+     * @param  string  $str
+     * @param  int     $start
+     * @param  null    $length
+     *
+     * @return  string
+     */
+    public static function substr(
+        string $str,
+        int $start = 0,
+        $length = null
+    ): string {
+        if ($length === 0) {
+            return '';
         }
 
-        return strlen($binaryString);
+        return \mb_substr($str, $start, $length, '8bit');
+    }
+
+    /**
+     * PHP 7 uses interned strings. We don't want altering this one to alter
+     * the original string.
+     *
+     * @param  string  $string
+     *
+     * @return  string
+     */
+    public static function strcpy(string $string): string
+    {
+        $len = mb_strlen($string);
+
+        $new   = '';
+        $chunk = max($len >> 1, 1);
+
+        for ($i = 0; $i < $len; $i += $chunk) {
+            $new .= mb_substr($string, $i, $chunk);
+        }
+
+        return $new;
     }
 }

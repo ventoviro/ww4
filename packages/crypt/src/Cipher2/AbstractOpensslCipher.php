@@ -6,7 +6,7 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\Crypt\Cipher;
+namespace Windwalker\Crypt\Cipher2;
 
 /**
  * The AbstractOpensslCipher class.

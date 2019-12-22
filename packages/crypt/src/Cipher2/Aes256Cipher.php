@@ -6,7 +6,7 @@
  * @license    GNU General Public License version 2 or later.
  */
 
-namespace Windwalker\Crypt\Cipher;
+namespace Windwalker\Crypt\Cipher2;
 
 /**
  * The Aes256Cipher class.

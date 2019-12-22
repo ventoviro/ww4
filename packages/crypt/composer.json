@@ -12,7 +12,8 @@
     "homepage": "https://github.com/ventoviro/windwalker-crypt",
     "license": "MIT",
     "require": {
-        "php": ">=7.2"
+        "php": ">=7.2",
+        "paragonie/constant_time_encoding": "^2.3"
     },
     "require-dev": {
         "windwalker/test": "~4.0"

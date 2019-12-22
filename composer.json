@@ -21,7 +21,9 @@
         "psr/event-dispatcher": "^1.0",
         "symfony/polyfill-php73": "^1.12",
         "symfony/polyfill-php74": "^1.12",
+        "symfony/polyfill-mbstring": "^1.12",
         "league/flysystem": "^1.0",
+        "paragonie/constant_time_encoding": "^2.3",
         "ext-json": "*",
         "ext-sodium": "*"
     },

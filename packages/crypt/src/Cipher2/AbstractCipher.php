@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Crypt\Cipher;
+namespace Windwalker\Crypt\Cipher2;
 
 use Windwalker\Crypt\CryptHelper;
 

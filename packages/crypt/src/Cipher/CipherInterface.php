@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project.
  *
@@ -6,7 +7,13 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\Crypt\Cipher;
+
+use Windwalker\Crypt\HiddenString;
+use Windwalker\Crypt\Key;
+use Windwalker\Crypt\SafeEncoder;
 
 /**
  * Interface CipherInterface
@@ -16,29 +23,24 @@ namespace Windwalker\Crypt\Cipher;
 interface CipherInterface
 {
     /**
-     * Method to decrypt a data string.
+     * Decrypt string.
      *
-     * @param   string $data The encrypted string to decrypt.
-     * @param   string $key  The private key.
-     * @param   string $iv   The public key.
+     * @param  string  $str
+     * @param  Key     $key
+     * @param  string  $encoder
      *
-     * @return  string  The decrypted data string.
-     *
-     * @since    2.0
+     * @return  HiddenString
      */
-    public function decrypt($data, $key = null, $iv = null);
+    public function decrypt(string $str, Key $key, string $encoder = SafeEncoder::BASE64URLSAFE): HiddenString;
 
     /**
-     * Method to encrypt a data string.
+     * encrypt
      *
-     * @param   string $data The data string to encrypt.
-     * @param   string $key  The private key.
-     * @param   string $iv   The public key.
+     * @param  HiddenString  $str
+     * @param  Key           $key
+     * @param  string        $encoder
      *
-     * @return  string  The encrypted data string.
-     *
-     * @since   2.0
-     * @throws  \InvalidArgumentException
+     * @return  string
      */
-    public function encrypt($data, $key = null, $iv = null);
+    public function encrypt(HiddenString $str, Key $key, string $encoder = SafeEncoder::BASE64URLSAFE): string;
 }
