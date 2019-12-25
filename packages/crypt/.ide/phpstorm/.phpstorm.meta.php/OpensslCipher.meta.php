@@ -12,6 +12,27 @@ declare(strict_types=1);
 namespace PHPSTORM_META {
 
     registerArgumentsSet(
+        'crypt_encoder',
+        SafeEncoder::HEX,
+        \Windwalker\Crypt\SafeEncoder::BASE32,
+        \Windwalker\Crypt\SafeEncoder::BASE32HEX,
+        \Windwalker\Crypt\SafeEncoder::BASE64,
+        \Windwalker\Crypt\SafeEncoder::BASE64URLSAFE,
+    );
+
+    expectedArguments(
+        \Windwalker\Crypt\Cipher\CipherInterface::encrypt(),
+        2,
+        argumentsSet('crypt_encoder')
+    );
+
+    expectedArguments(
+        \Windwalker\Crypt\Cipher\CipherInterface::decrypt(),
+        2,
+        argumentsSet('crypt_encoder')
+    );
+
+    registerArgumentsSet(
         'openssl_methods',
         'aes-128-cbc',
         'aes-128-cfb',

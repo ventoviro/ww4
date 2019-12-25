@@ -13,6 +13,7 @@ use Windwalker\Crypt\Cipher\OpensslCipher;
 use Windwalker\Crypt\Cipher\SodiumCipher;
 use Windwalker\Crypt\HiddenString;
 use Windwalker\Crypt\Key;
+use Windwalker\Crypt\SafeEncoder;
 use Windwalker\Data\Collection;
 use function Windwalker\arr;
 
@@ -58,7 +59,6 @@ class OpensslCipherTest extends TestCase
      *
      * @return void
      *
-     * @covers       \Windwalker\Crypt\Cipher2\AbstractCipher::encrypt
      * @dataProvider methodsProvider
      */
     public function testEncrypt(string $method)
@@ -67,9 +67,9 @@ class OpensslCipherTest extends TestCase
 
         $cipher = new OpensslCipher($method);
 
-        $data = $cipher->encrypt(new HiddenString('windwalker'), $key);
+        $data = $cipher->encrypt(new HiddenString('windwalker'), $key, SafeEncoder::HEX);
 
-        $data = $cipher->decrypt($data, $key);
+        $data = $cipher->decrypt($data, $key, SafeEncoder::HEX);
 
         $this->assertEquals('windwalker', $data->get());
     }
