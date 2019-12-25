@@ -181,16 +181,17 @@ class Password implements HasherInterface
      *
      * This is a fork of Joomla JUserHelper::genRandomPassword()
      *
-     * @param   integer $length Length of the password to generate
+     * @param  integer  $length  Length of the password to generate
      *
      * @return  string  Random Password
      *
-     * @see     https://github.com/joomla/joomla-cms/blob/staging/libraries/joomla/user/helper.php#L642
+     * @throws \Exception
      * @since   2.0.9
+     * @see     https://github.com/joomla/joomla-cms/blob/staging/libraries/joomla/user/helper.php#L642
      */
-    public static function genRandomPassword($length = 8)
+    public static function genRandomPassword(int $length = 15): string
     {
-        $salt = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        $salt = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $base = strlen($salt);
         $password = '';
 
@@ -201,7 +202,7 @@ class Password implements HasherInterface
          * distribution is even, and randomize the start shift so it's not
          * predictable.
          */
-        $random = CryptHelper::genRandomBytes($length + 1);
+        $random = random_bytes($length + 1);
         $shift = ord($random[0]);
 
         for ($i = 1; $i <= $length; ++$i) {

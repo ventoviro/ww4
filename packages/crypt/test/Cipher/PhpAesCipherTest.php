@@ -8,8 +8,10 @@
 
 namespace Windwalker\Crypt\Test\Cipher;
 
-use Windwalker\Crypt\Cipher2\PhpAesCipher;
+use Windwalker\Crypt\Cipher\PhpAesCipher;
 use Windwalker\Crypt\CryptHelper;
+use Windwalker\Crypt\HiddenString;
+use Windwalker\Crypt\Key;
 
 /**
  * Test class of PhpAesCipher
@@ -50,33 +52,19 @@ class PhpAesCipherTest extends \PHPUnit\Framework\TestCase
      * Method to test decrypt().
      *
      * @return void
-     *
-     * @covers \Windwalker\Crypt\Cipher2\PhpAesCipher::decrypt
+     * @throws \Exception
      */
     public function testDecrypt()
     {
         $data = 'windwalker';
 
-        $key = CryptHelper::genRandomBytes();
+        $key = new Key(random_bytes(16));
 
-        $result = $this->instance->decrypt($this->instance->encrypt($data, $key), $key);
+        $result = $this->instance->decrypt(
+            $this->instance->encrypt(new HiddenString($data), $key),
+            $key
+        );
 
         $this->assertEquals($data, $result);
-    }
-
-    /**
-     * Method to test encrypt().
-     *
-     * @return void
-     *
-     * @covers \Windwalker\Crypt\Cipher2\PhpAesCipher::encrypt
-     * @TODO   Implement testEncrypt().
-     */
-    public function testEncrypt()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
     }
 }

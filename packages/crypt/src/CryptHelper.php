@@ -8,10 +8,6 @@
 
 namespace Windwalker\Crypt;
 
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Alerts\CannotPerformOperation;
-use ParagonIE\Halite\Alerts\InvalidDigestLength;
-
 /**
  * The CryptHelper class.
  *
@@ -52,7 +48,7 @@ class CryptHelper
      *
      * @return  string
      */
-    public static function repeatToLength($string, $length, $cut = false)
+    public static function repeatToLength(string $string, int $length, bool $cut = false): string
     {
         if (strlen($string) >= $length) {
             return $string;
@@ -78,7 +74,7 @@ class CryptHelper
      * @throws \Exception
      * @since   2.0
      */
-    public static function genRandomBytes($length = 16)
+    public static function genRandomBytes(int $length = 16): string
     {
         if (function_exists('random_bytes')) {
             return random_bytes($length);
@@ -92,7 +88,7 @@ class CryptHelper
         if (function_exists('openssl_random_pseudo_bytes')) {
             $sslStr = openssl_random_pseudo_bytes($length, $strong);
 
-            if ($strong) {
+            if ($strong !== false && $sslStr !== false) {
                 return $sslStr;
             }
         }

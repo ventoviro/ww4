@@ -26,7 +26,7 @@ class SodiumCipher implements CipherInterface
 {
     protected const HKDF_SALT_LEN = 32;
     protected const NONCE_SIZE = SODIUM_CRYPTO_STREAM_NONCEBYTES;
-    protected const AUTH_SIZE = SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
+    protected const HMAC_SIZE = SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
 
     /**
      * @inheritDoc
@@ -44,11 +44,12 @@ class SodiumCipher implements CipherInterface
         $encrypted = CryptHelper::substr(
             $message,
             static::HKDF_SALT_LEN + static::NONCE_SIZE,
-            $length - (static::HKDF_SALT_LEN + static::NONCE_SIZE + static::AUTH_SIZE)
+            $length - (static::HKDF_SALT_LEN + static::NONCE_SIZE + static::HMAC_SIZE)
         );
-        $auth      = CryptHelper::substr(
+
+        $hmac = CryptHelper::substr(
             $message,
-            $length - static::AUTH_SIZE
+            $length - static::HMAC_SIZE
         );
 
         \sodium_memzero($message);
@@ -61,18 +62,18 @@ class SodiumCipher implements CipherInterface
         This uses salted HKDF to split the keys, which is why we need the
         salt in the first place.
         */
-        [$encKey, $authKey] = static::splitKeys($key, $salt);
+        [$encKey, $hmacKey] = static::derivateSecureKeys($key, $salt);
 
-        if (!static::verifyAuth(
-            $auth,
+        if (!static::verifyHmac(
+            $hmac,
             $salt . $nonce . $encrypted,
-            $authKey
+            $hmacKey
         )) {
             throw new \UnexpectedValueException('Invalid message authentication code');
         }
 
         \sodium_memzero($salt);
-        \sodium_memzero($authKey);
+        \sodium_memzero($hmacKey);
 
         $plaintext = \sodium_crypto_stream_xor(
             $encrypted,
@@ -105,7 +106,7 @@ class SodiumCipher implements CipherInterface
         This uses salted HKDF to split the keys, which is why we need the
         salt in the first place.
         */
-        [$encKey, $authKey] = static::splitKeys($key, $salt);
+        [$encKey, $hmacKey] = static::derivateSecureKeys($key, $salt);
 
         $encrypted = \sodium_crypto_stream_xor(
             $str->get(),
@@ -115,21 +116,21 @@ class SodiumCipher implements CipherInterface
 
         \sodium_memzero($encKey);
 
-        $auth = \sodium_crypto_generichash(
+        $hmac = \sodium_crypto_generichash(
             $salt . $nonce . $encrypted,
-            $authKey,
+            $hmacKey,
             SODIUM_CRYPTO_GENERICHASH_BYTES_MAX
         );
 
-        \sodium_memzero($authKey);
+        \sodium_memzero($hmacKey);
 
-        $message = $salt . $nonce . $encrypted . $auth;
+        $message = $salt . $nonce . $encrypted . $hmac;
 
         // Wipe every superfluous piece of data from memory
         \sodium_memzero($nonce);
         \sodium_memzero($salt);
         \sodium_memzero($encrypted);
-        \sodium_memzero($auth);
+        \sodium_memzero($hmac);
 
         return SafeEncoder::encode($encoder, $message);
     }
@@ -144,7 +145,7 @@ class SodiumCipher implements CipherInterface
      *
      * @throws \SodiumException
      */
-    public static function splitKeys(
+    public static function derivateSecureKeys(
         Key $key,
         string $salt
     ): array {
@@ -154,13 +155,13 @@ class SodiumCipher implements CipherInterface
             CryptHelper::hkdfBlake2b(
                 $binary,
                 \SODIUM_CRYPTO_SECRETBOX_KEYBYTES,
-                'Halite|EncryptionKey',
+                'Windwalker|EncryptionKey',
                 $salt
             ),
             CryptHelper::hkdfBlake2b(
                 $binary,
                 \SODIUM_CRYPTO_AUTH_KEYBYTES,
-                'AuthenticationKeyFor_|Halite',
+                'AuthenticationKeyFor_|Windwalker',
                 $salt
             )
         ];
@@ -171,18 +172,18 @@ class SodiumCipher implements CipherInterface
      *
      * @param  string  $auth
      * @param  string  $message
-     * @param  string  $authKey
+     * @param  string  $hmacKey
      *
      * @return  bool
      *
      * @throws \SodiumException
      */
-    protected static function verifyAuth(
+    protected static function verifyHmac(
         string $auth,
         string $message,
-        string $authKey
+        string $hmacKey
     ): bool {
-        if (CryptHelper::strlen($auth) !== static::AUTH_SIZE) {
+        if (CryptHelper::strlen($auth) !== static::HMAC_SIZE) {
             throw new \InvalidArgumentException(
                 'Argument 1: Message Authentication Code is not the correct length; is it encoded?'
             );
@@ -190,8 +191,8 @@ class SodiumCipher implements CipherInterface
 
         $calc = \sodium_crypto_generichash(
             $message,
-            $authKey,
-            static::AUTH_SIZE
+            $hmacKey,
+            static::HMAC_SIZE
         );
 
         $res = \hash_equals($auth, $calc);

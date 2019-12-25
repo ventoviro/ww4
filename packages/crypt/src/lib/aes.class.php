@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php // phpcs:disable
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 /*  AES implementation in PHP                                                                     */
@@ -86,7 +87,7 @@ class Aes
             }           // and copy back
         }          // note that this will work for Nb=4,5,6, but not 7,8 (always 4 for AES):
 
-        return $s;  // see fp.gladman.plus.com/cryptography_technology/rijndael/aes.spec.311.pdf 
+        return $s;  // see fp.gladman.plus.com/cryptography_technology/rijndael/aes.spec.311.pdf
     }
 
     private static function mixColumns($s, $Nb)
@@ -482,7 +483,7 @@ class AesCtr extends Aes
         }  // standard allows 128/192/256 bit keys
         // note PHP (5) gives us plaintext and password in UTF8 encoding!
 
-        // use AES itself to encrypt password to get cipher key (using plain password as source for  
+        // use AES itself to encrypt password to get cipher key (using plain password as source for
         // key expansion) - gives us well encrypted key
         $nBytes = $nBits / 8;  // no bytes in key
         $pwBytes = [];
@@ -490,9 +491,9 @@ class AesCtr extends Aes
             $pwBytes[$i] = ord((string) substr($password, $i, 1)) & 0xff;
         }
         $key = Aes::cipher($pwBytes, Aes::keyExpansion($pwBytes));
-        $key = array_merge($key, array_slice($key, 0, $nBytes - 16));  // expand key to 16/24/32 bytes long 
+        $key = array_merge($key, array_slice($key, 0, $nBytes - 16));  // expand key to 16/24/32 bytes long
 
-        // initialise 1st 8 bytes of counter block with nonce (NIST SP800-38A §B.2): [0-1] = millisec, 
+        // initialise 1st 8 bytes of counter block with nonce (NIST SP800-38A §B.2): [0-1] = millisec,
         // [2-3] = random, [4-7] = seconds, giving guaranteed sub-ms uniqueness up to Feb 2106
         $counterBlock = [];
         $nonce = floor(microtime(true) * 1000);   // timestamp: milliseconds since 1-Jan-1970
