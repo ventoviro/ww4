@@ -33,22 +33,22 @@ class DomFormatter
         'indentation_character' => '    ',
     ];
 
-    const ELEMENT_TYPE_BLOCK = 0;
+    public const ELEMENT_TYPE_BLOCK = 0;
 
-    const ELEMENT_TYPE_INLINE = 1;
+    public const ELEMENT_TYPE_INLINE = 1;
 
-    const MATCH_INDENT_NO = 0;
+    public const MATCH_INDENT_NO = 0;
 
-    const MATCH_INDENT_DECREASE = 1;
+    public const MATCH_INDENT_DECREASE = 1;
 
-    const MATCH_INDENT_INCREASE = 2;
+    public const MATCH_INDENT_INCREASE = 2;
 
-    const MATCH_DISCARD = 3;
+    public const MATCH_DISCARD = 3;
 
     /**
      * Property instance.
      *
-     * @var  static[]
+     * @var  static
      */
     protected static $instance;
 
@@ -73,7 +73,7 @@ class DomFormatter
      *
      * @return  void
      */
-    public static function setInstance($instance)
+    public static function setInstance(self $instance)
     {
         static::$instance = $instance;
     }
@@ -85,7 +85,7 @@ class DomFormatter
      *
      * @return  string  Formatted Html string.
      */
-    public static function format($buffer)
+    public static function format(string $buffer)
     {
         return static::getInstance()->indent($buffer);
     }
@@ -113,7 +113,7 @@ class DomFormatter
      *
      * @return  string
      */
-    public function indent($input)
+    public function indent(string $input): string
     {
         $this->log = [];
 
@@ -131,7 +131,7 @@ class DomFormatter
      *
      * @return string Indented Dom.
      */
-    public function doIndent($input)
+    public function doIndent(string $input): string
     {
         $subject = $input;
 
@@ -164,6 +164,7 @@ class DomFormatter
                     }
 
                     if ($rule === static::MATCH_INDENT_NO) {
+                        //
                     } else {
                         if ($rule === static::MATCH_INDENT_DECREASE) {
                             $nextLineIndentationLevel--;
@@ -209,7 +210,7 @@ class DomFormatter
      *
      * @return  string
      */
-    protected function removeDoubleWhiteSpace($input)
+    protected function removeDoubleWhiteSpace(string $input): string
     {
         /*
          * Removing double whitespaces to make the source code easier to read.
@@ -229,7 +230,7 @@ class DomFormatter
      *
      * @return  array
      */
-    protected function getTagPatterns()
+    protected function getTagPatterns(): array
     {
         return [
             // block tag
@@ -254,7 +255,7 @@ class DomFormatter
      *
      * @return array
      */
-    public function getLog()
+    public function getLog(): array
     {
         return $this->log;
     }

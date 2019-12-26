@@ -87,7 +87,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  string
      */
-    public function indent($input)
+    public function indent(string $input): string
     {
         $this->log = [];
 
@@ -113,7 +113,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  string
      */
-    protected function tempScripts($input)
+    protected function tempScripts(string $input): string
     {
         // Dindent does not indent <script> body. Instead, it temporary removes it from the code,
         // indents the input, and restores the script body.
@@ -135,7 +135,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  string
      */
-    protected function restoreScripts($output)
+    protected function restoreScripts(string $output): string
     {
         foreach ($this->temporaryReplacementsScript as $i => $original) {
             $output = str_replace('<script>' . ($i + 1) . '</script>', $original, $output);
@@ -151,7 +151,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  string
      */
-    protected function tempInlineElements($input)
+    protected function tempInlineElements(string $input): string
     {
         // Remove inline elements and replace them with text entities.
         if (preg_match_all('/<(' . implode('|', $this->inlineElements) . ')[^>]*>(?:[^<]*)<\/\1>/', $input, $matches)) {
@@ -172,7 +172,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  string
      */
-    protected function restoreInlineElements($output)
+    protected function restoreInlineElements(string $output): string
     {
         foreach ($this->temporaryReplacementsInline as $i => $original) {
             $output = str_replace('ᐃ' . ($i + 1) . 'ᐃ', $original, $output);
@@ -188,7 +188,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  static  Return self to support chaining.
      */
-    public function setInlineElements($inlineElements)
+    public function setInlineElements(array $inlineElements)
     {
         $this->inlineElements = (array) $inlineElements;
 
@@ -200,7 +200,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  array
      */
-    protected function getTagPatterns()
+    protected function getTagPatterns(): array
     {
         return [
             // block tag
@@ -228,7 +228,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  void
      */
-    public function setElementType($elementName, $type)
+    public function setElementType(string $elementName, int $type): void
     {
         if ($type === static::ELEMENT_TYPE_BLOCK) {
             $this->inlineElements = array_diff($this->inlineElements, [$elementName]);
@@ -250,9 +250,9 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  static
      */
-    public function addInlineElement($element)
+    public function addInlineElement(string $element)
     {
-        $this->inlineElements[] = trim(strtolower($element));
+        $this->inlineElements[] = strtolower(trim($element));
 
         return $this;
     }
@@ -264,9 +264,9 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  static
      */
-    public function addUnpairedElement($element)
+    public function addUnpairedElement(string $element)
     {
-        $this->unpairedElements[] = trim(strtolower($element));
+        $this->unpairedElements[] = strtolower(trim($element));
 
         return $this;
     }
@@ -278,7 +278,7 @@ class HtmlFormatter extends DomFormatter
      *
      * @return  static  Return self to support chaining.
      */
-    public function setUnpairedElements($unpairedElements)
+    public function setUnpairedElements(array $unpairedElements)
     {
         $this->unpairedElements = (array) $unpairedElements;
 
@@ -288,9 +288,11 @@ class HtmlFormatter extends DomFormatter
     /**
      * Method to get property UnpairedElements
      *
-     * @return  array
+     * @param  bool  $implode
+     *
+     * @return  array|string
      */
-    public function getUnpairedElements($implode = false)
+    public function getUnpairedElements(bool $implode = false):array
     {
         return $implode ? implode('|', $this->unpairedElements) : $this->unpairedElements;
     }

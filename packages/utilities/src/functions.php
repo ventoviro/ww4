@@ -86,8 +86,11 @@ namespace Windwalker {
     use Traversable;
     use Windwalker\Utilities\Compare\WhereWrapper;
     use Windwalker\Utilities\Proxy\CachedCallable;
+    use Windwalker\Utilities\Proxy\CallableProxy;
     use Windwalker\Utilities\Proxy\DisposableCallable;
+    use Windwalker\Utilities\Wrapper\RawWrapper;
     use Windwalker\Utilities\Wrapper\ValueReference;
+    use Windwalker\Utilities\Wrapper\WrapperInterface;
 
     /**
      * nope
@@ -197,7 +200,42 @@ namespace Windwalker {
      */
     function value($value, ...$args)
     {
-        return $value instanceof Closure ? $value(...$args) : $value;
+        if ($value instanceof WrapperInterface) {
+            return $value(...$args);
+        }
+
+        return ($value instanceof Closure || $value instanceof CallableProxy)
+            ? $value(...$args)
+            : $value;
+    }
+
+    /**
+     * unwrap
+     *
+     * @param  mixed  $value
+     * @param  mixed  ...$args
+     *
+     * @return  mixed
+     */
+    function unwrap($value, ...$args)
+    {
+        if ($value instanceof WrapperInterface) {
+            return $value(...$args);
+        }
+
+        return $value;
+    }
+
+    /**
+     * raw
+     *
+     * @param mixed $value
+     *
+     * @return  RawWrapper
+     */
+    function raw($value): RawWrapper
+    {
+        return new RawWrapper($value);
     }
 
     /**
