@@ -11,6 +11,7 @@ namespace Windwalker\Crypt\Test\Cipher;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Crypt\Cipher\SodiumCipher;
 use Windwalker\Crypt\HiddenString;
+use Windwalker\Crypt\Key;
 
 /**
  * Test class of Cipher3DES
@@ -52,12 +53,11 @@ class SodiumCipherTest extends TestCase
      *
      * @return void
      *
-     * @covers \Windwalker\Crypt\Cipher2\AbstractCipher::encrypt
      * @throws \SodiumException
      */
     public function testEncrypt()
     {
-        $key = SodiumCipher::generateKey();
+        $key = new Key('hello');
 
         $data = $this->instance->encrypt(new HiddenString('windwalker'), $key);
 

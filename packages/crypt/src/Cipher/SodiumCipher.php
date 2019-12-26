@@ -54,26 +54,13 @@ class SodiumCipher implements CipherInterface
 
         \sodium_memzero($message);
 
-        /*
-        Split our key into two keys: One for encryption, the other for
-        authentication. By using separate keys, we can reasonably dismiss
-        likely cross-protocol attacks.
-
-        This uses salted HKDF to split the keys, which is why we need the
-        salt in the first place.
-        */
         [$encKey, $hmacKey] = static::derivateSecureKeys($key, $salt);
 
-        if (!static::verifyHmac(
-            $hmac,
-            $salt . $nonce . $encrypted,
-            $hmacKey
-        )) {
+        $calc = static::hmac($salt . $nonce . $encrypted, $hmacKey);
+
+        if (!\hash_equals($hmac, $calc)) {
             throw new \UnexpectedValueException('Invalid message authentication code');
         }
-
-        \sodium_memzero($salt);
-        \sodium_memzero($hmacKey);
 
         $plaintext = \sodium_crypto_stream_xor(
             $encrypted,
@@ -81,6 +68,9 @@ class SodiumCipher implements CipherInterface
             $encKey
         );
 
+        \sodium_memzero($calc);
+        \sodium_memzero($salt);
+        \sodium_memzero($hmacKey);
         \sodium_memzero($encrypted);
         \sodium_memzero($nonce);
         \sodium_memzero($encKey);
@@ -114,19 +104,13 @@ class SodiumCipher implements CipherInterface
             $encKey
         );
 
-        \sodium_memzero($encKey);
-
-        $hmac = \sodium_crypto_generichash(
-            $salt . $nonce . $encrypted,
-            $hmacKey,
-            SODIUM_CRYPTO_GENERICHASH_BYTES_MAX
-        );
-
-        \sodium_memzero($hmacKey);
+        $hmac = static::hmac($salt . $nonce . $encrypted, $hmacKey);
 
         $message = $salt . $nonce . $encrypted . $hmac;
 
         // Wipe every superfluous piece of data from memory
+        \sodium_memzero($encKey);
+        \sodium_memzero($hmacKey);
         \sodium_memzero($nonce);
         \sodium_memzero($salt);
         \sodium_memzero($encrypted);
@@ -136,7 +120,9 @@ class SodiumCipher implements CipherInterface
     }
 
     /**
-     * Split a key (using HKDF-BLAKE2b instead of HKDF-HMAC-*)
+     * Split key by using HKDF-BLAKE2b instead of HKDF-HMAC-*
+     *
+     * Can dismiss likely cross-protocol attacks.
      *
      * @param  Key     $key
      * @param  string  $salt
@@ -168,37 +154,22 @@ class SodiumCipher implements CipherInterface
     }
 
     /**
-     * verifyAuth
+     * hmac
      *
-     * @param  string  $auth
      * @param  string  $message
      * @param  string  $hmacKey
      *
-     * @return  bool
+     * @return  string
      *
      * @throws \SodiumException
      */
-    protected static function verifyHmac(
-        string $auth,
-        string $message,
-        string $hmacKey
-    ): bool {
-        if (CryptHelper::strlen($auth) !== static::HMAC_SIZE) {
-            throw new \InvalidArgumentException(
-                'Argument 1: Message Authentication Code is not the correct length; is it encoded?'
-            );
-        }
-
-        $calc = \sodium_crypto_generichash(
+    public static function hmac(string $message, string $hmacKey): string
+    {
+        return \sodium_crypto_generichash(
             $message,
             $hmacKey,
             static::HMAC_SIZE
         );
-
-        $res = \hash_equals($auth, $calc);
-        \sodium_memzero($calc);
-
-        return $res;
     }
 
     /**
