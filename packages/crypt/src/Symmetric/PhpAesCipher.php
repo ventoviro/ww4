@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Crypt\Cipher;
+namespace Windwalker\Crypt\Symmetric;
 
 use Windwalker\Crypt\HiddenString;
 use Windwalker\Crypt\Key;

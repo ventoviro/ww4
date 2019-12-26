@@ -24,6 +24,7 @@
         "symfony/polyfill-mbstring": "^1.12",
         "league/flysystem": "^1.0",
         "paragonie/constant_time_encoding": "^2.3",
+        "masterminds/html5": "^2.7",
         "ext-json": "*",
         "ext-sodium": "*"
     },
@@ -42,8 +43,7 @@
         "reactivex/rxphp": "^2.0",
         "react/event-loop": "^1.1",
         "mikey179/vfsstream": "^1.6",
-        "webmozart/glob": "^4.1",
-        "paragonie/halite": "^4.6"
+        "webmozart/glob": "^4.1"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",
@@ -55,12 +55,15 @@
             "Windwalker\\Cache\\": "packages/cache/src",
             "Windwalker\\Crypt\\": "packages/crypt/src",
             "Windwalker\\Data\\": "packages/data/src",
+            "Windwalker\\Dom\\": "packages/dom/src",
             "Windwalker\\Event\\": "packages/event/src",
             "Windwalker\\Filesystem\\": "packages/filesystem/src",
             "Windwalker\\Promise\\": "packages/promise/src",
+            "Windwalker\\Queue\\": "packages/queue/src",
             "Windwalker\\Scalars\\": "packages/scalars/src",
             "Windwalker\\Stream\\": "packages/stream/src",
             "Windwalker\\Reactor\\": "packages/reactor/src",
+            "Windwalker\\Renderer\\": "packages/renderer/src",
             "Windwalker\\Test\\": "packages/test/src",
             "Windwalker\\Utilities\\": "packages/utilities/src",
             "Windwalker\\Validator\\": "packages/validator/src"
@@ -74,12 +77,15 @@
             "Windwalker\\Cache\\Test\\": "packages/cache/test",
             "Windwalker\\Crypt\\Test\\": "packages/crypt/test",
             "Windwalker\\Data\\Test\\": "packages/data/test",
+            "Windwalker\\Dom\\Test\\": "packages/dom/test",
             "Windwalker\\Event\\Test\\": "packages/event/test",
             "Windwalker\\Filesystem\\Test\\": "packages/filesystem/test",
             "Windwalker\\Promise\\Test\\": "packages/promise/test",
+            "Windwalker\\Queue\\Test\\": "packages/queue/test",
             "Windwalker\\Scalars\\Test\\": "packages/scalars/test",
             "Windwalker\\Stream\\Test\\": "packages/stream/test",
             "Windwalker\\Reactor\\Test\\": "packages/reactor/test",
+            "Windwalker\\Renderer\\Test\\": "packages/renderer/test",
             "Windwalker\\Test\\Test\\": "packages/test/test",
             "Windwalker\\Utilities\\Test\\": "packages/utilities/test",
             "Windwalker\\Validator\\Test\\": "packages/validator/test"

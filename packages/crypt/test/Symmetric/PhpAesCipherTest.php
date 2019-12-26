@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project Test files.  @codingStandardsIgnoreStart
  *
@@ -6,9 +7,11 @@
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace Windwalker\Crypt\Test\Cipher;
+declare(strict_types=1);
 
-use Windwalker\Crypt\Cipher\PhpAesCipher;
+namespace Windwalker\Crypt\Test\Symmetric;
+
+use Windwalker\Crypt\Symmetric\PhpAesCipher;
 use Windwalker\Crypt\CryptHelper;
 use Windwalker\Crypt\HiddenString;
 use Windwalker\Crypt\Key;

@@ -35,22 +35,6 @@ class CryptHelperTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Method to test limitInteger().
-     *
-     * @param int $expect
-     * @param int $int
-     * @param int $min
-     * @param int $max
-     *
-     * @covers       \Windwalker\Crypt\CryptHelper::limitInteger
-     * @dataProvider limitIntegerProvider
-     */
-    public function testLimitInteger($expect, $int, $min, $max)
-    {
-        $this->assertEquals($expect, CryptHelper::limitInteger($int, $min, $max));
-    }
-
-    /**
      * Method to test repeatToLength().
      *
      * @return void
@@ -65,21 +49,6 @@ class CryptHelperTest extends \PHPUnit\Framework\TestCase
 
         // No effect if length less than string
         $this->assertEquals('abc', CryptHelper::repeatToLength('abc', 1, true));
-    }
-
-    /**
-     * Method to test genRandomBytes().
-     *
-     * @return void
-     *
-     * @covers \Windwalker\Crypt\CryptHelper::genRandomBytes
-     */
-    public function testGenRandomBytes()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
     }
 
     /**

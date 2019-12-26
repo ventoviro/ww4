@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project Test files.  @codingStandardsIgnoreStart
  *
@@ -6,10 +7,12 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\Crypt\Test\Cipher;
+declare(strict_types=1);
+
+namespace Windwalker\Crypt\Test\Symmetric;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Crypt\Cipher\SodiumCipher;
+use Windwalker\Crypt\Symmetric\SodiumCipher;
 use Windwalker\Crypt\HiddenString;
 use Windwalker\Crypt\Key;
 

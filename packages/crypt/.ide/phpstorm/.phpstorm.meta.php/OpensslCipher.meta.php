@@ -21,13 +21,13 @@ namespace PHPSTORM_META {
     );
 
     expectedArguments(
-        \Windwalker\Crypt\Cipher\CipherInterface::encrypt(),
+        \Windwalker\Crypt\Symmetric\CipherInterface::encrypt(),
         2,
         argumentsSet('crypt_encoder')
     );
 
     expectedArguments(
-        \Windwalker\Crypt\Cipher\CipherInterface::decrypt(),
+        \Windwalker\Crypt\Symmetric\CipherInterface::decrypt(),
         2,
         argumentsSet('crypt_encoder')
     );
@@ -61,7 +61,7 @@ namespace PHPSTORM_META {
     );
 
     expectedArguments(
-        \Windwalker\Crypt\Cipher\OpensslCipher::__construct(),
+        \Windwalker\Crypt\Symmetric\OpensslCipher::__construct(),
         0,
         ...argumentsSet('openssl_methods')
     );

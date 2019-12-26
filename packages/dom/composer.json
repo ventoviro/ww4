@@ -1,31 +1,29 @@
 {
-    "name": "windwalker/crypt",
+    "name": "windwalker/dom",
     "type": "windwalker-package",
-    "description": "Windwalker Crypt package",
+    "description": "Windwalker Dom package",
     "keywords": [
         "windwalker",
         "framework",
-        "crypt",
-        "symmetric",
-        "sodium",
-        "libsodium",
-        "openssl"
+        "dom"
     ],
-    "homepage": "https://github.com/ventoviro/windwalker-crypt",
+    "homepage": "https://github.com/ventoviro/windwalker-dom",
     "license": "MIT",
     "require": {
         "php": ">=7.2",
-        "paragonie/constant_time_encoding": "^2.3"
+        "windwalker/event": "~3.0",
+        "ext-json": "*"
     },
     "require-dev": {
-        "windwalker/test": "~4.0"
+        "windwalker/test": "~4.0",
+        "masterminds/html5": "^2.7"
     },
     "suggest": {
     },
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\Crypt\\": "src/"
+            "Windwalker\\Dom\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
@@ -33,7 +31,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Crypt\\Test\\": "test/"
+            "Windwalker\\Dom\\Test\\": "test/"
         }
     },
     "extra": {
