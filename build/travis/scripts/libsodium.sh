@@ -1,7 +1,4 @@
 #!/bin/sh
 
-sudo add-apt-repository ppa:chris-lea/libsodium -y;
-sudo chmod 777 /etc/apt/sources.list;
-sudo echo "deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu xenial main" >> /etc/apt/sources.list;
-sudo echo "deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu xenial main" >> /etc/apt/sources.list;
-sudo apt-get update -q && sudo apt-get install libsodium-dev -y;
+git clone -b stable https://github.com/jedisct1/libsodium.git
+cd libsodium && sudo ./configure && sudo make check && sudo make install && cd ..
