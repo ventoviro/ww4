@@ -1,5 +1,4 @@
-<?php
-
+<?php declare(strict_types=1);
 /**
  * Part of Windwalker project.
  *
@@ -7,135 +6,78 @@
  * @license    LGPL-2.0-or-later
  */
 
-declare(strict_types=1);
-
 namespace Windwalker\Dom;
 
-use Windwalker\Utilities\TypeCast;
-use Windwalker\Utilities\Wrapper\RawWrapper;
-use function Windwalker\value;
+use Windwalker\Dom\Builder\DomBuilder;
 
 /**
  * Class XmlElement
  *
  * @since 2.0
  */
-class DomElement extends \DOMElement implements \ArrayAccess
+class DomElement implements \ArrayAccess
 {
     /**
-     * DomElement constructor.
+     * Element tag name.
      *
-     * @param  string       $name
-     * @param  array        $attributes
-     * @param  mixed        $content
-     * @param  string|null  $uri
+     * @var  string
      */
-    public function __construct(string $name, array $attributes = [], $content = null, string $uri = '')
-    {
-        parent::__construct($name, null, $uri);
-
-        if (!$this->ownerDocument) {
-            DomFactory::create()->appendChild($this);
-        }
-
-        foreach ($attributes as $key => $attribute) {
-            $this->setAttribute($key, static::valueToString($attribute));
-        }
-
-        if ($content !== null) {
-            static::insertContentTo($content, $this);
-        }
-    }
+    protected $name;
 
     /**
-     * valueToString
+     * Element attributes.
      *
-     * @param mixed $value
-     *
-     * @return  string
+     * @var  array
      */
-    protected static function valueToString($value): string
-    {
-        if (!$value instanceof RawWrapper && is_stringable($value)) {
-            return (string) $value;
-        }
-
-        $value = value($value);
-
-        if (is_array($value) || is_object($value)) {
-            $value = json_encode($value);
-        }
-
-        return $value;
-    }
+    protected $attribs;
 
     /**
-     * insertContentTo
+     * Element content.
      *
-     * @param  mixed     $content
-     * @param  \DOMNode  $node
-     *
-     * @return  void
+     * @var  mixed
      */
-    protected static function insertContentTo($content, \DOMNode $node): void
-    {
-        $content = value($content);
+    protected $content;
 
+    /**
+     * Constructor
+     *
+     * @param string $name    Element tag name.
+     * @param mixed  $content Element content.
+     * @param array  $attribs Element attributes.
+     */
+    public function __construct($name, $content = null, $attribs = [])
+    {
         if (is_array($content)) {
-            $fragment = $node->ownerDocument->createDocumentFragment();
-
-            foreach ($content as $key => $c) {
-                static::insertContentTo($c, $fragment);
-            }
-
-            $node->appendChild($fragment);
-
-            return;
+            $content = new DomCollection($content);
         }
 
-        if ($content instanceof \DOMNode) {
-            $node->appendChild($content);
-            return;
-        }
-
-        $text = $node->ownerDocument->createTextNode((string) $content);
-
-        $node->appendChild($text);
+        $this->name = $name;
+        $this->attribs = $attribs;
+        $this->content = $content;
     }
 
     /**
-     * Adds new child at the end of the children
-     * @link  https://php.net/manual/en/domnode.appendchild.php
+     * toString
      *
-     * @param  \DOMNode  $newnode  The appended child.
-     *
-     * @return \DOMNode The node added.
-     */
-    public function appendChild(\DOMNode $newnode): \DOMNode
-    {
-        if (!$this->ownerDocument->isSameNode($newnode->ownerDocument)) {
-            $newnode = $this->ownerDocument->importNode($newnode->cloneNode(true), true);
-        }
-
-        return parent::appendChild($newnode);
-    }
-
-    /**
-     * render
-     *
-     * @param  bool  $format
+     * @param boolean $forcePair
      *
      * @return  string
      */
-    public function render(bool $format = false): string
+    public function toString($forcePair = false)
     {
-        $this->ownerDocument->formatOutput = $format;
+        return DomBuilder::create($this->name, $this->content, $this->attribs, $forcePair);
+    }
 
-        $xml = $this->ownerDocument->saveXML($this);
-
-        $this->ownerDocument->formatOutput = false;
-
-        return $xml;
+    /**
+     * Alias of toString()
+     *
+     * @param boolean $forcePair
+     *
+     * @return  string
+     */
+    public function render($forcePair = false)
+    {
+        return $this->toString($forcePair);
     }
 
     /**
@@ -145,17 +87,107 @@ class DomElement extends \DOMElement implements \ArrayAccess
      */
     public function __toString()
     {
-        return $this->render();
+        try {
+            return $this->toString();
+        } catch (\Throwable $e) {
+            return (string) $e;
+        }
     }
 
     /**
-     * getAttributes
+     * Get content.
      *
-     * @return  \DOMNamedNodeMap|null
+     * @return  mixed
      */
-    public function getAttributes(): ?\DOMNamedNodeMap
+    public function getContent()
     {
-        return $this->attributes;
+        return $this->content;
+    }
+
+    /**
+     * Set content.
+     *
+     * @param   mixed $content Element content.
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
+
+        return $this;
+    }
+
+    /**
+     * Get attributes.
+     *
+     * @param string $name    Attribute name.
+     * @param mixed  $default Default value.
+     *
+     * @return  string The attribute value.
+     */
+    public function getAttribute($name, $default = null)
+    {
+        if (empty($this->attribs[$name])) {
+            return $default;
+        }
+
+        return $this->attribs[$name];
+    }
+
+    /**
+     * Set attribute value.
+     *
+     * @param string $name  Attribute name.
+     * @param string $value The value to set into attribute.
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setAttribute($name, $value)
+    {
+        $this->attribs[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * hasAttribute
+     *
+     * @param string $name
+     *
+     * @return  bool
+     *
+     * @since  3.5.3
+     */
+    public function hasAttribute($name)
+    {
+        return isset($this->attribs[$name]);
+    }
+
+    /**
+     * removeAttribute
+     *
+     * @param string $name
+     *
+     * @return  static
+     *
+     * @since  3.5.3
+     */
+    public function removeAttribute($name)
+    {
+        unset($this->attribs[$name]);
+
+        return $this;
+    }
+
+    /**
+     * Get all attributes.
+     *
+     * @return  array All attributes.
+     */
+    public function getAttributes()
+    {
+        return $this->attribs;
     }
 
     /**
@@ -177,9 +209,9 @@ class DomElement extends \DOMElement implements \ArrayAccess
      *
      * @return  string
      */
-    public function getName(): string
+    public function getName()
     {
-        return $this->tagName;
+        return $this->name;
     }
 
     /**
@@ -189,9 +221,9 @@ class DomElement extends \DOMElement implements \ArrayAccess
      *
      * @return  static  Return self to support chaining.
      */
-    public function setName(string $name)
+    public function setName($name)
     {
-        $this->tagName = $name;
+        $this->name = $name;
 
         return $this;
     }
@@ -206,7 +238,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
      */
     public function offsetExists($offset)
     {
-        return $this->hasAttribute($offset);
+        return isset($this->attribs[$offset]);
     }
 
     /**
@@ -218,7 +250,11 @@ class DomElement extends \DOMElement implements \ArrayAccess
      */
     public function offsetGet($offset)
     {
-        return $this->getAttribute($offset);
+        if (!$this->offsetExists($offset)) {
+            return null;
+        }
+
+        return $this->attribs[$offset];
     }
 
     /**
@@ -231,7 +267,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
      */
     public function offsetSet($offset, $value)
     {
-        $this->setAttribute($offset, $value);
+        $this->attribs[$offset] = $value;
     }
 
     /**
@@ -243,6 +279,6 @@ class DomElement extends \DOMElement implements \ArrayAccess
      */
     public function offsetUnset($offset)
     {
-        $this->removeAttribute($offset);
+        unset($this->attribs[$offset]);
     }
 }
