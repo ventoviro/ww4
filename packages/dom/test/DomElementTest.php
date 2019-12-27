@@ -29,7 +29,7 @@ class DomElementTest extends AbstractDomTestCase
      */
     public function testConstruct(): void
     {
-        $ele = new DomElement(
+        $ele = DomElement::create(
             'field',
             [
                 'name' => 'foo',
@@ -50,7 +50,7 @@ class DomElementTest extends AbstractDomTestCase
             $ele
         );
 
-        $ele = new DomElement(
+        $ele = DomElement::create(
             'field',
             [
                 'name' => 'foo',
@@ -63,7 +63,7 @@ class DomElementTest extends AbstractDomTestCase
                     'enabled' => true
                 ],
             ],
-            new DomElement('span', [], 'Hello')
+            DomElement::create('span', [], 'Hello')
         );
 
         self::assertDomStringEqualsDomString(
@@ -72,6 +72,8 @@ class DomElementTest extends AbstractDomTestCase
             '<span>Hello</span></field>',
             $ele
         );
+
+        $attrs = $ele->attributes;
     }
 
     /**

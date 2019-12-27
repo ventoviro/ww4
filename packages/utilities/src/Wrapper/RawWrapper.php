@@ -64,7 +64,7 @@ class RawWrapper implements WrapperInterface
     /**
      * @inheritDoc
      */
-    public function __invoke($src)
+    public function __invoke($src = null)
     {
         return $this->get();
     }

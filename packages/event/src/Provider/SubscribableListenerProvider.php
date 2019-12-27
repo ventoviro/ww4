@@ -16,8 +16,6 @@ use Windwalker\Event\EventSubscriberInterface;
 use Windwalker\Event\Listener\ListenerPriority;
 use Windwalker\Event\Listener\ListenersQueue;
 use Windwalker\Utilities\Assert\ArgumentsAssert;
-use Windwalker\Utilities\Proxy\ChainableCallable;
-use Windwalker\Utilities\Proxy\DisposableCallable;
 use Windwalker\Utilities\StrNormalise;
 
 /**

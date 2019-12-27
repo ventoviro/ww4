@@ -11,40 +11,44 @@ declare(strict_types=1);
 
 namespace Windwalker\Dom;
 
-use Windwalker\Utilities\TypeCast;
+use Symfony\Component\DomCrawler\Crawler;
 use Windwalker\Utilities\Wrapper\RawWrapper;
+use Windwalker\Utilities\Wrapper\WrapperInterface;
 use function Windwalker\value;
 
 /**
- * Class XmlElement
+ * Class DomElement
  *
  * @since 2.0
  */
 class DomElement extends \DOMElement implements \ArrayAccess
 {
     /**
-     * DomElement constructor.
-     *
-     * @param  string       $name
-     * @param  array        $attributes
-     * @param  mixed        $content
-     * @param  string|null  $uri
+     * @var string
      */
-    public function __construct(string $name, array $attributes = [], $content = null, string $uri = '')
+    protected static $factory = [DomFactory::class, 'element'];
+
+    /**
+     * create
+     *
+     * @param  string  $name
+     * @param  array   $attributes
+     * @param  mixed   $content
+     *
+     * @return  DomElement
+     */
+    public static function create(string $name, array $attributes = [], $content = null)
     {
-        parent::__construct($name, null, $uri);
+        /** @var static $ele */
+        $ele = (static::$factory)($name);
 
-        if (!$this->ownerDocument) {
-            DomFactory::create()->appendChild($this);
-        }
-
-        foreach ($attributes as $key => $attribute) {
-            $this->setAttribute($key, static::valueToString($attribute));
-        }
+        $ele->setAttributes($attributes);
 
         if ($content !== null) {
-            static::insertContentTo($content, $this);
+            static::insertContentTo($content, $ele);
         }
+
+        return $ele;
     }
 
     /**
@@ -56,11 +60,11 @@ class DomElement extends \DOMElement implements \ArrayAccess
      */
     protected static function valueToString($value): string
     {
-        if (!$value instanceof RawWrapper && is_stringable($value)) {
+        $value = value($value);
+
+        if (is_stringable($value)) {
             return (string) $value;
         }
-
-        $value = value($value);
 
         if (is_array($value) || is_object($value)) {
             $value = json_encode($value);
@@ -151,11 +155,15 @@ class DomElement extends \DOMElement implements \ArrayAccess
     /**
      * getAttributes
      *
-     * @return  \DOMNamedNodeMap|null
+     * @return  array
      */
-    public function getAttributes(): ?\DOMNamedNodeMap
+    public function getAttributes(): array
     {
-        return $this->attributes;
+        if ($this->attributes === null) {
+            return [];
+        }
+
+        return iterator_to_array($this->attributes);
     }
 
     /**
@@ -165,11 +173,51 @@ class DomElement extends \DOMElement implements \ArrayAccess
      *
      * @return  static  Return self to support chaining.
      */
-    public function setAttributes($attribs)
+    public function setAttributes(array $attribs)
     {
-        $this->attribs = $attribs;
+        foreach ($attribs as $key => $attribute) {
+            $this->setAttribute($key, static::valueToString($attribute));
+        }
 
         return $this;
+    }
+
+    /**
+     * querySelectorAll
+     *
+     * @param  string  $selector
+     *
+     * @return  Crawler
+     */
+    public function querySelectorAll(string $selector): Crawler
+    {
+        return $this->getCrawler()->filter($selector);
+    }
+
+    /**
+     * querySelector
+     *
+     * @param  string  $selector
+     *
+     * @return  Crawler
+     */
+    public function querySelector(string $selector): Crawler
+    {
+        return $this->getCrawler()->filter($selector)->first();
+    }
+
+    /**
+     * getCrawler
+     *
+     * @return  Crawler
+     */
+    public function getCrawler(): Crawler
+    {
+        if (!class_exists(Crawler::class)) {
+            throw new \LogicException('Please install symfony/dom-crawler first.');
+        }
+
+        return new Crawler($this);
     }
 
     /**

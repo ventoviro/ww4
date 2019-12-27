@@ -12,7 +12,19 @@ declare(strict_types=1);
 namespace Windwalker\Utilities\Proxy;
 
 /**
- * The ChainCallable class.
+ * The Chainable Callable proxy. Usage:
+ *
+ * ```php
+ * $fn = (new ChainableCallable(fn () => return $result))
+ *     ->chain(fn ($result) => ...)
+ *     ->chain(fn ($result) => ...)
+ *     ->chain(fn ($result) => ...);
+ *
+ * $fn();
+ * ```
+ *
+ * All chained callbacks will run after main callback and fetch previous callback
+ * return value as argument.
  */
 class ChainableCallable extends CallableProxy
 {
@@ -29,7 +41,7 @@ class ChainableCallable extends CallableProxy
         $result = parent::__invoke($args);
 
         foreach ($this->queue as $callable) {
-            $callable();
+            $result = $callable($result);
         }
 
         return $result;

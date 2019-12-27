@@ -62,7 +62,7 @@ class DomFactory
         }
 
         if (!static::$html5) {
-            static::$html5 = new HTML5();
+            static::$html5 = new HTML5(['disable_html_ns' => true]);
         }
 
         return static::$html5;
@@ -84,11 +84,15 @@ class DomFactory
      * @param  string  $name
      * @param  null    $value
      *
-     * @return  \DOMElement
+     * @return  DomElement
      */
-    public static function element(string $name, $value = null): \DOMElement
+    public static function element(string $name, $value = null)
     {
-        return static::document()->createElement($name, $value);
+        if ($value !== null) {
+            return static::document()->createElement($name, $value);
+        }
+
+        return static::document()->createElement($name);
     }
 
     /**
@@ -127,9 +131,15 @@ class DomFactory
         $impl = new \DOMImplementation();
 
         $dom = $impl->createDocument();
+        $dom->registerNodeClass(\DOMElement::class, DomElement::class);
 
         $dom->encoding = $options['encoding'] ?? 'UTF-8';
 
         return $dom;
+    }
+
+    public static function attributes(array $attributes)
+    {
+
     }
 }
