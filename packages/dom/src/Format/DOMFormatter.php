@@ -9,7 +9,9 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Dom\Format;
+namespace Windwalker\DOM\Format;
+
+use Windwalker\DOM\DOMFactory;
 
 /**
  * The AbstractFormatter class.
@@ -18,7 +20,7 @@ namespace Windwalker\Dom\Format;
  *
  * @since  2.1
  */
-class DomFormatter
+class DOMFormatter
 {
     /**
      * Property log.
@@ -261,5 +263,21 @@ class DomFormatter
     public function getLog(): array
     {
         return $this->log;
+    }
+
+    /**
+     * formatByDOMDocument
+     *
+     * @param  string  $string
+     *
+     * @return  string
+     */
+    public static function formatByDOMDocument(string $string): string
+    {
+        $dom = DOMFactory::create();
+        $dom->loadXML($string);
+        $dom->formatOutput = true;
+
+        return $dom->saveXML($dom->documentElement);
     }
 }

@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project.
  *
@@ -6,11 +7,12 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\Dom\Test;
+declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
-use Windwalker\Dom\Format\DomFormatter;
-use Windwalker\Dom\Format\HtmlFormatter;
+namespace Windwalker\DOM\Test;
+
+use Windwalker\DOM\Format\DOMFormatter;
+use Windwalker\DOM\Format\HTMLFormatter;
 use Windwalker\Test\Helper\TestDomHelper;
 use Windwalker\Test\Traits\BaseAssertionTrait;
 
@@ -19,7 +21,7 @@ use Windwalker\Test\Traits\BaseAssertionTrait;
  *
  * @since  2.0
  */
-class AbstractDomTestCase extends TestCase
+trait DOMTestTrait
 {
     use BaseAssertionTrait;
 
@@ -55,8 +57,8 @@ class AbstractDomTestCase extends TestCase
         $message = ''
     ): void {
         self::assertEquals(
-            DomFormatter::format((string) $expected),
-            DomFormatter::format((string) $actual),
+            DOMFormatter::format((string) $expected),
+            DOMFormatter::format((string) $actual),
             $message
         );
     }
@@ -76,8 +78,8 @@ class AbstractDomTestCase extends TestCase
         $message = ''
     ): void {
         $this->assertEquals(
-            HtmlFormatter::format((string) $expected),
-            HtmlFormatter::format((string) $actual),
+            HTMLFormatter::format((string) $expected),
+            HTMLFormatter::format((string) $actual),
             $message
         );
     }

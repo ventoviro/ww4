@@ -9,14 +9,17 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Dom\Format;
+namespace Windwalker\DOM\Format;
+
+use Windwalker\DOM\DOMFactory;
+use Windwalker\DOM\HTMLFactory;
 
 /**
  * The HtmlFormatter class.
  *
  * @since  2.1
  */
-class HtmlFormatter extends DomFormatter
+class HTMLFormatter extends DOMFormatter
 {
     /**
      * Property inlineElements.
@@ -298,5 +301,21 @@ class HtmlFormatter extends DomFormatter
     public function getUnpairedElements(bool $implode = false):array
     {
         return $implode ? implode('|', $this->unpairedElements) : $this->unpairedElements;
+    }
+
+    /**
+     * formatByDOMDocument
+     *
+     * @param  string  $string
+     *
+     * @return  string
+     */
+    public static function formatByDOMDocument(string $string): string
+    {
+        $dom = HTMLFactory::create();
+        $dom->loadXML($string);
+        $dom->formatOutput = true;
+
+        return HTMLFactory::html5()->saveHTML($dom->documentElement);
     }
 }

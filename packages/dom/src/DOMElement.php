@@ -9,11 +9,10 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Dom;
+namespace Windwalker\DOM;
 
+use DOMElement as NativeDOMElement;
 use Symfony\Component\DomCrawler\Crawler;
-use Windwalker\Utilities\Wrapper\RawWrapper;
-use Windwalker\Utilities\Wrapper\WrapperInterface;
 use function Windwalker\value;
 
 /**
@@ -21,12 +20,12 @@ use function Windwalker\value;
  *
  * @since 2.0
  */
-class DomElement extends \DOMElement implements \ArrayAccess
+class DOMElement extends NativeDOMElement implements \ArrayAccess
 {
     /**
      * @var string
      */
-    protected static $factory = [DomFactory::class, 'element'];
+    protected static $factory = [DOMFactory::class, 'element'];
 
     /**
      * create
@@ -35,7 +34,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
      * @param  array   $attributes
      * @param  mixed   $content
      *
-     * @return  DomElement
+     * @return  DOMElement
      */
     public static function create(string $name, array $attributes = [], $content = null)
     {
@@ -54,7 +53,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
     /**
      * valueToString
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  string
      */
@@ -99,6 +98,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
 
         if ($content instanceof \DOMNode) {
             $node->appendChild($content);
+
             return;
         }
 
@@ -108,8 +108,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
     }
 
     /**
-     * Adds new child at the end of the children
-     * @link  https://php.net/manual/en/domnode.appendchild.php
+     * Adds new child at the end of the children.
      *
      * @param  \DOMNode  $newnode  The appended child.
      *
@@ -155,21 +154,34 @@ class DomElement extends \DOMElement implements \ArrayAccess
     /**
      * getAttributes
      *
-     * @return  array
+     * @param  bool  $toString
+     *
+     * @return  string[]|\DOMAttr[]
      */
-    public function getAttributes(): array
+    public function getAttributes(bool $toString = false): array
     {
         if ($this->attributes === null) {
             return [];
         }
 
-        return iterator_to_array($this->attributes);
+        $attrs = iterator_to_array($this->attributes);
+
+        if (!$toString) {
+            return $attrs;
+        }
+
+        return array_map(
+            static function (\DOMAttr $attr) {
+                return $attr->value;
+            },
+            $attrs
+        );
     }
 
     /**
      * Set all attributes.
      *
-     * @param   array $attribs All attributes.
+     * @param  array  $attribs  All attributes.
      *
      * @return  static  Return self to support chaining.
      */
@@ -187,7 +199,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
      *
      * @param  string  $selector
      *
-     * @return  Crawler
+     * @return  Crawler|static[]
      */
     public function querySelectorAll(string $selector): Crawler
     {
@@ -231,23 +243,9 @@ class DomElement extends \DOMElement implements \ArrayAccess
     }
 
     /**
-     * Set element tag name.
-     *
-     * @param   string $name Set element tag name.
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function setName(string $name)
-    {
-        $this->tagName = $name;
-
-        return $this;
-    }
-
-    /**
      * Whether a offset exists
      *
-     * @param mixed $offset An offset to check for.
+     * @param  mixed  $offset  An offset to check for.
      *
      * @return boolean True on success or false on failure.
      *                 The return value will be casted to boolean if non-boolean was returned.
@@ -260,7 +258,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
     /**
      * Offset to retrieve
      *
-     * @param mixed $offset The offset to retrieve.
+     * @param  mixed  $offset  The offset to retrieve.
      *
      * @return mixed Can return all value types.
      */
@@ -272,8 +270,8 @@ class DomElement extends \DOMElement implements \ArrayAccess
     /**
      * Offset to set
      *
-     * @param mixed $offset The offset to assign the value to.
-     * @param mixed $value  The value to set.
+     * @param  mixed  $offset  The offset to assign the value to.
+     * @param  mixed  $value   The value to set.
      *
      * @return void
      */
@@ -285,7 +283,7 @@ class DomElement extends \DOMElement implements \ArrayAccess
     /**
      * Offset to unset
      *
-     * @param mixed $offset The offset to unset.
+     * @param  mixed  $offset  The offset to unset.
      *
      * @return void
      */

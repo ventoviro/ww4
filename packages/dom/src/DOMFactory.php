@@ -9,14 +9,15 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Dom;
+namespace Windwalker\DOM;
 
+use DOMElement as NativeDOMElement;
 use Masterminds\HTML5;
 
 /**
  * The DomTree class.
  */
-class DomFactory
+class DOMFactory
 {
     /**
      * @var \DOMDocument
@@ -84,7 +85,7 @@ class DomFactory
      * @param  string  $name
      * @param  null    $value
      *
-     * @return  DomElement
+     * @return  DOMElement
      */
     public static function element(string $name, $value = null)
     {
@@ -131,7 +132,7 @@ class DomFactory
         $impl = new \DOMImplementation();
 
         $dom = $impl->createDocument();
-        $dom->registerNodeClass(\DOMElement::class, DomElement::class);
+        $dom->registerNodeClass(NativeDOMElement::class, DOMElement::class);
 
         $dom->encoding = $options['encoding'] ?? 'UTF-8';
 

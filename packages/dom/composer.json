@@ -1,7 +1,7 @@
 {
     "name": "windwalker/dom",
     "type": "windwalker-package",
-    "description": "Windwalker Dom package",
+    "description": "Windwalker DOM package",
     "keywords": [
         "windwalker",
         "framework",
@@ -25,7 +25,7 @@
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\Dom\\": "src/"
+            "Windwalker\\DOM\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
@@ -33,7 +33,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Dom\\Test\\": "test/"
+            "Windwalker\\DOM\\Test\\": "test/"
         }
     },
     "extra": {

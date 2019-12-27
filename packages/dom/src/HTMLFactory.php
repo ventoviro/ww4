@@ -9,12 +9,12 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Dom;
+namespace Windwalker\DOM;
 
 /**
  * The HtmlFactory class.
  */
-class HtmlFactory extends DomFactory
+class HTMLFactory extends DOMFactory
 {
     /**
      * element
@@ -22,7 +22,7 @@ class HtmlFactory extends DomFactory
      * @param  string  $name
      * @param  null    $value
      *
-     * @return  HtmlElement
+     * @return  HTMLElement
      */
     public static function element(string $name, $value = null)
     {
@@ -43,7 +43,7 @@ class HtmlFactory extends DomFactory
         $dt = $impl->createDocumentType('html');
 
         $dom = $impl->createDocument('', '', $dt);
-        $dom->registerNodeClass(\DOMElement::class, HtmlElement::class);
+        $dom->registerNodeClass(\DOMElement::class, HTMLElement::class);
 
         $dom->encoding = $options['encoding'] ?? 'UTF-8';
 

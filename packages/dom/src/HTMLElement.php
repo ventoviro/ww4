@@ -9,17 +9,19 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Dom;
+namespace Windwalker\DOM;
+
+use Masterminds\HTML5;
 
 /**
  * The HtmlElement class.
  */
-class HtmlElement extends DomElement
+class HTMLElement extends DOMElement
 {
     /**
      * @var string
      */
-    protected static $factory = [HtmlFactory::class, 'element'];
+    protected static $factory = [HTMLFactory::class, 'element'];
 
     /**
      * render
@@ -32,7 +34,11 @@ class HtmlElement extends DomElement
     {
         $this->ownerDocument->formatOutput = $format;
 
-        $html = HtmlFactory::html5()->saveHTML($this);
+        if (class_exists(HTML5::class)) {
+            $html = HTMLFactory::html5()->saveHTML($this);
+        } else {
+            $html = $this->ownerDocument->saveHTML($this);
+        }
 
         $this->ownerDocument->formatOutput = false;
 

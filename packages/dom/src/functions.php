@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Dom;
+namespace Windwalker\DOM;
 
 use function Windwalker\value;
 
@@ -24,8 +24,8 @@ use function Windwalker\value;
  */
 function h(string $name, array $attributes = [], $content = null): callable
 {
-    return static function () use ($name, $attributes, $content): DomElement {
-        return DomElement::create($name, $attributes, value($content));
+    return static function () use ($name, $attributes, $content): DOMElement {
+        return DOMElement::create($name, $attributes, value($content));
     };
 }
 
