@@ -3,7 +3,7 @@ language: php
 php:
   - 7.2
   - 7.3
-  - 7.4snapshot
+  - 7.4
   - nightly
 
 matrix:
@@ -22,8 +22,10 @@ before_install:
 #  - sh -e build/travis/scripts/apt-get.sh
 #  - sh -e build/travis/scripts/apache2-vhost.sh
 #  - sh -e build/travis/scripts/apache2-configure.sh
+  - sh -e build/travis/scripts/libsodium.sh
 
 before_script:
+  - sh -e build/travis/scripts/pecl-libsodium.sh || true
   - composer install
 #  - phpenv rehash
 
