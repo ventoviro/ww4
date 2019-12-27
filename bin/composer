@@ -1,2 +1,2 @@
 #!/bin/bash
-php74 $(which composer) "$@" --ignore-platform-reqs
+php $(which composer) "$@" --ignore-platform-reqs
