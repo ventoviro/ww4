@@ -11,175 +11,36 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM;
 
-use Masterminds\HTML5;
+use Windwalker\Utilities\Str;
 
 /**
- * The HtmlElement class.
- *
- * @property-read DOMTokenList $classList
- * @property-read DOMTokenList $relList
- * @property-read DOMStringMap $dataset
+ * The HTMLElement class.
  */
-class HTMLElement extends DOMElement
+abstract class HTMLElement
 {
     /**
-     * @var string
+     * create
+     *
+     * @param  string  $name
+     * @param  array   $attributes
+     * @param  mixed   $content
+     *
+     * @return  DOMElement
      */
-    protected static $factory = [HTMLFactory::class, 'element'];
+    public static function create(string $name, array $attributes = [], $content = null): DOMElement
+    {
+        return DOMElement::create($name, $attributes, $content)->asHTML();
+    }
 
     /**
-     * render
+     * buildAttributes
      *
-     * @param  bool  $format
+     * @param  array  $attributes
      *
      * @return  string
      */
-    public function render(bool $format = false): string
+    public static function buildAttributes(array $attributes): string
     {
-        $this->ownerDocument->formatOutput = $format;
-
-        if (class_exists(HTML5::class)) {
-            $html = HTMLFactory::html5()->saveHTML($this);
-        } else {
-            $html = $this->ownerDocument->saveHTML($this);
-        }
-
-        $this->ownerDocument->formatOutput = false;
-
-        return $html;
-    }
-
-    /**
-     * addClass
-     *
-     * @param  string|callable  $class
-     *
-     * @return  static
-     *
-     * @since  3.5.3
-     */
-    public function addClass(string $class)
-    {
-        $classes = array_filter(explode(' ', $class), 'strlen');
-
-        $this->classList->add(...$classes);
-
-        return $this;
-    }
-
-    /**
-     * removeClass
-     *
-     * @param  string|callable  $class
-     *
-     * @return  static
-     *
-     * @since  3.5.3
-     */
-    public function removeClass(string $class)
-    {
-        $classes = array_filter(explode(' ', $class), 'strlen');
-
-        $this->classList->remove(...$classes);
-
-        return $this;
-    }
-
-    /**
-     * toggleClass
-     *
-     * @param  string     $class
-     * @param  bool|null  $force
-     *
-     * @return  static
-     *
-     * @since  3.5.3
-     */
-    public function toggleClass(string $class, ?bool $force = null)
-    {
-        $this->classList->toggle($class, $force);
-
-        return $this;
-    }
-
-    /**
-     * hasClass
-     *
-     * @param  string  $class
-     *
-     * @return  static
-     *
-     * @since  3.5.3
-     */
-    public function hasClass(string $class): self
-    {
-        $this->classList->contains($class);
-
-        return $this;
-    }
-
-    /**
-     * data
-     *
-     * @param  string  $name
-     * @param  mixed   $value
-     *
-     * @return  string|static
-     *
-     * @since  3.5.3
-     */
-    public function data(string $name, $value = null)
-    {
-        if ($value === null) {
-            return $this->getAttribute('data-' . $name);
-        }
-
-        return $this->setAttribute('data-' . $name, $value);
-    }
-
-    /**
-     * __get
-     *
-     * @param  string  $name
-     *
-     * @return  mixed
-     *
-     * @since  3.5.3
-     */
-    public function __get($name)
-    {
-        if ($name === 'dataset') {
-            return new DOMStringMap($this);
-        }
-
-        if ($name === 'classList') {
-            return new DOMTokenList($this, 'class');
-        }
-
-        if ($name === 'relList') {
-            return new DOMTokenList(
-                $this,
-                'rel',
-                [
-                    'alternate',
-                    'author',
-                    'dns-prefetch',
-                    'help',
-                    'icon',
-                    'license',
-                    'next',
-                    'pingback',
-                    'preconnect',
-                    'prefetch',
-                    'preload',
-                    'prerender',
-                    'prev',
-                    'search',
-                    'stylesheet',
-                ]
-            );
-        }
-
-        return $this->$name;
+        return DOMElement::buildAttributes($attributes, DOMElement::HTML);
     }
 }

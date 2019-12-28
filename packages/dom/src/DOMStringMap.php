@@ -23,30 +23,30 @@ class DOMStringMap
     /**
      * Property html.
      *
-     * @var HTMLElement
+     * @var DOMElement
      */
-    protected $html;
+    protected $element;
 
     /**
      * ClassList constructor.
      *
-     * @param  HTMLElement  $html
+     * @param  DOMElement  $element
      */
-    public function __construct(HTMLElement $html)
+    public function __construct(DOMElement $element)
     {
-        $this->html = $html;
+        $this->element = $element;
     }
 
     /**
      * Method to get property Html
      *
-     * @return  HTMLElement
+     * @return  DOMElement
      *
      * @since  3.5.3
      */
-    public function getHTMLElement(): HTMLElement
+    public function getDOMElement(): DOMElement
     {
-        return $this->html;
+        return $this->element;
     }
 
     /**
@@ -59,7 +59,7 @@ class DOMStringMap
     protected function getDataAttrs(): array
     {
         $attrs = array_filter(
-            $this->html->getAttributes(),
+            $this->element->getAttributes(),
             static function ($v, $k) {
                 return strpos($k, 'data-') === 0;
             },
@@ -88,7 +88,7 @@ class DOMStringMap
      */
     public function __get($name)
     {
-        return $this->html->getAttribute($this->toDataKey($name));
+        return $this->element->getAttribute($this->toDataKey($name));
     }
 
     /**
@@ -103,7 +103,7 @@ class DOMStringMap
      */
     public function __set($name, $value)
     {
-        $this->html->setAttribute($this->toDataKey($name), $value);
+        $this->element->setAttribute($this->toDataKey($name), $value);
     }
 
     /**
@@ -117,7 +117,7 @@ class DOMStringMap
      */
     public function __isset($name)
     {
-        return $this->html->hasAttribute($this->toDataKey($name));
+        return $this->element->hasAttribute($this->toDataKey($name));
     }
 
     /**
@@ -131,7 +131,7 @@ class DOMStringMap
      */
     public function __unset($name)
     {
-        $this->html->removeAttribute($this->toDataKey($name));
+        $this->element->removeAttribute($this->toDataKey($name));
     }
 
     /**

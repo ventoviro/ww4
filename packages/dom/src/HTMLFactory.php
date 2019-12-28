@@ -36,11 +36,11 @@ class HTMLFactory extends DOMFactory
      * @param  string  $name
      * @param  null    $value
      *
-     * @return  HTMLElement
+     * @return  DOMElement
      */
     public static function element(string $name, $value = null)
     {
-        return parent::element($name, $value);
+        return parent::element($name, $value)->asHTML();
     }
 
     /**
@@ -57,7 +57,7 @@ class HTMLFactory extends DOMFactory
         $dt = $impl->createDocumentType('html');
 
         $dom = $impl->createDocument('', '', $dt);
-        $dom->registerNodeClass(\DOMElement::class, HTMLElement::class);
+        $dom->registerNodeClass(\DOMElement::class, DOMElement::class);
 
         $dom->encoding = $options['encoding'] ?? 'UTF-8';
 

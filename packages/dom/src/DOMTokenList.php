@@ -35,20 +35,20 @@ class DOMTokenList
     /**
      * Property html.
      *
-     * @var HTMLElement
+     * @var DOMElement
      */
-    protected $html;
+    protected $element;
 
     /**
      * ClassList constructor.
      *
-     * @param  HTMLElement  $html
-     * @param  string       $name
-     * @param  array|null   $supports
+     * @param  DOMElement  $element
+     * @param  string      $name
+     * @param  array|null  $supports
      */
-    public function __construct(HTMLElement $html, string $name, ?array $supports = null)
+    public function __construct(DOMElement $element, string $name, ?array $supports = null)
     {
-        $this->html     = $html;
+        $this->element  = $element;
         $this->supports = $supports;
         $this->name     = $name;
     }
@@ -68,7 +68,7 @@ class DOMTokenList
 
         $classes = array_values(array_unique(array_merge($classes, $args)));
 
-        $this->html->setAttribute($this->name, implode(' ', $classes));
+        $this->element->setAttribute($this->name, implode(' ', $classes));
 
         return $this;
     }
@@ -88,7 +88,7 @@ class DOMTokenList
 
         $classes = array_diff($classes, $args);
 
-        $this->html->setAttribute($this->name, implode(' ', $classes));
+        $this->element->setAttribute($this->name, implode(' ', $classes));
 
         return $this;
     }
@@ -169,19 +169,19 @@ class DOMTokenList
      */
     private function getTokens(): array
     {
-        return array_filter(explode(' ', $this->html->getAttribute($this->name) ?? ''), 'strlen');
+        return array_filter(explode(' ', $this->element->getAttribute($this->name) ?? ''), 'strlen');
     }
 
     /**
      * Method to get property Html
      *
-     * @return  HTMLElement
+     * @return  DOMElement
      *
      * @since  3.5.3
      */
-    public function getHTMLElement(): HTMLElement
+    public function getElement(): DOMElement
     {
-        return $this->html;
+        return $this->element;
     }
 
     /**
@@ -230,7 +230,7 @@ class DOMTokenList
     public function __get(string $name)
     {
         if ($name === 'value') {
-            return $this->html->getAttribute($this->name);
+            return $this->element->getAttribute($this->name);
         }
 
         return $this->$name;

@@ -89,11 +89,11 @@ class DOMElementTest extends TestCase
 
         self::assertTrue(isset($ele['data-foo']));
         self::assertEquals('bar', $ele['data-foo']);
-        self::assertEquals('<hello data-foo="bar"/>', $ele->render());
+        self::assertEquals('<hello data-foo="bar"/>', $ele->render(null));
 
         unset($ele['data-foo']);
 
-        self::assertEquals('<hello/>', $ele->render());
+        self::assertEquals('<hello/>', $ele->render(null));
         self::assertFalse(isset($ele['data-foo']));
     }
 
@@ -257,7 +257,7 @@ XML
         $hello = $ele->createChild('hello');
         $hello->setAttribute('foo', 'bar');
 
-        self::assertEquals('<root><hello foo="bar"/></root>', $ele->render());
+        self::assertEquals('<root><hello foo="bar"/></root>', $ele->render(null));
     }
 
     public function testBuildAttributes()

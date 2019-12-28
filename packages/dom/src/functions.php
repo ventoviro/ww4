@@ -14,19 +14,41 @@ namespace Windwalker\DOM;
 use function Windwalker\value;
 
 /**
+ * html
+ *
+ * @param  DOMElement  $element
+ *
+ * @return  DOMElement
+ */
+function html(DOMElement $element): DOMElement
+{
+    return $element->asHTML();
+}
+
+/**
+ * xml
+ *
+ * @param  DOMElement  $element
+ *
+ * @return  DOMElement
+ */
+function xml(DOMElement $element): DOMElement
+{
+    return $element->asXML();
+}
+
+/**
  * h
  *
  * @param  string  $name
  * @param  array   $attributes
  * @param  mixed   $content
  *
- * @return  callable
+ * @return  DOMElement
  */
-function h(string $name, array $attributes = [], $content = null): callable
+function h(string $name, array $attributes = [], $content = null): DOMElement
 {
-    return static function () use ($name, $attributes, $content): DOMElement {
-        return DOMElement::create($name, $attributes, value($content));
-    };
+    return HTMLElement::create($name, $attributes, $content);
 }
 
 /**
@@ -35,9 +57,9 @@ function h(string $name, array $attributes = [], $content = null): callable
  * @param  array  $attributes
  * @param  mixed  $content
  *
- * @return  callable
+ * @return  DOMElement
  */
-function div(array $attributes = [], $content = null): callable
+function div(array $attributes = [], $content = null): DOMElement
 {
     return h('div', $attributes, $content);
 }
@@ -48,9 +70,9 @@ function div(array $attributes = [], $content = null): callable
  * @param  array  $attributes
  * @param  mixed  $content
  *
- * @return  callable
+ * @return  DOMElement
  */
-function span(array $attributes = [], $content = null): callable
+function span(array $attributes = [], $content = null): DOMElement
 {
     return h('span', $attributes, $content);
 }
@@ -61,9 +83,9 @@ function span(array $attributes = [], $content = null): callable
  * @param  mixed  $src
  * @param  array  $attributes
  *
- * @return  callable
+ * @return  DOMElement
  */
-function img($src, array $attributes = []): callable
+function img($src, array $attributes = []): DOMElement
 {
     $attributes['src'] = value($src);
 

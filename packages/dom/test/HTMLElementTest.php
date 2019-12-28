@@ -13,8 +13,8 @@ namespace Windwalker\DOM\Test;
 
 use DOMDocument;
 use Windwalker\DOM\DOMElement;
+use Windwalker\DOM\DOMFactory;
 use Windwalker\DOM\HTMLElement;
-use Windwalker\DOM\HTMLFactory;
 
 /**
  * The DomElementTest class.
@@ -24,12 +24,12 @@ class HTMLElementTest extends DOMElementTest
     use DOMTestTrait;
 
     /**
-     * @var HTMLElement
+     * @var DOMElement
      */
     protected $instance;
 
     /**
-     * @see  DOMElement::create
+     * @see  HTMLElement::create
      */
     public function testCreate(): void
     {
@@ -82,11 +82,11 @@ class HTMLElementTest extends DOMElementTest
     {
         $img = HTMLElement::create('img', ['src' => 'hello.jpg', 'width' => 300], '');
 
-        self::assertEquals('<img src="hello.jpg" width="300">', $img->render());
+        self::assertEquals('<img src="hello.jpg" width="300">', $img->render(null));
 
         $div = HTMLElement::create('div', ['class' => 'hello']);
 
-        self::assertEquals('<div class="hello"></div>', $div->render());
+        self::assertEquals('<div class="hello"></div>', $div->render(null));
     }
 
     /**
@@ -100,11 +100,11 @@ class HTMLElementTest extends DOMElementTest
 
         self::assertTrue(isset($ele['data-foo']));
         self::assertEquals('bar', $ele['data-foo']);
-        self::assertEquals('<hello data-foo="bar"></hello>', $ele->render());
+        self::assertEquals('<hello data-foo="bar"></hello>', $ele->render(null));
 
         unset($ele['data-foo']);
 
-        self::assertEquals('<hello></hello>', $ele->render());
+        self::assertEquals('<hello></hello>', $ele->render(null));
         self::assertFalse(isset($ele['data-foo']));
     }
 
@@ -124,7 +124,7 @@ class HTMLElementTest extends DOMElementTest
      */
     public function testQuerySelectorAll(): void
     {
-        $dom = HTMLFactory::create();
+        $dom = DOMFactory::create();
         $dom->loadXML(
             <<<XML
 <div class="row">
@@ -168,7 +168,7 @@ XML
      */
     public function testQuerySelector(): void
     {
-        $dom = HTMLFactory::create();
+        $dom = DOMFactory::create();
         $dom->loadXML(
             <<<XML
 <div class="row">
@@ -268,7 +268,7 @@ XML
         $hello = $ele->createChild('hello');
         $hello->setAttribute('foo', 'bar');
 
-        self::assertEquals('<root><hello foo="bar"></hello></root>', $ele->render());
+        self::assertEquals('<root><hello foo="bar"></hello></root>', $ele->render(null));
     }
 
     public function testBuildAttributes()
@@ -290,7 +290,7 @@ XML
 
     protected function setUp(): void
     {
-        $this->instance = HTMLElement::class;
+        $this->instance = DOMElement::class;
     }
 
     protected function tearDown(): void

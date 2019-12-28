@@ -17,6 +17,7 @@ use DOMDocument;
 use DOMElement as NativeDOMElement;
 use DOMNode;
 use LogicException;
+use Masterminds\HTML5;
 use Symfony\Component\DomCrawler\Crawler;
 use Windwalker\Utilities\Str;
 
@@ -25,14 +26,18 @@ use function Windwalker\value;
 /**
  * Class DomElement
  *
+ * @property-read DOMTokenList $classList
+ * @property-read DOMTokenList $relList
+ * @property-read DOMStringMap $dataset
+ *
  * @since 2.0
  */
 class DOMElement extends NativeDOMElement implements ArrayAccess
 {
-    /**
-     * @var string
-     */
-    protected static $factory = [DOMFactory::class, 'element'];
+    public const HTML = 'html';
+    public const XML = 'xml';
+
+    protected $type = self::HTML;
 
     /**
      * create
@@ -46,7 +51,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     public static function create(string $name, array $attributes = [], $content = null)
     {
         /** @var static $ele */
-        $ele = (static::$factory)($name);
+        $ele = DOMFactory::element($name)->asXML();
 
         $ele->setAttributes($attributes);
 
@@ -133,19 +138,31 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * render
      *
-     * @param  bool  $format
+     * @param  string|null  $type
+     * @param  bool         $format
      *
      * @return  string
      */
-    public function render(bool $format = false): string
+    public function render(?string $type = self::HTML, bool $format = false): string
     {
+        $type = $type ?? $this->type;
+
         $this->ownerDocument->formatOutput = $format;
 
-        $xml = $this->ownerDocument->saveXML($this);
+        if ($type === static::XML) {
+            $result = $this->ownerDocument->saveXML($this);
+        } else {
+            if (class_exists(HTML5::class)) {
+                $result = DOMFactory::html5()->saveHTML($this);
+            } else {
+                $dom = HTMLFactory::document();
+                $result = $dom->saveHTML($this);
+            }
+        }
 
         $this->ownerDocument->formatOutput = false;
 
-        return $xml;
+        return $result;
     }
 
     /**
@@ -155,7 +172,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
      */
     public function __toString()
     {
-        return $this->render();
+        return $this->render(null);
     }
 
     /**
@@ -353,14 +370,173 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * buildAttributes
      *
-     * @param  array  $attributes
+     * @param  array        $attributes
+     * @param  string|null  $type
      *
      * @return  string
      */
-    public static function buildAttributes(array $attributes): string
+    public static function buildAttributes(array $attributes, ?string $type = null): string
     {
-        $ele = static::create('root', $attributes, '')->render();
+        $ele = static::create('root', $attributes, '')->render($type);
 
         return Str::removeLeft(Str::removeRight($ele, '></root>'), '<root ');
+    }
+
+    /**
+     * addClass
+     *
+     * @param  string|callable  $class
+     *
+     * @return  static
+     *
+     * @since  3.5.3
+     */
+    public function addClass(string $class)
+    {
+        $classes = array_filter(explode(' ', $class), 'strlen');
+
+        $this->classList->add(...$classes);
+
+        return $this;
+    }
+
+    /**
+     * removeClass
+     *
+     * @param  string|callable  $class
+     *
+     * @return  static
+     *
+     * @since  3.5.3
+     */
+    public function removeClass(string $class)
+    {
+        $classes = array_filter(explode(' ', $class), 'strlen');
+
+        $this->classList->remove(...$classes);
+
+        return $this;
+    }
+
+    /**
+     * toggleClass
+     *
+     * @param  string     $class
+     * @param  bool|null  $force
+     *
+     * @return  static
+     *
+     * @since  3.5.3
+     */
+    public function toggleClass(string $class, ?bool $force = null)
+    {
+        $this->classList->toggle($class, $force);
+
+        return $this;
+    }
+
+    /**
+     * hasClass
+     *
+     * @param  string  $class
+     *
+     * @return  static
+     *
+     * @since  3.5.3
+     */
+    public function hasClass(string $class): self
+    {
+        $this->classList->contains($class);
+
+        return $this;
+    }
+
+    /**
+     * data
+     *
+     * @param  string  $name
+     * @param  mixed   $value
+     *
+     * @return  string|static
+     *
+     * @since  3.5.3
+     */
+    public function data(string $name, $value = null)
+    {
+        if ($value === null) {
+            return $this->getAttribute('data-' . $name);
+        }
+
+        return $this->setAttribute('data-' . $name, $value);
+    }
+
+    /**
+     * asXML
+     *
+     * @return  static
+     */
+    public function asXML()
+    {
+        $this->type = static::XML;
+
+        return $this;
+    }
+
+    /**
+     * asHTML
+     *
+     * @return  static
+     */
+    public function asHTML()
+    {
+        $this->type = static::HTML;
+
+        return $this;
+    }
+
+    /**
+     * __get
+     *
+     * @param  string  $name
+     *
+     * @return  mixed
+     *
+     * @since  3.5.3
+     */
+    public function __get($name)
+    {
+        if ($name === 'dataset') {
+            return new DOMStringMap($this);
+        }
+
+        if ($name === 'classList') {
+            return new DOMTokenList($this, 'class');
+        }
+
+        if ($name === 'relList') {
+            return new DOMTokenList(
+                $this,
+                'rel',
+                [
+                    'alternate',
+                    'author',
+                    'dns-prefetch',
+                    'help',
+                    'icon',
+                    'license',
+                    'next',
+                    'pingback',
+                    'preconnect',
+                    'prefetch',
+                    'preload',
+                    'prerender',
+                    'prev',
+                    'search',
+                    'stylesheet',
+                ]
+            );
+        }
+
+        return $this->$name;
     }
 }
