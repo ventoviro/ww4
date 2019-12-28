@@ -66,6 +66,12 @@ class OpensslCipherTest extends TestCase
      */
     public function testEncrypt(string $method)
     {
+        $methods = \openssl_get_cipher_methods(true);
+
+        if (!in_array($method, $methods, true)) {
+            self::markTestSkipped('Algorithm: ' . $method . ' no support.');
+        }
+
         $key = new Key('hello');
 
         $cipher = new OpensslCipher($method);
@@ -102,12 +108,6 @@ class OpensslCipherTest extends TestCase
      */
     public function testLegacy(string $method, string $str)
     {
-        $methods = \openssl_get_cipher_methods(true);
-
-        if (!in_array($method, $methods, true)) {
-            self::markTestSkipped('Algorithm: ' . $method . ' no support.');
-        }
-
         $key = new Key('foo');
 
         $cipher = new OpensslCipher($method, ['legacy' => true]);
