@@ -12,7 +12,8 @@
     "require": {
         "php": ">=7.2",
         "windwalker/utilities": "~4.0",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-dom": "*"
     },
     "require-dev": {
         "windwalker/test": "~4.0",

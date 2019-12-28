@@ -11,11 +11,23 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM;
 
+use Masterminds\HTML5;
+
 /**
  * The HtmlFactory class.
  */
 class HTMLFactory extends DOMFactory
 {
+    /**
+     * @var \DOMDocument
+     */
+    protected static $dom;
+
+    /**
+     * @var HTML5
+     */
+    protected static $html5;
+
     /**
      * element
      *

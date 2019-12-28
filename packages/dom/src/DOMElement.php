@@ -13,6 +13,8 @@ namespace Windwalker\DOM;
 
 use DOMElement as NativeDOMElement;
 use Symfony\Component\DomCrawler\Crawler;
+use Windwalker\Utilities\Str;
+
 use function Windwalker\value;
 
 /**
@@ -62,7 +64,7 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
         $value = value($value);
 
         if (is_stringable($value)) {
-            return (string) $value;
+            return (string)$value;
         }
 
         if (is_array($value) || is_object($value)) {
@@ -102,7 +104,7 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
             return;
         }
 
-        $text = $node->ownerDocument->createTextNode((string) $content);
+        $text = $node->ownerDocument->createTextNode((string)$content);
 
         $node->appendChild($text);
     }
@@ -188,10 +190,26 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
     public function setAttributes(array $attribs)
     {
         foreach ($attribs as $key => $attribute) {
-            $this->setAttribute($key, static::valueToString($attribute));
+            $this->setAttribute($key, $attribute);
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAttribute($name, $value)
+    {
+        if ($value === true) {
+            return $this->setAttribute($name, '');
+        }
+
+        if ($value === null || $value === false) {
+            return $this->ownerDocument->createAttribute($name);
+        }
+
+        return parent::setAttribute($name, static::valueToString($value));
     }
 
     /**
@@ -290,5 +308,54 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
     public function offsetUnset($offset)
     {
         $this->removeAttribute($offset);
+    }
+
+    /**
+     * with
+     *
+     * @param  \DOMNode  $node
+     * @param  bool      $deep
+     *
+     * @return  static
+     */
+    public function with(\DOMNode $node, bool $deep = true)
+    {
+        if ($node instanceof \DOMDocument) {
+            $dom = $node;
+        } else {
+            $dom = $node->ownerDocument;
+        }
+
+        return $dom->importNode($this, $deep);
+    }
+
+    /**
+     * createChild
+     *
+     * @param  string  $name
+     * @param  array   $attributes
+     * @param  mixed   $content
+     *
+     * @return  static
+     */
+    public function createChild(string $name, array $attributes = [], $content = null)
+    {
+        $ele = static::create($name, $attributes, $content);
+
+        return $this->appendChild($ele);
+    }
+
+    /**
+     * buildAttributes
+     *
+     * @param  array  $attributes
+     *
+     * @return  string
+     */
+    public static function buildAttributes(array $attributes): string
+    {
+        $ele = static::create('root', $attributes, '')->render();
+
+        return Str::removeLeft(Str::removeRight($ele, '></root>'), '<root ');
     }
 }

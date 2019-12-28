@@ -138,9 +138,4 @@ class DOMFactory
 
         return $dom;
     }
-
-    public static function attributes(array $attributes)
-    {
-
-    }
 }

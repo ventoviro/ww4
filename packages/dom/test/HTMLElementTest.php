@@ -14,16 +14,18 @@ namespace Windwalker\DOM\Test;
 use PHPUnit\Framework\TestCase;
 use Windwalker\DOM\DOMElement;
 use Windwalker\DOM\DOMFactory;
+use Windwalker\DOM\HTMLElement;
+use Windwalker\DOM\HTMLFactory;
 
 /**
  * The DomElementTest class.
  */
-class DOMElementTest extends TestCase
+class HTMLElementTest extends DOMElementTest
 {
     use DOMTestTrait;
 
     /**
-     * @var DOMElement
+     * @var HTMLElement
      */
     protected $instance;
 
@@ -32,7 +34,7 @@ class DOMElementTest extends TestCase
      */
     public function testCreate(): void
     {
-        $ele = DOMElement::create(
+        $ele = HTMLElement::create(
             'field',
             [
                 'name' => 'foo',
@@ -49,11 +51,11 @@ class DOMElementTest extends TestCase
 
         self::assertDomStringEqualsDomString(
             '<field name="foo" label="FOO" class="col-12 form-control" ' .
-            'data-options="{&quot;handle&quot;:&quot;.handle&quot;,&quot;enabled&quot;:true}"/>',
+            'data-options="{&quot;handle&quot;:&quot;.handle&quot;,&quot;enabled&quot;:true}"></field>',
             $ele
         );
 
-        $ele = DOMElement::create(
+        $ele = HTMLElement::create(
             'field',
             [
                 'name' => 'foo',
@@ -66,7 +68,7 @@ class DOMElementTest extends TestCase
                     'enabled' => true
                 ],
             ],
-            DOMElement::create('span', [], 'Hello')
+            HTMLElement::create('span', [], 'Hello')
         );
 
         self::assertDomStringEqualsDomString(
@@ -77,22 +79,33 @@ class DOMElementTest extends TestCase
         );
     }
 
+    public function testSelfClosed(): void
+    {
+        $img = HTMLElement::create('img', ['src' => 'hello.jpg', 'width' => 300], '');
+
+        self::assertEquals('<img src="hello.jpg" width="300">', $img->render());
+
+        $div = HTMLElement::create('div', ['class' => 'hello']);
+
+        self::assertEquals('<div class="hello"></div>', $div->render());
+    }
+
     /**
      * @see  DOMElement::offsetSet
      * @see  DOMElement::offsetGet
      */
     public function testOffsetAccess(): void
     {
-        $ele             = DOMElement::create('hello');
+        $ele             = HTMLElement::create('hello');
         $ele['data-foo'] = 'bar';
 
         self::assertTrue(isset($ele['data-foo']));
         self::assertEquals('bar', $ele['data-foo']);
-        self::assertEquals('<hello data-foo="bar"/>', $ele->render());
+        self::assertEquals('<hello data-foo="bar"></hello>', $ele->render());
 
         unset($ele['data-foo']);
 
-        self::assertEquals('<hello/>', $ele->render());
+        self::assertEquals('<hello></hello>', $ele->render());
         self::assertFalse(isset($ele['data-foo']));
     }
 
@@ -101,10 +114,10 @@ class DOMElementTest extends TestCase
      */
     public function testToString(): void
     {
-        $ele             = DOMElement::create('hello');
+        $ele             = HTMLElement::create('hello');
         $ele['data-foo'] = 'bar';
 
-        self::assertEquals('<hello data-foo="bar"/>', (string) $ele);
+        self::assertEquals('<hello data-foo="bar"></hello>', (string) $ele);
     }
 
     /**
@@ -112,7 +125,7 @@ class DOMElementTest extends TestCase
      */
     public function testQuerySelectorAll(): void
     {
-        $dom = DOMFactory::create();
+        $dom = HTMLFactory::create();
         $dom->loadXML(
             <<<XML
 <div class="row">
@@ -129,7 +142,7 @@ class DOMElementTest extends TestCase
 XML
         );
 
-        $ele = DOMElement::create(
+        $ele = HTMLElement::create(
             'div',
             ['class' => 'root-node'],
             $dom->documentElement
@@ -156,7 +169,7 @@ XML
      */
     public function testQuerySelector(): void
     {
-        $dom = DOMFactory::create();
+        $dom = HTMLFactory::create();
         $dom->loadXML(
             <<<XML
 <div class="row">
@@ -173,7 +186,7 @@ XML
 XML
         );
 
-        $ele = DOMElement::create(
+        $ele = HTMLElement::create(
             'div',
             ['class' => 'root-node'],
             $dom->documentElement
@@ -194,7 +207,7 @@ XML
      */
     public function testGetName(): void
     {
-        $ele = DOMElement::create('hello');
+        $ele = HTMLElement::create('hello');
 
         self::assertEquals('hello', $ele->getName());
     }
@@ -204,7 +217,7 @@ XML
      */
     public function testGetAttributes(): void
     {
-        $ele = DOMElement::create('hello', [
+        $ele = HTMLElement::create('hello', [
             'foo' => 'bar',
             'flower' => 'sakura'
         ]);
@@ -223,7 +236,7 @@ XML
      */
     public function testSetAttributes(): void
     {
-        $ele = DOMElement::create('hello');
+        $ele = HTMLElement::create('hello');
 
         $ele->setAttributes([
             'foo' => 'bar',
@@ -239,7 +252,7 @@ XML
         $dom = new \DOMDocument();
         $root = $dom->createElement('root');
 
-        $ele = DOMElement::create('hello');
+        $ele = HTMLElement::create('hello');
         $root->appendChild($ele->with($root));
 
         self::assertEquals('<root><hello/></root>', $dom->saveXML($root));
@@ -247,30 +260,31 @@ XML
 
     public function testCreateChild(): void
     {
-        $ele = DOMElement::create('root');
+        $ele = HTMLElement::create('root');
         $hello = $ele->createChild('hello');
         $hello->setAttribute('foo', 'bar');
 
-        self::assertEquals('<root><hello foo="bar"/></root>', $ele->render());
+        self::assertEquals('<root><hello foo="bar"></hello></root>', $ele->render());
     }
 
     public function testBuildAttributes()
     {
-        $attrs = DOMElement::buildAttributes([
+        $attrs = HTMLElement::buildAttributes([
             'class' => 'foo bar',
             'data-foo' => 'yoo',
             'required' => true,
-            'selected' => 'true',
+            'selected' => true,
             'disabled' => false,
             'no-show' => null,
+            'normal-attr' => ''
         ]);
 
-        self::assertEquals('class="foo bar" data-foo="yoo" required="" selected="true"', $attrs);
+        self::assertEquals('class="foo bar" data-foo="yoo" required selected normal-attr', $attrs);
     }
 
     protected function setUp(): void
     {
-        $this->instance = null;
+        $this->instance = HTMLElement::class;
     }
 
     protected function tearDown(): void
