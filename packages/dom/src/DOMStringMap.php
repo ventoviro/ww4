@@ -30,7 +30,7 @@ class DOMStringMap
     /**
      * ClassList constructor.
      *
-     * @param HTMLElement $html
+     * @param  HTMLElement  $html
      */
     public function __construct(HTMLElement $html)
     {
@@ -58,9 +58,13 @@ class DOMStringMap
      */
     protected function getDataAttrs(): array
     {
-        $attrs = array_filter($this->html->getAttributes(), static function ($v, $k) {
-            return strpos($k, 'data-') === 0;
-        }, ARRAY_FILTER_USE_BOTH);
+        $attrs = array_filter(
+            $this->html->getAttributes(),
+            static function ($v, $k) {
+                return strpos($k, 'data-') === 0;
+            },
+            ARRAY_FILTER_USE_BOTH
+        );
 
         $dataAttrs = [];
 
@@ -76,7 +80,7 @@ class DOMStringMap
     /**
      * __get
      *
-     * @param string $name
+     * @param  string  $name
      *
      * @return  string
      *
@@ -90,8 +94,8 @@ class DOMStringMap
     /**
      * __set
      *
-     * @param string $name
-     * @param string $value
+     * @param  string  $name
+     * @param  string  $value
      *
      * @return  void
      *
@@ -105,7 +109,7 @@ class DOMStringMap
     /**
      * __isset
      *
-     * @param string $name
+     * @param  string  $name
      *
      * @return  bool
      *
@@ -119,7 +123,7 @@ class DOMStringMap
     /**
      * __unset
      *
-     * @param string $name
+     * @param  string  $name
      *
      * @return  void
      *
@@ -133,7 +137,7 @@ class DOMStringMap
     /**
      * toDataKey
      *
-     * @param string $name
+     * @param  string  $name
      *
      * @return  string
      *

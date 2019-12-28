@@ -41,9 +41,9 @@ class LengthValidator extends AbstractValidator
     /**
      * LengthValidator constructor.
      *
-     * @param int  $min
-     * @param int  $max
-     * @param bool $utf8
+     * @param  int   $min
+     * @param  int   $max
+     * @param  bool  $utf8
      */
     public function __construct($min = 0, $max = null, $utf8 = true)
     {

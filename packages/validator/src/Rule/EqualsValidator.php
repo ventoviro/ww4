@@ -34,13 +34,13 @@ class EqualsValidator extends AbstractValidator
     /**
      * Class init.
      *
-     * @param mixed $compare
-     * @param bool  $strict
+     * @param  mixed  $compare
+     * @param  bool   $strict
      */
     public function __construct($compare, $strict = false)
     {
         $this->compare = $compare;
-        $this->strict = $strict;
+        $this->strict  = $strict;
     }
 
     /**

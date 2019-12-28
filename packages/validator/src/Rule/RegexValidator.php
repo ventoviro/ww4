@@ -34,13 +34,13 @@ class RegexValidator extends AbstractValidator
     /**
      * Class init.
      *
-     * @param string $regex
-     * @param string $modifiers
+     * @param  string  $regex
+     * @param  string  $modifiers
      */
     public function __construct($regex = null, $modifiers = '')
     {
         $this->modifiers = $modifiers ?: $this->modifiers;
-        $this->regex = $regex ?: $this->regex;
+        $this->regex     = $regex ?: $this->regex;
     }
 
     /**
@@ -56,7 +56,7 @@ class RegexValidator extends AbstractValidator
     /**
      * Method to set property regex
      *
-     * @param   string $regex
+     * @param  string  $regex
      *
      * @return  static  Return self to support chaining.
      */
@@ -80,7 +80,7 @@ class RegexValidator extends AbstractValidator
     /**
      * Method to set property modifiers
      *
-     * @param   string $modifiers
+     * @param  string  $modifiers
      *
      * @return  static  Return self to support chaining.
      */

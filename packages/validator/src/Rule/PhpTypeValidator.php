@@ -27,7 +27,7 @@ class PhpTypeValidator extends AbstractValidator
     /**
      * PhpTypeValidator constructor.
      *
-     * @param string $type
+     * @param  string  $type
      */
     public function __construct($type = '')
     {
@@ -101,7 +101,7 @@ class PhpTypeValidator extends AbstractValidator
     /**
      * Method to set property type
      *
-     * @param   string $type
+     * @param  string  $type
      *
      * @return  static  Return self to support chaining.
      */
@@ -115,8 +115,8 @@ class PhpTypeValidator extends AbstractValidator
     /**
      * formatMessage
      *
-     * @param string $message
-     * @param mixed  $value
+     * @param  string  $message
+     * @param  mixed   $value
      *
      * @return string
      */

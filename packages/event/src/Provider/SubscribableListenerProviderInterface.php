@@ -13,7 +13,6 @@ namespace Windwalker\Event\Provider;
 
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Windwalker\Event\Listener\ListenerPriority;
-use Windwalker\Event\Listener\ListenersQueue;
 
 /**
  * The SubscribableListenerProviderInterface class.

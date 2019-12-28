@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Utilities\Assert;
 
-use InvalidArgumentException;
 use TypeError;
 
 /**

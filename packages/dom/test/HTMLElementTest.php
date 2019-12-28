@@ -11,9 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM\Test;
 
-use PHPUnit\Framework\TestCase;
+use DOMDocument;
 use Windwalker\DOM\DOMElement;
-use Windwalker\DOM\DOMFactory;
 use Windwalker\DOM\HTMLElement;
 use Windwalker\DOM\HTMLFactory;
 
@@ -44,7 +43,7 @@ class HTMLElementTest extends DOMElementTest
                 },
                 'data-options' => [
                     'handle' => '.handle',
-                    'enabled' => true
+                    'enabled' => true,
                 ],
             ]
         );
@@ -65,7 +64,7 @@ class HTMLElementTest extends DOMElementTest
                 },
                 'data-options' => [
                     'handle' => '.handle',
-                    'enabled' => true
+                    'enabled' => true,
                 ],
             ],
             HTMLElement::create('span', [], 'Hello')
@@ -217,10 +216,13 @@ XML
      */
     public function testGetAttributes(): void
     {
-        $ele = HTMLElement::create('hello', [
-            'foo' => 'bar',
-            'flower' => 'sakura'
-        ]);
+        $ele = HTMLElement::create(
+            'hello',
+            [
+                'foo' => 'bar',
+                'flower' => 'sakura',
+            ]
+        );
 
         $attrs = $ele->getAttributes();
 
@@ -238,10 +240,12 @@ XML
     {
         $ele = HTMLElement::create('hello');
 
-        $ele->setAttributes([
-            'foo' => 'bar',
-            'flower' => 'sakura'
-        ]);
+        $ele->setAttributes(
+            [
+                'foo' => 'bar',
+                'flower' => 'sakura',
+            ]
+        );
 
         self::assertEquals('bar', $ele['foo']);
         self::assertEquals('sakura', $ele['flower']);
@@ -249,7 +253,7 @@ XML
 
     public function testWith(): void
     {
-        $dom = new \DOMDocument();
+        $dom  = new DOMDocument();
         $root = $dom->createElement('root');
 
         $ele = HTMLElement::create('hello');
@@ -260,7 +264,7 @@ XML
 
     public function testCreateChild(): void
     {
-        $ele = HTMLElement::create('root');
+        $ele   = HTMLElement::create('root');
         $hello = $ele->createChild('hello');
         $hello->setAttribute('foo', 'bar');
 
@@ -269,15 +273,17 @@ XML
 
     public function testBuildAttributes()
     {
-        $attrs = HTMLElement::buildAttributes([
-            'class' => 'foo bar',
-            'data-foo' => 'yoo',
-            'required' => true,
-            'selected' => true,
-            'disabled' => false,
-            'no-show' => null,
-            'normal-attr' => ''
-        ]);
+        $attrs = HTMLElement::buildAttributes(
+            [
+                'class' => 'foo bar',
+                'data-foo' => 'yoo',
+                'required' => true,
+                'selected' => true,
+                'disabled' => false,
+                'no-show' => null,
+                'normal-attr' => '',
+            ]
+        );
 
         self::assertEquals('class="foo bar" data-foo="yoo" required selected normal-attr', $attrs);
     }

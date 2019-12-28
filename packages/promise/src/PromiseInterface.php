@@ -19,7 +19,9 @@ namespace Windwalker\Promise;
 interface PromiseInterface
 {
     public const PENDING = 'pending';
+
     public const FULFILLED = 'fulfilled';
+
     public const REJECTED = 'rejected';
 
     /**
@@ -28,8 +30,8 @@ interface PromiseInterface
      *
      * @see https://promisesaplus.com/#the-then-method
      *
-     * @param callable|mixed $onFulfilled Invoked when the promise fulfills.
-     * @param callable|mixed $onRejected  Invoked when the promise is rejected.
+     * @param  callable|mixed  $onFulfilled  Invoked when the promise fulfills.
+     * @param  callable|mixed  $onRejected   Invoked when the promise is rejected.
      *
      * @return static
      */
@@ -51,14 +53,14 @@ interface PromiseInterface
     /**
      * Resolve the promise with the given value.
      *
-     * @param mixed $value
+     * @param  mixed  $value
      */
     public function resolve($value): void;
 
     /**
      * Reject the promise with the given reason.
      *
-     * @param mixed $reason
+     * @param  mixed  $reason
      */
     public function reject($reason): void;
 

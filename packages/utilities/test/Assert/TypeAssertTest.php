@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Utilities\Test\Assert;
 
-use TypeError;
 use PHPUnit\Framework\TestCase;
 use Throwable;
+use TypeError;
 use Windwalker\Utilities\Assert\TypeAssert;
 
 /**
@@ -54,28 +54,28 @@ class TypeAssertTest extends TestCase
                 5,
                 null,
                 'Method Windwalker\Utilities\Test\Assert\TypeAssertTest::testThrowException() ' .
-                'must with type X, integer(5) given.'
+                'must with type X, integer(5) given.',
             ],
             'Custom caller' => [
                 TypeError::class,
                 'Method %s must with type X, %s given.',
                 5,
                 'Foo::bar()',
-                'Method Foo::bar() must with type X, integer(5) given.'
+                'Method Foo::bar() must with type X, integer(5) given.',
             ],
             'Custom arguments ordering' => [
                 TypeError::class,
                 'Got %2$s in %1$s',
                 5,
                 'Foo::bar()',
-                'Got integer(5) in Foo::bar()'
+                'Got integer(5) in Foo::bar()',
             ],
             'No message arguments' => [
                 TypeError::class,
                 'Method wrong.',
                 5,
                 null,
-                'Method wrong.'
+                'Method wrong.',
             ],
         ];
     }

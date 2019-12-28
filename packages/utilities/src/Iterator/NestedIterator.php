@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Utilities\Iterator;
 
-use Windwalker\Filesystem\FileObject;
-
 /**
  * The MultiLevelIterator class.
  */
@@ -74,7 +72,7 @@ class NestedIterator implements \OuterIterator
     {
         $new = $this->cloneNew();
 
-        $new->callbacks = $this->callbacks;
+        $new->callbacks   = $this->callbacks;
         $new->callbacks[] = $callback;
 
         return $new;
@@ -85,7 +83,7 @@ class NestedIterator implements \OuterIterator
      */
     public function getInnerIterator(): \Iterator
     {
-        return  $this->innerIterator;
+        return $this->innerIterator;
     }
 
     /**
@@ -125,13 +123,15 @@ class NestedIterator implements \OuterIterator
      */
     public function filter(callable $callback)
     {
-        return $this->with(function (iterable $files) use ($callback) {
-            foreach ($files as $key => $file) {
-                if ($callback($file, $key, $this)) {
-                    yield $key => $file;
+        return $this->with(
+            function (iterable $files) use ($callback) {
+                foreach ($files as $key => $file) {
+                    if ($callback($file, $key, $this)) {
+                        yield $key => $file;
+                    }
                 }
             }
-        });
+        );
     }
 
     /**
@@ -143,11 +143,13 @@ class NestedIterator implements \OuterIterator
      */
     public function map(callable $callback)
     {
-        return $this->with(function (iterable $files) use ($callback) {
-            foreach ($files as $key => $file) {
-                yield $key => $callback($file, $key, $this);
+        return $this->with(
+            function (iterable $files) use ($callback) {
+                foreach ($files as $key => $file) {
+                    yield $key => $callback($file, $key, $this);
+                }
             }
-        });
+        );
     }
 
     /**

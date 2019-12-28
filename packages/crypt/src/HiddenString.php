@@ -56,6 +56,7 @@ class HiddenString
         if (function_exists('sodium_memzero')) {
             try {
                 \sodium_memzero($this->value);
+
                 return;
             } catch (\Throwable $e) {
                 //

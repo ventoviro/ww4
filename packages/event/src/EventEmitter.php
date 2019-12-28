@@ -53,11 +53,14 @@ class EventEmitter extends EventDispatcher implements
      */
     public function dispatch(object $event)
     {
-        return tap(parent::dispatch($event), function () use ($event) {
-            foreach ($this->dealers as $dealer) {
-                $dealer->dispatch($event);
+        return tap(
+            parent::dispatch($event),
+            function () use ($event) {
+                foreach ($this->dealers as $dealer) {
+                    $dealer->dispatch($event);
+                }
             }
-        });
+        );
     }
 
     /**
@@ -116,15 +119,17 @@ class EventEmitter extends EventDispatcher implements
             throw new \DomainException('Please install reactivex/rxphp to support Observable.');
         }
 
-        return Observable::create(function (ObserverInterface $subscriber) use ($event, $priority) {
-            $this->on(
-                $event,
-                static function (EventInterface $event) use ($subscriber) {
-                    $subscriber->onNext($event);
-                },
-                $priority
-            );
-        });
+        return Observable::create(
+            function (ObserverInterface $subscriber) use ($event, $priority) {
+                $this->on(
+                    $event,
+                    static function (EventInterface $event) use ($subscriber) {
+                        $subscriber->onNext($event);
+                    },
+                    $priority
+                );
+            }
+        );
     }
 
     /**

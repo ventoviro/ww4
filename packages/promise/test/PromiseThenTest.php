@@ -11,10 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise\Test;
 
-use PHPUnit\Framework\TestCase;
-use Windwalker\Promise\Scheduler\ScheduleRunner;
-use Windwalker\Promise\Scheduler\DeferredScheduler;
-use Windwalker\Promise\Scheduler\ImmediateScheduler;
 use Windwalker\Promise\Promise;
 use Windwalker\Test\TestHelper;
 use Windwalker\Test\Traits\TestAccessorTrait;

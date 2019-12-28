@@ -30,18 +30,22 @@ class NestedIteratorTest extends TestCase
     public function testNestedWrap(): void
     {
         $iter = new NestedIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-        $iter = $iter->wrap(static function ($iterator) {
-            foreach ($iterator as $item) {
-                yield strtoupper($item);
-            }
-        })
-            ->wrap(static function ($iterator) {
+        $iter = $iter->wrap(
+            static function ($iterator) {
                 foreach ($iterator as $item) {
-                    if ($item !== 'D') {
-                        yield $item;
+                    yield strtoupper($item);
+                }
+            }
+        )
+            ->wrap(
+                static function ($iterator) {
+                    foreach ($iterator as $item) {
+                        if ($item !== 'D') {
+                            yield $item;
+                        }
                     }
                 }
-            });
+            );
 
         self::assertEquals(
             ['A', 'B', 'C', 'E', 'F'],
@@ -52,18 +56,22 @@ class NestedIteratorTest extends TestCase
     public function testRewind()
     {
         $iter = new NestedIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-        $iter = $iter->wrap(static function ($iterator) {
-            foreach ($iterator as $item) {
-                yield strtoupper($item);
-            }
-        })
-            ->wrap(static function ($iterator) {
+        $iter = $iter->wrap(
+            static function ($iterator) {
                 foreach ($iterator as $item) {
-                    if ($item !== 'D') {
-                        yield $item;
+                    yield strtoupper($item);
+                }
+            }
+        )
+            ->wrap(
+                static function ($iterator) {
+                    foreach ($iterator as $item) {
+                        if ($item !== 'D') {
+                            yield $item;
+                        }
                     }
                 }
-            });
+            );
 
         iterator_to_array($iter);
 
@@ -83,11 +91,13 @@ class NestedIteratorTest extends TestCase
         };
 
         $iter = new NestedIterator($gen());
-        $iter = $iter->wrap(static function ($iterator) {
-            foreach ($iterator as $item) {
-                yield strtoupper($item);
+        $iter = $iter->wrap(
+            static function ($iterator) {
+                foreach ($iterator as $item) {
+                    yield strtoupper($item);
+                }
             }
-        });
+        );
 
         iterator_to_array($iter);
 
@@ -109,11 +119,13 @@ class NestedIteratorTest extends TestCase
         };
 
         $iter = new NestedIterator($gen);
-        $iter = $iter->wrap(static function ($iterator) {
-            foreach ($iterator as $item) {
-                yield strtoupper($item);
+        $iter = $iter->wrap(
+            static function ($iterator) {
+                foreach ($iterator as $item) {
+                    yield strtoupper($item);
+                }
             }
-        });
+        );
 
         iterator_to_array($iter);
 

@@ -63,7 +63,7 @@ class StreamTest extends TestCase
     public function testConstruct()
     {
         $resource = fopen('php://memory', Stream::MODE_READ_WRITE_RESET);
-        $stream = new Stream($resource);
+        $stream   = new Stream($resource);
 
         $this->assertInstanceOf('Windwalker\Stream\Stream', $stream);
 
@@ -133,7 +133,7 @@ class StreamTest extends TestCase
     public function testDetach()
     {
         $resource = fopen('php://memory', Stream::MODE_READ_WRITE_RESET);
-        $stream = new Stream($resource);
+        $stream   = new Stream($resource);
 
         $this->assertSame($resource, $stream->detach());
         self::assertEmpty(TestHelper::getValue($stream, 'resource'));
@@ -200,7 +200,7 @@ class StreamTest extends TestCase
         $this->createTempFile();
         file_put_contents($this->tmpnam, 'FOO BAR');
         $resource = fopen($this->tmpnam, Stream::MODE_READ_ONLY_FROM_BEGIN);
-        $stream = new Stream($resource);
+        $stream   = new Stream($resource);
 
         fseek($resource, 2);
         $this->assertFalse($stream->eof());
@@ -236,7 +236,7 @@ class StreamTest extends TestCase
 
         file_put_contents($this->tmpnam, 'FOO BAR');
         $resource = fopen($this->tmpnam, Stream::MODE_READ_WRITE_RESET);
-        $stream = new Stream($resource);
+        $stream   = new Stream($resource);
 
         $this->assertTrue($stream->isSeekable());
     }
@@ -254,7 +254,7 @@ class StreamTest extends TestCase
         file_put_contents($this->tmpnam, 'FOO BAR');
 
         $resource = fopen($this->tmpnam, Stream::MODE_READ_ONLY_FROM_BEGIN);
-        $stream = new Stream($resource);
+        $stream   = new Stream($resource);
 
         $this->assertTrue($stream->seek(2));
         $this->assertEquals(2, $stream->tell());

@@ -34,10 +34,15 @@ abstract class TypeCast
     use PreventInitialTrait;
 
     public const TYPE_INT = 'int';
+
     public const TYPE_FLOAT = 'float';
+
     public const TYPE_STRING = 'string';
+
     public const TYPE_BOOL = 'bool';
+
     public const TYPE_ARRAY = 'array';
+
     public const TYPE_OBJECT = 'object';
 
     /**
@@ -311,8 +316,8 @@ abstract class TypeCast
     /**
      * __callStatic
      *
-     * @param string $name
-     * @param array  $args
+     * @param  string  $name
+     * @param  array   $args
      *
      * @return  void
      *
@@ -333,10 +338,12 @@ abstract class TypeCast
             return static::try($args[0], strtolower(substr($name, 3)), $args[1] ?? false);
         }
 
-        throw new \BadMethodCallException(sprintf(
-            'Method: %s::%s() not found',
-            static::class,
-            $name
-        ));
+        throw new \BadMethodCallException(
+            sprintf(
+                'Method: %s::%s() not found',
+                static::class,
+                $name
+            )
+        );
     }
 }

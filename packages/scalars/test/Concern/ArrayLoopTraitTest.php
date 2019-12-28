@@ -83,7 +83,7 @@ class ArrayLoopTraitTest extends TestCase
                         'female' => 'Black Widow',
                         'male' => 'Loki',
                     ],
-                ]
+                ],
             ]
         );
 
@@ -134,7 +134,7 @@ class ArrayLoopTraitTest extends TestCase
                 [
                     'id' => function ($v) {
                         return $v === 2;
-                    }
+                    },
                 ]
             )->dump()
         );
@@ -214,7 +214,7 @@ class ArrayLoopTraitTest extends TestCase
             $data = [
                 [1, 2],
                 [3, 4],
-                [5, 6]
+                [5, 6],
             ]
         )->reduce(
             function (array $sum, array $v) {
@@ -277,7 +277,7 @@ class ArrayLoopTraitTest extends TestCase
             [
                 '0-1',
                 '1-2',
-                '2-3'
+                '2-3',
             ],
             $r
         );
@@ -375,7 +375,7 @@ class ArrayLoopTraitTest extends TestCase
                             'male' => 'Loki',
                         ]
                     ),
-                ]
+                ],
             ]
         )->mapRecursive(
             function ($v) {
@@ -413,7 +413,7 @@ class ArrayLoopTraitTest extends TestCase
             [
                 ['name' => 'Sally'],
                 ['school' => 'Arkansas'],
-                ['age' => 28]
+                ['age' => 28],
             ]
         );
 

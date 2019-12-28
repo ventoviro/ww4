@@ -42,9 +42,9 @@ class CompareValidator extends AbstractValidator
     /**
      * CompareValidator constructor.
      *
-     * @param mixed  $compare
-     * @param string $operator
-     * @param bool   $strict
+     * @param  mixed   $compare
+     * @param  string  $operator
+     * @param  bool    $strict
      *
      * @throws \DomainException
      */
@@ -69,9 +69,9 @@ class CompareValidator extends AbstractValidator
      */
     protected function doTest($value): bool
     {
-        $compare = $this->compare;
+        $compare  = $this->compare;
         $operator = $this->operator;
-        $strict = $this->strict;
+        $strict   = $this->strict;
 
         return CompareHelper::compare($value, $compare, $operator, $strict);
     }
@@ -89,7 +89,7 @@ class CompareValidator extends AbstractValidator
     /**
      * Method to set property operator
      *
-     * @param   string $operator
+     * @param  string  $operator
      *
      * @return  static  Return self to support chaining.
      */
@@ -113,7 +113,7 @@ class CompareValidator extends AbstractValidator
     /**
      * Method to set property compare
      *
-     * @param   mixed|null $compare
+     * @param  mixed|null  $compare
      *
      * @return  static  Return self to support chaining.
      */
@@ -127,7 +127,7 @@ class CompareValidator extends AbstractValidator
     /**
      * Method to set property strict
      *
-     * @param   bool $strict
+     * @param  bool  $strict
      *
      * @return  static  Return self to support chaining.
      */

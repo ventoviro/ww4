@@ -11,16 +11,14 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise\Test;
 
-use PHPUnit\Framework\TestCase;
 use React\EventLoop\StreamSelectLoop;
-use Swoole\Coroutine;
 use Swoole\Event;
+use Windwalker\Promise\Promise;
+use Windwalker\Promise\Scheduler\DeferredScheduler;
 use Windwalker\Promise\Scheduler\EventLoopScheduler;
 use Windwalker\Promise\Scheduler\ScheduleRunner;
-use Windwalker\Promise\Scheduler\DeferredScheduler;
 use Windwalker\Promise\Scheduler\SwooleScheduler;
 use Windwalker\Promise\Scheduler\TaskQueue;
-use Windwalker\Promise\Promise;
 use Windwalker\Reactor\Test\Traits\SwooleTestTrait;
 
 /**
@@ -53,13 +51,17 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
      */
     public function testConstructorAsync(): void
     {
-        $promise = new Promise(function ($resolve) {
-            $resolve('Hello');
-        });
+        $promise = new Promise(
+            function ($resolve) {
+                $resolve('Hello');
+            }
+        );
 
-        $promise->then(function ($v) {
-            $this->values['v1'] = $v;
-        });
+        $promise->then(
+            function ($v) {
+                $this->values['v1'] = $v;
+            }
+        );
 
         self::assertArrayNotHasKey('v1', $this->values);
 
@@ -70,15 +72,23 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
 
     public function testConstructorReturnPromise(): void
     {
-        $promise = new Promise(function ($resolve) {
-            $resolve(new Promise(function ($re, $rj) {
-                $re('Flower');
-            }));
-        });
+        $promise = new Promise(
+            function ($resolve) {
+                $resolve(
+                    new Promise(
+                        function ($re, $rj) {
+                            $re('Flower');
+                        }
+                    )
+                );
+            }
+        );
 
-        $promise->then(function ($v) {
-            $this->values['v1'] = $v;
-        });
+        $promise->then(
+            function ($v) {
+                $this->values['v1'] = $v;
+            }
+        );
 
         self::assertArrayNotHasKey('v1', $this->values);
 
@@ -89,20 +99,32 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
 
     public function testThenReturnPromise(): void
     {
-        $promise = new Promise(function ($resolve) {
-            $resolve(new Promise(function ($re, $rj) {
-                $re('Flower');
-            }));
-        });
+        $promise = new Promise(
+            function ($resolve) {
+                $resolve(
+                    new Promise(
+                        function ($re, $rj) {
+                            $re('Flower');
+                        }
+                    )
+                );
+            }
+        );
 
-        $promise->then(function ($v) {
-            return new Promise(function ($re) {
-                $re('YOO');
-            });
-        })
-            ->then(function ($v) {
-                $this->values['v1'] = $v;
-            });
+        $promise->then(
+            function ($v) {
+                return new Promise(
+                    function ($re) {
+                        $re('YOO');
+                    }
+                );
+            }
+        )
+            ->then(
+                function ($v) {
+                    $this->values['v1'] = $v;
+                }
+            );
 
         self::assertArrayNotHasKey('v1', $this->values);
 
@@ -117,32 +139,46 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
 
         ScheduleRunner::getInstance()->setSchedulers(
             [
-                new SwooleScheduler()
+                new SwooleScheduler(),
             ]
         );
 
-        go(function () {
-            $promise = new Promise(function ($resolve) {
-                $resolve(new Promise(function ($re, $rj) {
-                    $re('Flower');
-                }));
-            });
+        go(
+            function () {
+                $promise = new Promise(
+                    function ($resolve) {
+                        $resolve(
+                            new Promise(
+                                function ($re, $rj) {
+                                    $re('Flower');
+                                }
+                            )
+                        );
+                    }
+                );
 
-            $value = $promise->then(function ($v) {
-                return new Promise(function ($re) {
-                    $re('YOO');
-                });
-            })
-                ->then(function ($v) {
-                    $this->values['v1'] = $v;
+                $value = $promise->then(
+                    function ($v) {
+                        return new Promise(
+                            function ($re) {
+                                $re('YOO');
+                            }
+                        );
+                    }
+                )
+                    ->then(
+                        function ($v) {
+                            $this->values['v1'] = $v;
 
-                    return 'GOO';
-                })
-                ->wait();
+                            return 'GOO';
+                        }
+                    )
+                    ->wait();
 
-            self::assertEquals('YOO', $this->values['v1']);
-            self::assertEquals('GOO', $value);
-        });
+                self::assertEquals('YOO', $this->values['v1']);
+                self::assertEquals('GOO', $value);
+            }
+        );
 
         self::assertArrayNotHasKey('v1', $this->values);
     }
@@ -153,14 +189,18 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
 
         $loop = new StreamSelectLoop();
 
-        $p = new Promise(static function (callable $resolve) {
-            $resolve('Hello');
-        });
-        $p->then(function ($v) use ($loop) {
-            $this->values['v1'] = $v;
+        $p = new Promise(
+            static function (callable $resolve) {
+                $resolve('Hello');
+            }
+        );
+        $p->then(
+            function ($v) use ($loop) {
+                $this->values['v1'] = $v;
 
-            $loop->stop();
-        });
+                $loop->stop();
+            }
+        );
 
         $loop->addPeriodicTimer(0, [TaskQueue::getInstance(), 'run']);
         $loop->run();
@@ -174,14 +214,18 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
 
         self::useScheduler(new EventLoopScheduler($loop));
 
-        $p = new Promise(static function (callable $resolve) {
-            $resolve('Hello');
-        });
-        $p->then(function ($v) use ($loop) {
-            $this->values['v1'] = $v;
+        $p = new Promise(
+            static function (callable $resolve) {
+                $resolve('Hello');
+            }
+        );
+        $p->then(
+            function ($v) use ($loop) {
+                $this->values['v1'] = $v;
 
-            $loop->stop();
-        });
+                $loop->stop();
+            }
+        );
 
         $loop->run();
 
@@ -194,14 +238,20 @@ class AsyncPromiseTest extends AbstractPromiseTestCase
 
         self::useScheduler(new EventLoopScheduler(EventLoopScheduler::createSwooleTimer()));
 
-        go(function () {
-            $p = new Promise(static function (callable $resolve) {
-                $resolve('Hello');
-            });
-            $p->then(function ($v) {
-                $this->values['v1'] = $v;
-            });
-        });
+        go(
+            function () {
+                $p = new Promise(
+                    static function (callable $resolve) {
+                        $resolve('Hello');
+                    }
+                );
+                $p->then(
+                    function ($v) {
+                        $this->values['v1'] = $v;
+                    }
+                );
+            }
+        );
 
         Event::dispatch();
 

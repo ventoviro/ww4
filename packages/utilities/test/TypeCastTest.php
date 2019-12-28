@@ -292,22 +292,22 @@ class TypeCastTest extends TestCase
             [
                 [],
                 null,
-                'int'
+                'int',
             ],
             [
                 new stdClass(),
                 null,
-                'int'
+                'int',
             ],
             [
                 true,
                 1,
-                'int'
+                'int',
             ],
             [
                 false,
                 0,
-                'int'
+                'int',
             ],
             // To float
             [
@@ -338,22 +338,22 @@ class TypeCastTest extends TestCase
             [
                 [],
                 null,
-                'float'
+                'float',
             ],
             [
                 new stdClass(),
                 null,
-                'float'
+                'float',
             ],
             [
                 true,
                 1.0,
-                'float'
+                'float',
             ],
             [
                 false,
                 0.0,
-                'float'
+                'float',
             ],
             // To string
             [
@@ -390,62 +390,62 @@ class TypeCastTest extends TestCase
             [
                 'A',
                 true,
-                'bool'
+                'bool',
             ],
             [
                 '1',
                 true,
-                'bool'
+                'bool',
             ],
             [
                 '',
                 false,
-                'bool'
+                'bool',
             ],
             [
                 '0',
                 false,
-                'bool'
+                'bool',
             ],
             [
                 0,
                 false,
-                'bool'
+                'bool',
             ],
             // array
             [
                 'a',
                 ['a'],
-                'array'
+                'array',
             ],
             [
                 123,
                 [123],
-                'array'
+                'array',
             ],
             [
                 (object) ['foo' => 'bar'],
                 ['foo' => 'bar'],
-                'array'
+                'array',
             ],
             // obj
             [
                 ['foo' => 'bar'],
                 (object) ['foo' => 'bar'],
-                'object'
+                'object',
             ],
             [
                 static function () {
                 },
                 static function () {
                 },
-                'object'
+                'object',
             ],
             // Other
             [
                 'Hello',
                 null,
-                'none'
+                'none',
             ],
         ];
     }
@@ -506,22 +506,22 @@ class TypeCastTest extends TestCase
             [
                 [],
                 null,
-                'int'
+                'int',
             ],
             [
                 new stdClass(),
                 null,
-                'int'
+                'int',
             ],
             [
                 true,
                 null,
-                'int'
+                'int',
             ],
             [
                 false,
                 null,
-                'int'
+                'int',
             ],
             // To float
             [
@@ -552,22 +552,22 @@ class TypeCastTest extends TestCase
             [
                 [],
                 null,
-                'float'
+                'float',
             ],
             [
                 new stdClass(),
                 null,
-                'float'
+                'float',
             ],
             [
                 true,
                 null,
-                'float'
+                'float',
             ],
             [
                 false,
                 null,
-                'float'
+                'float',
             ],
             // To string
             [

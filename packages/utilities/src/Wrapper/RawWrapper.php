@@ -48,7 +48,7 @@ class RawWrapper implements WrapperInterface
     /**
      * set
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  static
      *

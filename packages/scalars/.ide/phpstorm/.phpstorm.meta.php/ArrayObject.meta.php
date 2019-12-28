@@ -18,7 +18,7 @@ namespace PHPSTORM_META {
         ArrayObject::as(0),
         map(
             [
-                '' => '@'
+                '' => '@',
             ]
         )
     );

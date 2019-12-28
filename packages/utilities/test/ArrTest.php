@@ -84,7 +84,7 @@ class ArrTest extends TestCase
                 'baz',
                 'goo',
                 (object) ['foo' => 'bar', 'baz' => 'goo'],
-            ]
+            ],
         ];
     }
 
@@ -155,14 +155,14 @@ class ArrTest extends TestCase
             'flower' => 'sakura',
             'olive' => 'peace',
             'pos1' => [
-                'sunflower' => 'love'
+                'sunflower' => 'love',
             ],
             'pos2' => [
                 'cornflower' => 'elegant',
                 'pos3' => [
-                    'olive'
-                ]
-            ]
+                    'olive',
+                ],
+            ],
         ];
 
         $flatted = Arr::flatten($array);
@@ -196,7 +196,7 @@ class ArrTest extends TestCase
                     ['name' => 'iPhone 6S', 'brand' => 'Apple'],
                 ],
                 'Samsung' => [
-                    ['name' => 'Galaxy S7', 'brand' => 'Samsung']
+                    ['name' => 'Galaxy S7', 'brand' => 'Samsung'],
                 ],
             ]
         );
@@ -220,16 +220,16 @@ class ArrTest extends TestCase
             'flower' => 'sakura',
             'olive' => 'peace',
             'pos1' => [
-                'sunflower' => 'love'
+                'sunflower' => 'love',
             ],
             'pos2' => [
-                'cornflower' => 'elegant'
+                'cornflower' => 'elegant',
             ],
             'array' => [
                 'A',
                 'B',
-                'C'
-            ]
+                'C',
+            ],
         ];
 
         $this->assertEquals('sakura', Arr::get($data, 'flower'));
@@ -249,18 +249,18 @@ class ArrTest extends TestCase
             'flower' => 'sakura',
             'olive' => 'peace',
             'pos1' => (object) [
-                'sunflower' => 'love'
+                'sunflower' => 'love',
             ],
             'pos2' => new ArrayObject(
                 [
-                    'cornflower' => 'elegant'
+                    'cornflower' => 'elegant',
                 ]
             ),
             'array' => (object) [
                 'A',
                 'B',
-                'C'
-            ]
+                'C',
+            ],
         ];
 
         $this->assertEquals('sakura', Arr::get($data, 'flower'));
@@ -352,55 +352,55 @@ class ArrTest extends TestCase
                 [1, 2, 3],
                 [0 => 1, 2 => 3],
                 1,
-                '.'
+                '.',
             ],
             [
                 [1, 2, 3],
                 [1, 2, 3],
                 5,
-                '.'
+                '.',
             ],
             [
                 [1, 2, 3],
                 [1, 2, 3],
                 '',
-                '.'
+                '.',
             ],
             [
                 ['foo' => 'bar', 'baz' => 'yoo'],
                 ['baz' => 'yoo'],
                 'foo',
-                '.'
+                '.',
             ],
             [
                 ['foo' => 'bar', 'baz' => 'yoo'],
                 ['foo' => 'bar', 'baz' => 'yoo'],
                 'haa',
-                '.'
+                '.',
             ],
             [
                 ['foo' => 'bar', 'baz' => ['joo' => 'hoo']],
                 ['foo' => 'bar', 'baz' => []],
                 'baz.joo',
-                '.'
+                '.',
             ],
             [
                 (object) ['foo' => 'bar', 'baz' => 'yoo'],
                 (object) ['baz' => 'yoo'],
                 'foo',
-                '.'
+                '.',
             ],
             [
                 (object) ['foo' => 'bar', 'baz' => 'yoo'],
                 (object) ['foo' => 'bar', 'baz' => 'yoo'],
                 'haa',
-                '.'
+                '.',
             ],
             [
                 (object) ['foo' => 'bar', 'baz' => ['joo' => 'hoo']],
                 (object) ['foo' => 'bar', 'baz' => []],
                 'baz/joo',
-                '/'
+                '/',
             ],
         ];
     }
@@ -671,7 +671,7 @@ class ArrTest extends TestCase
         $array = [
             'one' => 1,
             'two' => 2,
-            'three' => 3
+            'three' => 3,
         ];
 
         self::assertEquals(2, Arr::takeout($array, 'two'));
@@ -679,7 +679,7 @@ class ArrTest extends TestCase
 
         $array = [
             'one' => 1,
-            'two' => ['two' => 2, 'three' => 3]
+            'two' => ['two' => 2, 'three' => 3],
         ];
 
         self::assertEquals(2, Arr::takeout($array, 'two.two'));
@@ -688,7 +688,7 @@ class ArrTest extends TestCase
         $array = [
             'one' => 1,
             'two' => 2,
-            'three' => 3
+            'three' => 3,
         ];
 
         self::assertEquals('default', Arr::takeout($array, 'foo', 'default'));
@@ -697,7 +697,7 @@ class ArrTest extends TestCase
         $array = (object) [
             'one' => 1,
             'two' => 2,
-            'three' => 3
+            'three' => 3,
         ];
 
         self::assertEquals(2, Arr::takeout($array, 'two'));
@@ -742,7 +742,7 @@ class ArrTest extends TestCase
                     0 => ['name' => 'Car', 'price' => 200],
                 ],
                 'price',
-                false
+                false,
             ],
             'simple array use callback' => [
                 [
@@ -758,7 +758,7 @@ class ArrTest extends TestCase
                 function ($item, $key) {
                     return $item['price'];
                 },
-                true
+                true,
             ],
             'simple objects' => [
                 [
@@ -772,7 +772,7 @@ class ArrTest extends TestCase
                     0 => (object) ['name' => 'Car', 'price' => 200],
                 ],
                 'price',
-                false
+                false,
             ],
             'simple objects use callback' => [
                 [
@@ -788,7 +788,7 @@ class ArrTest extends TestCase
                 function ($item, $key) {
                     return strlen($item->name);
                 },
-                false
+                false,
             ],
         ];
     }
@@ -819,7 +819,7 @@ class ArrTest extends TestCase
             'Case 1' => [
                 [
                     'Sakura' => ['1000', '1500', '1750'],
-                    'Olive' => ['3000', '4000', '5000', '6000']
+                    'Olive' => ['3000', '4000', '5000', '6000'],
                 ],
                 [
                     '1000' => 'Sakura',
@@ -828,15 +828,15 @@ class ArrTest extends TestCase
                     '3000' => 'Olive',
                     '4000' => 'Olive',
                     '5000' => 'Olive',
-                    '6000' => 'Olive'
-                ]
+                    '6000' => 'Olive',
+                ],
             ],
             'Case 2' => [
                 [
                     'Sakura' => [1000, 1500, 1750],
                     'Olive' => [2750, 3000, 4000, 5000, 6000],
                     'Sunflower' => [2000, 2500],
-                    'Unspecified' => []
+                    'Unspecified' => [],
                 ],
                 [
                     '1000' => 'Sakura',
@@ -848,22 +848,22 @@ class ArrTest extends TestCase
                     '5000' => 'Olive',
                     '6000' => 'Olive',
                     '2000' => 'Sunflower',
-                    '2500' => 'Sunflower'
-                ]
+                    '2500' => 'Sunflower',
+                ],
             ],
             'Case 3' => [
                 [
                     'Sakura' => [1000, 1500, 1750],
                     'valueNotAnArray' => 2750,
-                    'withNonScalarValue' => [2000, [1000, 3000]]
+                    'withNonScalarValue' => [2000, [1000, 3000]],
                 ],
                 [
                     '1000' => 'Sakura',
                     '1500' => 'Sakura',
                     '1750' => 'Sakura',
-                    '2000' => 'withNonScalarValue'
-                ]
-            ]
+                    '2000' => 'withNonScalarValue',
+                ],
+            ],
         ];
     }
 
@@ -953,7 +953,7 @@ class ArrTest extends TestCase
                     'female' => 'empty',
                     'no-gender' => 'empty',
                 ],
-            ]
+            ],
         ];
 
         $data2 = [
@@ -969,11 +969,11 @@ class ArrTest extends TestCase
                     'female' => 'Black Widow',
                     'male' => 'Loki',
                 ],
-            ]
+            ],
         ];
 
         $data3 = [
-            'ai' => 'Ultron'
+            'ai' => 'Ultron',
         ];
 
         $expected = [
@@ -1027,7 +1027,7 @@ class ArrTest extends TestCase
                 public $flower = 'sakura';
 
                 public static $car = 'toyota';
-            }
+            },
         ];
 
         if (PHP_VERSION_ID < 70400) {
@@ -1176,7 +1176,7 @@ SHOW;
                 [
                     'id' => function ($v) {
                         return $v === 2;
-                    }
+                    },
                 ]
             )
         );
@@ -1392,7 +1392,7 @@ SHOW;
         $a = [
             ['name' => 'Sally'],
             ['school' => 'Arkansas'],
-            ['age' => 28]
+            ['age' => 28],
         ];
 
         $b = Arr::flatMap(

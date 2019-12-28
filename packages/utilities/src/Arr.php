@@ -147,7 +147,7 @@ abstract class Arr
     public static function &get(&$data, $key, string $delimiter = '.')
     {
         $nodes = static::getPathNodes((string) $key, $delimiter);
-        $null = null;
+        $null  = null;
 
         if (empty($nodes)) {
             return $null;

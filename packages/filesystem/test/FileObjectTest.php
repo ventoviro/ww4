@@ -17,6 +17,7 @@ use Windwalker\Filesystem\FileObject;
 use Windwalker\Filesystem\Filesystem;
 use Windwalker\Filesystem\Iterator\FilesIterator;
 use Windwalker\Stream\StringStream;
+
 use function Windwalker\fs;
 
 /**

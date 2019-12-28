@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM\Format;
 
-use Windwalker\DOM\DOMFactory;
+use InvalidArgumentException;
 use Windwalker\DOM\HTMLFactory;
 
 /**
@@ -89,7 +89,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * indent
      *
-     * @param   string $input
+     * @param  string  $input
      *
      * @return  string
      */
@@ -115,7 +115,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * tempScripts
      *
-     * @param   string $input
+     * @param  string  $input
      *
      * @return  string
      */
@@ -137,7 +137,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * restoreScripts
      *
-     * @param   string $output
+     * @param  string  $output
      *
      * @return  string
      */
@@ -153,7 +153,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * tempInlineElements
      *
-     * @param   string $input
+     * @param  string  $input
      *
      * @return  string
      */
@@ -174,7 +174,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * restoreInlineElements
      *
-     * @param   string $output
+     * @param  string  $output
      *
      * @return  string
      */
@@ -190,7 +190,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * Method to set property inlineElements
      *
-     * @param   array $inlineElements
+     * @param  array  $inlineElements
      *
      * @return  static  Return self to support chaining.
      */
@@ -229,8 +229,8 @@ class HTMLFormatter extends DOMFormatter
     }
 
     /**
-     * @param   string  $elementName Element name, e.g. "b".
-     * @param   integer $type
+     * @param  string   $elementName  Element name, e.g. "b".
+     * @param  integer  $type
      *
      * @return  void
      */
@@ -242,7 +242,7 @@ class HTMLFormatter extends DOMFormatter
             if ($type === static::ELEMENT_TYPE_INLINE) {
                 $this->inlineElements[] = $elementName;
             } else {
-                throw new \InvalidArgumentException('Unrecognized element type.');
+                throw new InvalidArgumentException('Unrecognized element type.');
             }
         }
 
@@ -252,7 +252,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * addInlineElement
      *
-     * @param   string $element
+     * @param  string  $element
      *
      * @return  static
      */
@@ -266,7 +266,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * addUnpairedElement
      *
-     * @param   string $element
+     * @param  string  $element
      *
      * @return  static
      */
@@ -280,7 +280,7 @@ class HTMLFormatter extends DOMFormatter
     /**
      * Method to set property unpairedElements
      *
-     * @param   array $unpairedElements
+     * @param  array  $unpairedElements
      *
      * @return  static  Return self to support chaining.
      */
@@ -298,7 +298,7 @@ class HTMLFormatter extends DOMFormatter
      *
      * @return  array|string
      */
-    public function getUnpairedElements(bool $implode = false):array
+    public function getUnpairedElements(bool $implode = false): array
     {
         return $implode ? implode('|', $this->unpairedElements) : $this->unpairedElements;
     }

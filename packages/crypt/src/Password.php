@@ -30,8 +30,8 @@ class Password
      */
     public static function genRandomPassword(int $length = 15): string
     {
-        $salt = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        $base = strlen($salt);
+        $salt     = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $base     = strlen($salt);
         $password = '';
 
         /*
@@ -42,7 +42,7 @@ class Password
          * predictable.
          */
         $random = random_bytes($length + 1);
-        $shift = ord($random[0]);
+        $shift  = ord($random[0]);
 
         for ($i = 1; $i <= $length; ++$i) {
             $password .= $salt[($shift + ord($random[$i])) % $base];

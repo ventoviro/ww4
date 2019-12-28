@@ -44,7 +44,7 @@ function reject($promiseOrValue = null): ExtendedPromiseInterface
 /**
  * is_thenable
  *
- * @param mixed $value
+ * @param  mixed  $value
  *
  * @return  bool
  */
@@ -63,9 +63,11 @@ function is_thenable($value): bool
 function asyncable(callable $callable): Closure
 {
     return static function (...$args) use ($callable): ExtendedPromiseInterface {
-        return async(static function () use ($callable, $args) {
-            return $callable(...$args);
-        });
+        return async(
+            static function () use ($callable, $args) {
+                return $callable(...$args);
+            }
+        );
     };
 }
 
@@ -78,13 +80,15 @@ function asyncable(callable $callable): Closure
  */
 function async(callable $callable): ExtendedPromiseInterface
 {
-    return new Promise(static function ($resolve, $reject) use ($callable) {
-        try {
-            $resolve($callable());
-        } catch (Throwable $e) {
-            $reject($e);
+    return new Promise(
+        static function ($resolve, $reject) use ($callable) {
+            try {
+                $resolve($callable());
+            } catch (Throwable $e) {
+                $reject($e);
+            }
         }
-    });
+    );
 }
 
 /**
@@ -125,20 +129,24 @@ function await(PromiseInterface $promise)
  */
 function coroutine(callable $callback): ExtendedPromiseInterface
 {
-    return new Promise(static function ($resolve) use ($callback) {
-        \Windwalker\go(static function () use ($resolve, $callback) {
-            /** @var \Generator $generator */
-            $generator = $callback();
+    return new Promise(
+        static function ($resolve) use ($callback) {
+            \Windwalker\go(
+                static function () use ($resolve, $callback) {
+                    /** @var \Generator $generator */
+                    $generator = $callback();
 
-            $value = $generator->current();
+                    $value = $generator->current();
 
-            while ($generator->valid()) {
-                $value = $generator->send(Promise::resolved($value)->wait());
-            }
+                    while ($generator->valid()) {
+                        $value = $generator->send(Promise::resolved($value)->wait());
+                    }
 
-            $resolve($generator->getReturn());
-        });
-    });
+                    $resolve($generator->getReturn());
+                }
+            );
+        }
+    );
 }
 
 /**
@@ -152,19 +160,21 @@ function coroutine(callable $callback): ExtendedPromiseInterface
  * $run($a, $b)->then(...);
  * ```
  *
- * @see coroutine()
- *
  * @param  callable  $callback
  *
  * @return  Closure|ReturnPromiseInterface
  *
  * @throws Throwable
+ * @see coroutine()
+ *
  */
 function coroutineable(callable $callback): Closure
 {
     return static function (...$args) use ($callback): ExtendedPromiseInterface {
-        return coroutine(static function () use ($callback, $args) {
-            return $callback(...$args);
-        });
+        return coroutine(
+            static function () use ($callback, $args) {
+                return $callback(...$args);
+            }
+        );
     };
 }

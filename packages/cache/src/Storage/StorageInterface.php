@@ -19,7 +19,7 @@ interface StorageInterface
     /**
      * get
      *
-     * @param  string  $key The key to get value.
+     * @param  string  $key  The key to get value.
      *
      * @return  mixed
      */

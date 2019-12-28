@@ -42,20 +42,27 @@ class EventObservableTest extends TestCase
         $values = [];
 
         $this->instance->observe('hello')
-            ->map(static function (EventInterface $event) {
-                $event['num'] += 50;
-                return $event;
-            })
-            ->map(static function (EventInterface $event) {
-                return $event['num'];
-            })
-            ->subscribe(function ($v) use (&$values) {
-                $values[] = $v;
+            ->map(
+                static function (EventInterface $event) {
+                    $event['num'] += 50;
 
-                if ($v === 55) {
-                    // $loop->stop();
+                    return $event;
                 }
-            });
+            )
+            ->map(
+                static function (EventInterface $event) {
+                    return $event['num'];
+                }
+            )
+            ->subscribe(
+                function ($v) use (&$values) {
+                    $values[] = $v;
+
+                    if ($v === 55) {
+                        // $loop->stop();
+                    }
+                }
+            );
 
         $this->instance->emit('hello', ['num' => 3]);
         $this->instance->emit('hello', ['num' => 4]);
@@ -66,31 +73,38 @@ class EventObservableTest extends TestCase
 
     public function testObserveSwoole(): void
     {
-
-
-        $loop = new StreamSelectLoop();
+        $loop      = new StreamSelectLoop();
         $scheduler = new EventLoopScheduler($loop);
-        Scheduler::setDefaultFactory(function () use ($scheduler) {
-            return $scheduler;
-        });
+        Scheduler::setDefaultFactory(
+            function () use ($scheduler) {
+                return $scheduler;
+            }
+        );
 
         $values = [];
 
         $this->instance->observe('hello')
-            ->map(static function (EventInterface $event) {
-                $event['num'] += 50;
-                return $event;
-            })
-            ->map(static function (EventInterface $event) {
-                return $event['num'];
-            })
-            ->subscribe(function ($v) use (&$values, $loop) {
-                $values[] = $v;
+            ->map(
+                static function (EventInterface $event) {
+                    $event['num'] += 50;
 
-                if ($v === 55) {
-                    $loop->stop();
+                    return $event;
                 }
-            });
+            )
+            ->map(
+                static function (EventInterface $event) {
+                    return $event['num'];
+                }
+            )
+            ->subscribe(
+                function ($v) use (&$values, $loop) {
+                    $values[] = $v;
+
+                    if ($v === 55) {
+                        $loop->stop();
+                    }
+                }
+            );
 
         $this->instance->emit('hello', ['num' => 3]);
         $this->instance->emit('hello', ['num' => 4]);

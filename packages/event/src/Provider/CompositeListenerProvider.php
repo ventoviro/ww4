@@ -132,11 +132,13 @@ class CompositeListenerProvider implements SubscribableListenerProviderInterface
     {
         if ($listener instanceof DisposableCallable) {
             $this->off($event, $listener);
+
             return;
         }
 
         if ($listener instanceof TimesLimitedCallable && $listener->getLimits() <= ($listener->getCallTimes() + 1)) {
             $this->off($event, $listener);
+
             return;
         }
     }

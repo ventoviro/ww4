@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Windwalker\Event\Test;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Event\Event;
 use Windwalker\Event\EventDispatcher;
 use Windwalker\Event\Provider\SimpleListenerProvider;
 use Windwalker\Event\Test\Stub\StubFlowerEvent;
@@ -54,9 +53,13 @@ class EventDispatcherTest extends TestCase
             $value = 'Hello';
         };
 
-        $d = new EventDispatcher(new SimpleListenerProvider([
-            StubFlowerEvent::class => [$listener]
-        ]));
+        $d = new EventDispatcher(
+            new SimpleListenerProvider(
+                [
+                    StubFlowerEvent::class => [$listener],
+                ]
+            )
+        );
 
         $event2 = $d->dispatch($event = new StubFlowerEvent());
 

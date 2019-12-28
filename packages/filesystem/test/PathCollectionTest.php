@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace Windwalker\Filesystem\Test;
 
 use org\bovigo\vfs\vfsStream;
-use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\PathCollection;
+
 use function Windwalker\fs;
 
 /**
@@ -31,10 +31,12 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testIsChild(): void
     {
-        $p = new PathCollection([
-            'vfs://foo/bar/yoo',
-            'vfs://foo/goo'
-        ]);
+        $p = new PathCollection(
+            [
+                'vfs://foo/bar/yoo',
+                'vfs://foo/goo',
+            ]
+        );
 
         self::assertTrue($p->isChild('vfs://foo/goo/joo'));
         self::assertFalse($p->isChild('vfs://foo/tu'));
@@ -45,14 +47,18 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testAddPaths(): void
     {
-        $p = new PathCollection([
-            'vfs://foo/bar/yoo',
-        ]);
+        $p = new PathCollection(
+            [
+                'vfs://foo/bar/yoo',
+            ]
+        );
 
-        $p2 = $p->addPaths([
-            'vfs://flower/sakura',
-            'vfs://foo/goo'
-        ]);
+        $p2 = $p->addPaths(
+            [
+                'vfs://flower/sakura',
+                'vfs://foo/goo',
+            ]
+        );
 
         self::assertEquals(
             [
@@ -70,9 +76,11 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testAdd(): void
     {
-        $p = new PathCollection([
-            'vfs://foo/bar/yoo',
-        ]);
+        $p = new PathCollection(
+            [
+                'vfs://foo/bar/yoo',
+            ]
+        );
 
         $p2 = $p->add('vfs://flower/sakura');
 
@@ -91,11 +99,13 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testAppendAll(): void
     {
-        $p = new PathCollection([
-            'foo/bar/yoo',
-            'flower/sakura',
-            'foo/goo/joo',
-        ]);
+        $p = new PathCollection(
+            [
+                'foo/bar/yoo',
+                'flower/sakura',
+                'foo/goo/joo',
+            ]
+        );
 
         $p2 = $p->appendAll('/../');
 
@@ -115,11 +125,13 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testPrependAll(): void
     {
-        $p = new PathCollection([
-            'foo/bar/yoo',
-            'flower/sakura',
-            'foo/goo/joo',
-        ]);
+        $p = new PathCollection(
+            [
+                'foo/bar/yoo',
+                'flower/sakura',
+                'foo/goo/joo',
+            ]
+        );
 
         $p2 = $p->prependAll('vfs://');
 
@@ -139,11 +151,13 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testGetPaths(): void
     {
-        $p = new PathCollection([
-            'foo/bar/yoo',
-            'flower/sakura',
-            'foo/goo/joo',
-        ]);
+        $p = new PathCollection(
+            [
+                'foo/bar/yoo',
+                'flower/sakura',
+                'foo/goo/joo',
+            ]
+        );
 
         self::assertEquals(
             [
@@ -160,14 +174,18 @@ class PathCollectionTest extends AbstractVfsTestCase
      */
     public function testWithPaths(): void
     {
-        $p = new PathCollection([
-            'vfs://foo/bar/yoo',
-        ]);
+        $p = new PathCollection(
+            [
+                'vfs://foo/bar/yoo',
+            ]
+        );
 
-        $p2 = $p->withPaths([
-            'vfs://flower/sakura',
-            'vfs://foo/goo'
-        ]);
+        $p2 = $p->withPaths(
+            [
+                'vfs://flower/sakura',
+                'vfs://foo/goo',
+            ]
+        );
 
         self::assertEquals(
             [
@@ -186,10 +204,12 @@ class PathCollectionTest extends AbstractVfsTestCase
     {
         $this->setUpNestedFiles();
 
-        $p = new PathCollection([
-            'vfs://root/folder1',
-            'vfs://root/folder2',
-        ]);
+        $p = new PathCollection(
+            [
+                'vfs://root/folder1',
+                'vfs://root/folder2',
+            ]
+        );
 
         self::assertEquals(
             static::cleanPaths(
@@ -209,10 +229,12 @@ class PathCollectionTest extends AbstractVfsTestCase
     {
         $this->setUpNestedFiles();
 
-        $p = new PathCollection([
-            'vfs://root/folder1',
-            'vfs://root/folder2',
-        ]);
+        $p = new PathCollection(
+            [
+                'vfs://root/folder1',
+                'vfs://root/folder2',
+            ]
+        );
 
         self::assertEquals(
             static::cleanPaths(
@@ -232,10 +254,12 @@ class PathCollectionTest extends AbstractVfsTestCase
     {
         $this->setUpNestedFiles();
 
-        $p = new PathCollection([
-            'vfs://root/folder1',
-            'vfs://root/folder2',
-        ]);
+        $p = new PathCollection(
+            [
+                'vfs://root/folder1',
+                'vfs://root/folder2',
+            ]
+        );
 
         self::assertEquals(
             static::cleanPaths(
@@ -266,32 +290,36 @@ class PathCollectionTest extends AbstractVfsTestCase
 
     protected function setUpNestedFiles(): \org\bovigo\vfs\vfsStreamDirectory
     {
-        return vfsStream::setup('root', null, [
-            'folder1' => [
-                'sub1' => [
-                    'file1.txt' => '',
-                    'file2.txt' => '',
-                    'file3.txt' => '',
+        return vfsStream::setup(
+            'root',
+            null,
+            [
+                'folder1' => [
+                    'sub1' => [
+                        'file1.txt' => '',
+                        'file2.txt' => '',
+                        'file3.txt' => '',
+                    ],
+                    'sub2' => [
+                        'file1.txt' => '',
+                        'file2.txt' => '',
+                        'file3.txt' => '',
+                    ],
                 ],
-                'sub2' => [
-                    'file1.txt' => '',
-                    'file2.txt' => '',
-                    'file3.txt' => '',
+                'folder2' => [
+                    'sub1' => [
+                        'file1.txt' => '',
+                        'file2.txt' => '',
+                        'file3.txt' => '',
+                    ],
+                    'sub2' => [
+                        'file1.txt' => '',
+                        'file2.txt' => '',
+                        'file3.txt' => '',
+                    ],
                 ],
-            ],
-            'folder2' => [
-                'sub1' => [
-                    'file1.txt' => '',
-                    'file2.txt' => '',
-                    'file3.txt' => '',
-                ],
-                'sub2' => [
-                    'file1.txt' => '',
-                    'file2.txt' => '',
-                    'file3.txt' => '',
-                ],
-            ],
-        ]);
+            ]
+        );
     }
 
     protected function setUp(): void

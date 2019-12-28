@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Crypt\Test\Symmetric;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Crypt\Symmetric\SodiumCipher;
 use Windwalker\Crypt\HiddenString;
 use Windwalker\Crypt\Key;
+use Windwalker\Crypt\Symmetric\SodiumCipher;
 
 /**
  * Test class of Cipher3DES

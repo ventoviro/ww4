@@ -107,12 +107,12 @@ class NullStream implements StreamInterface
      *
      * @link http://www.php.net/manual/en/function.fseek.php
      *
-     * @param int $offset Stream offset
-     * @param int $whence Specifies how the cursor position will be calculated
-     *                    based on the seek offset. Valid values are identical to the built-in
-     *                    PHP $whence values for `fseek()`.  SEEK_SET: Set position equal to
-     *                    offset bytes SEEK_CUR: Set position to current location plus offset
-     *                    SEEK_END: Set position to end-of-stream plus offset.
+     * @param  int  $offset  Stream offset
+     * @param  int  $whence  Specifies how the cursor position will be calculated
+     *                       based on the seek offset. Valid values are identical to the built-in
+     *                       PHP $whence values for `fseek()`.  SEEK_SET: Set position equal to
+     *                       offset bytes SEEK_CUR: Set position to current location plus offset
+     *                       SEEK_END: Set position to end-of-stream plus offset.
      *
      * @return bool
      * @throws \RuntimeException on failure.
@@ -150,7 +150,7 @@ class NullStream implements StreamInterface
     /**
      * Write data to the stream.
      *
-     * @param string $string The string that is to be written.
+     * @param  string  $string  The string that is to be written.
      *
      * @return int Returns the number of bytes written to the stream.
      * @throws \RuntimeException on failure.
@@ -173,9 +173,9 @@ class NullStream implements StreamInterface
     /**
      * Read data from the stream.
      *
-     * @param int $length Read up to $length bytes from the object and return
-     *                    them. Fewer than $length bytes may be returned if underlying stream
-     *                    call returns fewer bytes.
+     * @param  int  $length  Read up to $length bytes from the object and return
+     *                       them. Fewer than $length bytes may be returned if underlying stream
+     *                       call returns fewer bytes.
      *
      * @return string Returns the data read from the stream, or an empty string
      *     if no bytes are available.
@@ -206,7 +206,7 @@ class NullStream implements StreamInterface
      *
      * @link http://php.net/manual/en/function.stream-get-meta-data.php
      *
-     * @param string $key Specific metadata to retrieve.
+     * @param  string  $key  Specific metadata to retrieve.
      *
      * @return array|mixed|null Returns an associative array if no key is
      *     provided. Returns a specific key value if a key is provided and the

@@ -61,14 +61,14 @@ class ArrayAccessTraitTest extends TestCase
                 'flower' => 'sakura',
                 'olive' => 'peace',
                 'pos1' => [
-                    'sunflower' => 'love'
+                    'sunflower' => 'love',
                 ],
                 'pos2' => [
                     'cornflower' => 'elegant',
                     'pos3' => [
-                        'olive'
-                    ]
-                ]
+                        'olive',
+                    ],
+                ],
             ]
         );
 
@@ -102,14 +102,14 @@ class ArrayAccessTraitTest extends TestCase
                 'flower' => 'sakura',
                 'olive' => 'peace',
                 'pos1' => [
-                    'sunflower' => 'love'
+                    'sunflower' => 'love',
                 ],
                 'pos2' => [
                     'cornflower' => 'elegant',
                     'pos3' => [
-                        'olive'
-                    ]
-                ]
+                        'olive',
+                    ],
+                ],
             ]
         );
 

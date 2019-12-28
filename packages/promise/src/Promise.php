@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise;
 
+use Windwalker\Promise\Exception\UncaughtException;
 use Windwalker\Promise\Scheduler\ScheduleCursor;
 use Windwalker\Promise\Scheduler\ScheduleRunner;
-use Windwalker\Promise\Exception\UncaughtException;
 
 use function Windwalker\nope;
 
@@ -54,7 +54,7 @@ class Promise implements ExtendedPromiseInterface
      */
     public static function create(?callable $resolver = null)
     {
-        $cb = $resolver;
+        $cb       = $resolver;
         $resolver = null;
 
         return new static($cb);
@@ -69,27 +69,30 @@ class Promise implements ExtendedPromiseInterface
      */
     public static function all(array $values): ExtendedPromiseInterface
     {
-        return new static(static function ($resolve, $reject) use ($values) {
-            $count = count($values);
-            $done = 0;
+        return new static(
+            static function ($resolve, $reject) use ($values) {
+                $count = count($values);
+                $done  = 0;
 
-            foreach ($values as $i => $value) {
-                static::resolved($value)
-                    ->then(
-                        static function ($v) use (&$done, &$count, $resolve, $i, $values) {
-                            $values[$i] = $v;
+                foreach ($values as $i => $value) {
+                    static::resolved($value)
+                        ->then(
+                            static function ($v) use (&$done, &$count, $resolve, $i, $values) {
+                                $values[$i] = $v;
 
-                            if ($done !== $count) {
-                                $done++;
-                                return;
-                            }
+                                if ($done !== $count) {
+                                    $done++;
 
-                            $resolve($values);
-                        },
-                        $reject
-                    );
+                                    return;
+                                }
+
+                                $resolve($values);
+                            },
+                            $reject
+                        );
+                }
             }
-        });
+        );
     }
 
     /**
@@ -101,19 +104,21 @@ class Promise implements ExtendedPromiseInterface
      */
     public static function race(array $values): ExtendedPromiseInterface
     {
-        return new static(static function ($resolve, $reject) use ($values) {
-            if ($values === []) {
-                $resolve();
-            }
+        return new static(
+            static function ($resolve, $reject) use ($values) {
+                if ($values === []) {
+                    $resolve();
+                }
 
-            foreach ($values as $i => $value) {
-                static::resolved($value)
-                    ->then(
-                        $resolve,
-                        $reject
-                    );
+                foreach ($values as $i => $value) {
+                    static::resolved($value)
+                        ->then(
+                            $resolve,
+                            $reject
+                        );
+                }
             }
-        });
+        );
     }
 
     /**
@@ -126,16 +131,18 @@ class Promise implements ExtendedPromiseInterface
         // Explicitly overwrite arguments with null values before invoking
         // resolver function. This ensure that these arguments do not show up
         // in the stack trace in PHP 7+ only.
-        $cb = $resolver;
+        $cb       = $resolver;
         $resolver = null;
 
         $cb = $cb ?: static function () {
             //
         };
 
-        $this->schedule(function () use ($cb) {
-            $this->call($cb);
-        });
+        $this->schedule(
+            function () use ($cb) {
+                $this->call($cb);
+            }
+        );
     }
 
     /**
@@ -204,13 +211,15 @@ class Promise implements ExtendedPromiseInterface
             ? $onFulfilled
             : $onRejected;
 
-        return new static(function ($resolve) use ($handler) {
-            try {
-                $resolve($handler($this->value));
-            } catch (UncaughtException $e) {
-                throw $e->getReason();
+        return new static(
+            function ($resolve) use ($handler) {
+                try {
+                    $resolve($handler($this->value));
+                } catch (UncaughtException $e) {
+                    throw $e->getReason();
+                }
             }
-        });
+        );
     }
 
     /**
@@ -233,9 +242,11 @@ class Promise implements ExtendedPromiseInterface
      */
     public static function resolved($value): ExtendedPromiseInterface
     {
-        return new static(static function (callable $resolve) use ($value) {
-            $resolve($value);
-        });
+        return new static(
+            static function (callable $resolve) use ($value) {
+                $resolve($value);
+            }
+        );
     }
 
     /**
@@ -250,9 +261,11 @@ class Promise implements ExtendedPromiseInterface
      */
     public static function rejected($value): ExtendedPromiseInterface
     {
-        return new Promise(static function ($resolve, callable $reject) use ($value) {
-            $reject($value);
-        });
+        return new Promise(
+            static function ($resolve, callable $reject) use ($value) {
+                $reject($value);
+            }
+        );
     }
 
     /**
@@ -270,6 +283,7 @@ class Promise implements ExtendedPromiseInterface
     {
         if ($reason === $this) {
             $this->reject(new \TypeError('Unable to resolve self.'));
+
             return;
         }
 
@@ -301,7 +315,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * Log the uncaught reject reason.
      *
-     * @param UncaughtException  $e
+     * @param  UncaughtException  $e
      *
      * @return  void
      */
@@ -322,6 +336,7 @@ class Promise implements ExtendedPromiseInterface
     {
         if ($value === $promise) {
             $promise->reject(new \TypeError('Unable to resolve self.'));
+
             return $promise;
         }
 
@@ -401,6 +416,7 @@ class Promise implements ExtendedPromiseInterface
 
         if ($handlers === [] && $state === static::REJECTED) {
             $this->log(new UncaughtException($value));
+
             return;
         }
 
@@ -439,7 +455,7 @@ class Promise implements ExtendedPromiseInterface
         // Explicitly overwrite argument with null value. This ensure that this
         // argument does not show up in the stack trace in PHP 7+ only.
         $callback = $cb;
-        $cb = null;
+        $cb       = null;
 
         // Use reflection to inspect number of arguments expected by this callback.
         // We did some careful benchmarking here: Using reflection to avoid unneeded

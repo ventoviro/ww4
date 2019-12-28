@@ -118,7 +118,7 @@ class ScheduleRunner implements SchedulerInterface
         if ($this->schedulers === []) {
             $this->schedulers = [
                 new SwooleScheduler(),
-                new DeferredScheduler()
+                new DeferredScheduler(),
             ];
         }
 

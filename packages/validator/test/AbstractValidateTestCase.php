@@ -37,9 +37,9 @@ abstract class AbstractValidateTestCase extends \PHPUnit\Framework\TestCase
     /**
      * testValidate
      *
-     * @param string  $name
-     * @param string  $input
-     * @param boolean $expect
+     * @param  string   $name
+     * @param  string   $input
+     * @param  boolean  $expect
      *
      * @return  void
      *

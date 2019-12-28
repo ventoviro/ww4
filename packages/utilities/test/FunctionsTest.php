@@ -33,7 +33,7 @@ class FunctionsTest extends TestCase
             2,
             ['foo' => 'bar'],
             ['max' => ['level' => ['test' => ['this' => ['no' => 'show']]]]],
-            4
+            4,
         ];
 
         $expected = <<<OUT

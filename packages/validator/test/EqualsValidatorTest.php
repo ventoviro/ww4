@@ -20,8 +20,8 @@ class EqualsValidatorTest extends \PHPUnit\Framework\TestCase
     /**
      * getInstance
      *
-     * @param string $compare
-     * @param bool   $strict
+     * @param  string  $compare
+     * @param  bool    $strict
      *
      * @return  EqualsValidator
      */

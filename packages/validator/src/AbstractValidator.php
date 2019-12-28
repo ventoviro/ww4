@@ -58,7 +58,7 @@ abstract class AbstractValidator implements ValidatorInterface
     /**
      * Just invoke this object to test value.
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  bool
      */
@@ -89,7 +89,7 @@ abstract class AbstractValidator implements ValidatorInterface
     /**
      * Method to set property error
      *
-     * @param   string $error
+     * @param  string  $error
      *
      * @return  static  Return self to support chaining.
      */
@@ -103,7 +103,7 @@ abstract class AbstractValidator implements ValidatorInterface
     /**
      * Set error message.
      *
-     * @param string $message
+     * @param  string  $message
      *
      * @return  static
      */
@@ -127,8 +127,8 @@ abstract class AbstractValidator implements ValidatorInterface
     /**
      * formatMessage
      *
-     * @param string $message
-     * @param mixed  $value
+     * @param  string  $message
+     * @param  mixed   $value
      *
      * @return string
      */

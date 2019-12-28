@@ -11,14 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise\Test;
 
-use PHPUnit\Framework\TestCase;
-use React\EventLoop\StreamSelectLoop;
-use Swoole\Event;
-use Windwalker\Promise\Scheduler\SchedulerInterface;
-use Windwalker\Promise\Scheduler\ScheduleRunner;
-use Windwalker\Promise\Scheduler\DeferredScheduler;
-use Windwalker\Promise\Scheduler\ImmediateScheduler;
-use Windwalker\Promise\Scheduler\TaskQueue;
 use Windwalker\Promise\Promise;
 use Windwalker\Test\TestHelper;
 
@@ -70,15 +62,19 @@ class PromiseTest extends AbstractPromiseTestCase
 
     public function testConstructorCoroutine(): void
     {
-        $p = new Promise(function ($resolve) use (&$generator) {
-            $generator = (static function () use ($resolve) {
-                $resolve(yield);
-            })();
-        });
+        $p = new Promise(
+            function ($resolve) use (&$generator) {
+                $generator = (static function () use ($resolve) {
+                    $resolve(yield);
+                })();
+            }
+        );
 
-        $p->then(function ($v) {
-            $this->values['v1'] = $v;
-        });
+        $p->then(
+            function ($v) {
+                $this->values['v1'] = $v;
+            }
+        );
 
         $generator->send('Flower');
 

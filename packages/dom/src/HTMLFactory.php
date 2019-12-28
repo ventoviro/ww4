@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM;
 
+use DOMDocument;
+use DOMImplementation;
 use Masterminds\HTML5;
 
 /**
@@ -19,7 +21,7 @@ use Masterminds\HTML5;
 class HTMLFactory extends DOMFactory
 {
     /**
-     * @var \DOMDocument
+     * @var DOMDocument
      */
     protected static $dom;
 
@@ -46,11 +48,11 @@ class HTMLFactory extends DOMFactory
      *
      * @param  array  $options
      *
-     * @return  \DOMDocument
+     * @return  DOMDocument
      */
-    public static function create(array $options = []): \DOMDocument
+    public static function create(array $options = []): DOMDocument
     {
-        $impl = new \DOMImplementation();
+        $impl = new DOMImplementation();
 
         $dt = $impl->createDocumentType('html');
 

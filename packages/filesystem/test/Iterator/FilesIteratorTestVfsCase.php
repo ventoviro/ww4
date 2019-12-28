@@ -11,12 +11,11 @@ declare(strict_types=1);
 
 namespace Windwalker\Filesystem\Test\Iterator;
 
-use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\FileObject;
 use Windwalker\Filesystem\Iterator\FilesIterator;
-use Windwalker\Filesystem\Path;
 use Windwalker\Filesystem\Test\AbstractVfsTestCase;
 use Windwalker\Test\Traits\BaseAssertionTrait;
+
 use function Windwalker\regex;
 
 /**
@@ -75,9 +74,11 @@ class FilesIteratorTestVfsCase extends AbstractVfsTestCase
     {
         $it = FilesIterator::create('vfs://root/files');
 
-        $it = $it->map(static function (FileObject $file) {
-            return $file->getFilename();
-        });
+        $it = $it->map(
+            static function (FileObject $file) {
+                return $file->getFilename();
+            }
+        );
 
         self::assertArraySimilar(
             ['file1.txt', 'folder2', 'folder1'],
@@ -93,12 +94,16 @@ class FilesIteratorTestVfsCase extends AbstractVfsTestCase
         $it = FilesIterator::create('vfs://root/files');
 
         $it = $it
-            ->filter(static function (FileObject $file) {
-                return $file->isDir();
-            })
-            ->map(static function (FileObject $file) {
-                return $file->getFilename();
-            });
+            ->filter(
+                static function (FileObject $file) {
+                    return $file->isDir();
+                }
+            )
+            ->map(
+                static function (FileObject $file) {
+                    return $file->getFilename();
+                }
+            );
 
         self::assertArraySimilar(
             ['folder2', 'folder1'],
@@ -109,9 +114,11 @@ class FilesIteratorTestVfsCase extends AbstractVfsTestCase
 
         $it = $it
             ->filter(regex('folder2'))
-            ->map(static function (FileObject $file) {
-                return $file->getFilename();
-            });
+            ->map(
+                static function (FileObject $file) {
+                    return $file->getFilename();
+                }
+            );
 
         self::assertEquals(
             ['folder2'],

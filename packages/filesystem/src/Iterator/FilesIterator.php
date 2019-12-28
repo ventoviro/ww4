@@ -42,17 +42,19 @@ class FilesIterator extends NestedIterator
 
         $instance->path = $path;
 
-        return $instance->filter(static function (\SplFileInfo $file) use ($recursive, $path) {
-            if ($file->getBasename() === '..') {
-                return false;
-            }
+        return $instance->filter(
+            static function (\SplFileInfo $file) use ($recursive, $path) {
+                if ($file->getBasename() === '..') {
+                    return false;
+                }
 
-            if ($recursive && Path::normalize($file->getPathname()) === Path::normalize($path)) {
-                return false;
-            }
+                if ($recursive && Path::normalize($file->getPathname()) === Path::normalize($path)) {
+                    return false;
+                }
 
-            return true;
-        });
+                return true;
+            }
+        );
     }
 
     /**

@@ -27,7 +27,7 @@ class CallbackValidator extends AbstractValidator
     /**
      * CallbackValidator constructor.
      *
-     * @param callable $handler
+     * @param  callable  $handler
      */
     public function __construct(callable $handler = null)
     {
@@ -65,7 +65,7 @@ class CallbackValidator extends AbstractValidator
     /**
      * Method to set property handler
      *
-     * @param   callable $handler
+     * @param  callable  $handler
      *
      * @return  static  Return self to support chaining.
      */

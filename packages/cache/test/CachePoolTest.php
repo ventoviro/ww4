@@ -268,11 +268,14 @@ class CachePoolTest extends TestCase
         $i = 0;
 
         $getter = function () use (&$i) {
-            return $this->instance->call('hello', static function () use (&$i) {
-                $i++;
+            return $this->instance->call(
+                'hello',
+                static function () use (&$i) {
+                    $i++;
 
-                return 'HELLO-' . $i;
-            });
+                    return 'HELLO-' . $i;
+                }
+            );
         };
 
         $getter();

@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Filesystem\Test;
 
-use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\File;
 use Windwalker\Filesystem\Path;
 
@@ -86,9 +85,9 @@ class PathTest extends AbstractVfsTestCase
     /**
      * Method to test clean().
      *
-     * @param   string $input
-     * @param   string $ds
-     * @param   string $expected
+     * @param  string  $input
+     * @param  string  $ds
+     * @param  string  $expected
      *
      * @return void
      *
@@ -107,9 +106,9 @@ class PathTest extends AbstractVfsTestCase
     /**
      * testExistsInsensitive
      *
-     * @param string  $path
-     * @param bool    $sExists
-     * @param bool    $iExists
+     * @param  string  $path
+     * @param  bool    $sExists
+     * @param  bool    $iExists
      *
      * @return void
      * @dataProvider existsProvider
@@ -260,10 +259,10 @@ class PathTest extends AbstractVfsTestCase
     /**
      * Method to test makeSafe().
      *
-     * @param   string $name       The name of the file to test filtering of
-     * @param   array  $stripChars Whether to filter spaces out the name or not
-     * @param   string $expected   The expected safe file name
-     * @param   string $message    The message to show on failure of test
+     * @param  string  $name        The name of the file to test filtering of
+     * @param  array   $stripChars  Whether to filter spaces out the name or not
+     * @param  string  $expected    The expected safe file name
+     * @param  string  $message     The message to show on failure of test
      *
      * @return void
      *

@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise\Scheduler;
 
-use Swoole\Coroutine;
 use Swoole\Coroutine\Channel;
 use Swoole\Event;
 
@@ -48,11 +47,15 @@ class SwooleScheduler implements SchedulerInterface
      */
     public function schedule(callable $callback): ScheduleCursor
     {
-        Event::defer(static function () use ($callback) {
-            go(static function () use ($callback) {
-                $callback();
-            });
-        });
+        Event::defer(
+            static function () use ($callback) {
+                go(
+                    static function () use ($callback) {
+                        $callback();
+                    }
+                );
+            }
+        );
 
         // Return Channel as cursor, when Promise resolved,
         // it will call SwooleAsync::done() to push value into Channel.
@@ -93,8 +96,10 @@ class SwooleScheduler implements SchedulerInterface
 
         // Done() may be called at next event loop,
         // We create a new coroutine to make sure it always in coroutine context.
-        go(static function () use ($chan) {
-            $chan->push(true);
-        });
+        go(
+            static function () use ($chan) {
+                $chan->push(true);
+            }
+        );
     }
 }

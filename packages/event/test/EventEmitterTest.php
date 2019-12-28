@@ -12,21 +12,13 @@ declare(strict_types=1);
 namespace Windwalker\Event\Test;
 
 use PHPUnit\Framework\TestCase;
-use React\EventLoop\Factory;
-use React\EventLoop\StreamSelectLoop;
-use Rx\Scheduler;
 use Windwalker\Event\EventDispatcher;
 use Windwalker\Event\EventEmitter;
 use Windwalker\Event\EventInterface;
 use Windwalker\Event\EventSubscriberInterface;
-use Windwalker\Event\Listener\ListenerCallable;
 use Windwalker\Event\Provider\SimpleListenerProvider;
-use Windwalker\Promise\Scheduler\EventLoopScheduler;
-use Windwalker\Utilities\Proxy\CallableProxy;
-use Windwalker\Utilities\Proxy\DisposableCallable;
 use Windwalker\Utilities\TypeCast;
 
-use function Windwalker\arr;
 use function Windwalker\disposable;
 
 /**
@@ -59,7 +51,7 @@ class EventEmitterTest extends TestCase
     public function testOnce(): void
     {
         $count = 0;
-        $fn = function () use (&$count) {
+        $fn    = function () use (&$count) {
             $count++;
         };
 
@@ -78,7 +70,7 @@ class EventEmitterTest extends TestCase
     public function testOnceWithListenerCallable(): void
     {
         $count = 0;
-        $fn = disposable(
+        $fn    = disposable(
             static function () use (&$count) {
                 $count++;
             }
@@ -99,7 +91,7 @@ class EventEmitterTest extends TestCase
     public function testOnceWithDisposableCallable(): void
     {
         $count = 0;
-        $fn = disposable(
+        $fn    = disposable(
             static function () use (&$count) {
                 $count++;
             }
@@ -123,7 +115,7 @@ class EventEmitterTest extends TestCase
     public function testEmit(): void
     {
         $count = 0;
-        $fn = function (EventInterface $event) use (&$count) {
+        $fn    = function (EventInterface $event) use (&$count) {
             $event['result'] = $count += $event['num'];
         };
 
@@ -159,6 +151,7 @@ class EventEmitterTest extends TestCase
     {
         $subscriber = new class {
             public $count = 0;
+
             public function foo(EventInterface $event): void
             {
                 $this->count += $event['num'];
@@ -190,7 +183,7 @@ class EventEmitterTest extends TestCase
     public function testOff(): void
     {
         $count = 0;
-        $fn = function (EventInterface $event) use (&$count) {
+        $fn    = function (EventInterface $event) use (&$count) {
             $event['result'] = $count += $event['num'];
         };
 
@@ -213,10 +206,10 @@ class EventEmitterTest extends TestCase
     public function testOffClosure(): void
     {
         $count = 0;
-        $fn1 = function (EventInterface $event) use (&$count) {
+        $fn1   = function (EventInterface $event) use (&$count) {
             $event['result'] = $count += $event['num'];
         };
-        $fn2 = function (EventInterface $event) use (&$count) {
+        $fn2   = function (EventInterface $event) use (&$count) {
             $event['result'] = $count += $event['num'];
         };
 
@@ -292,17 +285,29 @@ class EventEmitterTest extends TestCase
     {
         $values = [];
 
-        $this->instance->on('foo', function () use (&$values) {
-            $values[] = 500;
-        }, 500);
+        $this->instance->on(
+            'foo',
+            function () use (&$values) {
+                $values[] = 500;
+            },
+            500
+        );
 
-        $this->instance->on('foo', function () use (&$values) {
-            $values[] = 300;
-        }, 300);
+        $this->instance->on(
+            'foo',
+            function () use (&$values) {
+                $values[] = 300;
+            },
+            300
+        );
 
-        $this->instance->on('foo', function () use (&$values) {
-            $values[] = 700;
-        }, 700);
+        $this->instance->on(
+            'foo',
+            function () use (&$values) {
+                $values[] = 700;
+            },
+            700
+        );
 
         $this->instance->emit('foo');
 
@@ -377,16 +382,16 @@ class EventEmitterTest extends TestCase
 
     protected function getCounterSubscriber(): EventSubscriberInterface
     {
-        return new class implements EventSubscriberInterface
-        {
+        return new class implements EventSubscriberInterface {
             public $count = 0;
+
             public $flower = '';
 
             public function getSubscribedEvents(): array
             {
                 return [
                     'count' => [['count1'], ['count2']],
-                    'flower' => 'sakura'
+                    'flower' => 'sakura',
                 ];
             }
 
@@ -409,8 +414,7 @@ class EventEmitterTest extends TestCase
 
     protected function getOnceSubscriber()
     {
-        return new class implements EventSubscriberInterface
-        {
+        return new class implements EventSubscriberInterface {
             public $count = 0;
 
             public function getSubscribedEvents(): array
@@ -419,7 +423,7 @@ class EventEmitterTest extends TestCase
                     'foo' => [disposable([$this, 'foo']), 500],
                     'bar' => [
                         [disposable([$this, 'bar1']), 100],
-                        ['bar2', 100]
+                        ['bar2', 100],
                     ],
                 ];
             }
@@ -446,16 +450,23 @@ class EventEmitterTest extends TestCase
         $values = [];
 
         $this->instance->observe('hello')
-            ->map(static function (EventInterface $event) {
-                $event['num'] += 50;
-                return $event;
-            })
-            ->map(static function (EventInterface $event) {
-                return $event['num'];
-            })
-            ->subscribe(static function ($v) use (&$values) {
-                $values[] = $v;
-            });
+            ->map(
+                static function (EventInterface $event) {
+                    $event['num'] += 50;
+
+                    return $event;
+                }
+            )
+            ->map(
+                static function (EventInterface $event) {
+                    return $event['num'];
+                }
+            )
+            ->subscribe(
+                static function ($v) use (&$values) {
+                    $values[] = $v;
+                }
+            );
 
         $this->instance->emit('hello', ['num' => 3]);
         $this->instance->emit('hello', ['num' => 4]);
@@ -466,25 +477,32 @@ class EventEmitterTest extends TestCase
 
     public function testAppendProvider(): void
     {
-        $this->instance->on('hello', function (EventInterface $event) {
-            $event['main'] = true;
-        });
+        $this->instance->on(
+            'hello',
+            function (EventInterface $event) {
+                $event['main'] = true;
+            }
+        );
 
-        $provider1 = new SimpleListenerProvider([
-            'hello' => [
-                function (EventInterface $event) {
-                    $event['sub1'] = true;
-                }
+        $provider1 = new SimpleListenerProvider(
+            [
+                'hello' => [
+                    function (EventInterface $event) {
+                        $event['sub1'] = true;
+                    },
+                ],
             ]
-        ]);
+        );
 
-        $provider2 = new SimpleListenerProvider([
-            'hello' => [
-                function (EventInterface $event) {
-                    $event['sub2'] = true;
-                }
+        $provider2 = new SimpleListenerProvider(
+            [
+                'hello' => [
+                    function (EventInterface $event) {
+                        $event['sub2'] = true;
+                    },
+                ],
             ]
-        ]);
+        );
 
         $this->instance->appendProvider($provider1)
             ->appendProvider($provider2);
@@ -496,25 +514,36 @@ class EventEmitterTest extends TestCase
 
     public function testRegisterDealer(): void
     {
-        $this->instance->on('hello', function (EventInterface $event) {
-            $event['main'] = true;
-        });
+        $this->instance->on(
+            'hello',
+            function (EventInterface $event) {
+                $event['main'] = true;
+            }
+        );
 
-        $dealer1 = new EventDispatcher(new SimpleListenerProvider([
-            'hello' => [
-                function (EventInterface $event) {
-                    $event['sub1'] = true;
-                }
-            ]
-        ]));
+        $dealer1 = new EventDispatcher(
+            new SimpleListenerProvider(
+                [
+                    'hello' => [
+                        function (EventInterface $event) {
+                            $event['sub1'] = true;
+                        },
+                    ],
+                ]
+            )
+        );
 
-        $dealer2 = new EventDispatcher(new SimpleListenerProvider([
-            'hello' => [
-                function (EventInterface $event) {
-                    $event['sub2'] = true;
-                }
-            ]
-        ]));
+        $dealer2 = new EventDispatcher(
+            new SimpleListenerProvider(
+                [
+                    'hello' => [
+                        function (EventInterface $event) {
+                            $event['sub2'] = true;
+                        },
+                    ],
+                ]
+            )
+        );
 
         $this->instance->registerDealer($dealer1)
             ->registerDealer($dealer2);

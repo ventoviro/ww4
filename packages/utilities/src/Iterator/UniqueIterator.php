@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Windwalker\Utilities\Iterator;
 
 use Iterator;
-use Windwalker\Utilities\TypeCast;
 
 /**
  * The UniqueIterator class.
@@ -58,7 +57,7 @@ class UniqueIterator extends \FilterIterator
     /**
      * formatValue
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  mixed
      */

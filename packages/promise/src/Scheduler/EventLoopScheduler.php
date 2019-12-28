@@ -14,7 +14,6 @@ namespace Windwalker\Promise\Scheduler;
 use React\EventLoop\LoopInterface;
 use Swoole\Coroutine\Channel;
 use Swoole\Event;
-use Swoole\Timer;
 
 /**
  * The EventLoopScheduler class.
@@ -29,7 +28,7 @@ class EventLoopScheduler implements SchedulerInterface
     /**
      * EventLoopScheduler constructor.
      *
-     * @param callable|LoopInterface $loop
+     * @param  callable|LoopInterface  $loop
      */
     public function __construct($loop)
     {
@@ -61,7 +60,7 @@ class EventLoopScheduler implements SchedulerInterface
                 },
                 static function () use (&$done) {
                     $done = true;
-                }
+                },
             ];
         };
     }
@@ -80,11 +79,15 @@ class EventLoopScheduler implements SchedulerInterface
         return static function (callable $callable) {
             $channel = new Channel(1);
 
-            go(static function () use ($callable) {
-                Event::defer(static function () use ($callable) {
-                    $callable();
-                });
-            });
+            go(
+                static function () use ($callable) {
+                    Event::defer(
+                        static function () use ($callable) {
+                            $callable();
+                        }
+                    );
+                }
+            );
 
             // Return waiter/doner
             return [
@@ -92,10 +95,12 @@ class EventLoopScheduler implements SchedulerInterface
                     $channel->pop();
                 },
                 static function () use ($channel) {
-                    go(static function () use ($channel) {
-                        $channel->push(true);
-                    });
-                }
+                    go(
+                        static function () use ($channel) {
+                            $channel->push(true);
+                        }
+                    );
+                },
             ];
         };
     }

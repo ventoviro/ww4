@@ -34,13 +34,13 @@ class BetweenValidator extends AbstractValidator
     /**
      * BetweenValidator constructor.
      *
-     * @param float $start
-     * @param float $end
+     * @param  float  $start
+     * @param  float  $end
      */
     public function __construct($start, $end)
     {
         $this->start = (float) $start;
-        $this->end = (float) $end;
+        $this->end   = (float) $end;
     }
 
     /**
@@ -70,7 +70,7 @@ class BetweenValidator extends AbstractValidator
     /**
      * Method to set property start
      *
-     * @param   float $start
+     * @param  float  $start
      *
      * @return  static  Return self to support chaining.
      *
@@ -98,7 +98,7 @@ class BetweenValidator extends AbstractValidator
     /**
      * Method to set property end
      *
-     * @param   float $end
+     * @param  float  $end
      *
      * @return  static  Return self to support chaining.
      *

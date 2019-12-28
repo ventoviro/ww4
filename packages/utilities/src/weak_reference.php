@@ -30,14 +30,16 @@ class WeakReference
 
     /**
      * Create a new weak reference.
-     * @link https://www.php.net/manual/en/weakreference.create.php
-     * @param object $referent The object to be weakly referenced.
+     * @link  https://www.php.net/manual/en/weakreference.create.php
+     *
+     * @param  object  $referent  The object to be weakly referenced.
+     *
      * @return WeakReference the freshly instantiated object.
      * @since 7.4.0
      */
     public static function create(object $referent): WeakReference
     {
-        $instance = new static();
+        $instance           = new static();
         $instance->referent = $referent;
 
         return $instance;
@@ -46,7 +48,7 @@ class WeakReference
     /**
      * Gets a weakly referenced object. If the object has already been
      * destroyed, NULL is returned.
-     * @link https://www.php.net/manual/en/weakreference.get.php
+     * @link  https://www.php.net/manual/en/weakreference.get.php
      * @return object|null
      * @since 7.4.0
      */

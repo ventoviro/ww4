@@ -11,16 +11,10 @@ declare(strict_types=1);
 
 namespace Windwalker\Promise\Test;
 
-use PHPUnit\Framework\TestCase;
-use Swoole\Event;
-use Windwalker\Promise\Scheduler\SchedulerInterface;
-use Windwalker\Promise\Scheduler\ScheduleRunner;
+use Windwalker\Promise\ExtendedPromiseInterface;
 use Windwalker\Promise\Scheduler\DeferredScheduler;
 use Windwalker\Promise\Scheduler\ImmediateScheduler;
 use Windwalker\Promise\Scheduler\SwooleScheduler;
-use Windwalker\Promise\Scheduler\TaskQueue;
-use Windwalker\Promise\ExtendedPromiseInterface;
-use Windwalker\Promise\Promise;
 use Windwalker\Reactor\Test\Traits\SwooleTestTrait;
 
 use function Windwalker\Promise\async;
@@ -59,17 +53,21 @@ class FunctionsTest extends AbstractPromiseTestCase
 
         static::useScheduler(new SwooleScheduler());
 
-        go(function () {
-            $p = async(function () {
-                $this->values['v1'] = 'Flower';
+        go(
+            function () {
+                $p = async(
+                    function () {
+                        $this->values['v1'] = 'Flower';
 
-                return 'Sakura';
-            });
+                        return 'Sakura';
+                    }
+                );
 
-            self::assertArrayNotHasKey('v1', $this->values);
+                self::assertArrayNotHasKey('v1', $this->values);
 
-            self::assertEquals('Sakura', $p->wait());
-        });
+                self::assertEquals('Sakura', $p->wait());
+            }
+        );
     }
 
     public function testAwait()
@@ -78,18 +76,22 @@ class FunctionsTest extends AbstractPromiseTestCase
 
         static::useScheduler(new SwooleScheduler());
 
-        async(function () {
-            $this->values['v1'] = await($this->runAsync('Sakura'));
-            $this->values['v2'] = await($this->runAsync('Sunflower'));
+        async(
+            function () {
+                $this->values['v1'] = await($this->runAsync('Sakura'));
+                $this->values['v2'] = await($this->runAsync('Sunflower'));
 
-            self::assertEquals('Sakura', $this->values['v1']);
-            self::assertEquals('Sunflower', $this->values['v1']);
+                self::assertEquals('Sakura', $this->values['v1']);
+                self::assertEquals('Sunflower', $this->values['v1']);
 
-            return 'Lilium';
-        })
-            ->then(function ($v) {
-                self::assertEquals('Lilium', $v);
-            });
+                return 'Lilium';
+            }
+        )
+            ->then(
+                function ($v) {
+                    self::assertEquals('Lilium', $v);
+                }
+            );
     }
 
     /**
@@ -103,12 +105,14 @@ class FunctionsTest extends AbstractPromiseTestCase
     {
         static::useScheduler(new ImmediateScheduler());
 
-        $v = coroutine(function () {
-            $v1 = yield $this->runAsync('Sakura');
-            $v2 = yield $this->runAsync('Rose');
+        $v = coroutine(
+            function () {
+                $v1 = yield $this->runAsync('Sakura');
+                $v2 = yield $this->runAsync('Rose');
 
-            return $v1 . ' ' . $v2;
-        })->wait();
+                return $v1 . ' ' . $v2;
+            }
+        )->wait();
 
         self::assertEquals('Sakura Rose', $v);
     }
@@ -119,16 +123,20 @@ class FunctionsTest extends AbstractPromiseTestCase
 
         static::useScheduler(new SwooleScheduler());
 
-        go(function () {
-            $v = coroutine(function () {
-                $v1 = yield $this->runAsync('Sakura');
-                $v2 = yield $this->runAsync('Rose');
+        go(
+            function () {
+                $v = coroutine(
+                    function () {
+                        $v1 = yield $this->runAsync('Sakura');
+                        $v2 = yield $this->runAsync('Rose');
 
-                return $v1 . ' ' . $v2;
-            })->wait();
+                        return $v1 . ' ' . $v2;
+                    }
+                )->wait();
 
-            self::assertEquals('Sakura Rose', $v);
-        });
+                self::assertEquals('Sakura Rose', $v);
+            }
+        );
     }
 
     /**
@@ -142,29 +150,31 @@ class FunctionsTest extends AbstractPromiseTestCase
     {
         static::useScheduler(new ImmediateScheduler());
 
-        $c = coroutineable(function ($arg) {
-            $v1 = yield $this->runAsync($arg);
-            $v2 = yield $this->runAsync('Rose');
+        $c = coroutineable(
+            function ($arg) {
+                $v1 = yield $this->runAsync($arg);
+                $v2 = yield $this->runAsync('Rose');
 
-            return $v1 . ' ' . $v2;
-        });
+                return $v1 . ' ' . $v2;
+            }
+        );
 
         self::assertEquals('Sakura Rose', $c('Sakura')->wait());
     }
 
-
-
     /**
      * runAsync
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  ExtendedPromiseInterface
      */
     protected function runAsync($value): ExtendedPromiseInterface
     {
-        return async(static function () use ($value) {
-            return $value;
-        });
+        return async(
+            static function () use ($value) {
+                return $value;
+            }
+        );
     }
 }

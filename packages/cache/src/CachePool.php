@@ -364,7 +364,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
             $message,
             [
                 'exception' => $e,
-                'key' => $item ? $item->getKey() : null
+                'key' => $item ? $item->getKey() : null,
             ]
         );
     }

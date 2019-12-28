@@ -53,9 +53,14 @@ class ListenersQueue implements \IteratorAggregate, \Countable
      */
     public function remove(callable $listener)
     {
-        $this->queue = array_values(array_filter($this->queue, function ($item) use ($listener) {
-            return !static::isCallableSame($item[0], $listener);
-        }));
+        $this->queue = array_values(
+            array_filter(
+                $this->queue,
+                static function ($item) use ($listener) {
+                    return !static::isCallableSame($item[0], $listener);
+                }
+            )
+        );
 
         return $this;
     }

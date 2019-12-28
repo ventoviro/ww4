@@ -76,7 +76,7 @@ class CacheItem implements CacheItemInterface
     {
         $this->validateKey($key);
 
-        $this->key = $key;
+        $this->key    = $key;
         $this->logger = new NullLogger();
 
         if ($value !== null) {
@@ -155,6 +155,7 @@ class CacheItem implements CacheItemInterface
                 'CacheItem::isHit() caused an error',
                 $e
             );
+
             return false;
         }
     }
@@ -273,8 +274,8 @@ class CacheItem implements CacheItemInterface
     /**
      * logException
      *
-     * @param  string                   $message
-     * @param  \Throwable               $e
+     * @param  string      $message
+     * @param  \Throwable  $e
      *
      * @return  void
      */
@@ -284,7 +285,7 @@ class CacheItem implements CacheItemInterface
             $message,
             [
                 'exception' => $e,
-                'key' => $this->getKey()
+                'key' => $this->getKey(),
             ]
         );
     }

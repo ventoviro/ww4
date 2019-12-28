@@ -23,10 +23,14 @@ use ParagonIE\ConstantTime\Hex;
  */
 class SafeEncoder
 {
-    public const HEX           = 'hex';
-    public const BASE32        = 'base32';
-    public const BASE32HEX     = 'base32hex';
-    public const BASE64        = 'base64';
+    public const HEX = 'hex';
+
+    public const BASE32 = 'base32';
+
+    public const BASE32HEX = 'base32hex';
+
+    public const BASE64 = 'base64';
+
     public const BASE64URLSAFE = 'base64url';
 
     /**

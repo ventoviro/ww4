@@ -29,9 +29,12 @@ final class SwooleRxScheduler
     {
         return static function ($ms, $callable) {
             $timer = Timer::after($ms + 1, $callable);
-            return new CallbackDisposable(function () use ($timer) {
-                Timer::clear($timer);
-            });
+
+            return new CallbackDisposable(
+                function () use ($timer) {
+                    Timer::clear($timer);
+                }
+            );
         };
     }
 

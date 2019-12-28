@@ -37,13 +37,13 @@ class TestDomHelper
             '/[^\S ]+\</s',
 
             // Shorten multiple whitespace sequences
-            '/(\s)+/s'
+            '/(\s)+/s',
         ];
 
         $replace = [
             '>',
             '<',
-            '\\1'
+            '\\1',
         ];
 
         $buffer = preg_replace($search, $replace, $buffer);

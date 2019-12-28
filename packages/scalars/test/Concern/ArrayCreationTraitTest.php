@@ -163,7 +163,7 @@ class ArrayCreationTraitTest extends TestCase
                     'female' => 'empty',
                     'no-gender' => 'empty',
                 ],
-            ]
+            ],
         ];
 
         $data2 = [
@@ -179,7 +179,7 @@ class ArrayCreationTraitTest extends TestCase
                     'female' => 'Black Widow',
                     'male' => 'Loki',
                 ],
-            ]
+            ],
         ];
 
         self::assertEquals(

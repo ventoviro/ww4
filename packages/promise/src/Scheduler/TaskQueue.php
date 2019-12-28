@@ -61,16 +61,18 @@ class TaskQueue
         $this->runAtShutdown = $runAtShutdown;
 
         if ($runAtShutdown) {
-            register_shutdown_function(function () {
-                if ($this->runAtShutdown) {
-                    // Only run the tasks if an E_ERROR didn't occur.
-                    $err = error_get_last();
+            register_shutdown_function(
+                function () {
+                    if ($this->runAtShutdown) {
+                        // Only run the tasks if an E_ERROR didn't occur.
+                        $err = error_get_last();
 
-                    if (!$err || ($err['type'] ^ E_ERROR)) {
-                        $this->run();
+                        if (!$err || ($err['type'] ^ E_ERROR)) {
+                            $this->run();
+                        }
                     }
                 }
-            });
+            );
         }
     }
 

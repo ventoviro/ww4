@@ -52,8 +52,8 @@ class ValidatorComposite extends AbstractValidator
     /**
      * ValidatorComposite constructor.
      *
-     * @param ValidatorInterface[] $validators
-     * @param int                  $mode
+     * @param  ValidatorInterface[]  $validators
+     * @param  int                   $mode
      */
     public function __construct(array $validators = [], $mode = self::MODE_MATCH_ALL)
     {
@@ -71,7 +71,7 @@ class ValidatorComposite extends AbstractValidator
     protected function doTest($value): bool
     {
         $errorMessages = [];
-        $results = [];
+        $results       = [];
 
         foreach ($this->validators as $validator) {
             if (!$result = $validator->test($value)) {
@@ -103,7 +103,7 @@ class ValidatorComposite extends AbstractValidator
     /**
      * validateOne
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  bool
      */
@@ -115,7 +115,7 @@ class ValidatorComposite extends AbstractValidator
     /**
      * validateAll
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  bool
      */
@@ -127,8 +127,8 @@ class ValidatorComposite extends AbstractValidator
     /**
      * match
      *
-     * @param mixed $value
-     * @param int   $mode
+     * @param  mixed  $value
+     * @param  int    $mode
      *
      * @return  bool
      */
@@ -148,7 +148,7 @@ class ValidatorComposite extends AbstractValidator
     /**
      * addValidator
      *
-     * @param ValidatorInterface|callable $validator
+     * @param  ValidatorInterface|callable  $validator
      *
      * @return  static
      * @throws \InvalidArgumentException
@@ -181,7 +181,7 @@ class ValidatorComposite extends AbstractValidator
     /**
      * Method to set property validators
      *
-     * @param   ValidatorInterface[] $validators
+     * @param  ValidatorInterface[]  $validators
      *
      * @return  static  Return self to support chaining.
      */
@@ -211,7 +211,7 @@ class ValidatorComposite extends AbstractValidator
     /**
      * Method to set property errors
      *
-     * @param   array $errors
+     * @param  array  $errors
      *
      * @return  static  Return self to support chaining.
      */
@@ -245,7 +245,7 @@ class ValidatorComposite extends AbstractValidator
     /**
      * Method to set property mode
      *
-     * @param   int $mode
+     * @param  int  $mode
      *
      * @return  static  Return self to support chaining.
      */

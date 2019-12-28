@@ -230,7 +230,7 @@ class StrTest extends TestCase
             ['黃河入海流', '黃河', '黃河入海流'],
             ['入海流', '黃河', '黃河入海流'],
             ['FÒÔbà', 'FÒÔ', 'FÒÔbà'],
-            ['FÒÔbà', 'fòô', 'fòôFÒÔbà']
+            ['FÒÔbà', 'fòô', 'fòôFÒÔbà'],
         ];
     }
 
@@ -264,7 +264,7 @@ class StrTest extends TestCase
             ['黃河入海流', '海流', '黃河入海流'],
             ['黃河入', '海流', '黃河入海流'],
             ['FÒÔbà', 'Ôbà', 'FÒÔbà'],
-            ['FÒÔbà', 'ôbà', 'FÒÔbàôbà']
+            ['FÒÔbà', 'ôbà', 'FÒÔbàôbà'],
         ];
     }
 
@@ -295,7 +295,7 @@ class StrTest extends TestCase
             ['FOO', false],
             ['FÒô', true],
             ['FÒÔ', false],
-            ['白日依山盡', false]
+            ['白日依山盡', false],
         ];
     }
 
@@ -326,7 +326,7 @@ class StrTest extends TestCase
             ['foo', false],
             ['FÒô', true],
             ['fòô', false],
-            ['白日依山盡', false]
+            ['白日依山盡', false],
         ];
     }
 
@@ -389,7 +389,7 @@ class StrTest extends TestCase
             ['Flower', false],
             ['fòôbàř', true],
             ['fòÔbàř', false],
-            ['白日依山盡', false]
+            ['白日依山盡', false],
         ];
     }
 
@@ -418,7 +418,7 @@ class StrTest extends TestCase
             ['Flower', false],
             ['FÒÔBÀŘ', true],
             ['fòÔbàř', false],
-            ['白日依山盡', false]
+            ['白日依山盡', false],
         ];
     }
 
@@ -524,7 +524,7 @@ class StrTest extends TestCase
             ['fòôbàř', 'fòôbàř', 'fòôbàř'],
             ['fòôbàř', 'fbàř òô', 'f'],
             ['白日依山盡', '白日夢', '白日'],
-            ['白日依山盡', '', '']
+            ['白日依山盡', '', ''],
         ];
     }
 
@@ -560,7 +560,7 @@ class StrTest extends TestCase
             ['fòôbàř', 'fòôbàř', 'fòôbàř'],
             ['fòôbàř', 'fbàòôř', 'ř'],
             ['白日依山盡', '無盡', '盡'],
-            ['白日依山盡', '', '']
+            ['白日依山盡', '', ''],
         ];
     }
 
@@ -596,7 +596,7 @@ class StrTest extends TestCase
             ['fòôbàř', 'fòôbàř', 'fòôbàř'],
             ['fòôbàř', 'fbàòôř', 'òô'],
             ['漢字順序不一定影響閱讀', '漢字序順不一定影閱響讀', '不一定影'],
-            ['白日依山盡', '', '']
+            ['白日依山盡', '', ''],
         ];
     }
 
@@ -629,7 +629,7 @@ class StrTest extends TestCase
             ['foobar', '_/', 10, '_/foobar_/'],
             ['fòôbàř', '¬ø', 9, '¬fòôbàř¬ø'],
             ['fòôbàř', '¬øÿ', 11, '¬øfòôbàř¬øÿ'],
-            ['妳好', '嗨', 5, '嗨妳好嗨嗨']
+            ['妳好', '嗨', 5, '嗨妳好嗨嗨'],
         ];
     }
 
@@ -664,7 +664,7 @@ class StrTest extends TestCase
             ['foobar', '_/', 10, '_/_/foobar'],
             ['fòôbàř', '¬ø', 9, '¬ø¬fòôbàř'],
             ['fòôbàř', '¬øÿ', 11, '¬øÿ¬øfòôbàř'],
-            ['妳好', '嗨', 5, '嗨嗨嗨妳好']
+            ['妳好', '嗨', 5, '嗨嗨嗨妳好'],
         ];
     }
 
@@ -699,7 +699,7 @@ class StrTest extends TestCase
             ['foobar', '_/', 10, 'foobar_/_/'],
             ['fòôbàř', '¬ø', 9, 'fòôbàř¬ø¬'],
             ['fòôbàř', '¬øÿ', 11, 'fòôbàř¬øÿ¬ø'],
-            ['妳好', '嗨', 5, '妳好嗨嗨嗨']
+            ['妳好', '嗨', 5, '妳好嗨嗨嗨'],
         ];
     }
 
@@ -946,7 +946,7 @@ class StrTest extends TestCase
             ['foobar', 'FOOBAR'],
             ['FòôBàř', 'fÒÔbÀŘ'],
             ['fòôbàř', 'FÒÔBÀŘ'],
-            ['白日依山盡', '白日依山盡']
+            ['白日依山盡', '白日依山盡'],
         ];
     }
 

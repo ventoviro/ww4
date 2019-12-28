@@ -25,7 +25,9 @@ use Windwalker\Crypt\SafeEncoder;
 class SodiumCipher implements CipherInterface
 {
     protected const HKDF_SALT_LEN = 32;
+
     protected const NONCE_SIZE = SODIUM_CRYPTO_STREAM_NONCEBYTES;
+
     protected const HMAC_SIZE = SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
 
     /**
@@ -86,7 +88,7 @@ class SodiumCipher implements CipherInterface
     public function encrypt(HiddenString $str, Key $key, string $encoder = SafeEncoder::BASE64URLSAFE): string
     {
         $nonce = \random_bytes(\SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
-        $salt = \random_bytes(static::HKDF_SALT_LEN);
+        $salt  = \random_bytes(static::HKDF_SALT_LEN);
 
         /*
         Split our key into two keys: One for encryption, the other for
@@ -149,7 +151,7 @@ class SodiumCipher implements CipherInterface
                 \SODIUM_CRYPTO_AUTH_KEYBYTES,
                 'AuthenticationKeyFor_|Windwalker',
                 $salt
-            )
+            ),
         ];
     }
 

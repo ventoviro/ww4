@@ -11,10 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Crypt\Test\Symmetric;
 
-use Windwalker\Crypt\Symmetric\PhpAesCipher;
-use Windwalker\Crypt\CryptHelper;
 use Windwalker\Crypt\HiddenString;
 use Windwalker\Crypt\Key;
+use Windwalker\Crypt\Symmetric\PhpAesCipher;
 
 /**
  * Test class of PhpAesCipher

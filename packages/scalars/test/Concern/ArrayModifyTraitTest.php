@@ -91,7 +91,7 @@ class ArrayModifyTraitTest extends TestCase
                 'red' => [
                     'Pepper',
                     'Iron Man',
-                ]
+                ],
             ]
         );
 
@@ -204,7 +204,7 @@ class ArrayModifyTraitTest extends TestCase
             [
                 [1, 2, 3, 4],
                 [5, 6, 7, 8],
-                [9, 10, 11, 12]
+                [9, 10, 11, 12],
             ],
             $a->dump(true)
         );

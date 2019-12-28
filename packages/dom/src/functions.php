@@ -32,8 +32,8 @@ function h(string $name, array $attributes = [], $content = null): callable
 /**
  * div
  *
- * @param  array   $attributes
- * @param  mixed   $content
+ * @param  array  $attributes
+ * @param  mixed  $content
  *
  * @return  callable
  */
@@ -45,8 +45,8 @@ function div(array $attributes = [], $content = null): callable
 /**
  * span
  *
- * @param  array   $attributes
- * @param  mixed   $content
+ * @param  array  $attributes
+ * @param  mixed  $content
  *
  * @return  callable
  */

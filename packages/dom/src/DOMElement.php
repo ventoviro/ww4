@@ -11,7 +11,12 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM;
 
+use ArrayAccess;
+use DOMAttr;
+use DOMDocument;
 use DOMElement as NativeDOMElement;
+use DOMNode;
+use LogicException;
 use Symfony\Component\DomCrawler\Crawler;
 use Windwalker\Utilities\Str;
 
@@ -22,7 +27,7 @@ use function Windwalker\value;
  *
  * @since 2.0
  */
-class DOMElement extends NativeDOMElement implements \ArrayAccess
+class DOMElement extends NativeDOMElement implements ArrayAccess
 {
     /**
      * @var string
@@ -64,7 +69,7 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
         $value = value($value);
 
         if (is_stringable($value)) {
-            return (string)$value;
+            return (string) $value;
         }
 
         if (is_array($value) || is_object($value)) {
@@ -77,12 +82,12 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
     /**
      * insertContentTo
      *
-     * @param  mixed     $content
-     * @param  \DOMNode  $node
+     * @param  mixed    $content
+     * @param  DOMNode  $node
      *
      * @return  void
      */
-    protected static function insertContentTo($content, \DOMNode $node): void
+    protected static function insertContentTo($content, DOMNode $node): void
     {
         $content = value($content);
 
@@ -98,13 +103,13 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
             return;
         }
 
-        if ($content instanceof \DOMNode) {
+        if ($content instanceof DOMNode) {
             $node->appendChild($content);
 
             return;
         }
 
-        $text = $node->ownerDocument->createTextNode((string)$content);
+        $text = $node->ownerDocument->createTextNode((string) $content);
 
         $node->appendChild($text);
     }
@@ -112,11 +117,11 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
     /**
      * Adds new child at the end of the children.
      *
-     * @param  \DOMNode  $newnode  The appended child.
+     * @param  DOMNode  $newnode  The appended child.
      *
-     * @return \DOMNode The node added.
+     * @return DOMNode The node added.
      */
-    public function appendChild(\DOMNode $newnode): \DOMNode
+    public function appendChild(DOMNode $newnode): DOMNode
     {
         if (!$this->ownerDocument->isSameNode($newnode->ownerDocument)) {
             $newnode = $this->ownerDocument->importNode($newnode->cloneNode(true), true);
@@ -158,7 +163,7 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
      *
      * @param  bool  $toString
      *
-     * @return  string[]|\DOMAttr[]
+     * @return  string[]|DOMAttr[]
      */
     public function getAttributes(bool $toString = false): array
     {
@@ -173,7 +178,7 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
         }
 
         return array_map(
-            static function (\DOMAttr $attr) {
+            static function (DOMAttr $attr) {
                 return $attr->value;
             },
             $attrs
@@ -244,7 +249,7 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
     public function getCrawler(): Crawler
     {
         if (!class_exists(Crawler::class)) {
-            throw new \LogicException('Please install symfony/dom-crawler first.');
+            throw new LogicException('Please install symfony/dom-crawler first.');
         }
 
         return new Crawler($this);
@@ -313,14 +318,14 @@ class DOMElement extends NativeDOMElement implements \ArrayAccess
     /**
      * with
      *
-     * @param  \DOMNode  $node
-     * @param  bool      $deep
+     * @param  DOMNode  $node
+     * @param  bool     $deep
      *
      * @return  static
      */
-    public function with(\DOMNode $node, bool $deep = true)
+    public function with(DOMNode $node, bool $deep = true)
     {
-        if ($node instanceof \DOMDocument) {
+        if ($node instanceof DOMDocument) {
             $dom = $node;
         } else {
             $dom = $node->ownerDocument;

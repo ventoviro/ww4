@@ -11,7 +11,12 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM;
 
+use DOMComment;
+use DOMDocument;
+use DOMDocumentFragment;
 use DOMElement as NativeDOMElement;
+use DOMImplementation;
+use DOMText;
 use Masterminds\HTML5;
 
 /**
@@ -20,7 +25,7 @@ use Masterminds\HTML5;
 class DOMFactory
 {
     /**
-     * @var \DOMDocument
+     * @var DOMDocument
      */
     protected static $dom;
 
@@ -32,11 +37,11 @@ class DOMFactory
     /**
      * getInstance
      *
-     * @param  \DOMDocument|null  $dom
+     * @param  DOMDocument|null  $dom
      *
-     * @return  \DOMDocument
+     * @return  DOMDocument
      */
-    public static function document(?\DOMDocument $dom = null): \DOMDocument
+    public static function document(?DOMDocument $dom = null): DOMDocument
     {
         if ($dom) {
             static::$dom = $dom;
@@ -72,9 +77,9 @@ class DOMFactory
     /**
      * fragment
      *
-     * @return  \DOMDocumentFragment
+     * @return  DOMDocumentFragment
      */
-    public static function fragment(): \DOMDocumentFragment
+    public static function fragment(): DOMDocumentFragment
     {
         return static::document()->createDocumentFragment();
     }
@@ -101,9 +106,9 @@ class DOMFactory
      *
      * @param  string  $data
      *
-     * @return  \DOMComment
+     * @return  DOMComment
      */
-    public static function comment(string $data): \DOMComment
+    public static function comment(string $data): DOMComment
     {
         return static::document()->createComment($data);
     }
@@ -113,9 +118,9 @@ class DOMFactory
      *
      * @param  string  $content
      *
-     * @return  \DOMText
+     * @return  DOMText
      */
-    public static function textNode(string $content): \DOMText
+    public static function textNode(string $content): DOMText
     {
         return static::document()->createTextNode($content);
     }
@@ -125,11 +130,11 @@ class DOMFactory
      *
      * @param  array  $options
      *
-     * @return  \DOMDocument
+     * @return  DOMDocument
      */
-    public static function create(array $options = []): \DOMDocument
+    public static function create(array $options = []): DOMDocument
     {
-        $impl = new \DOMImplementation();
+        $impl = new DOMImplementation();
 
         $dom = $impl->createDocument();
         $dom->registerNodeClass(NativeDOMElement::class, DOMElement::class);

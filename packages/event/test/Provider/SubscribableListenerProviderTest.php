@@ -48,8 +48,8 @@ class SubscribableListenerProviderTest extends TestCase
                     'flower.rose' => ['onFlowerRose', 50],
                     'flower.olive' => [
                         ['onFlowerRose', 30],
-                        ['onFlowerOlive', 100]
-                    ]
+                        ['onFlowerOlive', 100],
+                    ],
                 ];
             }
 
@@ -104,9 +104,12 @@ class SubscribableListenerProviderTest extends TestCase
         $event->shouldReceive('getName')->andReturn('HelloEvent');
         $event->shouldReceive('hello');
 
-        $this->instance->on($event->getName(), $expt = function ($event) {
-            $event->hello();
-        });
+        $this->instance->on(
+            $event->getName(),
+            $expt = function ($event) {
+                $event->hello();
+            }
+        );
 
         $handlers = TypeCast::toArray($this->instance->getListenersForEvent($event));
 

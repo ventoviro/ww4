@@ -23,8 +23,8 @@ interface EventEmitterInterface extends EventDispatcherInterface
     /**
      * Trigger an event.
      *
-     * @param   EventInterface|string $event The event object or name.
-     * @param   array                 $args  The arguments to set in event.
+     * @param  EventInterface|string  $event  The event object or name.
+     * @param  array                  $args   The arguments to set in event.
      *
      * @return  EventInterface  The event after being passed through all listeners.
      *

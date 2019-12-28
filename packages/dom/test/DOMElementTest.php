@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM\Test;
 
+use DOMDocument;
 use PHPUnit\Framework\TestCase;
 use Windwalker\DOM\DOMElement;
 use Windwalker\DOM\DOMFactory;
@@ -42,7 +43,7 @@ class DOMElementTest extends TestCase
                 },
                 'data-options' => [
                     'handle' => '.handle',
-                    'enabled' => true
+                    'enabled' => true,
                 ],
             ]
         );
@@ -63,7 +64,7 @@ class DOMElementTest extends TestCase
                 },
                 'data-options' => [
                     'handle' => '.handle',
-                    'enabled' => true
+                    'enabled' => true,
                 ],
             ],
             DOMElement::create('span', [], 'Hello')
@@ -204,10 +205,13 @@ XML
      */
     public function testGetAttributes(): void
     {
-        $ele = DOMElement::create('hello', [
-            'foo' => 'bar',
-            'flower' => 'sakura'
-        ]);
+        $ele = DOMElement::create(
+            'hello',
+            [
+                'foo' => 'bar',
+                'flower' => 'sakura',
+            ]
+        );
 
         $attrs = $ele->getAttributes();
 
@@ -225,10 +229,12 @@ XML
     {
         $ele = DOMElement::create('hello');
 
-        $ele->setAttributes([
-            'foo' => 'bar',
-            'flower' => 'sakura'
-        ]);
+        $ele->setAttributes(
+            [
+                'foo' => 'bar',
+                'flower' => 'sakura',
+            ]
+        );
 
         self::assertEquals('bar', $ele['foo']);
         self::assertEquals('sakura', $ele['flower']);
@@ -236,7 +242,7 @@ XML
 
     public function testWith(): void
     {
-        $dom = new \DOMDocument();
+        $dom  = new DOMDocument();
         $root = $dom->createElement('root');
 
         $ele = DOMElement::create('hello');
@@ -247,7 +253,7 @@ XML
 
     public function testCreateChild(): void
     {
-        $ele = DOMElement::create('root');
+        $ele   = DOMElement::create('root');
         $hello = $ele->createChild('hello');
         $hello->setAttribute('foo', 'bar');
 
@@ -256,14 +262,16 @@ XML
 
     public function testBuildAttributes()
     {
-        $attrs = DOMElement::buildAttributes([
-            'class' => 'foo bar',
-            'data-foo' => 'yoo',
-            'required' => true,
-            'selected' => 'true',
-            'disabled' => false,
-            'no-show' => null,
-        ]);
+        $attrs = DOMElement::buildAttributes(
+            [
+                'class' => 'foo bar',
+                'data-foo' => 'yoo',
+                'required' => true,
+                'selected' => 'true',
+                'disabled' => false,
+                'no-show' => null,
+            ]
+        );
 
         self::assertEquals('class="foo bar" data-foo="yoo" required="" selected="true"', $attrs);
     }

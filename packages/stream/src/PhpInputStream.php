@@ -35,7 +35,7 @@ class PhpInputStream extends Stream
     /**
      * Class init.
      *
-     * @param   string|resource $stream The stream resource cursor.
+     * @param  string|resource  $stream  The stream resource cursor.
      */
     public function __construct($stream = 'php://input')
     {
@@ -81,7 +81,7 @@ class PhpInputStream extends Stream
     /**
      * Read data from the stream.
      *
-     * @param   int $length   Read up to $length bytes from the object and return
+     * @param  int  $length   Read up to $length bytes from the object and return
      *                        them. Fewer than $length bytes may be returned if underlying stream
      *                        call returns fewer bytes.
      *

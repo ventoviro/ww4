@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM\Format;
 
+use RuntimeException;
 use Windwalker\DOM\DOMFactory;
 
 /**
@@ -74,7 +75,7 @@ class DOMFormatter
     /**
      * Method to set property instance
      *
-     * @param   static $instance
+     * @param  static  $instance
      *
      * @return  void
      */
@@ -86,7 +87,7 @@ class DOMFormatter
     /**
      * format
      *
-     * @param   string $buffer
+     * @param  string  $buffer
      *
      * @return  string  Formatted Html string.
      */
@@ -98,7 +99,7 @@ class DOMFormatter
     /**
      * Constructor.
      *
-     * @param array $options
+     * @param  array  $options
      */
     public function __construct(array $options = [])
     {
@@ -114,7 +115,7 @@ class DOMFormatter
     /**
      * indent
      *
-     * @param   string $input
+     * @param  string  $input
      *
      * @return  string
      */
@@ -132,7 +133,7 @@ class DOMFormatter
     /**
      * Format Dom.
      *
-     * @param string $input Dom input.
+     * @param  string  $input  Dom input.
      *
      * @return string Indented Dom.
      */
@@ -184,9 +185,9 @@ class DOMFormatter
                     }
 
                     $output .= str_repeat(
-                        $this->options['indentation_character'],
-                        $indentationLevel
-                    ) . $matches[0] . "\n";
+                            $this->options['indentation_character'],
+                            $indentationLevel
+                        ) . $matches[0] . "\n";
 
                     break;
                 }
@@ -200,7 +201,7 @@ class DOMFormatter
         }
 
         if ($interpretedInput !== $input) {
-            throw new \RuntimeException('Did not reproduce the exact input.');
+            throw new RuntimeException('Did not reproduce the exact input.');
         }
 
         $output = preg_replace('/(<(\w+)[^>]*>)\s*(<\/\2>)/', '\\1\\3', $output);
@@ -211,7 +212,7 @@ class DOMFormatter
     /**
      * removeDoubleWhiteSpace
      *
-     * @param  string $input
+     * @param  string  $input
      *
      * @return  string
      */

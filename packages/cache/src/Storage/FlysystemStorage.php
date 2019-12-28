@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Windwalker\Cache\Storage;
 
 use League\Flysystem\Filesystem;
-use League\Flysystem\FilesystemInterface;
 
 /**
  * The FlysystemStorage class.

@@ -32,11 +32,13 @@ class DisposableCallable extends CallableProxy
             return;
         }
 
-        return tap(parent::__invoke(...$args), function () {
-            $this->called = true;
-        });
+        return tap(
+            parent::__invoke(...$args),
+            function () {
+                $this->called = true;
+            }
+        );
     }
-
 
     /**
      * Method to get property Called

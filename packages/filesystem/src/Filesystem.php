@@ -21,7 +21,7 @@ use Windwalker\Utilities\Iterator\UniqueIterator;
 /**
  * Class Filesystem
  *
- * @see FileObject
+ * @see   FileObject
  *
  * @method static FileObject      mkdir(string $path = '', int $mode = 0755)
  * @method static FileObject      copy(string $src, string $dest, bool $force = false)
@@ -129,8 +129,8 @@ class Filesystem
     /**
      * createTemp
      *
-     * @param string|null $dir
-     * @param string|null $prefix
+     * @param  string|null  $dir
+     * @param  string|null  $prefix
      *
      * @return  FileObject
      *
@@ -138,7 +138,7 @@ class Filesystem
      */
     public static function createTemp(?string $dir = null, ?string $prefix = null): FileObject
     {
-        $dir = $dir ?? sys_get_temp_dir();
+        $dir    = $dir ?? sys_get_temp_dir();
         $prefix = $prefix ?? 'Windwalker-Temp-';
 
         if (!is_dir($dir)) {
@@ -148,10 +148,12 @@ class Filesystem
         $temp = tempnam($dir, $prefix);
 
         if (!$temp) {
-            throw new FilesystemException(sprintf(
-                'Create temp file on %s failure.',
-                $dir
-            ));
+            throw new FilesystemException(
+                sprintf(
+                    'Create temp file on %s failure.',
+                    $dir
+                )
+            );
         }
 
         return static::get($temp);

@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM;
 
+use DOMException;
+
 /**
  * The DOMTokenList class.
  *
@@ -46,9 +48,9 @@ class DOMTokenList
      */
     public function __construct(HTMLElement $html, string $name, ?array $supports = null)
     {
-        $this->html = $html;
+        $this->html     = $html;
         $this->supports = $supports;
-        $this->name = $name;
+        $this->name     = $name;
     }
 
     /**
@@ -74,7 +76,7 @@ class DOMTokenList
     /**
      * remove
      *
-     * @param string ...$args
+     * @param  string  ...$args
      *
      * @return  static
      *
@@ -94,7 +96,7 @@ class DOMTokenList
     /**
      * item
      *
-     * @param int $index
+     * @param  int  $index
      *
      * @return  string|null
      *
@@ -110,8 +112,8 @@ class DOMTokenList
     /**
      * toggle
      *
-     * @param string    $class
-     * @param bool|null $force
+     * @param  string     $class
+     * @param  bool|null  $force
      *
      * @return  bool
      *
@@ -147,7 +149,7 @@ class DOMTokenList
     /**
      * contains
      *
-     * @param string $class
+     * @param  string  $class
      *
      * @return  bool
      *
@@ -189,12 +191,12 @@ class DOMTokenList
      *
      * @return  bool
      *
-     * @throws \DOMException
+     * @throws DOMException
      */
     public function supports(string $token): bool
     {
         if ($this->supports === null) {
-            throw new \DOMException(
+            throw new DOMException(
                 'Failed to execute \'supports\' on \'DOMTokenList\': DOMTokenList has no supported tokens.'
             );
         }

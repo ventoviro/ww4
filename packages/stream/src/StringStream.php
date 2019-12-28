@@ -73,8 +73,8 @@ class StringStream extends Stream
     /**
      * Class init.
      *
-     * @param  string $stream The stream resource cursor.
-     * @param  string $mode   Mode with which to open stream
+     * @param  string  $stream  The stream resource cursor.
+     * @param  string  $mode    Mode with which to open stream
      */
     public function __construct($stream = '', $mode = 'rb+')
     {
@@ -94,8 +94,8 @@ class StringStream extends Stream
     /**
      * Method to attach resource into object.
      *
-     * @param   string|resource $stream The stream resource cursor.
-     * @param   string          $mode   Mode with which to open stream
+     * @param  string|resource  $stream  The stream resource cursor.
+     * @param  string           $mode    Mode with which to open stream
      *
      * @return  static Return self to support chaining.
      */
@@ -132,8 +132,8 @@ class StringStream extends Stream
         $resource = $this->resource;
 
         $this->resource = null;
-        $this->stream = null;
-        $this->pointer = 0;
+        $this->stream   = null;
+        $this->pointer  = 0;
         $this->seekable = true;
         $this->writable = true;
 
@@ -194,12 +194,12 @@ class StringStream extends Stream
      *
      * @link http://www.php.net/manual/en/function.fseek.php
      *
-     * @param int $offset Stream offset
-     * @param int $whence Specifies how the cursor position will be calculated
-     *                    based on the seek offset. Valid values are identical to the built-in
-     *                    PHP $whence values for `fseek()`.  SEEK_SET: Set position equal to
-     *                    offset bytes SEEK_CUR: Set position to current location plus offset
-     *                    SEEK_END: Set position to end-of-stream plus offset.
+     * @param  int  $offset  Stream offset
+     * @param  int  $whence  Specifies how the cursor position will be calculated
+     *                       based on the seek offset. Valid values are identical to the built-in
+     *                       PHP $whence values for `fseek()`.  SEEK_SET: Set position equal to
+     *                       offset bytes SEEK_CUR: Set position to current location plus offset
+     *                       SEEK_END: Set position to end-of-stream plus offset.
      *
      * @return boolean
      *
@@ -233,9 +233,9 @@ class StringStream extends Stream
      * If the stream is not seekable, this method will raise an exception;
      * otherwise, it will perform a seek(0).
      *
-     * @see  seek()
-     * @link http://www.php.net/manual/en/function.fseek.php
      * @throws \RuntimeException on failure.
+     * @link http://www.php.net/manual/en/function.fseek.php
+     * @see  seek()
      */
     public function rewind()
     {
@@ -257,7 +257,7 @@ class StringStream extends Stream
     /**
      * Write data to the stream.
      *
-     * @param string $string The string that is to be written.
+     * @param  string  $string  The string that is to be written.
      *
      * @return int Returns the number of bytes written to the stream.
      * @throws \RuntimeException on failure.
@@ -267,7 +267,7 @@ class StringStream extends Stream
         $length = strlen($string);
 
         $start = substr($this->resource, 0, $this->pointer);
-        $end = substr($this->resource, $this->pointer + $length);
+        $end   = substr($this->resource, $this->pointer + $length);
 
         $this->resource = $start . $string . $end;
 
@@ -289,9 +289,9 @@ class StringStream extends Stream
     /**
      * Read data from the stream.
      *
-     * @param int $length Read up to $length bytes from the object and return
-     *                    them. Fewer than $length bytes may be returned if underlying stream
-     *                    call returns fewer bytes.
+     * @param  int  $length  Read up to $length bytes from the object and return
+     *                       them. Fewer than $length bytes may be returned if underlying stream
+     *                       call returns fewer bytes.
      *
      * @return string Returns the data read from the stream, or an empty string
      *     if no bytes are available.
@@ -303,7 +303,7 @@ class StringStream extends Stream
 
         $result = substr($this->resource, $this->readPosition, $length);
 
-        $this->pointer += $length;
+        $this->pointer      += $length;
         $this->readPosition = $this->pointer;
 
         return $result;
@@ -339,7 +339,7 @@ class StringStream extends Stream
      *
      * @link http://php.net/manual/en/function.stream-get-meta-data.php
      *
-     * @param string $key Specific metadata to retrieve.
+     * @param  string  $key  Specific metadata to retrieve.
      *
      * @return array|mixed|null Returns an associative array if no key is
      *     provided. Returns a specific key value if a key is provided and the
@@ -349,10 +349,10 @@ class StringStream extends Stream
     {
         $metadata = $this->metadata;
 
-        $metadata['eof'] = $this->eof();
-        $metadata['seekable'] = $this->isSeekable();
+        $metadata['eof']          = $this->eof();
+        $metadata['seekable']     = $this->isSeekable();
         $metadata['unread_bytes'] = $this->getSize() - $this->pointer;
-        $metadata['mode'] = 'rb';
+        $metadata['mode']         = 'rb';
 
         if ($this->isWritable()) {
             $metadata['mode'] = 'r+b';
@@ -382,7 +382,7 @@ class StringStream extends Stream
     /**
      * Method to set property seekable
      *
-     * @param   boolean $seekable
+     * @param  boolean  $seekable
      *
      * @return  static  Return self to support chaining.
      */
@@ -396,7 +396,7 @@ class StringStream extends Stream
     /**
      * Method to set property writable
      *
-     * @param   boolean $writable
+     * @param  boolean  $writable
      *
      * @return  static  Return self to support chaining.
      */

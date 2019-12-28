@@ -18,15 +18,17 @@ use Windwalker\Utilities\Str;
 class Path
 {
     public const CASE_OS_DEFAULT = 1;
+
     public const CASE_SENSITIVE = 2;
+
     public const CASE_INSENSITIVE = 3;
 
     /**
      * Chmods files and directories recursively to given permissions.
      *
-     * @param   string $path       Root path to begin changing mode [without trailing slash].
-     * @param   string $filemode   Octal representation of the value to change file mode to [null = no change].
-     * @param   string $foldermode Octal representation of the value to change folder mode to [null = no change].
+     * @param  string  $path        Root path to begin changing mode [without trailing slash].
+     * @param  string  $filemode    Octal representation of the value to change file mode to [null = no change].
+     * @param  string  $foldermode  Octal representation of the value to change folder mode to [null = no change].
      *
      * @return  boolean  True if successful [one fail means the whole operation failed].
      *
@@ -77,8 +79,8 @@ class Path
     /**
      * Get the permissions of the file/folder at a give path.
      *
-     * @param   string  $path     The path of a file/folder.
-     * @param   boolean $toString Convert permission number to string.
+     * @param  string   $path      The path of a file/folder.
+     * @param  boolean  $toString  Convert permission number to string.
      *
      * @return  string  Filesystem permissions.
      *
@@ -116,14 +118,14 @@ class Path
     /**
      * Function to strip additional / or \ in a path name.
      *
-     * @param   string $path The path to clean.
-     * @param   string $ds   Directory separator (optional).
+     * @param  string  $path  The path to clean.
+     * @param  string  $ds    Directory separator (optional).
      *
      * @return  string  The cleaned path.
      *
-     * @since   2.0
      * @throws  \UnexpectedValueException If $path is not a string.
      * @throws  \InvalidArgumentException
+     * @since   2.0
      */
     public static function clean(string $path, string $ds = DIRECTORY_SEPARATOR)
     {
@@ -141,14 +143,14 @@ class Path
             }
 
             $prefix = $extracted[0] . '://';
-            $path = $extracted[1];
+            $path   = $extracted[1];
         } elseif (preg_match('/(\w+):[\/\\\\](.*)/', $path, $matches)) {
             if ($matches[2] === '') {
                 return $path;
             }
 
             $prefix = $matches[1] . ':\\';
-            $path = $matches[2];
+            $path   = $matches[2];
         }
 
         $path = trim($path);
@@ -168,8 +170,8 @@ class Path
      * Normalize a path. This method will do clean() first to replace slashes and remove '..' to create a
      * Clean path. Unlike realpath(), if this path not exists, normalise() will still return this path.
      *
-     * @param   string $path The path to normalize.
-     * @param   string $ds   Directory separator (optional).
+     * @param  string  $path  The path to normalize.
+     * @param  string  $ds    Directory separator (optional).
      *
      * @return  string  The normalized path.
      *
@@ -177,8 +179,8 @@ class Path
      */
     public static function normalize(string $path, string $ds = DIRECTORY_SEPARATOR): string
     {
-        $parts = [];
-        $path = static::clean($path, $ds);
+        $parts    = [];
+        $path     = static::clean($path, $ds);
         $segments = explode($ds, $path);
 
         foreach ($segments as $segment) {
@@ -208,8 +210,8 @@ class Path
     /**
      * Check file exists and also the filename cases.
      *
-     * @param string $path      The file path to check.
-     * @param int   $sensitive  Sensitive file name case.
+     * @param  string  $path       The file path to check.
+     * @param  int     $sensitive  Sensitive file name case.
      *
      * @return  bool
      * @throws \UnexpectedValueException
@@ -221,7 +223,7 @@ class Path
         }
 
         $path = static::normalize($path, DIRECTORY_SEPARATOR);
-        $it = Filesystem::items(dirname($path));
+        $it   = Filesystem::items(dirname($path));
 
         if (static::CASE_INSENSITIVE === $sensitive) {
             $lowerfile = strtolower($path);
@@ -245,7 +247,7 @@ class Path
     /**
      * Fix a path with correct file name cases.
      *
-     * @param string $path
+     * @param  string  $path
      *
      * @return  string
      */
@@ -280,7 +282,7 @@ class Path
     /**
      * Strips the last extension off of a file name
      *
-     * @param   string $file The file name
+     * @param  string  $file  The file name
      *
      * @return  string  The file name without the extension
      *
@@ -294,7 +296,7 @@ class Path
     /**
      * getExtension
      *
-     * @param   string $file The file path to get extension.
+     * @param  string  $file  The file path to get extension.
      *
      * @return  string  The ext of file path.
      *
@@ -308,7 +310,7 @@ class Path
     /**
      * Get file name from a path.
      *
-     * @param   string $path The file path to get basename.
+     * @param  string  $path  The file path to get basename.
      *
      * @return  string  The file name.
      *
@@ -330,8 +332,8 @@ class Path
     /**
      * Makes the file name safe to use
      *
-     * @param   string $file       The name of the file [not full path]
-     * @param   array  $stripChars Array of regex (by default will remove any leading periods)
+     * @param  string  $file        The name of the file [not full path]
+     * @param  array   $stripChars  Array of regex (by default will remove any leading periods)
      *
      * @return  string  The sanitised string
      *
@@ -352,7 +354,7 @@ class Path
     /**
      * Make file name safe with UTF8 name.
      *
-     * @param string $file The file name.
+     * @param  string  $file  The file name.
      *
      * @return  false|string
      *

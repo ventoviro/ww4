@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Promise\Scheduler\ImmediateScheduler;
 use Windwalker\Promise\Scheduler\SchedulerInterface;
 use Windwalker\Promise\Scheduler\ScheduleRunner;
-use Windwalker\Promise\Scheduler\ImmediateScheduler;
 use Windwalker\Promise\Scheduler\TaskQueue;
 
 /**

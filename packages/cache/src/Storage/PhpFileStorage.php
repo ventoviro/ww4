@@ -19,7 +19,7 @@ class PhpFileStorage extends FileStorage
     /**
      * read
      *
-     * @param   string $key
+     * @param  string  $key
      *
      * @return  string
      */

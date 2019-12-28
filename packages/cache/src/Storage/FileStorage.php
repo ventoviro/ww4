@@ -40,7 +40,7 @@ class FileStorage implements StorageInterface
             [
                 'lock' => false,
                 'extension' => '.data',
-                'expiration_format' => '/////---------- Expired At: %s ----------/////%s'
+                'expiration_format' => '/////---------- Expired At: %s ----------/////%s',
             ],
             $options
         );

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace  Windwalker\Data\Test;
+namespace Windwalker\Data\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Data\Collection;
@@ -102,7 +102,7 @@ class CollectionTest extends TestCase
         $extracted->push(
             [
                 'id' => 4,
-                'title' => 'Olive'
+                'title' => 'Olive',
             ]
         );
 
@@ -168,20 +168,20 @@ class CollectionTest extends TestCase
                             'items' => [
                                 [
                                     'id' => 1,
-                                    'title' => 'Sakura'
+                                    'title' => 'Sakura',
                                 ],
                                 [
                                     'id' => 2,
-                                    'title' => 'Rose'
+                                    'title' => 'Rose',
                                 ],
                                 [
                                     'id' => 3,
-                                    'title' => 'Sunflower'
+                                    'title' => 'Sunflower',
                                 ],
-                            ]
-                        ]
-                    ]
-                ]
+                            ],
+                        ],
+                    ],
+                ],
             ]
         );
     }

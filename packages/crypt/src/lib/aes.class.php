@@ -16,8 +16,8 @@ class Aes
     /**
      * AES Cipher function: encrypt 'input' with Rijndael algorithm
      *
-     * @param input message as byte-array (16 bytes)
-     * @param w     key schedule as 2D byte-array (Nr+1 x Nb bytes) -
+     * @param  input message as byte-array (16 bytes)
+     * @param  w     key schedule as 2D byte-array (Nr+1 x Nb bytes) -
      *              generated from the cipher key by keyExpansion()
      *
      * @return      ciphertext as byte-array (16 bytes)
@@ -114,7 +114,7 @@ class Aes
      * Key expansion for Rijndael cipher(): performs key expansion on cipher key
      * to generate a key schedule
      *
-     * @param key cipher key byte-array (16 bytes)
+     * @param  key cipher key byte-array (16 bytes)
      *
      * @return    key schedule as 2D byte-array (Nr+1 x Nb bytes)
      */
@@ -124,11 +124,11 @@ class Aes
         $Nk = count($key) / 4;  // key length (in words): 4/6/8 for 128/192/256-bit keys
         $Nr = $Nk + 6;        // no of rounds: 10/12/14 for 128/192/256-bit keys
 
-        $w = [];
+        $w    = [];
         $temp = [];
 
         for ($i = 0; $i < $Nk; $i++) {
-            $r = [$key[4 * $i], $key[4 * $i + 1], $key[4 * $i + 2], $key[4 * $i + 3]];
+            $r     = [$key[4 * $i], $key[4 * $i + 1], $key[4 * $i + 2], $key[4 * $i + 3]];
             $w[$i] = $r;
         }
 
@@ -469,9 +469,9 @@ class AesCtr extends Aes
      *
      * Unicode multi-byte character safe
      *
-     * @param plaintext source text to be encrypted
-     * @param password  the password to use to generate a key
-     * @param nBits     number of bits to be used in the key (128, 192, or 256)
+     * @param  plaintext source text to be encrypted
+     * @param  password  the password to use to generate a key
+     * @param  nBits     number of bits to be used in the key (128, 192, or 256)
      *
      * @return          encrypted text
      */
@@ -485,7 +485,7 @@ class AesCtr extends Aes
 
         // use AES itself to encrypt password to get cipher key (using plain password as source for
         // key expansion) - gives us well encrypted key
-        $nBytes = $nBits / 8;  // no bytes in key
+        $nBytes  = $nBits / 8;  // no bytes in key
         $pwBytes = [];
         for ($i = 0; $i < $nBytes; $i++) {
             $pwBytes[$i] = ord((string) substr($password, $i, 1)) & 0xff;
@@ -496,10 +496,10 @@ class AesCtr extends Aes
         // initialise 1st 8 bytes of counter block with nonce (NIST SP800-38A §B.2): [0-1] = millisec,
         // [2-3] = random, [4-7] = seconds, giving guaranteed sub-ms uniqueness up to Feb 2106
         $counterBlock = [];
-        $nonce = floor(microtime(true) * 1000);   // timestamp: milliseconds since 1-Jan-1970
-        $nonceMs = $nonce % 1000;
-        $nonceSec = floor($nonce / 1000);
-        $nonceRnd = floor(mt_rand(0, 0xffff));
+        $nonce        = floor(microtime(true) * 1000);   // timestamp: milliseconds since 1-Jan-1970
+        $nonceMs      = $nonce % 1000;
+        $nonceSec     = floor($nonce / 1000);
+        $nonceRnd     = floor(mt_rand(0, 0xffff));
 
         for ($i = 0; $i < 2; $i++) {
             $counterBlock[$i] = self::urs($nonceMs, $i * 8) & 0xff;
@@ -522,7 +522,7 @@ class AesCtr extends Aes
         //print_r($keySchedule);
 
         $blockCount = ceil(strlen($plaintext) / $blockSize);
-        $ciphertxt = [];  // ciphertext as array of strings
+        $ciphertxt  = [];  // ciphertext as array of strings
 
         for ($b = 0; $b < $blockCount; $b++) {
             // set counter (block #) in last 8 bytes of counter block (leaving nonce in 1st 8 bytes)
@@ -538,7 +538,7 @@ class AesCtr extends Aes
 
             // block size is reduced on final block
             $blockLength = $b < $blockCount - 1 ? $blockSize : (strlen($plaintext) - 1) % $blockSize + 1;
-            $cipherByte = [];
+            $cipherByte  = [];
 
             for ($i = 0; $i < $blockLength; $i++) {  // -- xor plaintext with ciphered counter byte-by-byte --
                 $cipherByte[$i] = $cipherCntr[$i] ^ ord(substr($plaintext, $b * $blockSize + $i, 1));
@@ -557,9 +557,9 @@ class AesCtr extends Aes
     /**
      * Decrypt a text encrypted by AES in counter mode of operation
      *
-     * @param ciphertext source text to be decrypted
-     * @param password   the password to use to generate a key
-     * @param nBits      number of bits to be used in the key (128, 192, or 256)
+     * @param  ciphertext source text to be decrypted
+     * @param  password   the password to use to generate a key
+     * @param  nBits      number of bits to be used in the key (128, 192, or 256)
      *
      * @return           decrypted text
      */
@@ -572,7 +572,7 @@ class AesCtr extends Aes
         $ciphertext = base64_decode($ciphertext);
 
         // use AES to encrypt password (mirroring encrypt routine)
-        $nBytes = $nBits / 8;  // no bytes in key
+        $nBytes  = $nBits / 8;  // no bytes in key
         $pwBytes = [];
         for ($i = 0; $i < $nBytes; $i++) {
             $pwBytes[$i] = ord((string) substr($password, $i, 1)) & 0xff;
@@ -582,7 +582,7 @@ class AesCtr extends Aes
 
         // recover nonce from 1st element of ciphertext
         $counterBlock = [];
-        $ctrTxt = substr($ciphertext, 0, 8);
+        $ctrTxt       = substr($ciphertext, 0, 8);
         for ($i = 0; $i < 8; $i++) {
             $counterBlock[$i] = ord(substr($ctrTxt, $i, 1));
         }
@@ -592,7 +592,7 @@ class AesCtr extends Aes
 
         // separate ciphertext into blocks (skipping past initial 8 bytes)
         $nBlocks = ceil((strlen($ciphertext) - 8) / $blockSize);
-        $ct = [];
+        $ct      = [];
         for ($b = 0; $b < $nBlocks; $b++) {
             $ct[$b] = substr($ciphertext, 8 + $b * $blockSize, 16);
         }

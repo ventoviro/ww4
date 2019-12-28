@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Cache\Test\Storage;
 
-use PHPUnit\Framework\TestCase;
 use Windwalker\Cache\Storage\MemcachedStorage;
 
 /**

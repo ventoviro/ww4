@@ -312,7 +312,7 @@ class StringObjectTest extends TestCase
         return [
             ['FooBar', 'foobar'],
             ['FÒÔBÀŘ', 'fòôbàř'],
-            ['山巔一寺一壺酒', '山巔一寺一壺酒']
+            ['山巔一寺一壺酒', '山巔一寺一壺酒'],
         ];
     }
 
@@ -346,7 +346,7 @@ class StringObjectTest extends TestCase
         return [
             ['FooBar', 'FOOBAR'],
             ['FÒÔBÀŘ', 'FÒÔBÀŘ'],
-            ['山巔一寺一壺酒', '山巔一寺一壺酒']
+            ['山巔一寺一壺酒', '山巔一寺一壺酒'],
         ];
     }
 
@@ -430,14 +430,14 @@ class StringObjectTest extends TestCase
                 ['o', 'r'],
                 'i',
                 'Fiibai',
-                3
+                3,
             ],
             [
                 'Foobar',
                 ['o', 'r'],
                 ['i', 'k'],
                 'Fiibak',
-                3
+                3,
             ],
         ];
     }

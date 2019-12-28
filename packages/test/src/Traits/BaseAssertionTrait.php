@@ -110,8 +110,8 @@ trait BaseAssertionTrait
      * Both arrays must have the same indexes with identical values
      * without respect to key ordering
      *
-     * @param array $expected
-     * @param array $array
+     * @param  array  $expected
+     * @param  array  $array
      */
     public static function assertArraySimilar(array $expected, array $array): void
     {

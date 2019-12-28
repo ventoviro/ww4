@@ -72,7 +72,7 @@ class CallableProxy
      */
     public function get(bool $recursive = false): callable
     {
-        $callable =  $this->callable;
+        $callable = $this->callable;
 
         if ($recursive && $callable instanceof self) {
             $callable = $callable->get($recursive);

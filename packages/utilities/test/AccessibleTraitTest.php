@@ -135,31 +135,39 @@ class AccessibleTraitTest extends TestCase
     {
         self::assertEquals([1, 2, 3], $this->instance->dump());
 
-        $this->instance->reset([
-            1,
-            2,
-            (object) ['foo' => 'bar'],
-            new \ArrayObject(['flower' => 'sakura']),
-            new StubAccessible(['car' => 'jeep']),
-        ]);
+        $this->instance->reset(
+            [
+                1,
+                2,
+                (object) ['foo' => 'bar'],
+                new \ArrayObject(['flower' => 'sakura']),
+                new StubAccessible(['car' => 'jeep']),
+            ]
+        );
 
         // Dump recursively
-        self::assertEquals([
-            1,
-            2,
-            ['foo' => 'bar'],
-            ['flower' => 'sakura'],
-            ['car' => 'jeep']
-        ], $this->instance->dump(true));
+        self::assertEquals(
+            [
+                1,
+                2,
+                ['foo' => 'bar'],
+                ['flower' => 'sakura'],
+                ['car' => 'jeep'],
+            ],
+            $this->instance->dump(true)
+        );
 
         // Dump recursively but only DumpableInterface will dump to array
-        self::assertEquals([
-            1,
-            2,
-            (object) ['foo' => 'bar'],
-            new \ArrayObject(['flower' => 'sakura']),
-            ['car' => 'jeep']
-        ], $this->instance->dump(true, true));
+        self::assertEquals(
+            [
+                1,
+                2,
+                (object) ['foo' => 'bar'],
+                new \ArrayObject(['flower' => 'sakura']),
+                ['car' => 'jeep'],
+            ],
+            $this->instance->dump(true, true)
+        );
     }
 
     /**

@@ -209,9 +209,11 @@ class PathCollection
      */
     public function appendAll(string $appended)
     {
-        return $this->map(static function (FileObject $path) use ($appended) {
-            return $path->appendPath($appended);
-        });
+        return $this->map(
+            static function (FileObject $path) use ($appended) {
+                return $path->appendPath($appended);
+            }
+        );
     }
 
     /**
@@ -223,9 +225,11 @@ class PathCollection
      */
     public function prependAll(string $prepended)
     {
-        return $this->map(static function (FileObject $path) use ($prepended) {
-            return $path->prependPath($prepended);
-        });
+        return $this->map(
+            static function (FileObject $path) use ($prepended) {
+                return $path->prependPath($prepended);
+            }
+        );
     }
 
     /**

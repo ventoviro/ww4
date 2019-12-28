@@ -32,7 +32,7 @@ class FilesystemTest extends AbstractVfsTestCase
 
     public function testItemsFirst(): void
     {
-        $fs = new Filesystem();
+        $fs    = new Filesystem();
         $files = $fs::files('vfs://root/files', true);
 
         self::assertPathEquals('vfs://root/files/folder1/level2/file3', $files->first()->getPathname());
@@ -43,7 +43,7 @@ class FilesystemTest extends AbstractVfsTestCase
      */
     public function testGet(): void
     {
-        $fs = new Filesystem();
+        $fs   = new Filesystem();
         $file = $fs::get('vfs://root/files/folder2/file2.html');
 
         self::assertEquals('file2.html', (string) $file->read());
@@ -56,7 +56,7 @@ class FilesystemTest extends AbstractVfsTestCase
      */
     public function testRead(): void
     {
-        $fs = new Filesystem();
+        $fs  = new Filesystem();
         $str = $fs::read('vfs://root/files/folder2/file2.html');
 
         self::assertEquals('file2.html', (string) $str);
@@ -222,18 +222,22 @@ class FilesystemTest extends AbstractVfsTestCase
     {
         $fs = new Filesystem();
 
-        $iter = $fs::globAll([
-            'vfs://root/files/folder1/**/*',
-            'vfs://root/files/folder2/**/*',
-        ]);
+        $iter = $fs::globAll(
+            [
+                'vfs://root/files/folder1/**/*',
+                'vfs://root/files/folder2/**/*',
+            ]
+        );
 
         self::assertEquals(
-            static::cleanPaths([
-                'vfs://root/files/folder1/level2',
-                'vfs://root/files/folder1/level2/file3',
-                'vfs://root/files/folder1/path1',
-                'vfs://root/files/folder2/file2.html',
-            ]),
+            static::cleanPaths(
+                [
+                    'vfs://root/files/folder1/level2',
+                    'vfs://root/files/folder1/level2/file3',
+                    'vfs://root/files/folder1/path1',
+                    'vfs://root/files/folder2/file2.html',
+                ]
+            ),
             static::cleanPaths(
                 $iter->toArray()
             )
@@ -280,8 +284,6 @@ class FilesystemTest extends AbstractVfsTestCase
 
         $this->assertInstanceOf(FileObject::class, $folders->current());
     }
-
-
 
     /**
      * @see  Filesystem::files

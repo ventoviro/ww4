@@ -21,7 +21,6 @@ use Windwalker\Stream\Stream;
 use Windwalker\Stream\StreamHelper;
 use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Str;
-use function Windwalker\fs;
 
 /**
  * The FileObject class.
@@ -83,6 +82,7 @@ class FileObject extends \SplFileInfo
 
         if ($file instanceof self) {
             $file->root = $root;
+
             return $file;
         }
 
@@ -162,12 +162,12 @@ class FileObject extends \SplFileInfo
     /**
      * Create a folder -- and all necessary parent folders.
      *
-     * @param   integer $mode Directory permissions to set for folders created. 0755 by default.
+     * @param  integer  $mode  Directory permissions to set for folders created. 0755 by default.
      *
      * @return  static
      *
-     * @since   2.0
      * @throws  FilesystemException
+     * @since   2.0
      */
     public function mkdir(int $mode = 0755)
     {
@@ -222,8 +222,8 @@ class FileObject extends \SplFileInfo
     /**
      * copy
      *
-     * @param string|\SplFileInfo $dest
-     * @param bool   $force
+     * @param  string|\SplFileInfo  $dest
+     * @param  bool                 $force
      *
      * @return  static
      */
@@ -246,7 +246,7 @@ class FileObject extends \SplFileInfo
      * copyFolder
      *
      * @param  FileObject  $dest
-     * @param  bool    $force
+     * @param  bool        $force
      *
      * @return  bool
      */
@@ -256,18 +256,22 @@ class FileObject extends \SplFileInfo
         $src = $this->getPathname();
 
         if ($dest->exists() && !$force) {
-            throw new FileNotFoundException(sprintf(
-                'Destination folder exists: %s',
-                $dest
-            ));
+            throw new FileNotFoundException(
+                sprintf(
+                    'Destination folder exists: %s',
+                    $dest
+                )
+            );
         }
 
         // Make sure the destination exists
         if (!$dest->mkdir()) {
-            throw new FilesystemException(sprintf(
-                'Cannot create destination folder: %s',
-                $dest
-            ));
+            throw new FilesystemException(
+                sprintf(
+                    'Cannot create destination folder: %s',
+                    $dest
+                )
+            );
         }
 
         // Walk through the directory copying files and recursing into folders.
@@ -275,7 +279,7 @@ class FileObject extends \SplFileInfo
         foreach ($this->items(true) as $file) {
             $rFile = $file->getRelativePathname();
 
-            $srcFile = static::wrap($src . '/' . $rFile);
+            $srcFile  = static::wrap($src . '/' . $rFile);
             $destFile = static::wrap($dest . '/' . $rFile);
 
             if ($srcFile->isDir()) {
@@ -292,12 +296,12 @@ class FileObject extends \SplFileInfo
      * Copies a file
      *
      * @param  FileObject  $dest
-     * @param  bool    $force
+     * @param  bool        $force
      *
-     * @throws \UnexpectedValueException
-     * @throws Exception\FilesystemException
      * @return  boolean  True on success
      *
+     * @throws Exception\FilesystemException
+     * @throws \UnexpectedValueException
      * @since   2.0
      */
     private function copyFileTo(FileObject $dest, bool $force = false): bool
@@ -456,7 +460,7 @@ class FileObject extends \SplFileInfo
     /**
      * writeStream
      *
-     * @param string|resource|StreamInterface $stream
+     * @param  string|resource|StreamInterface  $stream
      *
      * @return  static
      */
@@ -526,9 +530,11 @@ class FileObject extends \SplFileInfo
     public function files(bool $recursive = false): FilesIterator
     {
         return FilesIterator::create($this->getPathname(), $recursive)
-            ->filter(static function (FileObject $file) {
-                return $file->isFile();
-            });
+            ->filter(
+                static function (FileObject $file) {
+                    return $file->isFile();
+                }
+            );
     }
 
     /**
@@ -541,9 +547,11 @@ class FileObject extends \SplFileInfo
     public function folders(bool $recursive = false): FilesIterator
     {
         return FilesIterator::create($this->getPathname(), $recursive)
-            ->filter(static function (FileObject $file) {
-                return $file->isDir();
-            });
+            ->filter(
+                static function (FileObject $file) {
+                    return $file->isDir();
+                }
+            );
     }
 
     /**
@@ -644,7 +652,7 @@ class FileObject extends \SplFileInfo
     /**
      * Is this path a subdir or child of given path?
      *
-     * @param  string|\SplFileInfo $parent Given path to detect.
+     * @param  string|\SplFileInfo  $parent  Given path to detect.
      *
      * @return  boolean  Is subdir or not.
      */
@@ -677,9 +685,11 @@ class FileObject extends \SplFileInfo
      */
     protected static function doAsync(string $name, array $args = []): Promise
     {
-        return new Promise(function ($resolve) use ($name, $args) {
-            $resolve(static::$name(...$args));
-        });
+        return new Promise(
+            function ($resolve) use ($name, $args) {
+                $resolve(static::$name(...$args));
+            }
+        );
     }
 
     /**

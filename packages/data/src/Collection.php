@@ -213,8 +213,8 @@ class Collection extends ArrayObject
     /**
      * __call
      *
-     * @param string $name
-     * @param array  $args
+     * @param  string  $name
+     * @param  array   $args
      *
      * @return  mixed|string
      *

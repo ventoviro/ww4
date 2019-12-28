@@ -50,9 +50,12 @@ class TimesLimitedCallable extends CallableProxy
             return;
         }
 
-        return tap(parent::__invoke(...$args), function () {
-            $this->callTimes++;
-        });
+        return tap(
+            parent::__invoke(...$args),
+            function () {
+                $this->callTimes++;
+            }
+        );
     }
 
     /**

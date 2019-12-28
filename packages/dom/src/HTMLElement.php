@@ -52,7 +52,7 @@ class HTMLElement extends DOMElement
     /**
      * addClass
      *
-     * @param string|callable $class
+     * @param  string|callable  $class
      *
      * @return  static
      *
@@ -70,7 +70,7 @@ class HTMLElement extends DOMElement
     /**
      * removeClass
      *
-     * @param string|callable $class
+     * @param  string|callable  $class
      *
      * @return  static
      *
@@ -88,8 +88,8 @@ class HTMLElement extends DOMElement
     /**
      * toggleClass
      *
-     * @param string    $class
-     * @param bool|null $force
+     * @param  string     $class
+     * @param  bool|null  $force
      *
      * @return  static
      *
@@ -105,7 +105,7 @@ class HTMLElement extends DOMElement
     /**
      * hasClass
      *
-     * @param string $class
+     * @param  string  $class
      *
      * @return  static
      *
@@ -121,8 +121,8 @@ class HTMLElement extends DOMElement
     /**
      * data
      *
-     * @param string $name
-     * @param mixed  $value
+     * @param  string  $name
+     * @param  mixed   $value
      *
      * @return  string|static
      *
@@ -140,7 +140,7 @@ class HTMLElement extends DOMElement
     /**
      * __get
      *
-     * @param string $name
+     * @param  string  $name
      *
      * @return  mixed
      *
@@ -148,7 +148,6 @@ class HTMLElement extends DOMElement
      */
     public function __get($name)
     {
-
         if ($name === 'dataset') {
             return new DOMStringMap($this);
         }
@@ -158,23 +157,27 @@ class HTMLElement extends DOMElement
         }
 
         if ($name === 'relList') {
-            return new DOMTokenList($this, 'rel', [
-                'alternate',
-                'author',
-                'dns-prefetch',
-                'help',
-                'icon',
-                'license',
-                'next',
-                'pingback',
-                'preconnect',
-                'prefetch',
-                'preload',
-                'prerender',
-                'prev',
-                'search',
-                'stylesheet'
-            ]);
+            return new DOMTokenList(
+                $this,
+                'rel',
+                [
+                    'alternate',
+                    'author',
+                    'dns-prefetch',
+                    'help',
+                    'icon',
+                    'license',
+                    'next',
+                    'pingback',
+                    'preconnect',
+                    'prefetch',
+                    'preload',
+                    'prerender',
+                    'prev',
+                    'search',
+                    'stylesheet',
+                ]
+            );
         }
 
         return $this->$name;

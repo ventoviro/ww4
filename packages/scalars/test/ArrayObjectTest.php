@@ -249,7 +249,7 @@ class ArrayObjectTest extends TestCase
                     19,
                 ],
                 'Should get column \'four\'',
-            ]
+            ],
         ];
     }
 
@@ -322,7 +322,7 @@ class ArrayObjectTest extends TestCase
             [
                 [1, 2],
                 [3, 4],
-                [1, 2]
+                [1, 2],
             ]
         )->unique(SORT_REGULAR);
 

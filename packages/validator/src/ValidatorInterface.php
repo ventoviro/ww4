@@ -27,7 +27,7 @@ interface ValidatorInterface
     /**
      * Just invoke this object to test value.
      *
-     * @param mixed $value
+     * @param  mixed  $value
      *
      * @return  bool
      */

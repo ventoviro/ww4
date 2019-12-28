@@ -19,10 +19,10 @@ use Windwalker\Crypt\SafeEncoder;
 /**
  * The Openssl Cipher class.
  *
- * @note  This cipher class referenced Eugene Fidelin and Peter Mortensen's code to prevent
+ * @note   This cipher class referenced Eugene Fidelin and Peter Mortensen's code to prevent
  *        Chosen-Cipher and Timing attack.
  *
- * @see   http://stackoverflow.com/a/19445173
+ * @see    http://stackoverflow.com/a/19445173
  *
  * @since  2.0
  */
@@ -65,7 +65,7 @@ class OpensslCipher implements CipherInterface
         $this->options = array_merge(
             [
                 'pbkdf2_iteration' => 12000,
-                'legacy' => false
+                'legacy' => false,
             ],
             $options
         );
@@ -80,10 +80,10 @@ class OpensslCipher implements CipherInterface
     {
         [$hmac, $salt, $iv, $encrypted] = explode(':', $str);
 
-        $hmac       = SafeEncoder::decode($encoder, $hmac);
-        $salt       = SafeEncoder::decode($encoder, $salt);
-        $iv         = SafeEncoder::decode($encoder, $iv);
-        $encrypted  = SafeEncoder::decode($encoder, $encrypted);
+        $hmac      = SafeEncoder::decode($encoder, $hmac);
+        $salt      = SafeEncoder::decode($encoder, $salt);
+        $iv        = SafeEncoder::decode($encoder, $iv);
+        $encrypted = SafeEncoder::decode($encoder, $encrypted);
 
         [$encKey, $hmacKey] = $this->derivateSecureKeys($key->get(), $salt);
 
@@ -157,7 +157,7 @@ class OpensslCipher implements CipherInterface
     /**
      * randomPseudoBytes
      *
-     * @param int $size
+     * @param  int  $size
      *
      * @return  string
      *
@@ -234,12 +234,12 @@ class OpensslCipher implements CipherInterface
      * This implementation of PBKDF2 was originally created by https://defuse.ca
      * With improvements by http://www.variations-of-shadow.com
      *
-     * @param string $algorithm  The hash algorithm to use. Recommended: SHA256
-     * @param string $password   The password
-     * @param string $salt       A salt that is unique to the password
-     * @param int    $count      Iteration count. Higher is better, but slower. Recommended: At least 1000
-     * @param int    $key_length The length of the derived key in bytes
-     * @param bool   $raw_output If true, the key is returned in raw binary format. Hex encoded otherwise
+     * @param  string  $algorithm   The hash algorithm to use. Recommended: SHA256
+     * @param  string  $password    The password
+     * @param  string  $salt        A salt that is unique to the password
+     * @param  int     $count       Iteration count. Higher is better, but slower. Recommended: At least 1000
+     * @param  int     $key_length  The length of the derived key in bytes
+     * @param  bool    $raw_output  If true, the key is returned in raw binary format. Hex encoded otherwise
      *
      * @return string A $key_length-byte key derived from the password and salt
      *
