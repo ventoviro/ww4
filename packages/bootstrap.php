@@ -16,6 +16,7 @@ include_once __DIR__ . '/dom/src/bootstrap.php';
 include_once __DIR__ . '/event/src/bootstrap.php';
 include_once __DIR__ . '/filesystem/src/bootstrap.php';
 include_once __DIR__ . '/promise/src/bootstrap.php';
+include_once __DIR__ . '/query/src/bootstrap.php';
 include_once __DIR__ . '/queue/src/bootstrap.php';
 include_once __DIR__ . '/reactor/src/bootstrap.php';
 include_once __DIR__ . '/renderer/src/bootstrap.php';

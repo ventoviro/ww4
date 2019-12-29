@@ -18,6 +18,7 @@ use Windwalker\Scalars\Concern\ArrayModifyTrait;
 use Windwalker\Scalars\Concern\ArraySortTrait;
 use Windwalker\Utilities\AccessibleTrait;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\Contract\AccessibleInterface;
 use Windwalker\Utilities\TypeCast;
@@ -38,6 +39,7 @@ class ArrayObject implements AccessibleInterface
     use ArrayModifyTrait;
     use ArrayLoopTrait;
     use ArrayAccessTrait;
+    use FlowControlTrait;
 
     public const GROUP_TYPE_ARRAY = Arr::GROUP_TYPE_ARRAY;
 
