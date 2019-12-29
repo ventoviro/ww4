@@ -42,9 +42,9 @@ class DOMTokenList
     /**
      * ClassList constructor.
      *
-     * @param  DOMElement  $element
-     * @param  string      $name
-     * @param  array|null  $supports
+     * @param DOMElement $element
+     * @param string     $name
+     * @param array|null $supports
      */
     public function __construct(DOMElement $element, string $name, ?array $supports = null)
     {
@@ -56,7 +56,7 @@ class DOMTokenList
     /**
      * add
      *
-     * @param  string  ...$args
+     * @param string ...$args
      *
      * @return  static
      *
@@ -68,7 +68,9 @@ class DOMTokenList
 
         $classes = array_values(array_unique(array_merge($classes, $args)));
 
-        $this->element->setAttribute($this->name, implode(' ', $classes));
+        if ($classes !== []) {
+            $this->element->setAttribute($this->name, implode(' ', $classes));
+        }
 
         return $this;
     }
@@ -76,7 +78,7 @@ class DOMTokenList
     /**
      * remove
      *
-     * @param  string  ...$args
+     * @param string ...$args
      *
      * @return  static
      *
@@ -96,7 +98,7 @@ class DOMTokenList
     /**
      * item
      *
-     * @param  int  $index
+     * @param int $index
      *
      * @return  string|null
      *
@@ -112,8 +114,8 @@ class DOMTokenList
     /**
      * toggle
      *
-     * @param  string     $class
-     * @param  bool|null  $force
+     * @param string    $class
+     * @param bool|null $force
      *
      * @return  bool
      *
@@ -149,7 +151,7 @@ class DOMTokenList
     /**
      * contains
      *
-     * @param  string  $class
+     * @param string $class
      *
      * @return  bool
      *
@@ -187,7 +189,7 @@ class DOMTokenList
     /**
      * supports
      *
-     * @param  string  $token
+     * @param string $token
      *
      * @return  bool
      *
@@ -207,7 +209,7 @@ class DOMTokenList
     /**
      * __isset
      *
-     * @param  string  $name
+     * @param string $name
      *
      * @return  bool
      */
@@ -223,7 +225,7 @@ class DOMTokenList
     /**
      * __get
      *
-     * @param  string  $name
+     * @param string $name
      *
      * @return  mixed
      */

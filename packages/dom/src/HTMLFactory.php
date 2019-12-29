@@ -33,8 +33,8 @@ class HTMLFactory extends DOMFactory
     /**
      * element
      *
-     * @param  string  $name
-     * @param  null    $value
+     * @param string $name
+     * @param null   $value
      *
      * @return  DOMElement
      */
@@ -46,7 +46,7 @@ class HTMLFactory extends DOMFactory
     /**
      * create
      *
-     * @param  array  $options
+     * @param array $options
      *
      * @return  DOMDocument
      */

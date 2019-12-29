@@ -16,7 +16,7 @@ use function Windwalker\value;
 /**
  * html
  *
- * @param  DOMElement  $element
+ * @param DOMElement $element
  *
  * @return  DOMElement
  */
@@ -28,7 +28,7 @@ function html(DOMElement $element): DOMElement
 /**
  * xml
  *
- * @param  DOMElement  $element
+ * @param DOMElement $element
  *
  * @return  DOMElement
  */
@@ -40,9 +40,9 @@ function xml(DOMElement $element): DOMElement
 /**
  * h
  *
- * @param  string  $name
- * @param  array   $attributes
- * @param  mixed   $content
+ * @param string $name
+ * @param array  $attributes
+ * @param mixed  $content
  *
  * @return  DOMElement
  */
@@ -54,8 +54,8 @@ function h(string $name, array $attributes = [], $content = null): DOMElement
 /**
  * div
  *
- * @param  array  $attributes
- * @param  mixed  $content
+ * @param array $attributes
+ * @param mixed $content
  *
  * @return  DOMElement
  */
@@ -67,8 +67,8 @@ function div(array $attributes = [], $content = null): DOMElement
 /**
  * span
  *
- * @param  array  $attributes
- * @param  mixed  $content
+ * @param array $attributes
+ * @param mixed $content
  *
  * @return  DOMElement
  */
@@ -80,8 +80,8 @@ function span(array $attributes = [], $content = null): DOMElement
 /**
  * span
  *
- * @param  mixed  $src
- * @param  array  $attributes
+ * @param mixed $src
+ * @param array $attributes
  *
  * @return  DOMElement
  */

@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\DOM;
 
-use Windwalker\Utilities\Str;
-
 /**
  * The HTMLElement class.
  */
@@ -21,9 +19,9 @@ abstract class HTMLElement
     /**
      * create
      *
-     * @param  string  $name
-     * @param  array   $attributes
-     * @param  mixed   $content
+     * @param string $name
+     * @param array  $attributes
+     * @param mixed  $content
      *
      * @return  DOMElement
      */
@@ -35,7 +33,7 @@ abstract class HTMLElement
     /**
      * buildAttributes
      *
-     * @param  array  $attributes
+     * @param array $attributes
      *
      * @return  string
      */

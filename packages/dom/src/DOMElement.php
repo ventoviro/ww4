@@ -16,11 +16,11 @@ use DOMAttr;
 use DOMDocument;
 use DOMElement as NativeDOMElement;
 use DOMNode;
+use InvalidArgumentException;
 use LogicException;
 use Masterminds\HTML5;
 use Symfony\Component\DomCrawler\Crawler;
 use Windwalker\Utilities\Str;
-
 use function Windwalker\value;
 
 /**
@@ -35,6 +35,7 @@ use function Windwalker\value;
 class DOMElement extends NativeDOMElement implements ArrayAccess
 {
     public const HTML = 'html';
+
     public const XML = 'xml';
 
     protected $type = self::HTML;
@@ -42,18 +43,28 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * create
      *
-     * @param  string  $name
-     * @param  array   $attributes
-     * @param  mixed   $content
+     * @param string $name
+     * @param array  $attributes
+     * @param mixed  $content
      *
      * @return  DOMElement
      */
     public static function create(string $name, array $attributes = [], $content = null)
     {
+        [$name, $id, $class] = array_values(static::splitCSSSelector($name));
+
+        if ($id !== null) {
+            $attributes['id'] = $id;
+        }
+
         /** @var static $ele */
         $ele = DOMFactory::element($name)->asXML();
 
         $ele->setAttributes($attributes);
+
+        if ($class !== null) {
+            $ele->addClass($class);
+        }
 
         if ($content !== null) {
             static::insertContentTo($content, $ele);
@@ -65,7 +76,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * valueToString
      *
-     * @param  mixed  $value
+     * @param mixed $value
      *
      * @return  string
      */
@@ -87,8 +98,8 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * insertContentTo
      *
-     * @param  mixed    $content
-     * @param  DOMNode  $node
+     * @param mixed   $content
+     * @param DOMNode $node
      *
      * @return  void
      */
@@ -122,7 +133,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * Adds new child at the end of the children.
      *
-     * @param  DOMNode  $newnode  The appended child.
+     * @param DOMNode $newnode The appended child.
      *
      * @return DOMNode The node added.
      */
@@ -138,8 +149,8 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * render
      *
-     * @param  string|null  $type
-     * @param  bool         $format
+     * @param string|null $type
+     * @param bool        $format
      *
      * @return  string
      */
@@ -155,7 +166,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
             if (class_exists(HTML5::class)) {
                 $result = DOMFactory::html5()->saveHTML($this);
             } else {
-                $dom = HTMLFactory::document();
+                $dom    = HTMLFactory::document();
                 $result = $dom->saveHTML($this);
             }
         }
@@ -178,7 +189,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * getAttributes
      *
-     * @param  bool  $toString
+     * @param bool $toString
      *
      * @return  string[]|DOMAttr[]
      */
@@ -205,7 +216,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * Set all attributes.
      *
-     * @param  array  $attribs  All attributes.
+     * @param array $attribs All attributes.
      *
      * @return  static  Return self to support chaining.
      */
@@ -237,7 +248,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * querySelectorAll
      *
-     * @param  string  $selector
+     * @param string $selector
      *
      * @return  Crawler|static[]
      */
@@ -249,7 +260,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * querySelector
      *
-     * @param  string  $selector
+     * @param string $selector
      *
      * @return  Crawler
      */
@@ -285,7 +296,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * Whether a offset exists
      *
-     * @param  mixed  $offset  An offset to check for.
+     * @param mixed $offset An offset to check for.
      *
      * @return boolean True on success or false on failure.
      *                 The return value will be casted to boolean if non-boolean was returned.
@@ -298,7 +309,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * Offset to retrieve
      *
-     * @param  mixed  $offset  The offset to retrieve.
+     * @param mixed $offset The offset to retrieve.
      *
      * @return mixed Can return all value types.
      */
@@ -310,8 +321,8 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * Offset to set
      *
-     * @param  mixed  $offset  The offset to assign the value to.
-     * @param  mixed  $value   The value to set.
+     * @param mixed $offset The offset to assign the value to.
+     * @param mixed $value  The value to set.
      *
      * @return void
      */
@@ -323,7 +334,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * Offset to unset
      *
-     * @param  mixed  $offset  The offset to unset.
+     * @param mixed $offset The offset to unset.
      *
      * @return void
      */
@@ -335,8 +346,8 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * with
      *
-     * @param  DOMNode  $node
-     * @param  bool     $deep
+     * @param DOMNode $node
+     * @param bool    $deep
      *
      * @return  static
      */
@@ -354,9 +365,9 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * createChild
      *
-     * @param  string  $name
-     * @param  array   $attributes
-     * @param  mixed   $content
+     * @param string $name
+     * @param array  $attributes
+     * @param mixed  $content
      *
      * @return  static
      */
@@ -370,8 +381,8 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * buildAttributes
      *
-     * @param  array        $attributes
-     * @param  string|null  $type
+     * @param array       $attributes
+     * @param string|null $type
      *
      * @return  string
      */
@@ -385,7 +396,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * addClass
      *
-     * @param  string|callable  $class
+     * @param string|callable $class
      *
      * @return  static
      *
@@ -403,7 +414,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * removeClass
      *
-     * @param  string|callable  $class
+     * @param string|callable $class
      *
      * @return  static
      *
@@ -421,8 +432,8 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * toggleClass
      *
-     * @param  string     $class
-     * @param  bool|null  $force
+     * @param string    $class
+     * @param bool|null $force
      *
      * @return  static
      *
@@ -438,7 +449,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * hasClass
      *
-     * @param  string  $class
+     * @param string $class
      *
      * @return  static
      *
@@ -454,8 +465,8 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * data
      *
-     * @param  string  $name
-     * @param  mixed   $value
+     * @param string $name
+     * @param mixed  $value
      *
      * @return  string|static
      *
@@ -497,7 +508,7 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
     /**
      * __get
      *
-     * @param  string  $name
+     * @param string $name
      *
      * @return  mixed
      *
@@ -538,5 +549,42 @@ class DOMElement extends NativeDOMElement implements ArrayAccess
         }
 
         return $this->$name;
+    }
+
+    public static function splitCSSSelector(string $name): array
+    {
+        $tokens = preg_split(
+            '/([\.#]?[^\s#.]+)/',
+            $name,
+            -1,
+            PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
+        );
+
+        if ($tokens === []) {
+            throw new InvalidArgumentException('Tag name is empty');
+        }
+
+        if (!in_array($tokens[0][0] ?? '', ['#', '.'], true)) {
+            $name = array_shift($tokens);
+        } else {
+            $name = 'div';
+        }
+
+        $id    = null;
+        $class = [];
+
+        foreach ($tokens as $token) {
+            if (strpos($token, '#') === 0) {
+                $id = ltrim($token, '#');
+            } else {
+                $class[] = ltrim($token, '.');
+            }
+        }
+
+        return [
+            'name' => $name,
+            'id' => $id,
+            'class' => $class ? implode(' ', $class) : null
+        ];
     }
 }

@@ -37,7 +37,7 @@ class DOMFactory
     /**
      * getInstance
      *
-     * @param  DOMDocument|null  $dom
+     * @param DOMDocument|null $dom
      *
      * @return  DOMDocument
      */
@@ -57,7 +57,7 @@ class DOMFactory
     /**
      * html5
      *
-     * @param  HTML5|null  $html5
+     * @param HTML5|null $html5
      *
      * @return  HTML5
      */
@@ -87,24 +87,26 @@ class DOMFactory
     /**
      * element
      *
-     * @param  string  $name
-     * @param  null    $value
+     * @param string $name
+     * @param null   $value
      *
      * @return  DOMElement
      */
     public static function element(string $name, $value = null)
     {
         if ($value !== null) {
-            return static::document()->createElement($name, $value);
+            $ele = static::document()->createElement($name, $value);
+        } else {
+            $ele = static::document()->createElement($name);
         }
 
-        return static::document()->createElement($name);
+        return $ele;
     }
 
     /**
      * comment
      *
-     * @param  string  $data
+     * @param string $data
      *
      * @return  DOMComment
      */
@@ -116,7 +118,7 @@ class DOMFactory
     /**
      * textNode
      *
-     * @param  string  $content
+     * @param string $content
      *
      * @return  DOMText
      */
@@ -128,7 +130,7 @@ class DOMFactory
     /**
      * create
      *
-     * @param  array  $options
+     * @param array $options
      *
      * @return  DOMDocument
      */

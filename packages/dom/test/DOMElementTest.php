@@ -79,6 +79,63 @@ class DOMElementTest extends TestCase
     }
 
     /**
+     * testCreateWithCSSExpr
+     *
+     * @param string $selector
+     * @param array  $attributes
+     * @param string $result
+     *
+     * @return  void
+     *
+     * @dataProvider cssCreatorProvider
+     */
+    public function testCreateWithCSSExpr(string $selector, array $attributes, string $result): void
+    {
+        $ele = DOMElement::create($selector, $attributes);
+
+        self::assertEquals($result, (string) $ele);
+    }
+
+    public function cssCreatorProvider(): array
+    {
+        return [
+            [
+                'img#foo',
+                [],
+                '<img id="foo"/>'
+            ],
+            [
+                'img.foo',
+                [],
+                '<img class="foo"/>'
+            ],
+            [
+                '#foo.bar',
+                [],
+                '<div id="foo" class="bar"/>'
+            ],
+            [
+                'img#foo.bar.yoo',
+                [],
+                '<img id="foo" class="bar yoo"/>'
+            ],
+            [
+                'div#foo#foo2.bar.yoo',
+                [],
+                '<div id="foo2" class="bar yoo"/>'
+            ],
+            [
+                'div#foo.bar',
+                [
+                    'id' => 'hoo',
+                    'class' => 'yoo'
+                ],
+                '<div id="foo" class="yoo bar"/>'
+            ],
+        ];
+    }
+
+    /**
      * @see  DOMElement::offsetSet
      * @see  DOMElement::offsetGet
      */
