@@ -84,7 +84,7 @@ class ClauseTest extends TestCase
         ]));
 
         self::assertEquals(
-            '',
+            'WHERE foo = \'bar\' OR foo < 5 AND (flower = \'sakura\' OR flower IS NULL)',
             (string) $clause
         );
     }

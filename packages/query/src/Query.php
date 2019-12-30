@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 
@@ -27,7 +28,20 @@ class Query implements QueryInterface
      */
     protected $connection;
 
+    /**
+     * @var Clause
+     */
+    protected $select;
 
+    /**
+     * @var Clause
+     */
+    protected $from;
+
+    /**
+     * @var array
+     */
+    protected $subQueries = [];
 
     /**
      * Query constructor.
@@ -41,6 +55,67 @@ class Query implements QueryInterface
         }
 
         $this->connection = $connection;
+    }
+
+    /**
+     * select
+     *
+     * @param  mixed  ...$columns
+     *
+     * @return  static
+     */
+    public function select(...$columns)
+    {
+        $new = clone $this;
+
+        $columns = Arr::collapse($columns);
+
+        if (!$new->select) {
+            $new->select = new Clause('SELECT');
+        }
+
+        $new->select->append(array_values($columns));
+
+        return $new;
+    }
+
+    public function from($tables, $alias = null)
+    {
+        $new = clone $this;
+
+        if ($new->from === null) {
+            $new->from = $this->clause('FROM', $tables);
+        } else {
+            $new->from->append($tables);
+        }
+
+        return $new;
+    }
+
+    /**
+     * clause
+     *
+     * @param  string  $name
+     * @param  array   $elements
+     * @param  string  $glue
+     *
+     * @return  Clause
+     */
+    public function clause(string $name, array $elements = [], string $glue = ' '): Clause
+    {
+        return new Clause($name, $elements, $glue);
+    }
+
+    public function quote($value)
+    {
+        // todo: add pstorm.meta
+        return $value;
+    }
+
+    public function quoteName($name)
+    {
+        // todo: add pstorm.meta
+        return $name;
     }
 
     /**
@@ -58,7 +133,7 @@ class Query implements QueryInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getConnection()
+    public function &getConnection()
     {
         return $this->connection->get();
     }

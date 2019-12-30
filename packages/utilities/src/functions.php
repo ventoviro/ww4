@@ -139,27 +139,6 @@ namespace Windwalker {
     }
 
     /**
-     * fread_all
-     *
-     * @param  resource  $fd
-     * @param  int       $length
-     *
-     * @return  string
-     *
-     * @since  __DEPLOY_VERSION__
-     */
-    function fread_all($fd, int $length = 1024): string
-    {
-        $data = '';
-
-        while (!feof($fd)) {
-            $data .= fread($fd, $length);
-        }
-
-        return $data;
-    }
-
-    /**
      * iterator_keys
      *
      * @param  Traversable  $iterable
