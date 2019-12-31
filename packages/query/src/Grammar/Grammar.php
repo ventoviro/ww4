@@ -16,8 +16,10 @@ use Windwalker\Query\Query;
 /**
  * The AbstractGrammar class.
  */
-class AbstractGrammar
+class Grammar
 {
+    protected $nameQuote = ['"', '"'];
+
     /**
      * Compile Query object to SQL string.
      *
@@ -71,5 +73,22 @@ class AbstractGrammar
     public function compileCustom(Query $query)
     {
         //
+    }
+
+    public function quoteName(string $name): string
+    {
+        if (stripos($name, ' as ') !== false) {
+            [$name, $alias] = preg_split('/ as /i', $name);
+
+            return $this->quoteName($name) . ' AS ' . $this->quoteName($alias);
+        }
+
+        if (strpos($name, '.') !== false) {
+            [$name1, $name2] = explode('.', $name);
+
+            return $this->quoteName($name1) . '.' . $this->quoteName($name2);
+        }
+
+        return $this->nameQuote[0] . $name . $this->nameQuote[1];
     }
 }

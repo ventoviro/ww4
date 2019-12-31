@@ -11,9 +11,15 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
+use Windwalker\Utilities\Wrapper\RawWrapper;
+
+use Windwalker\Utilities\Wrapper\WrapperInterface;
+
+use function Windwalker\value;
 
 /**
  * The Query class.
@@ -44,17 +50,24 @@ class Query implements QueryInterface
     protected $subQueries = [];
 
     /**
+     * @var Grammar
+     */
+    protected $grammar;
+
+    /**
      * Query constructor.
      *
-     * @param  mixed|\PDO  $connection
+     * @param  mixed|\PDO    $connection
+     * @param  Grammar|null  $grammar
      */
-    public function __construct($connection)
+    public function __construct($connection = null, Grammar $grammar = null)
     {
         if (!$connection instanceof \WeakReference) {
             $connection = new \WeakReference($connection);
         }
 
         $this->connection = $connection;
+        $this->grammar = $grammar ?: new Grammar();
     }
 
     /**
@@ -106,16 +119,77 @@ class Query implements QueryInterface
         return new Clause($name, $elements, $glue);
     }
 
-    public function quote($value)
+    /**
+     * escape
+     *
+     * @param string|array|WrapperInterface $value
+     *
+     * @return  string|array
+     */
+    public function escape($value)
     {
-        // todo: add pstorm.meta
-        return $value;
+        $value = value($value);
+
+        if (is_array($value)) {
+            foreach ($value as &$v) {
+                $v = $this->escape($v);
+            }
+
+            return $value;
+        }
+
+        return substr(
+            substr(
+                $this->getConnection()->quote($value),
+                0,
+                -1
+            ),
+            1
+        );
     }
 
+    /**
+     * quote
+     *
+     * @param string|array|WrapperInterface $value
+     *
+     * @return  string|array
+     */
+    public function quote($value)
+    {
+        $value = value($value);
+
+        if (is_array($value)) {
+            foreach ($value as &$v) {
+                $v = $this->quoteName($v);
+            }
+
+            return $value;
+        }
+
+        return $this->getConnection()->quote($value);
+    }
+
+    /**
+     * quoteName
+     *
+     * @param string|array|WrapperInterface $name
+     *
+     * @return  string|array
+     */
     public function quoteName($name)
     {
-        // todo: add pstorm.meta
-        return $name;
+        $name = value($name);
+
+        if (is_array($name)) {
+            foreach ($name as &$n) {
+                $n = $this->quoteName($n);
+            }
+
+            return $name;
+        }
+
+        return $this->getGrammar()->quoteName($name);
     }
 
     /**
@@ -156,5 +230,17 @@ class Query implements QueryInterface
         $this->connection = $connection;
 
         return $this;
+    }
+
+    /**
+     * Method to get property Grammar
+     *
+     * @return  Grammar
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function getGrammar(): Grammar
+    {
+        return $this->grammar;
     }
 }

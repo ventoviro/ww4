@@ -49,7 +49,7 @@ class Clause implements \Countable
      *
      * @since   2.0
      */
-    public function __construct(string $name, array $elements = [], string $glue = ' ')
+    public function __construct(string $name = '', array $elements = [], string $glue = ' ')
     {
         $this->elements = [];
         $this->name = $name;
@@ -185,5 +185,21 @@ class Clause implements \Countable
     public function count()
     {
         return count($this->elements);
+    }
+
+    /**
+     * Method to set property elements
+     *
+     * @param  array  $elements
+     *
+     * @return  static  Return self to support chaining.
+     *
+     * @since  __DEPLOY_VERSION__
+     */
+    public function setElements(array $elements)
+    {
+        $this->elements = $elements;
+
+        return $this;
     }
 }

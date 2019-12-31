@@ -92,9 +92,12 @@ class ClauseTest extends TestCase
     /**
      * @see  Clause::setGlue
      */
-    public function testSetGlue(): void
+    public function testGetSetGlue(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $clause = new Clause('IN()', [], '');
+        $clause->setGlue(', ');
+
+        self::assertEquals(', ', $clause->getGlue());
     }
 
     /**
@@ -102,47 +105,21 @@ class ClauseTest extends TestCase
      */
     public function testSetName(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
+        $clause = new Clause('');
+        $clause->setName('HELLO');
 
-    /**
-     * @see  Clause::render
-     */
-    public function testRender(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Clause::getGlue
-     */
-    public function testGetGlue(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertEquals('HELLO', $clause->getName());
     }
 
     /**
      * @see  Clause::getElements
      */
-    public function testGetElements(): void
+    public function testGetSetElements(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
+        $clause = new Clause('IN()', [], '');
+        $clause->setElements([1, 2, 3]);
 
-    /**
-     * @see  Clause::__construct
-     */
-    public function test__construct(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Clause::getName
-     */
-    public function testGetName(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertEquals([1, 2, 3], $clause->getElements());
     }
 
     /**
@@ -150,15 +127,26 @@ class ClauseTest extends TestCase
      */
     public function testAppend(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $clause = new Clause('IN()', [], '');
+        $clause->append(1);
+        $clause->append(2);
+        $clause->append(3);
+
+        self::assertEquals([1, 2, 3], $clause->getElements());
     }
 
     /**
      * @see  Clause::__clone
      */
-    public function test__clone(): void
+    public function testClone(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $clause = new Clause('IN()', [new Clause()], '');
+        $clause2 = clone $clause;
+
+        self::assertNotSame(
+            $clause->getElements()[0],
+            $clause2->getElements()[0]
+        );
     }
 
     protected function setUp(): void
