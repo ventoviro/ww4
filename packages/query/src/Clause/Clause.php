@@ -123,7 +123,7 @@ class Clause implements \Countable
      */
     public function __clone()
     {
-        foreach ($this as $k => $v) {
+        foreach (get_object_vars($this) as $k => $v) {
             if (is_object($v) || is_array($v)) {
                 $this->{$k} = unserialize(serialize($v));
             }

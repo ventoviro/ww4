@@ -30,16 +30,23 @@ class QueryTest extends TestCase
     protected $instance;
 
     /**
-     * @param  array   $args
-     * @param  array   $addArgs
-     * @param  string  $expected
+     * @param  array        $args
+     * @param  array        $addArgs
+     * @param  string       $expected
+     * @param  string|null  $subQueryAlias
+     * @param  string|null  $modifiedSql
      *
      * @see          Query::select
      *
      * @dataProvider selectProvider
      */
-    public function testSelect(array $args, ?array $addArgs, string $expected): void
-    {
+    public function testSelect(
+        array $args,
+        ?array $addArgs,
+        string $expected,
+        ?string $subQueryAlias = null,
+        ?string $modifiedSql = null
+    ): void {
         $q = $this->instance->select(...$args);
 
         if ($addArgs !== null) {
@@ -47,6 +54,16 @@ class QueryTest extends TestCase
         }
 
         self::assertSqlEquals($expected, (string) $q);
+
+        if ($subQueryAlias) {
+            $sub = $q->getSubQuery($subQueryAlias);
+
+            self::assertInstanceOf(Query::class, $sub);
+
+            $sub->select('newcol');
+
+            self::assertEquals($modifiedSql, (string) $q);
+        }
     }
 
     public function selectProvider(): array
@@ -105,17 +122,92 @@ class QueryTest extends TestCase
                 ],
                 null,
                 // expected
-                'SELECT (SELECT * FROM "foo") AS "foooo", "bar" AS "barrr"'
+                'SELECT (SELECT * FROM "foo") AS "foooo", "bar" AS "barrr"',
+                // Sub query
+                'foooo',
+                'SELECT (SELECT *, "newcol" FROM "foo") AS "foooo", "bar" AS "barrr"'
             ],
         ];
     }
 
     /**
-     * @see  Query::from
+     * @param  mixed        $tables
+     * @param  string|null  $alias
+     * @param  string       $expected
+     *
+     * @see          Query::from
+     *
+     * @dataProvider fromProvider
      */
-    public function testFrom(): void
+    public function testFrom($tables, ?string $alias, string $expected): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $q = $this->instance
+            ->select('*')
+            ->from($tables, $alias);
+
+        self::assertSqlEquals($expected, (string) $q);
+    }
+
+    public function fromProvider(): array
+    {
+        return [
+            'Simple from' => [
+                'foo',
+                null,
+                'SELECT * FROM "foo"'
+            ],
+            'Simple from as' => [
+                'a.foo',
+                'foo',
+                'SELECT * FROM "a"."foo" AS "foo"'
+            ],
+            'Multiple tables' => [
+                ['f' => 'foo', 'b' => 'bar', 'y' => 'yoo'],
+                'nouse',
+                'SELECT * FROM "foo" AS "f", "bar" AS "b", "yoo" AS "y"'
+            ],
+            'single sub query' => [
+                self::createQuery()
+                    ->select('*')
+                    ->from('flower'),
+                null,
+                'SELECT * FROM (SELECT * FROM "flower")'
+            ],
+            'single sub query as' => [
+                self::createQuery()
+                    ->select('*')
+                    ->from('flower'),
+                'f',
+                'SELECT * FROM (SELECT * FROM "flower") AS "f"'
+            ],
+            'single sub query with self-alias' => [
+                self::createQuery()
+                    ->select('*')
+                    ->from('flower')
+                    ->alias('fl'),
+                null,
+                'SELECT * FROM (SELECT * FROM "flower") AS "fl"'
+            ],
+            'single sub query with self-alias and as' => [
+                self::createQuery()
+                    ->select('*')
+                    ->from('flower')
+                    ->alias('fl'),
+                'f',
+                'SELECT * FROM (SELECT * FROM "flower") AS "f"'
+            ],
+            'Multiple tables with sub query' => [
+                [
+                    'a' => 'ace',
+                    'f' => self::createQuery()
+                        ->select('*')
+                        ->from('flower')
+                        ->alias('fl_nouse')
+                ],
+                'nouse',
+                'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"'
+            ],
+        ];
     }
 
     /**

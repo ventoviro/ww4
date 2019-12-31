@@ -47,8 +47,8 @@ class Grammar
 
     public function compileSelect(Query $query): string
     {
-        $sql = (string) $query->select;
-        $sql .= ' ' . $query->from;
+        $sql = (string) $query->getSelect();
+        $sql .= ' ' . $query->getFrom();
 
         return $sql;
     }

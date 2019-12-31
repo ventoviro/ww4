@@ -25,11 +25,11 @@ use function Windwalker\value;
 /**
  * The Query class.
  *
- * @property-read string $type
- * @property-read Clause $select
- * @property-read Clause $from
- * @property-read array  $subQueries
- * @property-read string $alias
+ * @method string|null getType()
+ * @method Clause|null getSelect()
+ * @method Clause|null getFrom()
+ * @method array       getSubQueries()
+ * @method string|null getAlias()
  */
 class Query implements QueryInterface
 {
@@ -104,11 +104,9 @@ class Query implements QueryInterface
      */
     public function select(...$columns)
     {
-        $new = clone $this;
-
-        if (!$new->select) {
-            $new->type   = static::TYPE_SELECT;
-            $new->select = $this->clause('SELECT', [], ', ');
+        if (!$this->select) {
+            $this->type   = static::TYPE_SELECT;
+            $this->select = $this->clause('SELECT', [], ', ');
         }
 
         $columns = array_map(
@@ -116,9 +114,9 @@ class Query implements QueryInterface
             array_values(Arr::flatten($columns))
         );
 
-        $new->select->append($columns);
+        $this->select->append($columns);
 
-        return $new;
+        return $this;
     }
 
     /**
@@ -144,10 +142,8 @@ class Query implements QueryInterface
      */
     public function from($tables, ?string $alias = null)
     {
-        $new = clone $this;
-
-        if ($new->from === null) {
-            $new->from = $this->clause('FROM', [], ', ');
+        if ($this->from === null) {
+            $this->from = $this->clause('FROM', [], ', ');
         }
 
         if (!is_array($tables) && $alias !== null) {
@@ -156,32 +152,31 @@ class Query implements QueryInterface
 
         if (is_array($tables)) {
             foreach ($tables as $tableAlias => $table) {
-                $new->from->append(
-                    $this->clause(
-                        '',
-                        [
-                            $this->quoteName($this->tryWrap($table)),
-                            'AS',
-                            $this->quoteName($tableAlias)
-                        ]
-                    )
-                );
+                $this->from->append($this->as($table, $tableAlias));
             }
         } else {
-            $new->from->append($this->as($tables, $alias));
+            $this->from->append($this->as($tables, $alias));
         }
 
-        return $new;
+        return $this;
     }
 
+    /**
+     * as
+     *
+     * @param  string|Query  $value
+     * @param  string|null   $alias
+     *
+     * @return  string
+     */
     public function as($value, ?string $alias = null): string
     {
         if ($value instanceof RawWrapper) {
             $value = $value();
         } elseif ($value instanceof static) {
-            if ($value->alias) {
-                $alias = $value->alias;
-            }
+            $alias = $alias ?: $value->getAlias();
+
+            $this->subQueries[$alias] = $value;
 
             $value = '(' . $value . ')';
         } else {
@@ -313,11 +308,9 @@ class Query implements QueryInterface
      */
     public function alias(string $alias)
     {
-        $new = clone $this;
+        $this->alias = $alias;
 
-        $new->alias = $alias;
-
-        return $new;
+        return $this;
     }
 
     /**
@@ -333,6 +326,18 @@ class Query implements QueryInterface
         $method = 'compile' . ucfirst($this->type);
 
         return $this->getGrammar()->$method($this);
+    }
+
+    /**
+     * getSubQuery
+     *
+     * @param  string  $alias
+     *
+     * @return  Query|null
+     */
+    public function getSubQuery(string $alias): ?Query
+    {
+        return $this->subQueries[$alias] ?? null;
     }
 
     /**
@@ -379,8 +384,31 @@ class Query implements QueryInterface
         return $this->grammar;
     }
 
-    public function __get(string $name)
+    /**
+     * Method to provide deep copy support to nested objects and arrays
+     * when cloning.
+     *
+     * @return  void
+     */
+    public function __clone()
     {
-        return $this->$name;
+        foreach (get_object_vars($this) as $k => $v) {
+            if (is_object($v) || is_array($v)) {
+                $this->{$k} = unserialize(serialize($v));
+            }
+        }
+    }
+
+    public function __call(string $name, array $args)
+    {
+        $field = strtolower(substr($name, 3));
+
+        if (property_exists($this, $field)) {
+            return $this->$field;
+        }
+
+        throw new \BadMethodCallException(
+            sprintf('Call to undefined method of: %s::%s()', static::class, $name)
+        );
     }
 }
