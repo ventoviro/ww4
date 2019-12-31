@@ -45,9 +45,12 @@ class Grammar
         return $this->$method($query);
     }
 
-    public function compileSelect(Query $query)
+    public function compileSelect(Query $query): string
     {
-        //
+        $sql = (string) $query->select;
+        $sql .= ' ' . $query->from;
+
+        return $sql;
     }
 
     public function compileInsert(Query $query)

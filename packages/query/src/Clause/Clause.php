@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Query;
+namespace Windwalker\Query\Clause;
 
 /**
  * Query Clause Class.
@@ -32,7 +32,7 @@ class Clause implements \Countable
      * @var    array  An array of elements.
      * @since  2.0
      */
-    protected $elements;
+    protected $elements = [];
 
     /**
      * @var    string  Glue piece.
@@ -49,9 +49,8 @@ class Clause implements \Countable
      *
      * @since   2.0
      */
-    public function __construct(string $name = '', array $elements = [], string $glue = ' ')
+    public function __construct(string $name = '', $elements = [], string $glue = ' ')
     {
-        $this->elements = [];
         $this->name = $name;
         $this->glue = $glue;
 
@@ -190,16 +189,28 @@ class Clause implements \Countable
     /**
      * Method to set property elements
      *
-     * @param  array  $elements
+     * @param  array|string  $elements
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setElements(array $elements)
+    public function setElements($elements)
     {
-        $this->elements = $elements;
+        $this->elements = [];
+
+        $this->append($elements);
 
         return $this;
+    }
+
+    public function __isset(string $name): bool
+    {
+        return isset($this->$name);
+    }
+
+    public function __get(string $name)
+    {
+        return $this->$name;
     }
 }

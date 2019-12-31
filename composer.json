@@ -47,7 +47,8 @@
         "webmozart/glob": "^4.1",
         "symfony/dom-crawler": "^4.4",
         "symfony/css-selector": "^4.4",
-        "ext-openssl": "*"
+        "ext-openssl": "*",
+        "jdorn/sql-formatter": "^1.2"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",

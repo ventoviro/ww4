@@ -181,8 +181,12 @@ namespace Windwalker {
      */
     function value($value, ...$args)
     {
+        if ($value instanceof \WeakReference) {
+            $value = $value->get();
+        }
+
         if ($value instanceof WrapperInterface) {
-            return $value(...$args);
+            $value = $value(...$args);
         }
 
         return ($value instanceof Closure || $value instanceof CallableProxy)

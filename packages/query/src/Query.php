@@ -11,28 +11,47 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\Wrapper\RawWrapper;
-
 use Windwalker\Utilities\Wrapper\WrapperInterface;
-
+use function Windwalker\raw;
 use function Windwalker\value;
 
 /**
  * The Query class.
+ *
+ * @property-read string $type
+ * @property-read Clause $select
+ * @property-read Clause $from
+ * @property-read array  $subQueries
+ * @property-read string $alias
  */
 class Query implements QueryInterface
 {
     use MarcoableTrait;
     use FlowControlTrait;
 
+    public const TYPE_SELECT = 'select';
+
+    public const TYPE_INSERT = 'insert';
+
+    public const TYPE_UPDATE = 'update';
+
+    public const TYPE_DELETE = 'delete';
+
+    public const TYPE_UNION = 'union';
+
+    public const TYPE_CUSTOM = 'custom';
+
     /**
-     * @var \WeakReference
+     * @var string
      */
-    protected $connection;
+    protected $type;
 
     /**
      * @var Clause
@@ -55,6 +74,16 @@ class Query implements QueryInterface
     protected $grammar;
 
     /**
+     * @var string
+     */
+    protected $alias;
+
+    /**
+     * @var mixed|\PDO
+     */
+    protected $connection;
+
+    /**
      * Query constructor.
      *
      * @param  mixed|\PDO    $connection
@@ -62,12 +91,8 @@ class Query implements QueryInterface
      */
     public function __construct($connection = null, Grammar $grammar = null)
     {
-        if (!$connection instanceof \WeakReference) {
-            $connection = new \WeakReference($connection);
-        }
-
         $this->connection = $connection;
-        $this->grammar = $grammar ?: new Grammar();
+        $this->grammar    = $grammar ?: new Grammar();
     }
 
     /**
@@ -81,48 +106,123 @@ class Query implements QueryInterface
     {
         $new = clone $this;
 
-        $columns = Arr::collapse($columns);
-
         if (!$new->select) {
-            $new->select = new Clause('SELECT');
+            $new->type   = static::TYPE_SELECT;
+            $new->select = $this->clause('SELECT', [], ', ');
         }
 
-        $new->select->append(array_values($columns));
+        $columns = array_map(
+            [$this, 'as'],
+            array_values(Arr::flatten($columns))
+        );
+
+        $new->select->append($columns);
 
         return $new;
     }
 
-    public function from($tables, $alias = null)
+    /**
+     * selectAs
+     *
+     * @param  string|RawWrapper  $column
+     * @param  string|null        $alias
+     *
+     * @return  static
+     */
+    public function selectAs($column, ?string $alias = null)
+    {
+        return $this->select(raw($this->as($column, $alias)));
+    }
+
+    /**
+     * from
+     *
+     * @param  string|array  $tables
+     * @param  string|null   $alias
+     *
+     * @return  static
+     */
+    public function from($tables, ?string $alias = null)
     {
         $new = clone $this;
 
         if ($new->from === null) {
-            $new->from = $this->clause('FROM', $tables);
+            $new->from = $this->clause('FROM', [], ', ');
+        }
+
+        if (!is_array($tables) && $alias !== null) {
+            $tables = [$alias => $tables];
+        }
+
+        if (is_array($tables)) {
+            foreach ($tables as $tableAlias => $table) {
+                $new->from->append(
+                    $this->clause(
+                        '',
+                        [
+                            $this->quoteName($this->tryWrap($table)),
+                            'AS',
+                            $this->quoteName($tableAlias)
+                        ]
+                    )
+                );
+            }
         } else {
-            $new->from->append($tables);
+            $new->from->append($this->as($tables, $alias));
         }
 
         return $new;
+    }
+
+    public function as($value, ?string $alias = null): string
+    {
+        if ($value instanceof RawWrapper) {
+            $value = $value();
+        } elseif ($value instanceof static) {
+            if ($value->alias) {
+                $alias = $value->alias;
+            }
+
+            $value = '(' . $value . ')';
+        } else {
+            $value = (string) $this->quoteName($value);
+        }
+
+        ArgumentsAssert::assert(
+            is_stringable($value),
+            '%s argument 1 should be stringable or RawWrapper'
+        );
+
+        if ($alias) {
+            $value .= ' AS ' . $this->quoteName($alias);
+        }
+
+        return $value;
+    }
+
+    private function tryWrap($value): string
+    {
+        return $value instanceof static ? '(' . $value . ')' : $value;
     }
 
     /**
      * clause
      *
-     * @param  string  $name
-     * @param  array   $elements
-     * @param  string  $glue
+     * @param  string        $name
+     * @param  array|string  $elements
+     * @param  string        $glue
      *
      * @return  Clause
      */
-    public function clause(string $name, array $elements = [], string $glue = ' '): Clause
+    public function clause(string $name, $elements = [], string $glue = ' '): Clause
     {
-        return new Clause($name, $elements, $glue);
+        return clause($name, $elements, $glue);
     }
 
     /**
      * escape
      *
-     * @param string|array|WrapperInterface $value
+     * @param  string|array|WrapperInterface  $value
      *
      * @return  string|array
      */
@@ -151,17 +251,19 @@ class Query implements QueryInterface
     /**
      * quote
      *
-     * @param string|array|WrapperInterface $value
+     * @param  string|array|WrapperInterface  $value
      *
      * @return  string|array
      */
     public function quote($value)
     {
-        $value = value($value);
+        if ($value instanceof RawWrapper) {
+            return value($value);
+        }
 
         if (is_array($value)) {
             foreach ($value as &$v) {
-                $v = $this->quoteName($v);
+                $v = $this->quote($v);
             }
 
             return $value;
@@ -173,13 +275,23 @@ class Query implements QueryInterface
     /**
      * quoteName
      *
-     * @param string|array|WrapperInterface $name
+     * @param  string|array|WrapperInterface  $name
      *
      * @return  string|array
      */
     public function quoteName($name)
     {
-        $name = value($name);
+        if ($name instanceof RawWrapper) {
+            return value($name);
+        }
+
+        if ($name === '*') {
+            return $name;
+        }
+
+        if ($name instanceof Clause) {
+            return $name->setElements($this->quoteName($name->elements));
+        }
 
         if (is_array($name)) {
             foreach ($name as &$n) {
@@ -189,7 +301,23 @@ class Query implements QueryInterface
             return $name;
         }
 
-        return $this->getGrammar()->quoteName($name);
+        return $this->getGrammar()->quoteName((string) $name);
+    }
+
+    /**
+     * alias
+     *
+     * @param  string  $alias
+     *
+     * @return  static
+     */
+    public function alias(string $alias)
+    {
+        $new = clone $this;
+
+        $new->alias = $alias;
+
+        return $new;
     }
 
     /**
@@ -197,7 +325,14 @@ class Query implements QueryInterface
      */
     public function __toString()
     {
-        return '';
+        return $this->render();
+    }
+
+    public function render(): string
+    {
+        $method = 'compile' . ucfirst($this->type);
+
+        return $this->getGrammar()->$method($this);
     }
 
     /**
@@ -207,9 +342,9 @@ class Query implements QueryInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function &getConnection()
+    public function getConnection()
     {
-        return $this->connection->get();
+        return value($this->connection);
     }
 
     /**
@@ -242,5 +377,10 @@ class Query implements QueryInterface
     public function getGrammar(): Grammar
     {
         return $this->grammar;
+    }
+
+    public function __get(string $name)
+    {
+        return $this->$name;
     }
 }

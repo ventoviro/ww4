@@ -9,10 +9,11 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Query\Test;
+namespace Windwalker\Query\Test\Clause;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Query\Clause;
+use Windwalker\Query\Clause\Clause;
+use function Windwalker\Query\clause;
 
 /**
  * The ClauseTest class.
@@ -30,7 +31,7 @@ class ClauseTest extends TestCase
      * @param  string  $glue
      * @param  string  $expected
      *
-     * @see  Clause::__toString
+     * @see          Clause::__toString
      *
      * @dataProvider basicUsageProvider
      */
@@ -140,13 +141,25 @@ class ClauseTest extends TestCase
      */
     public function testClone(): void
     {
-        $clause = new Clause('IN()', [new Clause()], '');
+        $clause  = new Clause('IN()', [new Clause()], '');
         $clause2 = clone $clause;
 
         self::assertNotSame(
             $clause->getElements()[0],
             $clause2->getElements()[0]
         );
+    }
+
+    public function testMagic(): void
+    {
+        $clause = clause('hello', [1, 2, 3]);
+
+        self::assertEquals('hello', $clause->name);
+        self::assertEquals([1, 2, 3], $clause->elements);
+        self::assertEquals(' ', $clause->glue);
+
+        self::assertTrue(isset($clause->elements));
+        self::assertCount(3, $clause);
     }
 
     protected function setUp(): void

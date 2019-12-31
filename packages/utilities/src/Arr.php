@@ -332,7 +332,7 @@ abstract class Arr
         foreach (TypeCast::toArray($array, false) as $k => $v) {
             $key = $prefix !== null ? $prefix . $delimiter . $k : $k;
 
-            if (($depth === 0 || $depth > 1) && (is_object($v) || is_array($v))) {
+            if (($depth === 0 || $depth > 1) && is_array($v)) {
                 $temp[] = static::flatten($v, $delimiter, $depth === 0 ? $depth : $depth - 1, (string) $key);
             } else {
                 $temp[] = [$key => $v];
