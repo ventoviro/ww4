@@ -47,13 +47,17 @@ class Grammar
 
     public function compileSelect(Query $query): string
     {
-        $sql = (string) $query->getSelect();
+        $sql[] = (string) $query->getSelect();
 
         if ($form = $query->getFrom()) {
-            $sql .= ' ' . $form;
+            $sql[] = $form;
         }
 
-        return $sql;
+        if ($where = $query->getWhere()) {
+            $sql[] = $where;
+        }
+
+        return implode(' ', $sql);
     }
 
     public function compileInsert(Query $query)

@@ -125,6 +125,7 @@ class QueryTest extends TestCase
                 // expected
                 'SELECT (SELECT * FROM "foo") AS "foooo", "bar" AS "barrr"',
             ],
+            // TODO: Move to new test
             'sub query modified' => [
                 // args
                 [
@@ -233,14 +234,6 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @see  Query::escape
-     */
-    public function testEscape(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  Query::getConnection
      */
     public function testGetConnection(): void
@@ -301,7 +294,53 @@ class QueryTest extends TestCase
      */
     public function testQuote(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $q = new Query(static function (string $value) {
+            return addslashes($value);
+        });
+
+        $s = $q->quote("These are Simon's items");
+
+        self::assertEquals("'These are Simon\'s items'", $s);
+
+        $q = new Query(
+            new class {
+                public function escape(string $value): string
+                {
+                    return addslashes($value);
+                }
+            }
+        );
+
+        $s = $q->quote("These are Simon's items");
+
+        self::assertEquals("'These are Simon\'s items'", $s);
+    }
+
+    /**
+     * @see  Query::escape
+     */
+    public function testEscape(): void
+    {
+        $q = new Query(static function (string $value) {
+            return addslashes($value);
+        });
+
+        $s = $q->escape("These are Simon's items");
+
+        self::assertEquals("These are Simon\'s items", $s);
+
+        $q = new Query(
+            new class {
+                public function escape(string $value): string
+                {
+                    return addslashes($value);
+                }
+            }
+        );
+
+        $s = $q->escape("These are Simon's items");
+
+        self::assertEquals("These are Simon\'s items", $s);
     }
 
     /**

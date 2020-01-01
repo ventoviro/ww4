@@ -30,6 +30,7 @@ use function Windwalker\value;
  * @method string|null getType()
  * @method Clause|null getSelect()
  * @method Clause|null getFrom()
+ * @method Clause|null getWhere()
  * @method array       getSubQueries()
  * @method string|null getAlias()
  */
@@ -66,6 +67,11 @@ class Query implements QueryInterface
     protected $from;
 
     /**
+     * @var Clause
+     */
+    protected $where;
+
+    /**
      * @var array
      */
     protected $subQueries = [];
@@ -81,6 +87,7 @@ class Query implements QueryInterface
     protected $alias;
 
     /**
+     * Todo: Change to escaper if need
      * @var mixed|\PDO
      */
     protected $connection;
@@ -242,14 +249,7 @@ class Query implements QueryInterface
             return $value;
         }
 
-        return substr(
-            substr(
-                $this->getConnection()->quote($value),
-                0,
-                -1
-            ),
-            1
-        );
+        return Escaper::escape($this->getConnection(), $value);
     }
 
     /**
@@ -273,7 +273,7 @@ class Query implements QueryInterface
             return $value;
         }
 
-        return $this->getConnection()->quote($value);
+        return Escaper::quote($this->getConnection(), $value);
     }
 
     /**
@@ -358,13 +358,17 @@ class Query implements QueryInterface
      */
     public function getConnection()
     {
-        return value($this->connection);
+        if ($this->connection instanceof \WeakReference) {
+            return $this->connection->get();
+        }
+
+        return $this->connection;
     }
 
     /**
      * Method to set property connection
      *
-     * @param  \PDO|mixed  $connection
+     * @param  \PDO|\WeakReference|mixed  $connection
      *
      * @return  static  Return self to support chaining.
      *
@@ -372,10 +376,6 @@ class Query implements QueryInterface
      */
     public function setConnection($connection)
     {
-        if (!$connection instanceof \WeakReference) {
-            $connection = new \WeakReference($connection);
-        }
-
         $this->connection = $connection;
 
         return $this;
@@ -399,14 +399,14 @@ class Query implements QueryInterface
      *
      * @return  void
      */
-    public function __clone()
-    {
-        foreach (get_object_vars($this) as $k => $v) {
-            if (is_object($v) || is_array($v)) {
-                $this->{$k} = unserialize(serialize($v));
-            }
-        }
-    }
+    // public function __clone()
+    // {
+    //     foreach (get_object_vars($this) as $k => $v) {
+    //         if (is_object($v) || is_array($v)) {
+    //             $this->{$k} = unserialize(serialize($v));
+    //         }
+    //     }
+    // }
 
     public function __call(string $name, array $args)
     {
