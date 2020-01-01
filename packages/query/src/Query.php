@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Utilities\Arr;
@@ -19,6 +20,7 @@ use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
+
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -167,37 +169,44 @@ class Query implements QueryInterface
      * @param  string|Query  $value
      * @param  string|null   $alias
      *
-     * @return  string
+     * @return  AsClause
      */
-    public function as($value, ?string $alias = null): string
+    public function as($value, ?string $alias = null): AsClause
     {
+        $clause = new AsClause();
+
         if ($value instanceof RawWrapper) {
-            $value = $value();
-        } elseif ($value instanceof static) {
-            $alias = $alias ?: $value->getAlias();
-
-            $this->subQueries[$alias] = $value;
-
-            $value = '(' . $value . ')';
+            $clause->value($value());
         } else {
-            $value = (string) $this->quoteName($value);
-        }
+            if ($value instanceof \Closure) {
+                $value($value = new static($this->connection, $this->grammar));
+            }
 
-        ArgumentsAssert::assert(
-            is_stringable($value),
-            '%s argument 1 should be stringable or RawWrapper'
-        );
+            if ($value instanceof static) {
+                $alias = $alias ?: $value->getAlias();
+
+                $this->subQueries[$alias] = $value;
+
+                $clause->value($value);
+            } else {
+                $clause->value((string) $this->quoteName($value));
+            }
+        }
 
         if ($alias) {
-            $value .= ' AS ' . $this->quoteName($alias);
+            $clause->alias($this->quoteName($alias));
         }
 
-        return $value;
+        return $clause;
     }
 
     private function tryWrap($value): string
     {
-        return $value instanceof static ? '(' . $value . ')' : $value;
+        if ($value instanceof static) {
+            return '(' . $value . ')';
+        }
+
+        return $value;
     }
 
     /**

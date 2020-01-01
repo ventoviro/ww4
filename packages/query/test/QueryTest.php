@@ -111,7 +111,21 @@ class QueryTest extends TestCase
                 // expected
                 'SELECT COUNT(*) AS a, "c" AS "ccc", DISTINCT "foo" AS "bar"'
             ],
-            'sub query' => [
+            'sub query with Closure' => [
+                // args
+                [
+                    static function (Query $query) {
+                        $query->select('*')
+                            ->from('foo')
+                            ->alias('foooo');
+                    },
+                    'bar AS barrr'
+                ],
+                null,
+                // expected
+                'SELECT (SELECT * FROM "foo") AS "foooo", "bar" AS "barrr"',
+            ],
+            'sub query modified' => [
                 // args
                 [
                     self::createQuery()

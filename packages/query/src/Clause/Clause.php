@@ -20,7 +20,7 @@ namespace Windwalker\Query\Clause;
  *
  * @since  2.0
  */
-class Clause implements \Countable
+class Clause implements \Countable, ClauseInterface
 {
     /**
      * @var    string  The name of the element.
@@ -64,7 +64,7 @@ class Clause implements \Countable
      *
      * @since   2.0
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->render();
     }
