@@ -12,14 +12,12 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test\Mock;
 
 /**
- * The MockConnection class.
+ * The MockEscaper class.
  */
-class MockConnection
+class MockEscaper
 {
-    public function quote(string $value): string
+    public function escape(string $value): string
     {
-        $value = addslashes($value);
-
-        return "'$value'";
+        return addslashes($value);
     }
 }

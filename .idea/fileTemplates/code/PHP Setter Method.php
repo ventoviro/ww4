@@ -8,8 +8,6 @@
 #else
  * @return  static  Return self to support chaining.
 #end
- *
- * @since  __DEPLOY_VERSION__
  */
 public ${STATIC} function set${NAME}(#if (${SCALAR_TYPE_HINT})${SCALAR_TYPE_HINT} #else#end$${PARAM_NAME})
 {

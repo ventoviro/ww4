@@ -13,14 +13,13 @@ namespace Windwalker\Query;
 
 use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
+use Windwalker\Query\Clause\ValueClause;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Utilities\Arr;
-use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
-
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -85,6 +84,11 @@ class Query implements QueryInterface
      * @var string
      */
     protected $alias;
+
+    /**
+     * @var array
+     */
+    protected $bounded = [];
 
     /**
      * Todo: Change to escaper if need
@@ -171,15 +175,19 @@ class Query implements QueryInterface
     }
 
     /**
-     * as
+     * Handle column and sub query.
      *
-     * @param  string|Query  $value
-     * @param  string|null   $alias
+     * @param  string|array|Query  $value     The column or sub query object.
+     * @param  string|bool|null    $alias     The alias string, if this arg provided, will override sub query
+     *                                        self-contained alias, if is FALSE, will force ignore alias
+     *                                        from aub query.
+     * @param  bool                $isColumn  Quote value as column or string.
      *
      * @return  AsClause
      */
-    public function as($value, ?string $alias = null): AsClause
+    public function as($value, $alias = null, bool $isColumn = true): AsClause
     {
+        $quoteMethod = $isColumn ? 'quoteName' : 'quote';
         $clause = new AsClause();
 
         if ($value instanceof RawWrapper) {
@@ -190,30 +198,95 @@ class Query implements QueryInterface
             }
 
             if ($value instanceof static) {
-                $alias = $alias ?: $value->getAlias();
+                $alias = $alias ?? $value->getAlias();
 
                 $this->subQueries[$alias] = $value;
 
                 $clause->value($value);
             } else {
-                $clause->value((string) $this->quoteName($value));
+                $clause->value((string) $this->$quoteMethod($value));
             }
         }
 
-        if ($alias) {
+        // Only column need alias, ignore it if is value.
+        if ($isColumn && $alias !== false && (string) $alias !== '') {
             $clause->alias($this->quoteName($alias));
         }
 
         return $clause;
     }
 
-    private function tryWrap($value): string
+    public function where($column, $operator, $value = null, string $glue = 'AND')
     {
-        if ($value instanceof static) {
-            return '(' . $value . ')';
+        $column = $this->as($column, false);
+
+        [$operator, $value, $originValue] = $this->handleOperatorAndValue(
+            $operator,
+            $value,
+            count(func_get_args()) === 2
+        );
+
+        $value = new ValueClause($value);
+
+        if (!$this->where) {
+            $this->where = $this->clause('WHERE');
+            $clause = $this->clause('', [$column, $operator, $value]);
+        } else {
+            $clause = $this->clause(strtoupper($glue), [$column, $operator, $value]);
         }
 
-        return $value;
+        $this->where->append($clause);
+
+        return $this;
+    }
+
+    /**
+     * handleOperatorAndValue
+     *
+     * @param  mixed  $operator
+     * @param  mixed  $value
+     * @param  bool   $shortcut
+     *
+     * @return  array
+     */
+    private function handleOperatorAndValue($operator, $value, bool $shortcut = false): array
+    {
+        if ($shortcut) {
+            [$operator, $value] = ['=', $operator];
+        }
+
+        $origin = $value;
+
+        if ($value === null) {
+            if ($operator === '=') {
+                $operator = 'IS';
+            } elseif ($operator === '!=') {
+                $operator = 'IS NOT';
+            }
+
+            $value = 'NULL';
+        } elseif (is_array($value)) {
+            if ($operator === '=') {
+                $operator = 'IN';
+            } elseif ($operator === '!=') {
+                $operator = 'NOT IN';
+            }
+
+            $value = $this->clause('()', array_fill(0, count($value), '?'), ', ');
+
+            foreach ($origin as $val) {
+                $this->bindValue(null, $val);
+            }
+        } elseif ($value instanceof static) {
+            //
+        } elseif ($value instanceof RawWrapper) {
+            $value = $value->get();
+        } else {
+            $this->bindValue(null, $value);
+            $value = '?';
+        }
+
+        return [strtoupper($operator), $value, $origin];
     }
 
     /**
@@ -255,7 +328,7 @@ class Query implements QueryInterface
     /**
      * quote
      *
-     * @param  string|array|WrapperInterface  $value
+     * @param  mixed|WrapperInterface  $value
      *
      * @return  string|array
      */
@@ -273,7 +346,15 @@ class Query implements QueryInterface
             return $value;
         }
 
-        return Escaper::quote($this->getConnection(), $value);
+        if ($value === null) {
+            return 'NULL';
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        return Escaper::quote($this->getConnection(), (string) $value);
     }
 
     /**
@@ -323,6 +404,144 @@ class Query implements QueryInterface
     }
 
     /**
+     * Method to add a variable to an internal array that will be bound to a prepared SQL statement before query
+     * execution. Also removes a variable that has been bounded from the internal bounded array when the passed in
+     * value is null.
+     *
+     * @param string|integer|array $key The key that will be used in your SQL query to reference the value.
+     *                                          Usually of the form ':key', but can also be an integer.
+     * @param mixed                &$value The value that will be bound. The value is passed by reference to
+     *                                          support output parameters such as those possible with stored
+     *                                          procedures.
+     * @param integer $dataType Constant corresponding to a SQL datatype.
+     * @param integer $length The length of the variable. Usually required for OUTPUT parameters.
+     * @param array $driverOptions Optional driver options to be used.
+     *
+     * @return  static
+     *
+     * @since   3.5.5
+     */
+    public function bind(
+        $key = null,
+        &$value = null,
+        ?int $dataType = null,
+        int $length = 0,
+        $driverOptions = null
+    ) {
+        // If is array, loop for all elements.
+        if (is_array($key)) {
+            foreach ($key as $k => &$v) {
+                $this->bind($k, $v, $dataType, $length, $driverOptions);
+            }
+
+            return $this;
+        }
+
+        if ($dataType === null) {
+            if (is_numeric($value) && strpos((string) $value, '.') === false) {
+                $dataType = \PDO::PARAM_INT;
+            } else {
+                $dataType = \PDO::PARAM_STR;
+            }
+        }
+
+        $bounded = [
+            'value' => &$value,
+            'dataType' => $dataType,
+            'length' => $length,
+            'driverOptions' => $driverOptions
+        ];
+
+        if ($key === null) {
+            $this->bounded[] = $bounded;
+        } else {
+            $this->bounded[$key] = $bounded;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Method to add a variable to an internal array that will be bound to a prepared SQL statement before query
+     * execution. Also removes a variable that has been bounded from the internal bounded array when the passed in
+     * value is null.
+     *
+     * @param   string|integer|array  $key           The key that will be used in your SQL query to reference the
+     *                                               value. Usually of the form ':key', but can also be an integer.
+     * @param   mixed                &$value         The value that will be bound. The value is passed by reference to
+     *                                               support output parameters such as those possible with stored
+     *                                               procedures.
+     * @param   integer               $dataType      Constant corresponding to a SQL datatype.
+     * @param   integer               $length        The length of the variable. Usually required for OUTPUT
+     *                                               parameters.
+     * @param   array                 $driverOptions Optional driver options to be used.
+     *
+     * @return  static
+     *
+     * @since   2.0
+     */
+    public function bindValue(
+        $key = null,
+        $value = null,
+        ?int $dataType = null,
+        int $length = 0,
+        $driverOptions = null
+    ) {
+        return $this->bind($key, $value, $dataType, $length, $driverOptions);
+    }
+
+    /**
+     * Retrieves the bound parameters array when key is null and returns it by reference. If a key is provided then
+     * that item is returned.
+     *
+     * @param   mixed $key The bounded variable key to retrieve.
+     *
+     * @return  array|null
+     *
+     * @since   2.0
+     */
+    public function &getBounded($key = null): ?array
+    {
+        if (empty($key)) {
+            return $this->bounded;
+        }
+
+        return $this->bounded[$key] ?? null;
+    }
+
+    /**
+     * resetBounded
+     *
+     * @return  static
+     *
+     * @since  3.5.12
+     */
+    public function resetBounded()
+    {
+        $this->bounded = [];
+
+        return $this;
+    }
+
+    /**
+     * unbind
+     *
+     * @param string|array $keys
+     *
+     * @return  static
+     *
+     * @since  3.5.12
+     */
+    public function unbind($keys)
+    {
+        $keys = (array) $keys;
+
+        $this->bounded = array_diff_key($this->bounded, array_flip($keys));
+
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
     public function __toString()
@@ -330,11 +549,17 @@ class Query implements QueryInterface
         return $this->render();
     }
 
-    public function render(): string
+    public function render(bool $emulatePrepared = false): string
     {
         $method = 'compile' . ucfirst($this->type);
 
-        return $this->getGrammar()->$method($this);
+        $sql = $this->getGrammar()->$method($this);
+
+        if ($emulatePrepared) {
+            $sql = Escaper::replaceQueryParams($this->getConnection(), $sql, $this->getBounded());
+        }
+
+        return $sql;
     }
 
     /**

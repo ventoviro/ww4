@@ -15,9 +15,9 @@ use Windwalker\Query\Query;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 
 /**
- * The AsClause class.
+ * The ValueCaluse class.
  */
-class AsClause implements ClauseInterface
+class ValueClause implements ClauseInterface
 {
     /**
      * @var string|Query
@@ -25,60 +25,24 @@ class AsClause implements ClauseInterface
     protected $value;
 
     /**
-     * @var string|bool|null
-     */
-    protected $alias;
-
-    /**
      * AsClause constructor.
      *
      * @param  string|Query|RawWrapper  $value
-     * @param  string|bool|null         $alias
      */
-    public function __construct($value = null, $alias = null)
+    public function __construct($value = null)
     {
         $this->value = $value;
-        $this->alias = $alias;
     }
 
     public function __toString(): string
     {
         $column = $this->value;
-        $alias = $this->alias;
 
         if ($column instanceof Query) {
             $column = '(' . $column . ')';
         }
 
-        if ($alias !== false && (string) $alias !== '') {
-            $column .= ' AS ' . $alias;
-        }
-
         return (string) $column;
-    }
-
-    /**
-     * Method to get property Alias
-     *
-     * @return  string
-     */
-    public function getAlias(): string
-    {
-        return $this->alias;
-    }
-
-    /**
-     * Method to set property alias
-     *
-     * @param  string  $alias
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function alias(string $alias)
-    {
-        $this->alias = $alias;
-
-        return $this;
     }
 
     /**

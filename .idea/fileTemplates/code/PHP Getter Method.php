@@ -2,8 +2,6 @@
  * Method to get property ${NAME}
  *
  * @return  ${TYPE_HINT}
- *
- * @since  __DEPLOY_VERSION__
  */
 public ${STATIC} function get${NAME}(): ${TYPE_HINT}
 {

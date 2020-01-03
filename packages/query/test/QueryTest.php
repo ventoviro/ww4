@@ -12,8 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
-use Windwalker\Query\Test\Mock\MockConnection;
+use Windwalker\Query\Test\Mock\MockEscaper;
 use function Windwalker\Query\clause;
 use function Windwalker\raw;
 
@@ -226,6 +227,171 @@ class QueryTest extends TestCase
     }
 
     /**
+     * testAs
+     *
+     * @param  string  $expt
+     * @param  mixed   $value
+     * @param  mixed   $alias
+     * @param  bool    $isColumn
+     *
+     * @return  void
+     *
+     * @dataProvider asProvider
+     */
+    public function testAs(string $expt, $value, $alias, bool $isColumn = true): void
+    {
+        self::assertEquals($expt, (string) $this->instance->as($value, $alias, $isColumn));
+    }
+
+    public function asProvider(): array
+    {
+        return [
+            'Simple quote name' => [
+                '"foo"',
+                'foo',
+                null,
+                true
+            ],
+            'Column with as' => [
+                '"foo" AS "f"',
+                'foo',
+                'f',
+                true
+            ],
+            'String value' => [
+                '\'foo\'',
+                'foo',
+                'f',
+                false
+            ],
+            'Sub query with as' => [
+                '(SELECT * FROM "bar") AS "bar"',
+                self::createQuery()
+                    ->select('*')
+                    ->from('bar'),
+                'bar',
+                true
+            ],
+            'Sub query contains as but override' => [
+                '(SELECT * FROM "bar") AS "bar"',
+                self::createQuery()
+                    ->select('*')
+                    ->from('bar')
+                    ->alias('b'),
+                'bar',
+                true
+            ],
+            'Sub query contains alias' => [
+                '(SELECT * FROM "bar") AS "b"',
+                self::createQuery()
+                    ->select('*')
+                    ->from('bar')
+                    ->alias('b'),
+                null,
+                true
+            ],
+            'Sub query contains alias but force ignore' => [
+                '(SELECT * FROM "bar")',
+                self::createQuery()
+                    ->select('*')
+                    ->from('bar')
+                    ->alias('b'),
+                false,
+                true
+            ],
+            'Sub query as value' => [
+                '(SELECT * FROM "bar")',
+                self::createQuery()
+                    ->select('*')
+                    ->from('bar'),
+                'bar',
+                false
+            ]
+        ];
+    }
+
+    /**
+     * testWhere
+     *
+     * @param  string  $expt
+     * @param  array   $wheres
+     *
+     * @return  void
+     *
+     * @dataProvider whereProvider
+     */
+    public function testWhere(string $expt, ...$wheres)
+    {
+        foreach ($wheres as $whereArgs) {
+            $this->instance->where(...$whereArgs);
+        }
+
+        self::assertEquals(
+            $expt,
+            Escaper::replaceQueryParams(
+                $this->instance,
+                (string) $this->instance->getWhere(),
+                $this->instance->getBounded()
+            )
+        );
+    }
+
+    public function whereProvider(): array
+    {
+        return [
+            'Simple where =' => [
+                'WHERE "foo" = \'bar\'',
+                ['foo', 'bar']
+            ],
+            'Where <' => [
+                'WHERE "foo" < \'bar\'',
+                ['foo', '<', 'bar']
+            ],
+            'Where chain' => [
+                'WHERE "foo" < 123 OR "baz" = \'bax\' AND "yoo" != \'goo\'',
+                ['foo', '<', 123],
+                ['baz', '=', 'bax', 'or'],
+                ['yoo', '!=', 'goo', 'and'],
+            ],
+            'Where null' => [
+                'WHERE "foo" IS NULL',
+                ['foo', null]
+            ],
+            'Where is null' => [
+                'WHERE "foo" IS NULL',
+                ['foo', 'IS', null]
+            ],
+            'Where is not null' => [
+                'WHERE "foo" IS NOT NULL',
+                ['foo', 'IS NOT', null]
+            ],
+            'Where = null' => [
+                'WHERE "foo" IS NULL',
+                ['foo', '=', null]
+            ],
+            'Where != null' => [
+                'WHERE "foo" IS NOT NULL',
+                ['foo', '!=', null]
+            ],
+            'Where in' => [
+                'WHERE "foo" IN (1, 2, \'yoo\')',
+                ['foo', 'in', [1, 2, 'yoo']]
+            ],
+            'Where not exists sub query' => [
+                'WHERE "foo" IN (1, 2, \'yoo\')',
+                [
+                    'foo',
+                    'not exists',
+                    self::createQuery()
+                        ->select('*')
+                        ->from('flower')
+                        ->where('id', 5)
+                ]
+            ],
+        ];
+    }
+
+    /**
      * @see  Query::clause
      */
     public function testClause(): void
@@ -353,7 +519,7 @@ class QueryTest extends TestCase
 
     public static function createQuery($conn = null): Query
     {
-        return new Query($conn ?: new MockConnection());
+        return new Query($conn ?: new MockEscaper());
     }
 
     protected function setUp(): void

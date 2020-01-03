@@ -77,4 +77,59 @@ class Escaper
             1
         );
     }
+
+    /**
+     * replaceQueryParams
+     *
+     * @param  \PDO|callable|Query|mixed  $db
+     * @param  string                     $sql
+     * @param  array                      $bounded
+     *
+     * @return  string
+     */
+    public static function replaceQueryParams($db, $sql, array $bounded): string
+    {
+        if ($bounded === []) {
+            return $sql;
+        }
+
+        $params = [];
+        $values = [];
+
+        foreach ($bounded as $k => $param) {
+            switch ($param['dataType']) {
+                case \PDO::PARAM_STR:
+                case \PDO::PARAM_STR_CHAR:
+                case \PDO::PARAM_STR_NATL:
+                    $v = static::quote($db, $param['value']);
+                    break;
+
+                default:
+                    $v = $param['value'];
+            }
+
+            if (is_numeric($k) && is_int($k + 0)) {
+                $values[] = $v;
+            } else {
+                $params[$k] = $v;
+            }
+        }
+
+        $sql = str_replace('%', '%%', $sql);
+        $sql = str_replace('?', '%s', $sql);
+
+        $sql = sprintf($sql, ...$values);
+
+        return preg_replace_callback('/(:[a-zA-Z0-9_]+)/', function ($matched) use ($params, $db) {
+            $name = $matched[0];
+
+            $param = $params[$name] ?? $params[ltrim($name, ':')] ?? null;
+
+            if (!$param) {
+                return $name;
+            }
+
+            return $param;
+        }, $sql);
+    }
 }
