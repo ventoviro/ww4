@@ -329,13 +329,30 @@ class QueryTest extends TestCase
             $this->instance->where(...$whereArgs);
         }
 
+        // Test self merged bounded
         self::assertEquals(
             $expt,
             Escaper::replaceQueryParams(
                 $this->instance,
-                (string) $this->instance->render($bounded),
+                (string) $this->instance->render(false, $bounded),
                 $bounded
             )
+        );
+
+        // Test double bounded should get same sequence
+        self::assertEquals(
+            $expt,
+            Escaper::replaceQueryParams(
+                $this->instance,
+                (string) $this->instance->render(),
+                $this->instance->mergeBounded()
+            )
+        );
+
+        // Test emulate prepared
+        self::assertEquals(
+            $expt,
+            $this->instance->render(true)
         );
     }
 

@@ -248,7 +248,7 @@ class Query implements QueryInterface
 
     private function val($value): ValueClause
     {
-        return new ValueClause($value, $this);
+        return new ValueClause($value);
     }
 
     /**
@@ -575,7 +575,7 @@ class Query implements QueryInterface
         return $this->render();
     }
 
-    public function render(?array &$bounded = [], bool $emulatePrepared = false): string
+    public function render(bool $emulatePrepared = false, ?array &$bounded = []): string
     {
         $bounded = $this->mergeBounded();
 
