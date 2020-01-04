@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Query\Bounded\ParamType;
+use Windwalker\Utilities\TypeCast;
+
 /**
  * The Escaper class.
  */
@@ -98,17 +101,15 @@ class Escaper
 
         foreach ($bounded as $k => $param) {
             switch ($param['dataType']) {
-                case \PDO::PARAM_STR:
-                case \PDO::PARAM_STR_CHAR:
-                case \PDO::PARAM_STR_NATL:
-                    $v = static::quote($db, $param['value']);
+                case ParamType::STRING:
+                    $v = static::quote($db, (string) $param['value']);
                     break;
-
                 default:
                     $v = $param['value'];
+                    break;
             }
 
-            if (is_numeric($k) && is_int($k + 0)) {
+            if (TypeCast::tryInteger($k, true) !== null) {
                 $values[] = $v;
             } else {
                 $params[$k] = $v;

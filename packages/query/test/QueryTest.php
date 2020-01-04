@@ -322,6 +322,9 @@ class QueryTest extends TestCase
      */
     public function testWhere(string $expt, ...$wheres)
     {
+        $this->instance->select('*')
+            ->from('a');
+
         foreach ($wheres as $whereArgs) {
             $this->instance->where(...$whereArgs);
         }
@@ -330,8 +333,8 @@ class QueryTest extends TestCase
             $expt,
             Escaper::replaceQueryParams(
                 $this->instance,
-                (string) $this->instance->getWhere(),
-                $this->instance->getBounded()
+                (string) $this->instance->render($bounded),
+                $bounded
             )
         );
     }
@@ -340,45 +343,45 @@ class QueryTest extends TestCase
     {
         return [
             'Simple where =' => [
-                'WHERE "foo" = \'bar\'',
+                'SELECT * FROM "a" WHERE "foo" = \'bar\'',
                 ['foo', 'bar']
             ],
             'Where <' => [
-                'WHERE "foo" < \'bar\'',
+                'SELECT * FROM "a" WHERE "foo" < \'bar\'',
                 ['foo', '<', 'bar']
             ],
             'Where chain' => [
-                'WHERE "foo" < 123 OR "baz" = \'bax\' AND "yoo" != \'goo\'',
+                'SELECT * FROM "a" WHERE "foo" < 123 OR "baz" = \'bax\' AND "yoo" != \'goo\'',
                 ['foo', '<', 123],
                 ['baz', '=', 'bax', 'or'],
                 ['yoo', '!=', 'goo', 'and'],
             ],
             'Where null' => [
-                'WHERE "foo" IS NULL',
+                'SELECT * FROM "a" WHERE "foo" IS NULL',
                 ['foo', null]
             ],
             'Where is null' => [
-                'WHERE "foo" IS NULL',
+                'SELECT * FROM "a" WHERE "foo" IS NULL',
                 ['foo', 'IS', null]
             ],
             'Where is not null' => [
-                'WHERE "foo" IS NOT NULL',
+                'SELECT * FROM "a" WHERE "foo" IS NOT NULL',
                 ['foo', 'IS NOT', null]
             ],
             'Where = null' => [
-                'WHERE "foo" IS NULL',
+                'SELECT * FROM "a" WHERE "foo" IS NULL',
                 ['foo', '=', null]
             ],
             'Where != null' => [
-                'WHERE "foo" IS NOT NULL',
+                'SELECT * FROM "a" WHERE "foo" IS NOT NULL',
                 ['foo', '!=', null]
             ],
             'Where in' => [
-                'WHERE "foo" IN (1, 2, \'yoo\')',
+                'SELECT * FROM "a" WHERE "foo" IN (1, 2, \'yoo\')',
                 ['foo', 'in', [1, 2, 'yoo']]
             ],
             'Where not exists sub query' => [
-                'WHERE "foo" IN (1, 2, \'yoo\')',
+                'SELECT * FROM "a" WHERE "foo" NOT EXISTS (SELECT * FROM "flower" WHERE "id" = 5)',
                 [
                     'foo',
                     'not exists',

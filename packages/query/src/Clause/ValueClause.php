@@ -20,39 +20,53 @@ use Windwalker\Utilities\Wrapper\RawWrapper;
 class ValueClause implements ClauseInterface
 {
     /**
-     * @var string|Query
+     * @var string|mixed|Query
      */
     protected $value;
+
+    /**
+     * @var string
+     */
+    protected $placeholder;
 
     /**
      * AsClause constructor.
      *
      * @param  string|Query|RawWrapper  $value
      */
-    public function __construct($value = null)
+    public function __construct($value)
     {
         $this->value = $value;
     }
 
     public function __toString(): string
     {
-        $column = $this->value;
+        $value = $this->value;
 
-        if ($column instanceof Query) {
-            $column = '(' . $column . ')';
+        if ($value instanceof RawWrapper) {
+            return (string) $value();
         }
 
-        return (string) $column;
+        if ($value instanceof Query) {
+            return '(' . $value . ')';
+        }
+
+        return $this->getPlaceholder();
+    }
+
+    public function getPlaceholder(): string
+    {
+        return $this->placeholder ? ':' . ltrim($this->placeholder, ':') : '?';
     }
 
     /**
      * Method to get property Column
      *
-     * @return  string
+     * @return  mixed
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getValue(): string
+    public function &getValue()
     {
         return $this->value;
     }
@@ -60,15 +74,29 @@ class ValueClause implements ClauseInterface
     /**
      * Method to set property column
      *
-     * @param  string  $column
+     * @param  mixed  $value
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function value($column)
+    public function value($value)
     {
-        $this->value = $column;
+        $this->value = $value;
+
+        return $this;
+    }
+
+    /**
+     * Method to set property placeholder
+     *
+     * @param  string  $placeholder
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setPlaceholder(string $placeholder)
+    {
+        $this->placeholder = $placeholder;
 
         return $this;
     }

@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Query\Bounded\BoundedSequence;
+use Windwalker\Query\Bounded\ParamType;
 use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Clause\ValueClause;
@@ -20,6 +22,7 @@ use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
+
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -30,7 +33,7 @@ use function Windwalker\value;
  * @method Clause|null getSelect()
  * @method Clause|null getFrom()
  * @method Clause|null getWhere()
- * @method array       getSubQueries()
+ * @method Query[]     getSubQueries()
  * @method string|null getAlias()
  */
 class Query implements QueryInterface
@@ -89,6 +92,11 @@ class Query implements QueryInterface
      * @var array
      */
     protected $bounded = [];
+
+    /**
+     * @var BoundedSequence
+     */
+    protected $sequence;
 
     /**
      * Todo: Change to escaper if need
@@ -188,7 +196,7 @@ class Query implements QueryInterface
     public function as($value, $alias = null, bool $isColumn = true): AsClause
     {
         $quoteMethod = $isColumn ? 'quoteName' : 'quote';
-        $clause = new AsClause();
+        $clause      = new AsClause();
 
         if ($value instanceof RawWrapper) {
             $clause->value($value());
@@ -200,7 +208,7 @@ class Query implements QueryInterface
             if ($value instanceof static) {
                 $alias = $alias ?? $value->getAlias();
 
-                $this->subQueries[$alias] = $value;
+                $this->injectSubQuery($value, $alias);
 
                 $clause->value($value);
             } else {
@@ -226,11 +234,9 @@ class Query implements QueryInterface
             count(func_get_args()) === 2
         );
 
-        $value = new ValueClause($value);
-
         if (!$this->where) {
             $this->where = $this->clause('WHERE');
-            $clause = $this->clause('', [$column, $operator, $value]);
+            $clause      = $this->clause('', [$column, $operator, $value]);
         } else {
             $clause = $this->clause(strtoupper($glue), [$column, $operator, $value]);
         }
@@ -238,6 +244,11 @@ class Query implements QueryInterface
         $this->where->append($clause);
 
         return $this;
+    }
+
+    private function val($value): ValueClause
+    {
+        return new ValueClause($value, $this);
     }
 
     /**
@@ -264,7 +275,7 @@ class Query implements QueryInterface
                 $operator = 'IS NOT';
             }
 
-            $value = 'NULL';
+            $value = $this->val(raw('NULL'));
         } elseif (is_array($value)) {
             if ($operator === '=') {
                 $operator = 'IN';
@@ -272,21 +283,38 @@ class Query implements QueryInterface
                 $operator = 'NOT IN';
             }
 
-            $value = $this->clause('()', array_fill(0, count($value), '?'), ', ');
+            $value = $this->clause('()', [], ', ');
 
             foreach ($origin as $val) {
-                $this->bindValue(null, $val);
+                $value->append($vc = $this->val($val));
+
+                $this->bindValue(null, $vc);
             }
         } elseif ($value instanceof static) {
-            //
+            $value = $this->val($value);
+            $this->injectSubQuery($origin);
         } elseif ($value instanceof RawWrapper) {
-            $value = $value->get();
+            $value = $this->val($value());
         } else {
-            $this->bindValue(null, $value);
-            $value = '?';
+            $this->bindValue(null, $value = $this->val($value));
         }
 
         return [strtoupper($operator), $value, $origin];
+    }
+
+    /**
+     * injectSubQuery
+     *
+     * @param  Query             $query
+     * @param  string|bool|null  $alias
+     *
+     * @return  void
+     */
+    private function injectSubQuery(Query $query, $alias = null): void
+    {
+        $alias = $alias ?: $query->getAlias() ?: uniqid('sq');
+
+        $this->subQueries[$alias] = $query;
     }
 
     /**
@@ -408,14 +436,14 @@ class Query implements QueryInterface
      * execution. Also removes a variable that has been bounded from the internal bounded array when the passed in
      * value is null.
      *
-     * @param string|integer|array $key The key that will be used in your SQL query to reference the value.
-     *                                          Usually of the form ':key', but can also be an integer.
-     * @param mixed                &$value The value that will be bound. The value is passed by reference to
-     *                                          support output parameters such as those possible with stored
-     *                                          procedures.
-     * @param integer $dataType Constant corresponding to a SQL datatype.
-     * @param integer $length The length of the variable. Usually required for OUTPUT parameters.
-     * @param array $driverOptions Optional driver options to be used.
+     * @param  string|integer|array  $key            The key that will be used in your SQL query to reference the value.
+     *                                               Usually of the form ':key', but can also be an integer.
+     * @param  mixed                &$value          The value that will be bound. The value is passed by reference to
+     *                                               support output parameters such as those possible with stored
+     *                                               procedures.
+     * @param  mixed                 $dataType       Constant corresponding to a SQL datatype.
+     * @param  integer               $length         The length of the variable. Usually required for OUTPUT parameters.
+     * @param  array                 $driverOptions  Optional driver options to be used.
      *
      * @return  static
      *
@@ -424,7 +452,7 @@ class Query implements QueryInterface
     public function bind(
         $key = null,
         &$value = null,
-        ?int $dataType = null,
+        $dataType = null,
         int $length = 0,
         $driverOptions = null
     ) {
@@ -438,18 +466,16 @@ class Query implements QueryInterface
         }
 
         if ($dataType === null) {
-            if (is_numeric($value) && strpos((string) $value, '.') === false) {
-                $dataType = \PDO::PARAM_INT;
-            } else {
-                $dataType = \PDO::PARAM_STR;
-            }
+            $dataType = ParamType::guessType(
+                $value instanceof ValueClause ? $value->getValue() : $value
+            );
         }
 
         $bounded = [
             'value' => &$value,
             'dataType' => $dataType,
             'length' => $length,
-            'driverOptions' => $driverOptions
+            'driverOptions' => $driverOptions,
         ];
 
         if ($key === null) {
@@ -466,15 +492,15 @@ class Query implements QueryInterface
      * execution. Also removes a variable that has been bounded from the internal bounded array when the passed in
      * value is null.
      *
-     * @param   string|integer|array  $key           The key that will be used in your SQL query to reference the
+     * @param  string|integer|array  $key            The key that will be used in your SQL query to reference the
      *                                               value. Usually of the form ':key', but can also be an integer.
-     * @param   mixed                &$value         The value that will be bound. The value is passed by reference to
+     * @param  mixed                &$value          The value that will be bound. The value is passed by reference to
      *                                               support output parameters such as those possible with stored
      *                                               procedures.
-     * @param   integer               $dataType      Constant corresponding to a SQL datatype.
-     * @param   integer               $length        The length of the variable. Usually required for OUTPUT
+     * @param  mixed                 $dataType       Constant corresponding to a SQL datatype.
+     * @param  integer               $length         The length of the variable. Usually required for OUTPUT
      *                                               parameters.
-     * @param   array                 $driverOptions Optional driver options to be used.
+     * @param  array                 $driverOptions  Optional driver options to be used.
      *
      * @return  static
      *
@@ -483,7 +509,7 @@ class Query implements QueryInterface
     public function bindValue(
         $key = null,
         $value = null,
-        ?int $dataType = null,
+        $dataType = null,
         int $length = 0,
         $driverOptions = null
     ) {
@@ -494,7 +520,7 @@ class Query implements QueryInterface
      * Retrieves the bound parameters array when key is null and returns it by reference. If a key is provided then
      * that item is returned.
      *
-     * @param   mixed $key The bounded variable key to retrieve.
+     * @param  mixed  $key  The bounded variable key to retrieve.
      *
      * @return  array|null
      *
@@ -526,7 +552,7 @@ class Query implements QueryInterface
     /**
      * unbind
      *
-     * @param string|array $keys
+     * @param  string|array  $keys
      *
      * @return  static
      *
@@ -549,17 +575,51 @@ class Query implements QueryInterface
         return $this->render();
     }
 
-    public function render(bool $emulatePrepared = false): string
+    public function render(?array &$bounded = [], bool $emulatePrepared = false): string
     {
+        $bounded = $this->mergeBounded();
+
         $method = 'compile' . ucfirst($this->type);
 
         $sql = $this->getGrammar()->$method($this);
 
         if ($emulatePrepared) {
-            $sql = Escaper::replaceQueryParams($this->getConnection(), $sql, $this->getBounded());
+            $sql = Escaper::replaceQueryParams($this->getConnection(), $sql, $bounded);
         }
 
+        $this->sequence = null;
+
         return $sql;
+    }
+
+    public function mergeBounded(?BoundedSequence $sequence = null): array
+    {
+        $sequence = $sequence ?: new BoundedSequence('wqp__');
+
+        $all     = [];
+        $bounded = [];
+
+        $params = $this->getBounded();
+
+        foreach ($params as $key => $param) {
+            if ($param['value'] instanceof ValueClause) {
+                $param['value']->setPlaceholder($sequence->get());
+                $key            = $param['value']->getPlaceholder();
+                $param['value'] = $param['value']->getValue();
+
+                $bounded[$key] = $param;
+            } else {
+                $bounded[$key] = $param;
+            }
+        }
+
+        $all[] = $bounded;
+
+        foreach ($this->getSubQueries() as $subQuery) {
+            $all[] = $subQuery->mergeBounded($sequence);
+        }
+
+        return array_merge(...$all);
     }
 
     /**
@@ -635,7 +695,7 @@ class Query implements QueryInterface
 
     public function __call(string $name, array $args)
     {
-        $field = strtolower(substr($name, 3));
+        $field = lcfirst(substr($name, 3));
 
         if (property_exists($this, $field)) {
             return $this->$field;
