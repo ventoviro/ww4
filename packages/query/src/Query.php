@@ -273,7 +273,15 @@ class Query implements QueryInterface
     }
 
     /**
-     * handleOperatorAndValue
+     * Handle value and operator.
+     *
+     * This method will wrap value as a ValueObject and inject into bounded params.
+     * By default, where clause uses `?` as placeholder and bind variables to prepared statement.
+     * But it is hard to handle sub queries' placeholder ordering.
+     *
+     * ValueObject will be injected to bounded temporaries so that we can change `?` to
+     * a named param like: `:wqp__{ordering}` and re-calc the order when every time rendering Query object,
+     * so we can make sure the variables won't be conflict.
      *
      * @param  mixed  $operator
      * @param  mixed  $value
@@ -291,10 +299,15 @@ class Query implements QueryInterface
             throw new \InvalidArgumentException('Where operator should not be NULL');
         }
 
+        // Closure means to create a sub query as value.
         if ($value instanceof \Closure) {
             $value($value = $this->createNewInstance());
         }
 
+        // Keep origin value a duplicate that we will need it later.
+        // The $value will make it s a ValueClause object and inject to bounded params,
+        // so that we can use it to generate prepared param placeholders.
+        // The $origin variable is to store origin value at Query object if needed.
         $origin = $value;
 
         if ($value === null) {
@@ -306,6 +319,7 @@ class Query implements QueryInterface
 
             $value = $this->val(raw('NULL'));
         } elseif (is_array($value)) {
+            // Auto convert array value as IN() clause.
             if ($operator === '=') {
                 $operator = 'IN';
             } elseif ($operator === '!=') {
@@ -315,6 +329,7 @@ class Query implements QueryInterface
             $value = $this->clause('()', [], ', ');
 
             foreach ($origin as $val) {
+                // Append every value as ValueObject so that we can make placeholders as `IN(?, ?, ?...)`
                 $value->append($vc = $this->val($val));
 
                 $this->bindValue(null, $vc);
