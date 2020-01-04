@@ -223,6 +223,18 @@ class QueryTest extends TestCase
                 'nouse',
                 'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"'
             ],
+            'Multiple tables with sub query closure' => [
+                [
+                    'a' => 'ace',
+                    'f' => function (Query $q) {
+                        $q->select('*')
+                            ->from('flower')
+                            ->alias('fl_nouse');
+                    }
+                ],
+                'nouse',
+                'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"'
+            ],
         ];
     }
 
@@ -397,15 +409,65 @@ class QueryTest extends TestCase
                 'SELECT * FROM "a" WHERE "foo" IN (1, 2, \'yoo\')',
                 ['foo', 'in', [1, 2, 'yoo']]
             ],
+            // Where array and nested
+            'Where array' => [
+                'SELECT * FROM "a" WHERE "foo" = \'bar\' AND "yoo" = \'hello\' AND "flower" IN (SELECT "id" FROM "flower" WHERE "id" = \'bar\')',
+                [
+                    // arg 1 is array
+                    [
+                        ['foo', 'bar'],
+                        ['yoo', '=', 'hello'],
+                        ['flower', 'in', self::createQuery()
+                            ->select('id')
+                            ->from('flower')
+                            ->where('id', 5)]
+                    ]
+                ]
+            ],
+            'Where nested' => [
+                'SELECT * FROM "a" WHERE "foo" = \'bar\' AND ("yoo" = \'goo\' AND "flower" != \'Sakura\')',
+                ['foo', 'bar'],
+                [
+                    static function (Query $query) {
+                        $query->where('yoo', 'goo')
+                            ->where('flower', '!=', 'Sakura');
+                    }
+                ]
+            ],
+
+            // Sub query
             'Where not exists sub query' => [
-                'SELECT * FROM "a" WHERE "foo" NOT EXISTS (SELECT * FROM "flower" WHERE "id" = 5)',
+                'SELECT * FROM "a" WHERE "foo" NOT EXISTS (SELECT "id" FROM "flower" WHERE "id" = 5)',
                 [
                     'foo',
                     'not exists',
                     self::createQuery()
-                        ->select('*')
+                        ->select('id')
                         ->from('flower')
                         ->where('id', 5)
+                ]
+            ],
+            'Where not exists sub query cllback' => [
+                'SELECT * FROM "a" WHERE "foo" NOT EXISTS (SELECT "id" FROM "flower" WHERE "id" = 5)',
+                [
+                    'foo',
+                    'not exists',
+                    static function (Query $q) {
+                        $q->select('id')
+                            ->from('flower')
+                            ->where('id', 5);
+                    }
+                ]
+            ],
+            'Where sub query equals value' => [
+                'SELECT * FROM "a" WHERE (SELECT "id" FROM "flower" WHERE "id" = 123) = 123',
+                [
+                    self::createQuery()
+                        ->select('id')
+                        ->from('flower')
+                        ->where('id', 5),
+                    '=',
+                    123
                 ]
             ],
         ];

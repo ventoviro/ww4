@@ -20,6 +20,7 @@ use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
+use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
 
@@ -202,7 +203,7 @@ class Query implements QueryInterface
             $clause->value($value());
         } else {
             if ($value instanceof \Closure) {
-                $value($value = new static($this->connection, $this->grammar));
+                $value($value = $this->createNewInstance());
             }
 
             if ($value instanceof static) {
@@ -224,24 +225,44 @@ class Query implements QueryInterface
         return $clause;
     }
 
-    public function where($column, $operator, $value = null, string $glue = 'AND')
+    public function where($column, $operator = null, $value = null, string $glue = 'AND')
     {
+        if (!$this->where) {
+            $this->where = $this->clause('WHERE');
+        }
+
+        if ($column instanceof \Closure) {
+            $this->handleNestedWheres(
+                $column,
+                $this->where->elements !== [] ? strtoupper($glue) : ''
+            );
+
+            return $this;
+        }
+
+        if (is_array($column)) {
+            foreach ($column as $where) {
+                $this->where(...$where);
+            }
+
+            return $this;
+        }
+
         $column = $this->as($column, false);
 
-        [$operator, $value, $originValue] = $this->handleOperatorAndValue(
+        [$operator, $value] = $this->handleOperatorAndValue(
             $operator,
             $value,
             count(func_get_args()) === 2
         );
 
-        if (!$this->where) {
-            $this->where = $this->clause('WHERE');
-            $clause      = $this->clause('', [$column, $operator, $value]);
-        } else {
-            $clause = $this->clause(strtoupper($glue), [$column, $operator, $value]);
-        }
-
-        $this->where->append($clause);
+        $this->where->append(
+            $this->clause(
+                // First where should not have prefix
+                $this->where->elements !== [] ? strtoupper($glue) : '',
+                [$column, $operator, $value]
+            )
+        );
 
         return $this;
     }
@@ -264,6 +285,14 @@ class Query implements QueryInterface
     {
         if ($shortcut) {
             [$operator, $value] = ['=', $operator];
+        }
+
+        if ($operator === null) {
+            throw new \InvalidArgumentException('Where operator should not be NULL');
+        }
+
+        if ($value instanceof \Closure) {
+            $value($value = $this->createNewInstance());
         }
 
         $origin = $value;
@@ -300,6 +329,25 @@ class Query implements QueryInterface
         }
 
         return [strtoupper($operator), $value, $origin];
+    }
+
+    private function handleNestedWheres(\Closure $callback, string $glue): void
+    {
+        $query = $this->createNewInstance();
+
+        $callback($query);
+
+        $where = $query->getWhere();
+
+        $this->where->append($where->setName($glue . ' ()'));
+
+        foreach ($query->getBounded() as $key => $param) {
+            if (TypeCast::tryInteger($key, true) !== null) {
+                $this->bounded[] = $param;
+            } else {
+                $this->bounded[$key] = $param;
+            }
+        }
     }
 
     /**
@@ -692,6 +740,16 @@ class Query implements QueryInterface
     //         }
     //     }
     // }
+
+    /**
+     * createNewInstacne
+     *
+     * @return  static
+     */
+    protected function createNewInstance(): self
+    {
+        return new static($this->connection, $this->grammar);
+    }
 
     public function __call(string $name, array $args)
     {

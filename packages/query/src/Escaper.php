@@ -119,7 +119,9 @@ class Escaper
         $sql = str_replace('%', '%%', $sql);
         $sql = str_replace('?', '%s', $sql);
 
-        $sql = sprintf($sql, ...$values);
+        if ($values !== []) {
+            $sql = sprintf($sql, ...$values);
+        }
 
         return preg_replace_callback('/(:[a-zA-Z0-9_]+)/', function ($matched) use ($params, $db) {
             $name = $matched[0];
