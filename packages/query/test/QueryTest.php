@@ -380,10 +380,10 @@ class QueryTest extends TestCase
                 ['foo', '<', 'bar']
             ],
             'Where chain' => [
-                'SELECT * FROM "a" WHERE "foo" < 123 OR "baz" = \'bax\' AND "yoo" != \'goo\'',
+                'SELECT * FROM "a" WHERE "foo" < 123 AND "baz" = \'bax\' AND "yoo" != \'goo\'',
                 ['foo', '<', 123],
-                ['baz', '=', 'bax', 'or'],
-                ['yoo', '!=', 'goo', 'and'],
+                ['baz', '=', 'bax'],
+                ['yoo', '!=', 'goo'],
             ],
             'Where null' => [
                 'SELECT * FROM "a" WHERE "foo" IS NULL',
@@ -435,6 +435,18 @@ class QueryTest extends TestCase
                 ]
             ],
 
+            'Where nested or' => [
+                'SELECT * FROM "a" WHERE "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\')',
+                ['foo', 'bar'],
+                [
+                    static function (Query $query) {
+                        $query->where('yoo', 'goo')
+                            ->where('flower', '!=', 'Sakura');
+                    },
+                    'or'
+                ]
+            ],
+
             // Sub query
             'Where not exists sub query' => [
                 'SELECT * FROM "a" WHERE "foo" NOT EXISTS (SELECT "id" FROM "flower" WHERE "id" = 5)',
@@ -469,6 +481,13 @@ class QueryTest extends TestCase
                     '=',
                     123
                 ]
+            ],
+
+            // Where with raw wrapper
+
+            'Where in' => [
+                'SELECT * FROM "a" WHERE "foo" IN (1, 2, \'yoo\')',
+                [raw('foo'), raw('YEAR(date)')]
             ],
         ];
     }

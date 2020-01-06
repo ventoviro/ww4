@@ -227,14 +227,20 @@ class Query implements QueryInterface
 
     public function where($column, $operator = null, $value = null, string $glue = 'AND')
     {
+        if (!in_array(strtolower(trim($glue)), ['and', 'or'], true)) {
+            throw new \InvalidArgumentException('WHERE glue should only be `OR`, `AND`.');
+        }
+
         if (!$this->where) {
-            $this->where = $this->clause('WHERE');
+            $this->where = $this->clause('WHERE', [], ' ' . strtoupper($glue) . ' ');
         }
 
         if ($column instanceof \Closure) {
+            $glue = (string) ($operator ?? 'AND');
+
             $this->handleNestedWheres(
                 $column,
-                $this->where->elements !== [] ? strtoupper($glue) : ''
+                ' ' . $glue . ' '
             );
 
             return $this;
@@ -258,8 +264,7 @@ class Query implements QueryInterface
 
         $this->where->append(
             $this->clause(
-                // First where should not have prefix
-                $this->where->elements !== [] ? strtoupper($glue) : '',
+                '',
                 [$column, $operator, $value]
             )
         );
@@ -338,7 +343,7 @@ class Query implements QueryInterface
             $value = $this->val($value);
             $this->injectSubQuery($origin);
         } elseif ($value instanceof RawWrapper) {
-            $value = $this->val($value());
+            $value = $this->val($value);
         } else {
             $this->bindValue(null, $value = $this->val($value));
         }
@@ -348,13 +353,24 @@ class Query implements QueryInterface
 
     private function handleNestedWheres(\Closure $callback, string $glue): void
     {
+        if (!in_array(strtolower(trim($glue)), ['and', 'or'], true)) {
+            throw new \InvalidArgumentException('WHERE glue should only be `OR`, `AND`.');
+        }
+
         $query = $this->createNewInstance();
 
         $callback($query);
 
         $where = $query->getWhere();
 
-        $this->where->append($where->setName($glue . ' ()'));
+        if (!$where) {
+            throw new \LogicException('Where clause not exists.');
+        }
+
+        $this->where->append(
+            $where->setName('()')
+                ->setGlue(strtoupper($glue))
+        );
 
         foreach ($query->getBounded() as $key => $param) {
             if (TypeCast::tryInteger($key, true) !== null) {
