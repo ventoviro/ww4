@@ -56,7 +56,7 @@ class EscaperTest extends TestCase
     }
 
     /**
-     * @see  Escaper::quote
+     * @see  Escaper::tryQuote
      */
     public function testQuote(): void
     {
@@ -72,7 +72,7 @@ class EscaperTest extends TestCase
     }
 
     /**
-     * @see  Escaper::escape
+     * @see  Escaper::tryEscape
      */
     public function testEscape(): void
     {

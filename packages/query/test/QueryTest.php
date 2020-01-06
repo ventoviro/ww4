@@ -409,6 +409,11 @@ class QueryTest extends TestCase
                 'SELECT * FROM "a" WHERE "foo" IN (1, 2, \'yoo\')',
                 ['foo', 'in', [1, 2, 'yoo']]
             ],
+            // Bind with name
+            'Where bind with var name' => [
+                'SELECT * FROM "a" WHERE "foo"= \'Hello\'',
+                ['foo', '=', ':foo', 'Hello']
+            ],
             // Where array and nested
             'Where array' => [
                 'SELECT * FROM "a" WHERE "foo" = \'bar\' AND "yoo" = \'hello\' AND "flower" IN (SELECT "id" FROM "flower" WHERE "id" = \'bar\')',
@@ -484,12 +489,36 @@ class QueryTest extends TestCase
             ],
 
             // Where with raw wrapper
-
-            'Where in' => [
-                'SELECT * FROM "a" WHERE "foo" IN (1, 2, \'yoo\')',
+            'Where with raw wrapper' => [
+                'SELECT * FROM "a" WHERE foo = YEAR(date)',
                 [raw('foo'), raw('YEAR(date)')]
             ],
         ];
+    }
+
+    public function testFormat()
+    {
+        $result = $this->instance->format('SELECT %n FROM %n WHERE %n = %a', 'foo', '#__bar', 'id', 10);
+
+        $sql = 'SELECT ' . $this->instance->quoteName('foo') . ' FROM ' . $this->instance->quoteName('#__bar') .
+            ' WHERE ' . $this->instance->quoteName('id') . ' = 10';
+
+        $this->assertEquals($sql, $result);
+
+        $result = $this->instance->format(
+            'SELECT %n FROM %n WHERE %n = %t OR %3$n = %Z',
+            'id',
+            '#__foo',
+            'date',
+            'nouse'
+        );
+
+        $sql = 'SELECT ' . $this->instance->quoteName('id') . ' FROM ' . $this->instance->quoteName('#__foo') .
+            ' WHERE ' . $this->instance->quoteName('date') .
+            ' = ' . $this->instance->getExpression()->currentTimestamp() .
+            ' OR ' . $this->instance->quoteName('date') . ' = ' . $this->instance->quote($this->instance->nullDate());
+
+        $this->assertEquals($sql, $result);
     }
 
     /**
@@ -501,7 +530,7 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @see  Query::getConnection
+     * @see  Query::getEscaper
      */
     public function testGetConnection(): void
     {
@@ -509,7 +538,7 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @see  Query::setConnection
+     * @see  Query::setEscaper
      */
     public function testSetConnection(): void
     {

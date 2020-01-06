@@ -58,10 +58,22 @@ class StrNormalise
      * @param  string  $input  The string input (ASCII only).
      *
      * @return  string  The camel case string.
+     */
+    public static function toCamelCase(string $input): string
+    {
+        return lcfirst(static::toPascalCase($input));
+    }
+
+    /**
+     * Method to convert a string into pascal case.
+     *
+     * @param  string  $input  The string input (ASCII only).
+     *
+     * @return  string  The camel case string.
      *
      * @since   2.0
      */
-    public static function toCamelCase(string $input): string
+    public static function toPascalCase(string $input): string
     {
         return implode('', array_map('ucfirst', self::splitAll($input)));
     }
@@ -78,6 +90,18 @@ class StrNormalise
     public static function toDashSeparated(string $input): string
     {
         return self::separate($input, '-');
+    }
+
+    /**
+     * Dash separated alias.
+     *
+     * @param  string  $input
+     *
+     * @return  string
+     */
+    public static function toKebabCase(string $input): string
+    {
+        return static::toDashSeparated($input);
     }
 
     /**
@@ -119,10 +143,22 @@ class StrNormalise
      *
      * @since   2.0
      */
-    public static function toUnderscoreSeparated(string $input): string
+    public static function toSnakeCase(string $input): string
     {
         // Convert spaces and dashes to underscores.
         return static::separate($input, '_');
+    }
+
+    /**
+     * Alias of toSnakeCase()
+     *
+     * @param  string  $input
+     *
+     * @return  string
+     */
+    public static function toUnderscoreSeparated(string $input): string
+    {
+        return static::toSnakeCase($input);
     }
 
     /**

@@ -18,7 +18,35 @@ use Windwalker\Query\Query;
  */
 class Grammar
 {
-    protected $nameQuote = ['"', '"'];
+    /**
+     * @var string
+     */
+    protected static $name = '';
+
+    /**
+     * @var array
+     */
+    protected static $nameQuote = ['"', '"'];
+
+    /**
+     * @var string
+     */
+    protected static $nullDate = '0000-00-00 00:00:00';
+
+    /**
+     * @var string
+     */
+    protected static $dateFormat = 'Y-m-d H:i:s';
+
+    /**
+     * Method to get property Name
+     *
+     * @return  string
+     */
+    public static function getName(): string
+    {
+        return static::$name;
+    }
 
     /**
      * Compile Query object to SQL string.
@@ -99,6 +127,30 @@ class Grammar
             return $this->quoteName($name1) . '.' . $this->quoteName($name2);
         }
 
-        return $this->nameQuote[0] . $name . $this->nameQuote[1];
+        return static::$nameQuote[0] . $name . static::$nameQuote[1];
+    }
+
+    /**
+     * If no connection set, we escape it with default function.
+     *
+     * @param string $text
+     *
+     * @return  string
+     */
+    protected function unsafeEscape(string $text): string
+    {
+        $text = str_replace("'", "''", $text);
+
+        return addcslashes($text, "\000\n\r\\\032");
+    }
+
+    public function nullDate(): string
+    {
+        return static::$nullDate;
+    }
+
+    public function dateFormat(): string
+    {
+        return static::$dateFormat;
     }
 }

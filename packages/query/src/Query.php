@@ -16,6 +16,7 @@ use Windwalker\Query\Bounded\ParamType;
 use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Clause\ValueClause;
+use Windwalker\Query\Expression\Expression;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Classes\FlowControlTrait;
@@ -23,7 +24,6 @@ use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
-
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -85,6 +85,11 @@ class Query implements QueryInterface
     protected $grammar;
 
     /**
+     * @var Expression
+     */
+    protected $expression;
+
+    /**
      * @var string
      */
     protected $alias;
@@ -100,21 +105,21 @@ class Query implements QueryInterface
     protected $sequence;
 
     /**
-     * Todo: Change to escaper if need
-     * @var mixed|\PDO
+     * @var Escaper
      */
-    protected $connection;
+    protected $escaper;
 
     /**
      * Query constructor.
      *
-     * @param  mixed|\PDO    $connection
-     * @param  Grammar|null  $grammar
+     * @param  mixed|\PDO|Escaper  $escaper
+     * @param  Grammar|null        $grammar
      */
-    public function __construct($connection = null, Grammar $grammar = null)
+    public function __construct($escaper = null, Grammar $grammar = null)
     {
-        $this->connection = $connection;
-        $this->grammar    = $grammar ?: new Grammar();
+        $this->grammar = $grammar ?: new Grammar();
+
+        $this->setEscaper($escaper);
     }
 
     /**
@@ -225,23 +230,10 @@ class Query implements QueryInterface
         return $clause;
     }
 
-    public function where($column, $operator = null, $value = null, string $glue = 'AND')
+    public function where($column, ...$args)
     {
-        if (!in_array(strtolower(trim($glue)), ['and', 'or'], true)) {
-            throw new \InvalidArgumentException('WHERE glue should only be `OR`, `AND`.');
-        }
-
-        if (!$this->where) {
-            $this->where = $this->clause('WHERE', [], ' ' . strtoupper($glue) . ' ');
-        }
-
         if ($column instanceof \Closure) {
-            $glue = (string) ($operator ?? 'AND');
-
-            $this->handleNestedWheres(
-                $column,
-                ' ' . $glue . ' '
-            );
+            $this->handleNestedWheres($column, (string) ($args[0] ?? 'AND'));
 
             return $this;
         }
@@ -256,13 +248,18 @@ class Query implements QueryInterface
 
         $column = $this->as($column, false);
 
-        [$operator, $value] = $this->handleOperatorAndValue(
-            $operator,
-            $value,
-            count(func_get_args()) === 2
-        );
+        if (count($args) >= 3) {
+            [$operator, $value, $param] = $args;
+            $this->bindValue($value, $param);
+        } else {
+            [$operator, $value] = $this->handleOperatorAndValue(
+                $args[0] ?? null,
+                $args[1] ?? null,
+                count($args) === 1
+            );
+        }
 
-        $this->where->append(
+        $this->whereRaw(
             $this->clause(
                 '',
                 [$column, $operator, $value]
@@ -357,9 +354,7 @@ class Query implements QueryInterface
             throw new \InvalidArgumentException('WHERE glue should only be `OR`, `AND`.');
         }
 
-        $query = $this->createNewInstance();
-
-        $callback($query);
+        $callback($query = $this->createNewInstance());
 
         $where = $query->getWhere();
 
@@ -367,9 +362,9 @@ class Query implements QueryInterface
             throw new \LogicException('Where clause not exists.');
         }
 
-        $this->where->append(
+        $this->whereRaw(
             $where->setName('()')
-                ->setGlue(strtoupper($glue))
+                ->setGlue(' ' . strtoupper($glue) . ' ')
         );
 
         foreach ($query->getBounded() as $key => $param) {
@@ -379,6 +374,29 @@ class Query implements QueryInterface
                 $this->bounded[$key] = $param;
             }
         }
+    }
+
+    /**
+     * whereRaw
+     *
+     * @param  string|Clause  $string
+     * @param  array          ...$args
+     *
+     * @return  static
+     */
+    public function whereRaw($string, ...$args)
+    {
+        if (!$this->where) {
+            $this->where = $this->clause('WHERE', [], ' AND ');
+        }
+
+        if (is_string($string) && $args !== []) {
+            $string = $this->format($string, ...$args);
+        }
+
+        $this->where->append($string);
+
+        return $this;
     }
 
     /**
@@ -429,7 +447,7 @@ class Query implements QueryInterface
             return $value;
         }
 
-        return Escaper::escape($this->getConnection(), $value);
+        return $this->getEscaper()->escape((string) $value);
     }
 
     /**
@@ -441,9 +459,7 @@ class Query implements QueryInterface
      */
     public function quote($value)
     {
-        if ($value instanceof RawWrapper) {
-            return value($value);
-        }
+        $value = value($value);
 
         if (is_array($value)) {
             foreach ($value as &$v) {
@@ -461,7 +477,7 @@ class Query implements QueryInterface
             return (string) $value;
         }
 
-        return Escaper::quote($this->getConnection(), (string) $value);
+        return $this->getEscaper()->quote((string) $value);
     }
 
     /**
@@ -508,6 +524,194 @@ class Query implements QueryInterface
         $this->alias = $alias;
 
         return $this;
+    }
+
+    public function nullDate(): string
+    {
+        return $this->getGrammar()->nullDate();
+    }
+
+    /**
+     * Find and replace sprintf-like tokens in a format string.
+     * Each token takes one of the following forms:
+     *     %%       - A literal percent character.
+     *     %[t]     - Where [t] is a type specifier.
+     *     %[n]$[x] - Where [n] is an argument specifier and [t] is a type specifier.
+     *
+     * Types:
+     * a - Numeric: Replacement text is coerced to a numeric type but not quoted or escaped.
+     * e - Escape: Replacement text is passed to $this->escape().
+     * E - Escape (extra): Replacement text is passed to $this->escape() with true as the second argument.
+     * n - Name Quote: Replacement text is passed to $this->quoteName().
+     * q - Quote: Replacement text is passed to $this->quote().
+     * Q - Quote (no escape): Replacement text is passed to $this->quote() with false as the second argument.
+     * r - Raw: Replacement text is used as-is. (Be careful)
+     *
+     * Date Types:
+     * - Replacement text automatically quoted (use uppercase for Name Quote).
+     * - Replacement text should be a string in date format or name of a date column.
+     * y/Y - Year
+     * m/M - Month
+     * d/D - Day
+     * h/H - Hour
+     * i/I - Minute
+     * s/S - Second
+     *
+     * Invariable Types:
+     * - Takes no argument.
+     * - Argument index not incremented.
+     * t - Replacement text is the result of $this->currentTimestamp().
+     * z - Replacement text is the result of $this->nullDate(false).
+     * Z - Replacement text is the result of $this->nullDate(true).
+     *
+     * Usage:
+     * $query->format('SELECT %1$n FROM %2$n WHERE %3$n = %4$a', 'foo', '#__foo', 'bar', 1);
+     * Returns: SELECT `foo` FROM `#__foo` WHERE `bar` = 1
+     *
+     * Notes:
+     * The argument specifier is optional but recommended for clarity.
+     * The argument index used for unspecified tokens is incremented only when used.
+     *
+     * @param  string  $format  The formatting string.
+     * @param  array   $args    The strings variables.
+     *
+     * @return  string  Returns a string produced according to the formatting string.
+     *
+     * @note    This method is a modified version from Joomla DatabaseQuery.
+     *
+     * @since   2.0
+     */
+    public function format(string $format, ...$args): string
+    {
+        $query = $this;
+        array_unshift($args, null);
+
+        $expression = $this->getExpression();
+
+        $i    = 1;
+        $func = function ($match) use ($query, $args, &$i, $expression) {
+            if (isset($match[6]) && $match[6] === '%') {
+                return '%';
+            }
+
+            // No argument required, do not increment the argument index.
+            switch ($match[5]) {
+                case 't':
+                    return $expression->currentTimestamp();
+                    break;
+
+                case 'z':
+                    return $query->nullDate();
+                    break;
+
+                case 'Z':
+                    return $this->quote($query->nullDate());
+                    break;
+            }
+
+            // Increment the argument index only if argument specifier not provided.
+            $index = is_numeric($match[4]) ? (int) $match[4] : $i++;
+
+            if (!$index || !isset($args[$index])) {
+                $replacement = '';
+            } else {
+                $replacement = $args[$index];
+            }
+
+            switch ($match[5]) {
+                case 'a':
+                    return 0 + $replacement;
+                    break;
+
+                case 'e':
+                    return $query->escape($replacement);
+                    break;
+
+                // case 'E':
+                //     return $query->escape($replacement, true);
+                //     break;
+
+                case 'n':
+                    return $query->quoteName($replacement);
+                    break;
+
+                case 'q':
+                    return $query->quote($replacement);
+                    break;
+
+                // case 'Q':
+                //     return $query->quote($replacement, false);
+                //     break;
+
+                case 'r':
+                    return $replacement;
+                    break;
+
+                // Dates
+                case 'y':
+                    return $expression->year($query->quote($replacement));
+                    break;
+
+                case 'Y':
+                    return $expression->year($query->quoteName($replacement));
+                    break;
+
+                case 'm':
+                    return $expression->month($query->quote($replacement));
+                    break;
+
+                case 'M':
+                    return $expression->month($query->quoteName($replacement));
+                    break;
+
+                case 'd':
+                    return $expression->day($query->quote($replacement));
+                    break;
+
+                case 'D':
+                    return $expression->day($query->quoteName($replacement));
+                    break;
+
+                case 'h':
+                    return $expression->hour($query->quote($replacement));
+                    break;
+
+                case 'H':
+                    return $expression->hour($query->quoteName($replacement));
+                    break;
+
+                case 'i':
+                    return $expression->minute($query->quote($replacement));
+                    break;
+
+                case 'I':
+                    return $expression->minute($query->quoteName($replacement));
+                    break;
+
+                case 's':
+                    return $expression->second($query->quote($replacement));
+                    break;
+
+                case 'S':
+                    return $expression->second($query->quoteName($replacement));
+                    break;
+            }
+
+            return '';
+        };
+
+        /**
+         * Regexp to find an replace all tokens.
+         * Matched fields:
+         * 0: Full token
+         * 1: Everything following '%'
+         * 2: Everything following '%' unless '%'
+         * 3: Argument specifier and '$'
+         * 4: Argument specifier
+         * 5: Type specifier
+         * 6: '%' if full token is '%%'
+         */
+        return preg_replace_callback('#%(((([\d]+)\$)?([aeEnqQryYmMdDhHiIsStzZ]))|(%))#', $func, $format);
     }
 
     /**
@@ -663,7 +867,7 @@ class Query implements QueryInterface
         $sql = $this->getGrammar()->$method($this);
 
         if ($emulatePrepared) {
-            $sql = Escaper::replaceQueryParams($this->getConnection(), $sql, $bounded);
+            $sql = Escaper::replaceQueryParams($this->getEscaper(), $sql, $bounded);
         }
 
         $this->sequence = null;
@@ -716,31 +920,27 @@ class Query implements QueryInterface
     /**
      * Method to get property Connection
      *
-     * @return  \PDO|mixed
+     * @return  Escaper
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getConnection()
+    public function getEscaper()
     {
-        if ($this->connection instanceof \WeakReference) {
-            return $this->connection->get();
-        }
-
-        return $this->connection;
+        return $this->escaper;
     }
 
     /**
      * Method to set property connection
      *
-     * @param  \PDO|\WeakReference|mixed  $connection
+     * @param  Escaper|\PDO|\WeakReference|mixed  $escaper
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setConnection($connection)
+    public function setEscaper($escaper)
     {
-        $this->connection = $connection;
+        $this->escaper = $escaper instanceof Escaper ? $escaper : new Escaper($escaper, $this);
 
         return $this;
     }
@@ -755,6 +955,26 @@ class Query implements QueryInterface
     public function getGrammar(): Grammar
     {
         return $this->grammar;
+    }
+
+    /**
+     * getExpression
+     *
+     * @return  Expression
+     */
+    public function getExpression(): Expression
+    {
+        if ($this->expression) {
+            return $this->expression;
+        }
+
+        $class = sprintf(__NAMESPACE__ . '\\Expression\\' . $this->grammar::getName() . 'Expression');
+
+        if (!class_exists($class)) {
+            $class = Expression::class;
+        }
+
+        return $this->expression = new $class($this);
     }
 
     /**
@@ -779,7 +999,7 @@ class Query implements QueryInterface
      */
     protected function createNewInstance(): self
     {
-        return new static($this->connection, $this->grammar);
+        return new static($this->escaper, $this->grammar);
     }
 
     public function __call(string $name, array $args)

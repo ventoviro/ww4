@@ -47,7 +47,7 @@ class StrNormaliseTest extends TestCase
      *
      * @since   2.0
      */
-    public function seedTestToCamelCase()
+    public function seedTestToPascalCase()
     {
         return [
             ['FooBar', 'Foo Bar'],
@@ -66,7 +66,7 @@ class StrNormaliseTest extends TestCase
      *
      * @since   2.0
      */
-    public function seedTestToDashSeparated()
+    public function seedTestToKebabCase()
     {
         return [
             ['Foo-Bar', 'Foo Bar'],
@@ -179,35 +179,50 @@ class StrNormaliseTest extends TestCase
     }
 
     /**
-     * Method to test StrNormalise::toCamelCase().
+     * Method to test StrNormalise::PascalCase().
      *
      * @param  string  $expected  The expected value from the method.
      * @param  string  $input     The input value for the method.
      *
      * @return  void
      *
-     * @dataProvider  seedTestToCamelCase
+     * @dataProvider  seedTestToPascalCase
      * @since         2.0
      */
-    public function testToCamelCase($expected, $input)
+    public function testToPascalCase($expected, $input)
     {
-        $this->assertEquals($expected, StrNormalise::toCamelcase($input));
+        $this->assertEquals($expected, StrNormalise::toPascalCase($input));
     }
 
     /**
-     * Method to test StrNormalise::toDashSeparated().
+     * Method to test StrNormalise::PascalCase().
      *
      * @param  string  $expected  The expected value from the method.
      * @param  string  $input     The input value for the method.
      *
      * @return  void
      *
-     * @dataProvider  seedTestToDashSeparated
+     * @dataProvider  seedTestToPascalCase
+     */
+    public function testToCamelCase($expected, $input)
+    {
+        $this->assertEquals(lcfirst($expected), StrNormalise::toCamelCase($input));
+    }
+
+    /**
+     * Method to test StrNormalise::testToKebabCase().
+     *
+     * @param  string  $expected  The expected value from the method.
+     * @param  string  $input     The input value for the method.
+     *
+     * @return  void
+     *
+     * @dataProvider  seedTestToKebabCase
      * @since         2.0
      */
-    public function testToDashSeparated($expected, $input)
+    public function testToKebabCase($expected, $input)
     {
-        $this->assertEquals($expected, StrNormalise::toDashSeparated($input));
+        $this->assertEquals($expected, StrNormalise::toKebabCase($input));
     }
 
     /**
