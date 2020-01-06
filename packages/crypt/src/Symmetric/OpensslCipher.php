@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Crypt\Symmetric;
 
 use Windwalker\Crypt\CryptHelper;
+use Windwalker\Crypt\Exception\CryptException;
 use Windwalker\Crypt\HiddenString;
 use Windwalker\Crypt\Key;
 use Windwalker\Crypt\SafeEncoder;
@@ -59,7 +60,7 @@ class OpensslCipher implements CipherInterface
     public function __construct(string $method, array $options = [])
     {
         if (!is_callable('openssl_encrypt')) {
-            throw new \RuntimeException('The openssl extension is not available.');
+            throw new CryptException('The openssl extension is not available.');
         }
 
         $this->options = array_merge(
@@ -90,7 +91,7 @@ class OpensslCipher implements CipherInterface
         $calculatedHmac = $this->hmac($salt . $iv . $encrypted, $hmacKey);
 
         if (!hash_equals($calculatedHmac, $hmac)) {
-            throw new \RuntimeException('HMAC ERROR: Invalid HMAC.');
+            throw new CryptException('HMAC ERROR: Invalid HMAC.');
         }
 
         if ($this->options['legacy']) {
@@ -100,7 +101,7 @@ class OpensslCipher implements CipherInterface
         $decrypted = openssl_decrypt($encrypted, $this->getMethod(), $encKey, OPENSSL_RAW_DATA, $iv);
 
         if ($decrypted === false) {
-            throw new \RuntimeException('Openssl decrypt failed: ' . openssl_error_string());
+            throw new CryptException('Openssl decrypt failed: ' . openssl_error_string());
         }
 
         // Decrypt the data.
@@ -161,7 +162,7 @@ class OpensslCipher implements CipherInterface
      *
      * @return  string
      *
-     * @throws \RuntimeException
+     * @throws CryptException
      */
     protected function randomPseudoBytes(?int $size = null): string
     {
@@ -170,7 +171,7 @@ class OpensslCipher implements CipherInterface
         $bytes = openssl_random_pseudo_bytes($size, $isSourceStrong);
 
         if (false === $isSourceStrong || false === $bytes) {
-            throw new \RuntimeException('IV generation failed');
+            throw new CryptException('IV generation failed');
         }
 
         return $bytes;
@@ -181,7 +182,7 @@ class OpensslCipher implements CipherInterface
      *
      * @return  string
      *
-     * @throws \RuntimeException
+     * @throws CryptException
      */
     public function getIV(): string
     {
@@ -195,11 +196,11 @@ class OpensslCipher implements CipherInterface
      * @param  string  $salt
      *
      * @return array [$secureEncryptionKey, $secureHMACKey]
-     * @throws \RuntimeException
+     * @throws CryptException
      */
     protected function derivateSecureKeys(string $key, string $salt): array
     {
-        $iteration = $this->options['pbkdf2_iteration'] ?: 12000;
+        $iteration = $this->options['pbkdf2_iteration'] ?? 12000;
 
         return str_split(
             $this->pbkdf2(
@@ -230,40 +231,34 @@ class OpensslCipher implements CipherInterface
     /**
      * PBKDF2 key derivation function as defined by RSA's PKCS #5: https://www.ietf.org/rfc/rfc2898.txt
      *
-     * Test vectors can be found here: https://www.ietf.org/rfc/rfc6070.txt
-     * This implementation of PBKDF2 was originally created by https://defuse.ca
-     * With improvements by http://www.variations-of-shadow.com
+     * @param  string  $algorithm  The hash algorithm to use. Recommended: SHA256
+     * @param  string  $password   The password
+     * @param  string  $salt       A salt that is unique to the password
+     * @param  int     $count      Iteration count. Higher is better, but slower. Recommended: At least 1000
+     * @param  int     $keyLength  The length of the derived key in bytes
+     * @param  bool    $rawOutput  If true, the key is returned in raw binary format. Hex encoded otherwise
      *
-     * @param  string  $algorithm   The hash algorithm to use. Recommended: SHA256
-     * @param  string  $password    The password
-     * @param  string  $salt        A salt that is unique to the password
-     * @param  int     $count       Iteration count. Higher is better, but slower. Recommended: At least 1000
-     * @param  int     $key_length  The length of the derived key in bytes
-     * @param  bool    $raw_output  If true, the key is returned in raw binary format. Hex encoded otherwise
-     *
-     * @return string A $key_length-byte key derived from the password and salt
-     *
-     * @see https://defuse.ca/php-pbkdf2.htm
+     * @return string A $keyLength-byte key derived from the password and salt
      */
     protected function pbkdf2(
         string $algorithm,
         string $password,
         string $salt,
         int $count,
-        int $key_length,
-        bool $raw_output = false
+        int $keyLength,
+        bool $rawOutput = false
     ): string {
         $algorithm = strtolower($algorithm);
 
         if (!in_array($algorithm, hash_algos(), true)) {
-            trigger_error('PBKDF2 ERROR: Invalid hash algorithm.', E_USER_ERROR);
+            throw new CryptException('PBKDF2 ERROR: Invalid hash algorithm.');
         }
 
-        if ($count <= 0 || $key_length <= 0) {
-            trigger_error('PBKDF2 ERROR: Invalid parameters.', E_USER_ERROR);
+        if ($count <= 0 || $keyLength <= 0) {
+            throw new CryptException('PBKDF2 ERROR: Invalid parameters.');
         }
 
-        return hash_pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output);
+        return hash_pbkdf2($algorithm, $password, $salt, $count, $keyLength, $rawOutput);
     }
 
     /**
