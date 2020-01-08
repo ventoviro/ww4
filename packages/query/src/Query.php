@@ -19,6 +19,7 @@ use Windwalker\Query\Clause\ValueClause;
 use Windwalker\Query\Expression\Expression;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
@@ -248,16 +249,11 @@ class Query implements QueryInterface
 
         $column = $this->as($column, false);
 
-        if (count($args) >= 3) {
-            [$operator, $value, $param] = $args;
-            $this->bindValue($value, $param);
-        } else {
-            [$operator, $value] = $this->handleOperatorAndValue(
-                $args[0] ?? null,
-                $args[1] ?? null,
-                count($args) === 1
-            );
-        }
+        [$operator, $value] = $this->handleOperatorAndValue(
+            $args[0] ?? null,
+            $args[1] ?? null,
+            count($args) === 1
+        );
 
         $this->whereRaw(
             $this->clause(
@@ -397,6 +393,31 @@ class Query implements QueryInterface
         $this->where->append($string);
 
         return $this;
+    }
+
+    /**
+     * orWhere
+     *
+     * @param array|\Closure $wheres
+     *
+     * @return  static
+     */
+    public function orWhere($wheres)
+    {
+        if (is_array($wheres)) {
+            return $this->orWhere(function (Query $query) use ($wheres) {
+                foreach ($wheres as $where) {
+                    $query->where(...$where);
+                }
+            });
+        }
+
+        ArgumentsAssert::assert(
+            $wheres instanceof \Closure,
+            '%s argument should be array or Closure, %s given.'
+        );
+
+        return $this->where($wheres, 'OR');
     }
 
     /**

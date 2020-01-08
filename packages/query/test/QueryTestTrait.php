@@ -13,6 +13,7 @@ namespace Windwalker\Query\Test;
 
 use Windwalker\Test\Helper\TestStringHelper;
 use Windwalker\Test\Traits\BaseAssertionTrait;
+use Windwalker\Utilities\Str;
 
 /**
  * The AbstractQueryTestCase class.
@@ -42,6 +43,15 @@ trait QueryTestTrait
         return TestStringHelper::quote($text, static::$nameQuote);
     }
 
+    protected static function replaceQn(string $sql): string
+    {
+        if (static::$nameQuote === ['"', '"']) {
+            return $sql;
+        }
+
+        return preg_replace('/(\"([\w]+)\")/', Str::wrap('$2', static::$nameQuote), $sql);
+    }
+
     /**
      * format
      *
@@ -57,7 +67,7 @@ trait QueryTestTrait
     public static function assertSqlFormatEquals($sql1, $sql2): void
     {
         self::assertEquals(
-            self::format($sql1),
+            self::format(static::replaceQn($sql1)),
             self::format($sql2)
         );
     }
@@ -65,7 +75,7 @@ trait QueryTestTrait
     public static function assertSqlEquals($sql1, $sql2): void
     {
         self::assertEquals(
-            \SqlFormatter::compress($sql1),
+            \SqlFormatter::compress(static::replaceQn($sql1)),
             \SqlFormatter::compress($sql2)
         );
     }
