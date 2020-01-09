@@ -36,6 +36,8 @@ use function Windwalker\value;
  * @method Clause|null getWhere()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
+ * @method string|array qn($text)
+ * @method string|array q($text)
  */
 class Query implements QueryInterface
 {
@@ -1004,6 +1006,15 @@ class Query implements QueryInterface
 
     public function __call(string $name, array $args)
     {
+        $aliases = [
+            'qn' => 'quoteName',
+            'q' => 'quote'
+        ];
+
+        if (in_array($name, $aliases, true)) {
+            return $this->{$aliases[$name]}(...$args);
+        }
+
         $field = lcfirst(substr($name, 3));
 
         if (property_exists($this, $field)) {
