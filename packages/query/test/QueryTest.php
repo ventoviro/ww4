@@ -252,7 +252,7 @@ class QueryTest extends TestCase
      */
     public function testAs(string $expt, $value, $alias, bool $isColumn = true): void
     {
-        self::assertEquals($expt, (string) $this->instance->as($value, $alias, $isColumn));
+        self::assertEquals(static::replaceQn($expt), (string) $this->instance->as($value, $alias, $isColumn));
     }
 
     public function asProvider(): array
@@ -342,7 +342,7 @@ class QueryTest extends TestCase
         }
 
         // Test self merged bounded
-        self::assertEquals(
+        self::assertSqlEquals(
             $expt,
             Escaper::replaceQueryParams(
                 $this->instance,
@@ -352,7 +352,7 @@ class QueryTest extends TestCase
         );
 
         // Test double bounded should get same sequence
-        self::assertEquals(
+        self::assertSqlEquals(
             $expt,
             Escaper::replaceQueryParams(
                 $this->instance,
@@ -362,7 +362,7 @@ class QueryTest extends TestCase
         );
 
         // Test emulate prepared
-        self::assertEquals(
+        self::assertSqlEquals(
             $expt,
             $this->instance->render(true)
         );
@@ -410,10 +410,10 @@ class QueryTest extends TestCase
                 ['foo', 'in', [1, 2, 'yoo']]
             ],
             // Bind with name
-            'Where bind with var name' => [
-                'SELECT * FROM "a" WHERE "foo"= \'Hello\'',
-                ['foo', '=', ':foo', 'Hello']
-            ],
+            // 'Where bind with var name' => [
+            //     'SELECT * FROM "a" WHERE "foo" = \'Hello\'',
+            //     ['foo', '=', ':foo', 'Hello']
+            // ],
             // Where array and nested
             'Where array' => [
                 'SELECT * FROM "a" WHERE "foo" = \'bar\' AND "yoo" = \'hello\' AND "flower" IN (SELECT "id" FROM "flower" WHERE "id" = \'bar\')',
@@ -494,6 +494,68 @@ class QueryTest extends TestCase
                 [raw('foo'), raw('YEAR(date)')]
             ],
         ];
+    }
+
+    public function testOrWhere()
+    {
+        // Array
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->where('foo', 'bar')
+            ->orWhere([
+                ['yoo', 'goo'],
+                ['flower', '!=', 'Sakura'],
+                ['hello', [1, 2, 3]]
+            ]);
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" WHERE "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\' OR "hello" IN (1, 2, 3))',
+            $q->render(true)
+        );
+
+        // Closure
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->where('foo', 'bar')
+            ->orWhere(function (Query $query) {
+                $query->where('yoo', 'goo');
+                $query->where('flower', '!=', 'Sakura');
+                $query->where('hello', [1, 2, 3]);
+            });
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" WHERE "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\' OR "hello" IN (1, 2, 3))',
+            $q->render(true)
+        );
+
+        // Nested
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->where('foo', 'bar')
+            ->orWhere(function (Query $query) {
+                $query->where('yoo', 'goo');
+                $query->where('flower', '!=', 'Sakura');
+                $query->where(function (Query $query) {
+                    $query->where('hello', [1, 2, 3]);
+                    $query->where('id', '<', 999);
+                });
+            });
+
+        self::assertSqlFormatEquals(
+            <<<SQL
+SELECT * FROM "foo" WHERE "foo" = 'bar'
+AND (
+    "yoo" = 'goo '
+    OR "flower" != 'Sakura'
+    OR ("hello" IN (1, 2, 3) AND "id" < 999)
+)
+SQL
+            ,
+            $q->render(true)
+        );
     }
 
     public function testFormat()
