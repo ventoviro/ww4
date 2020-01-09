@@ -22,4 +22,14 @@ interface QueryInterface
      * @return  string
      */
     public function __toString();
+
+    /**
+     * Render this object as SQL string.
+     *
+     * @param  bool        $emulatePrepared  Replace bounded variables as values.
+     * @param  array|null  $bounded          The bounded values to replace.
+     *
+     * @return  string  Rendered SQL string.
+     */
+    public function render(bool $emulatePrepared = false, ?array &$bounded = []): string;
 }

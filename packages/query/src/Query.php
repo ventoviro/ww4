@@ -25,6 +25,7 @@ use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
+
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -400,18 +401,20 @@ class Query implements QueryInterface
     /**
      * orWhere
      *
-     * @param array|\Closure $wheres
+     * @param  array|\Closure  $wheres
      *
      * @return  static
      */
     public function orWhere($wheres)
     {
         if (is_array($wheres)) {
-            return $this->orWhere(function (Query $query) use ($wheres) {
-                foreach ($wheres as $where) {
-                    $query->where(...$where);
+            return $this->orWhere(
+                function (Query $query) use ($wheres) {
+                    foreach ($wheres as $where) {
+                        $query->where(...$where);
+                    }
                 }
-            });
+            );
         }
 
         ArgumentsAssert::assert(
@@ -1029,7 +1032,7 @@ class Query implements QueryInterface
     {
         $aliases = [
             'qn' => 'quoteName',
-            'q' => 'quote'
+            'q' => 'quote',
         ];
 
         if (in_array($name, $aliases, true)) {
