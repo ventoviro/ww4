@@ -221,6 +221,25 @@ class Query implements QueryInterface
         return $this;
     }
 
+    public function join(string $type, $table, ...$args)
+    {
+        $alias = null;
+        $on = '';
+
+        if (count($args) === 1) {
+            $alias = null;
+            $on = $args[0];
+        } elseif (count($args) > 1) {
+            $alias = array_shift($args);
+            $on = $args;
+        }
+
+        $tbl = $this->as($table, $alias);
+        $joinType = strtoupper($type) . ' JOIN';
+
+
+    }
+
     /**
      * Handle column and sub query.
      *
@@ -448,7 +467,7 @@ class Query implements QueryInterface
     {
         if (is_array($wheres)) {
             return $this->orWhere(
-                function (Query $query) use ($wheres) {
+                static function (Query $query) use ($wheres) {
                     foreach ($wheres as $where) {
                         $query->where(...$where);
                     }
@@ -532,7 +551,7 @@ class Query implements QueryInterface
     public function orHaving($wheres)
     {
         if (is_array($wheres)) {
-            return $this->orHaving(function (Query $query) use ($wheres) {
+            return $this->orHaving(static function (Query $query) use ($wheres) {
                 foreach ($wheres as $where) {
                     $query->having(...$where);
                 }
