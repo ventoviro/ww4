@@ -39,6 +39,8 @@ use function Windwalker\value;
  * @method Clause|null getHaving()
  * @method Clause|null getOrder()
  * @method Clause|null getGroup()
+ * @method Clause|null getLimit()
+ * @method Clause|null getOffset()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
  * @method string|array qn($text)
@@ -95,6 +97,16 @@ class Query implements QueryInterface
      * @var Clause
      */
     protected $group;
+
+    /**
+     * @var int
+     */
+    protected $limit;
+
+    /**
+     * @var int
+     */
+    protected $offset;
 
     /**
      * @var array
@@ -597,6 +609,34 @@ class Query implements QueryInterface
                 array_values(Arr::flatten($columns))
             )
         );
+
+        return $this;
+    }
+
+    /**
+     * limit
+     *
+     * @param  int  $limit
+     *
+     * @return  static
+     */
+    public function limit(?int $limit)
+    {
+        $this->limit = $limit;
+
+        return $this;
+    }
+
+    /**
+     * offset
+     *
+     * @param  int  $offset
+     *
+     * @return  static
+     */
+    public function offset(?int $offset)
+    {
+        $this->offset = $offset;
 
         return $this;
     }

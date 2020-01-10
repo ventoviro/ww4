@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Clause;
 
+use org\bovigo\vfs\vfsStream;
+
 /**
  * Query Clause Class.
  *
@@ -92,13 +94,29 @@ class Clause implements \Countable, ClauseInterface
      *
      * @since   2.0
      */
-    public function append($elements)
+    public function append($elements): void
     {
         if (is_array($elements)) {
             $this->elements = array_merge($this->elements, $elements);
         } else {
             $this->elements = array_merge($this->elements, [$elements]);
         }
+    }
+
+    /**
+     * prepend
+     *
+     * @param   mixed $elements String or array.
+     *
+     * @return  void
+     */
+    public function prepend($elements): void
+    {
+        if (!is_array($elements)) {
+            $elements = [$elements];
+        }
+
+        array_unshift($this->elements, ...$elements);
     }
 
     /**

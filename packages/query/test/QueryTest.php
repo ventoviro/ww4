@@ -830,6 +830,47 @@ SQL
         );
     }
 
+    public function testLimitOffset()
+    {
+        // Limit
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->order('id')
+            ->limit(5);
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" ORDER BY "id" LIMIT 5',
+            $q->render()
+        );
+
+        // Offset
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->order('id')
+            ->offset(10);
+
+        // Only offset will not work
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" ORDER BY "id"',
+            $q->render()
+        );
+
+        // Limit & Offset
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->order('id')
+            ->limit(5)
+            ->offset(15);
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" ORDER BY "id" LIMIT 15, 5',
+            $q->render()
+        );
+    }
+
     public function testFormat()
     {
         $result = $this->instance->format('SELECT %n FROM %n WHERE %n = %a', 'foo', '#__bar', 'id', 10);

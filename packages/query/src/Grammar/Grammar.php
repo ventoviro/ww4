@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Grammar;
 
+use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Query;
 
 /**
@@ -97,6 +98,8 @@ class Grammar
             $sql[] = $order;
         }
 
+        $sql = $this->compileLimit($query, $sql);
+
         return implode(' ', $sql);
     }
 
@@ -140,6 +143,32 @@ class Grammar
         }
 
         return static::$nameQuote[0] . $name . static::$nameQuote[1];
+    }
+
+    /**
+     * compileLimit
+     *
+     * @param  Query  $query
+     * @param  array  $sql
+     *
+     * @return  array
+     */
+    public function compileLimit(Query $query, array $sql): array
+    {
+        $limit  = $query->getLimit();
+        $offset = $query->getOffset();
+
+        if ($limit !== null) {
+            $limitOffset = new Clause('LIMIT', (int) $limit, ', ');
+
+            if ($offset !== null) {
+                $limitOffset->prepend($offset);
+            }
+
+            $sql[] = $limitOffset;
+        }
+
+        return $sql;
     }
 
     /**
