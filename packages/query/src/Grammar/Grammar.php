@@ -89,6 +89,10 @@ class Grammar
             $sql[] = $having;
         }
 
+        if ($group = $query->getGroup()) {
+            $sql[] = $group;
+        }
+
         if ($order = $query->getOrder()) {
             $sql[] = $order;
         }

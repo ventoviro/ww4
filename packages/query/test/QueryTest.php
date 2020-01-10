@@ -794,17 +794,38 @@ SQL
         );
     }
 
-    public function testOrderBy()
+    public function testOrder()
     {
         $q = self::createQuery()
             ->select('*')
             ->from('foo')
-            ->orderBy('id', ['f1', 'f2'], 'f3')
-            ->orderBy('f4')
-            ->orderBy(raw('COUNT(f5)'));
+            ->order([
+                ['id', 'ASC'],
+                'f1',
+                ['f2', 'DESC'],
+                'f3'
+            ])
+            ->order('f4', 'DESC')
+            ->order(raw('COUNT(f5)'));
 
         self::assertSqlEquals(
-            'SELECT * FROM "foo" ORDER BY "id", "f1", "f2", "f3", "f4", COUNT(f5)',
+            'SELECT * FROM "foo" ORDER BY "id" ASC, "f1", "f2" DESC, "f3", "f4" DESC, COUNT(f5)',
+            $q->render()
+        );
+    }
+
+    public function testGroup()
+    {
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->order('id')
+            ->group('id', ['f1', 'f2'], 'f3')
+            ->group('f4')
+            ->group(raw('COUNT(f5)'));
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" GROUP BY "id", "f1", "f2", "f3", "f4", COUNT(f5) ORDER BY "id"',
             $q->render()
         );
     }

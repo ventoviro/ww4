@@ -199,7 +199,8 @@ trait ArrConverterTrait
 
             TypeAssert::assert(
                 is_array($r),
-                'Return value of mapWithKey() should be array, got %2$s'
+                'Return value of %s should be array, got %s',
+                $r
             );
 
             foreach ($r as $resultKey => $resultValue) {

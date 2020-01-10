@@ -26,7 +26,6 @@ use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
-
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -39,6 +38,7 @@ use function Windwalker\value;
  * @method Clause|null getWhere()
  * @method Clause|null getHaving()
  * @method Clause|null getOrder()
+ * @method Clause|null getGroup()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
  * @method string|array qn($text)
@@ -90,6 +90,11 @@ class Query implements QueryInterface
      * @var Clause
      */
     protected $order;
+
+    /**
+     * @var Clause
+     */
+    protected $group;
 
     /**
      * @var array
@@ -441,7 +446,8 @@ class Query implements QueryInterface
 
         ArgumentsAssert::assert(
             $wheres instanceof \Closure,
-            '%s argument should be array or Closure, %s given.'
+            '%s argument should be array or Closure, %s given.',
+            $wheres
         );
 
         return $this->where($wheres, 'OR');
@@ -523,26 +529,70 @@ class Query implements QueryInterface
 
         ArgumentsAssert::assert(
             $wheres instanceof \Closure,
-            '%s argument should be array or Closure, %s given.'
+            '%s argument should be array or Closure, %s given.',
+            $wheres
         );
 
         return $this->having($wheres, 'OR');
     }
 
     /**
-     * orderBy
+     * order
      *
-     * @param  string|array  ...$columns
+     * @param  array|string  $column
+     * @param  string        $dir
      *
      * @return  static
      */
-    public function orderBy(...$columns)
+    public function order($column, ?string $dir = null)
     {
         if (!$this->order) {
             $this->order = $this->clause('ORDER BY', [], ', ');
         }
 
-        $this->order->append(
+        if (is_array($column)) {
+            foreach ($column as $col) {
+                if (!is_array($col)) {
+                    $col = [$col];
+                }
+
+                $this->order(...$col);
+            }
+
+            return $this;
+        }
+
+        $order = [$this->quoteName($column)];
+
+        if ($dir !== null) {
+            ArgumentsAssert::assert(
+                in_array($dir = strtoupper($dir), ['ASC', 'DESC'], true),
+                '%s argument 2 should be one of ASC/DESC, %s given',
+                $dir
+            );
+
+            $order[] = $dir;
+        }
+
+        $this->order->append(implode(' ', $order));
+
+        return $this;
+    }
+
+    /**
+     * group
+     *
+     * @param  string|array  ...$columns
+     *
+     * @return  static
+     */
+    public function group(...$columns)
+    {
+        if (!$this->group) {
+            $this->group = $this->clause('GROUP BY', [], ', ');
+        }
+
+        $this->group->append(
             $this->quoteName(
                 array_values(Arr::flatten($columns))
             )

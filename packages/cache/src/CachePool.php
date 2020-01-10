@@ -285,7 +285,8 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     {
         ArgumentsAssert::assert(
             is_iterable($values),
-            '%s values must be iterable, %s given.'
+            '%s values must be iterable, %s given.',
+            $values
         );
 
         $results = true;
@@ -304,7 +305,8 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     {
         ArgumentsAssert::assert(
             is_iterable($keys),
-            '%s keys must be iterable, %s given.'
+            '%s keys must be iterable, %s given.',
+            $keys
         );
 
         $results = true;
