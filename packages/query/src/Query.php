@@ -26,6 +26,7 @@ use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
+
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -40,6 +41,8 @@ use function Windwalker\value;
  * @method Clause|null getOrder()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
+ * @method string|array qn($text)
+ * @method string|array q($text)
  */
 class Query implements QueryInterface
 {
@@ -427,11 +430,13 @@ class Query implements QueryInterface
     public function orWhere($wheres)
     {
         if (is_array($wheres)) {
-            return $this->orWhere(function (Query $query) use ($wheres) {
-                foreach ($wheres as $where) {
-                    $query->where(...$where);
+            return $this->orWhere(
+                function (Query $query) use ($wheres) {
+                    foreach ($wheres as $where) {
+                        $query->where(...$where);
+                    }
                 }
-            });
+            );
         }
 
         ArgumentsAssert::assert(
@@ -1151,6 +1156,15 @@ class Query implements QueryInterface
 
     public function __call(string $name, array $args)
     {
+        $aliases = [
+            'qn' => 'quoteName',
+            'q' => 'quote',
+        ];
+
+        if (in_array($name, $aliases, true)) {
+            return $this->{$aliases[$name]}(...$args);
+        }
+
         $field = lcfirst(substr($name, 3));
 
         if (property_exists($this, $field)) {
