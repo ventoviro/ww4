@@ -15,6 +15,7 @@ use Windwalker\Query\Bounded\BoundedSequence;
 use Windwalker\Query\Bounded\ParamType;
 use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
+use Windwalker\Query\Clause\ClauseInterface;
 use Windwalker\Query\Clause\ValueClause;
 use Windwalker\Query\Expression\Expression;
 use Windwalker\Query\Grammar\Grammar;
@@ -35,6 +36,8 @@ use function Windwalker\value;
  * @method Clause|null getSelect()
  * @method Clause|null getFrom()
  * @method Clause|null getWhere()
+ * @method Clause|null getHaving()
+ * @method Clause|null getOrder()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
  */
@@ -74,6 +77,16 @@ class Query implements QueryInterface
      * @var Clause
      */
     protected $where;
+
+    /**
+     * @var Clause
+     */
+    protected $having;
+
+    /**
+     * @var Clause
+     */
+    protected $order;
 
     /**
      * @var array
@@ -132,17 +145,9 @@ class Query implements QueryInterface
      */
     public function select(...$columns)
     {
-        if (!$this->select) {
-            $this->type   = static::TYPE_SELECT;
-            $this->select = $this->clause('SELECT', [], ', ');
+        foreach (array_values(Arr::flatten($columns)) as $column) {
+            $this->selectAs($column);
         }
-
-        $columns = array_map(
-            [$this, 'as'],
-            array_values(Arr::flatten($columns))
-        );
-
-        $this->select->append($columns);
 
         return $this;
     }
@@ -157,7 +162,14 @@ class Query implements QueryInterface
      */
     public function selectAs($column, ?string $alias = null)
     {
-        return $this->select(raw($this->as($column, $alias)));
+        if (!$this->select) {
+            $this->type   = static::TYPE_SELECT;
+            $this->select = $this->clause('SELECT', [], ', ');
+        }
+
+        $this->select->append($this->as($column, $alias));
+
+        return $this;
     }
 
     /**
@@ -231,6 +243,15 @@ class Query implements QueryInterface
         return $clause;
     }
 
+    /**
+     * where
+     *
+     * @param  string|array|\Closure|ClauseInterface  $column  Column name, array where list or callback
+     *                                                         function as sub query.
+     * @param  mixed                                  ...$args
+     *
+     * @return  static
+     */
     public function where($column, ...$args)
     {
         if ($column instanceof \Closure) {
@@ -344,7 +365,7 @@ class Query implements QueryInterface
         return [strtoupper($operator), $value, $origin];
     }
 
-    private function handleNestedWheres(\Closure $callback, string $glue): void
+    private function handleNestedWheres(\Closure $callback, string $glue, string $type = 'where'): void
     {
         if (!in_array(strtolower(trim($glue)), ['and', 'or'], true)) {
             throw new \InvalidArgumentException('WHERE glue should only be `OR`, `AND`.');
@@ -352,13 +373,14 @@ class Query implements QueryInterface
 
         $callback($query = $this->createNewInstance());
 
-        $where = $query->getWhere();
+        /** @var Clause $where */
+        $where = $query->$type;
 
         if (!$where) {
             throw new \LogicException('Where clause not exists.');
         }
 
-        $this->whereRaw(
+        $this->{$type . 'Raw'}(
             $where->setName('()')
                 ->setGlue(' ' . strtoupper($glue) . ' ')
         );
@@ -398,7 +420,7 @@ class Query implements QueryInterface
     /**
      * orWhere
      *
-     * @param array|\Closure $wheres
+     * @param  array|\Closure  $wheres
      *
      * @return  static
      */
@@ -418,6 +440,110 @@ class Query implements QueryInterface
         );
 
         return $this->where($wheres, 'OR');
+    }
+
+    public function having($column, ...$args)
+    {
+        if ($column instanceof \Closure) {
+            $this->handleNestedWheres($column, (string) ($args[0] ?? 'AND'), 'having');
+
+            return $this;
+        }
+
+        if (is_array($column)) {
+            foreach ($column as $where) {
+                $this->having(...$where);
+            }
+
+            return $this;
+        }
+
+        $column = $this->as($column, false);
+
+        [$operator, $value] = $this->handleOperatorAndValue(
+            $args[0] ?? null,
+            $args[1] ?? null,
+            count($args) === 1
+        );
+
+        $this->havingRaw(
+            $this->clause(
+                '',
+                [$column, $operator, $value]
+            )
+        );
+
+        return $this;
+    }
+
+    /**
+     * havingRaw
+     *
+     * @param  string|Clause  $string
+     * @param  array          ...$args
+     *
+     * @return  static
+     */
+    public function havingRaw($string, ...$args)
+    {
+        if (!$this->having) {
+            $this->having = $this->clause('HAVING', [], ' AND ');
+        }
+
+        if (is_string($string) && $args !== []) {
+            $string = $this->format($string, ...$args);
+        }
+
+        $this->having->append($string);
+
+        return $this;
+    }
+
+    /**
+     * orWhere
+     *
+     * @param  array|\Closure  $wheres
+     *
+     * @return  static
+     */
+    public function orHaving($wheres)
+    {
+        if (is_array($wheres)) {
+            return $this->orHaving(function (Query $query) use ($wheres) {
+                foreach ($wheres as $where) {
+                    $query->having(...$where);
+                }
+            });
+        }
+
+        ArgumentsAssert::assert(
+            $wheres instanceof \Closure,
+            '%s argument should be array or Closure, %s given.'
+        );
+
+        return $this->having($wheres, 'OR');
+    }
+
+    /**
+     * orderBy
+     *
+     * @param  string|array  ...$columns
+     *
+     * @return  static
+     */
+    public function orderBy(...$columns)
+    {
+        if (!$this->order) {
+            $this->order = $this->clause('ORDER BY', [], ', ');
+        }
+
+        $this->order->append(
+            $this->quoteName(
+                array_values(Arr::flatten($columns))
+            )
+        );
+
+        return $this;
     }
 
     /**

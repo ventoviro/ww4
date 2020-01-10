@@ -85,6 +85,14 @@ class Grammar
             $sql[] = $where;
         }
 
+        if ($having = $query->getHaving()) {
+            $sql[] = $having;
+        }
+
+        if ($order = $query->getOrder()) {
+            $sql[] = $order;
+        }
+
         return implode(' ', $sql);
     }
 

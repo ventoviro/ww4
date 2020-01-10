@@ -548,13 +548,264 @@ class QueryTest extends TestCase
             <<<SQL
 SELECT * FROM "foo" WHERE "foo" = 'bar'
 AND (
-    "yoo" = 'goo '
+    "yoo" = 'goo'
     OR "flower" != 'Sakura'
     OR ("hello" IN (1, 2, 3) AND "id" < 999)
 )
 SQL
             ,
             $q->render(true)
+        );
+    }
+
+    /**
+     * testWhere
+     *
+     * @param  string  $expt
+     * @param  array   $wheres
+     *
+     * @return  void
+     *
+     * @dataProvider havingProvider
+     */
+    public function testHaving(string $expt, ...$wheres)
+    {
+        $this->instance->select('*')
+            ->from('a');
+
+        foreach ($wheres as $whereArgs) {
+            $this->instance->having(...$whereArgs);
+        }
+
+        // Test self merged bounded
+        self::assertSqlEquals(
+            $expt,
+            Escaper::replaceQueryParams(
+                $this->instance,
+                (string) $this->instance->render(false, $bounded),
+                $bounded
+            )
+        );
+
+        // Test double bounded should get same sequence
+        self::assertSqlEquals(
+            $expt,
+            Escaper::replaceQueryParams(
+                $this->instance,
+                (string) $this->instance->render(),
+                $this->instance->mergeBounded()
+            )
+        );
+
+        // Test emulate prepared
+        self::assertSqlEquals(
+            $expt,
+            $this->instance->render(true)
+        );
+    }
+
+    public function havingProvider(): array
+    {
+        return [
+            'Simple having =' => [
+                'SELECT * FROM "a" HAVING "foo" = \'bar\'',
+                ['foo', 'bar']
+            ],
+            'Having <' => [
+                'SELECT * FROM "a" HAVING "foo" < \'bar\'',
+                ['foo', '<', 'bar']
+            ],
+            'Having chain' => [
+                'SELECT * FROM "a" HAVING "foo" < 123 AND "baz" = \'bax\' AND "yoo" != \'goo\'',
+                ['foo', '<', 123],
+                ['baz', '=', 'bax'],
+                ['yoo', '!=', 'goo'],
+            ],
+            'Having null' => [
+                'SELECT * FROM "a" HAVING "foo" IS NULL',
+                ['foo', null]
+            ],
+            'Having is null' => [
+                'SELECT * FROM "a" HAVING "foo" IS NULL',
+                ['foo', 'IS', null]
+            ],
+            'Having is not null' => [
+                'SELECT * FROM "a" HAVING "foo" IS NOT NULL',
+                ['foo', 'IS NOT', null]
+            ],
+            'Having = null' => [
+                'SELECT * FROM "a" HAVING "foo" IS NULL',
+                ['foo', '=', null]
+            ],
+            'Having != null' => [
+                'SELECT * FROM "a" HAVING "foo" IS NOT NULL',
+                ['foo', '!=', null]
+            ],
+            'Having in' => [
+                'SELECT * FROM "a" HAVING "foo" IN (1, 2, \'yoo\')',
+                ['foo', 'in', [1, 2, 'yoo']]
+            ],
+            // Bind with name
+            // 'Having bind with var name' => [
+            //     'SELECT * FROM "a" HAVING "foo" = \'Hello\'',
+            //     ['foo', '=', ':foo', 'Hello']
+            // ],
+            // Having array and nested
+            'Having array' => [
+                'SELECT * FROM "a" HAVING "foo" = \'bar\' AND "yoo" = \'hello\' AND "flower" IN (SELECT "id" FROM "flower" HAVING "id" = \'bar\')',
+                [
+                    // arg 1 is array
+                    [
+                        ['foo', 'bar'],
+                        ['yoo', '=', 'hello'],
+                        ['flower', 'in', self::createQuery()
+                            ->select('id')
+                            ->from('flower')
+                            ->having('id', 5)]
+                    ]
+                ]
+            ],
+            'Having nested' => [
+                'SELECT * FROM "a" HAVING "foo" = \'bar\' AND ("yoo" = \'goo\' AND "flower" != \'Sakura\')',
+                ['foo', 'bar'],
+                [
+                    static function (Query $query) {
+                        $query->having('yoo', 'goo')
+                            ->having('flower', '!=', 'Sakura');
+                    }
+                ]
+            ],
+
+            'Having nested or' => [
+                'SELECT * FROM "a" HAVING "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\')',
+                ['foo', 'bar'],
+                [
+                    static function (Query $query) {
+                        $query->having('yoo', 'goo')
+                            ->having('flower', '!=', 'Sakura');
+                    },
+                    'or'
+                ]
+            ],
+
+            // Sub query
+            'Having not exists sub query' => [
+                'SELECT * FROM "a" HAVING "foo" NOT EXISTS (SELECT "id" FROM "flower" HAVING "id" = 5)',
+                [
+                    'foo',
+                    'not exists',
+                    self::createQuery()
+                        ->select('id')
+                        ->from('flower')
+                        ->having('id', 5)
+                ]
+            ],
+            'Having not exists sub query cllback' => [
+                'SELECT * FROM "a" HAVING "foo" NOT EXISTS (SELECT "id" FROM "flower" HAVING "id" = 5)',
+                [
+                    'foo',
+                    'not exists',
+                    static function (Query $q) {
+                        $q->select('id')
+                            ->from('flower')
+                            ->having('id', 5);
+                    }
+                ]
+            ],
+            'Having sub query equals value' => [
+                'SELECT * FROM "a" HAVING (SELECT "id" FROM "flower" HAVING "id" = 123) = 123',
+                [
+                    self::createQuery()
+                        ->select('id')
+                        ->from('flower')
+                        ->having('id', 5),
+                    '=',
+                    123
+                ]
+            ],
+
+            // Having with raw wrapper
+            'Having with raw wrapper' => [
+                'SELECT * FROM "a" HAVING foo = YEAR(date)',
+                [raw('foo'), raw('YEAR(date)')]
+            ],
+        ];
+    }
+
+    public function testOrHaving()
+    {
+        // Array
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->having('foo', 'bar')
+            ->orHaving([
+                ['yoo', 'goo'],
+                ['flower', '!=', 'Sakura'],
+                ['hello', [1, 2, 3]]
+            ]);
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" HAVING "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\' OR "hello" IN (1, 2, 3))',
+            $q->render(true)
+        );
+
+        // Closure
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->having('foo', 'bar')
+            ->orHaving(function (Query $query) {
+                $query->having('yoo', 'goo');
+                $query->having('flower', '!=', 'Sakura');
+                $query->having('hello', [1, 2, 3]);
+            });
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" HAVING "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\' OR "hello" IN (1, 2, 3))',
+            $q->render(true)
+        );
+
+        // Nested
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->having('foo', 'bar')
+            ->orHaving(function (Query $query) {
+                $query->having('yoo', 'goo');
+                $query->having('flower', '!=', 'Sakura');
+                $query->having(function (Query $query) {
+                    $query->having('hello', [1, 2, 3]);
+                    $query->having('id', '<', 999);
+                });
+            });
+
+        self::assertSqlFormatEquals(
+            <<<SQL
+SELECT * FROM "foo" HAVING "foo" = 'bar'
+AND (
+    "yoo" = 'goo'
+    OR "flower" != 'Sakura'
+    OR ("hello" IN (1, 2, 3) AND "id" < 999)
+)
+SQL
+            ,
+            $q->render(true)
+        );
+    }
+
+    public function testOrderBy()
+    {
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->orderBy('id', ['f1', 'f2'], 'f3')
+            ->orderBy('f4')
+            ->orderBy(raw('COUNT(f5)'));
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" ORDER BY "id", "f1", "f2", "f3", "f4", COUNT(f5)',
+            $q->render()
         );
     }
 
