@@ -437,15 +437,10 @@ class QueryTest extends TestCase
                 ->alias('bar')
         );
 
-        $q->render(true);
-        // show('Bounded', $q->getSubQueries()['bar']->getBounded());
-exit(' @Checkpoint');
         self::assertSqlEquals(
             'SELECT * FROM "foo" WHERE "id" > 12 UNION (SELECT * FROM "bar" WHERE "id" < 50)',
             $q->render(true)
         );
-
-        show($q->getSubQueries());
 
         // Union everything
         $q = self::createQuery();

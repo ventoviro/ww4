@@ -1259,7 +1259,9 @@ class Query implements QueryInterface
 
     public function render(bool $emulatePrepared = false, ?array &$bounded = []): string
     {
-        $bounded = $this->mergeBounded();
+        if (!$this->sequence) {
+            $bounded = $this->mergeBounded();
+        }
 
         $method = 'compile' . ucfirst($this->type);
 
@@ -1276,7 +1278,7 @@ class Query implements QueryInterface
 
     public function mergeBounded(?BoundedSequence $sequence = null): array
     {
-        $sequence = $sequence ?: new BoundedSequence('wqp__');
+        $this->sequence = $sequence = $sequence ?: new BoundedSequence('wqp__');
 
         $all     = [];
         $bounded = [];
