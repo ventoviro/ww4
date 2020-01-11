@@ -46,14 +46,22 @@ class SimpleTemplateTest extends TestCase
 
     public function testRenderTemplate(): void
     {
-        $data['foo']['bar']['baz'] = 'Flower';
+        $tmpl = SimpleTemplate::create('This is [ foo/bar/baz ]')
+            ->setDelimiter('/')
+            ->setVarWrapper('[', ']');
 
         $this->assertEquals(
             'This is Flower',
-            SimpleTemplate::create()
-                ->setDelimiter('/')
-                ->setVarWrapper('[', ']')
-                ->renderTemplate('This is [ foo/bar/baz ]', $data)
+            $tmpl(
+                ['foo' => ['bar' => ['baz' => 'Flower']]]
+            )
+        );
+
+        $this->assertEquals(
+            'This is Mountain',
+            $tmpl(
+                ['foo' => ['bar' => ['baz' => 'Mountain']]]
+            )
         );
     }
 }

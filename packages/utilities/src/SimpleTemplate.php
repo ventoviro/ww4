@@ -28,12 +28,39 @@ class SimpleTemplate
      */
     protected $delimiter = '.';
 
-    public static function create(): SimpleTemplate
+    /**
+     * @var string
+     */
+    protected $template = '';
+
+    /**
+     * SimpleTemplate constructor.
+     *
+     * @param  array   $wrapper
+     * @param  string  $delimiter
+     * @param  string  $template
+     */
+    public function __construct(string $template, string $delimiter = '.', ?array $wrapper = null)
     {
-        return new static();
+        $this->delimiter = $delimiter;
+        $this->template  = $template;
+
+        if ($wrapper !== null) {
+            $this->wrapper = $wrapper;
+        }
     }
 
-    public function renderTemplate(string $string, array $data = []): string
+    public static function create(string $template, string $delimiter = '.', ?array $wrapper = null): SimpleTemplate
+    {
+        return new static($template, $delimiter, $wrapper);
+    }
+
+    public function __invoke(array $data = []): string
+    {
+        return $this->renderTemplate($data);
+    }
+
+    public function renderTemplate(array $data = []): string
     {
         [$begin, $end] = $this->wrapper;
 
@@ -50,7 +77,7 @@ class SimpleTemplate
 
                 return $return;
             },
-            $string
+            $this->template
         );
     }
 
@@ -59,14 +86,20 @@ class SimpleTemplate
      *
      * Example: The {{ foo.bar.yoo }} will be replace to value of `$data['foo']['bar']['yoo']`
      *
-     * @param  string  $string  The template to replace.
-     * @param  array   $data    The data to find.
+     * @param  string      $string    The template to replace.
+     * @param  array       $data      The data to find.
+     * @param  string      $delimiter
+     * @param  array|null  $wrapper
      *
      * @return  string Replaced template.
      */
-    public static function render(string $string, array $data = []): string
-    {
-        return (new static())->renderTemplate($string, $data);
+    public static function render(
+        string $string,
+        array $data = [],
+        string $delimiter = '.',
+        ?array $wrapper = null
+    ): string {
+        return (new static($string, $delimiter, $wrapper))->renderTemplate($data);
     }
 
     public function setVarWrapper(string $start, string $end): SimpleTemplate
@@ -100,6 +133,26 @@ class SimpleTemplate
     public function setDelimiter(string $delimiter)
     {
         $this->delimiter = $delimiter;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTemplate(): string
+    {
+        return $this->template;
+    }
+
+    /**
+     * @param  string  $template
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setTemplate(string $template)
+    {
+        $this->template = $template;
 
         return $this;
     }
