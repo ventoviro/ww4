@@ -102,6 +102,8 @@ class Grammar
             $sql[] = $order;
         }
 
+        $sql = $this->compileLimit($query, $sql);
+
         if ($union = $query->getUnion()) {
             if (!$query->getSelect()) {
                 $query->getUnion()->setName('()');
@@ -109,8 +111,6 @@ class Grammar
 
             $sql[] = (string) $union;
         }
-
-        $sql = $this->compileLimit($query, $sql);
 
         return implode(' ', $sql);
     }

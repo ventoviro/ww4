@@ -365,7 +365,11 @@ class Query implements QueryInterface
                 $prefix .= ' ' . $type;
             }
 
-            $this->union = $this->clause($prefix . '()', [], ') ' . $prefix . ' (');
+            $this->union = $this->clause($prefix . ' ()', [], ') ' . $prefix . ' (');
+        }
+
+        if ($query instanceof self) {
+            $this->injectSubQuery($query, false);
         }
 
         $this->union->append($query);
