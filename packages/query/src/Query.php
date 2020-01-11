@@ -27,7 +27,6 @@ use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
-
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -38,6 +37,7 @@ use function Windwalker\value;
  * @method Clause|null getSelect()
  * @method Clause|null getFrom()
  * @method Clause|null getJoin()
+ * @method Clause|null getUnion()
  * @method Clause|null getWhere()
  * @method Clause|null getHaving()
  * @method Clause|null getOrder()
@@ -84,6 +84,16 @@ class Query implements QueryInterface
      * @var Clause
      */
     protected $from;
+
+    /**
+     * @var Clause
+     */
+    protected $join;
+
+    /**
+     * @var Clause
+     */
+    protected $union;
 
     /**
      * @var Clause
@@ -149,11 +159,6 @@ class Query implements QueryInterface
      * @var Escaper
      */
     protected $escaper;
-
-    /**
-     * @var Clause
-     */
-    protected $join;
 
     /**
      * Query constructor.
@@ -321,6 +326,91 @@ class Query implements QueryInterface
         }
 
         return $clause;
+    }
+
+    /**
+     * Add a query to UNION with the current query.
+     * Multiple unions each require separate statements and create an array of unions.
+     *
+     * @param  mixed   $query  The Query object or string to union.
+     * @param  string  $type   The union type, can be `DISTINCT` or `ALL`, default is empty.
+     *
+     * @return  static    The Query object on success or boolean false on failure.
+     *
+     * @since   2.0
+     */
+    public function union($query, string $type = '')
+    {
+        $this->type = static::TYPE_SELECT;
+
+        if (is_array($query)) {
+            foreach ($query as $q) {
+                $this->union($q, $type);
+            }
+
+            return $this;
+        }
+
+        // Clear any ORDER BY clause in UNION query
+        // See http://dev.mysql.com/doc/refman/5.0/en/union.html
+        if (null !== $this->order) {
+            $this->clear('order');
+        }
+
+        // Create the Clause if it does not exist
+        if (null === $this->union) {
+            $prefix = 'UNION';
+
+            if ($type !== '') {
+                $prefix .= ' ' . $type;
+            }
+
+            $this->union = $this->clause($prefix . '()', [], ') ' . $prefix . ' (');
+        }
+
+        $this->union->append($query);
+
+        return $this;
+    }
+
+    /**
+     * Add a query to UNION DISTINCT with the current query. Simply a proxy to Union with the Distinct clause.
+     *
+     * Usage:
+     * $query->unionDistinct('SELECT name FROM  #__foo')
+     *
+     * @param  mixed  $query  The Query object or string to union.
+     *
+     * @return  mixed   The Query object on success or boolean false on failure.
+     *
+     * @since   2.0
+     */
+    public function unionDistinct($query)
+    {
+        // Apply the distinct flag to the union.
+        return $this->union($query, 'DISTINCT');
+    }
+
+    /**
+     * Add a query to UNION ALL with the current query.
+     * Multiple unions each require separate statements and create an array of unions.
+     *
+     * Usage:
+     * $query->unionAll('SELECT name FROM  #__foo')
+     * $query->unionAll(array('SELECT name FROM  #__foo','SELECT name FROM  #__bar'))
+     *
+     * @param  mixed  $query  The Query object or string to union.
+     *
+     * @return  mixed  The Query object on success or boolean false on failure.
+     *
+     * @see     union
+     *
+     * @since   2.0
+     */
+    public function unionAll($query)
+    {
+        // Apply the distinct flag to the union.
+        return $this->union($query, 'ALL');
     }
 
     /**
@@ -1305,6 +1395,142 @@ class Query implements QueryInterface
     public function createSubQuery(): self
     {
         return new static($this->escaper, $this->grammar);
+    }
+
+    /**
+     * Clear data from the query or a specific clause of the query.
+     *
+     * @param  string|array  $clauses  Optionally, the name of the clause to clear, or nothing to clear the whole query.
+     *
+     * @return static  Returns this object to allow chaining.
+     *
+     * @since   2.0
+     */
+    public function clear($clauses = null)
+    {
+        $this->sql = null;
+
+        if (is_array($clauses)) {
+            foreach ($clauses as $clause) {
+                $this->clear($clause);
+            }
+
+            return $this;
+        }
+
+        switch ($clauses) {
+            case 'select':
+                $this->select = null;
+                $this->type   = null;
+                break;
+
+            case 'delete':
+                $this->delete = null;
+                $this->type   = null;
+                break;
+
+            case 'update':
+                $this->update = null;
+                $this->type   = null;
+                break;
+
+            case 'insert':
+                $this->insert             = null;
+                $this->type               = null;
+                $this->autoIncrementField = null;
+                break;
+
+            case 'from':
+                $this->from = null;
+                break;
+
+            case 'join':
+                $this->join = null;
+                break;
+
+            case 'set':
+                $this->set = null;
+                break;
+
+            case 'where':
+                $this->where = null;
+                break;
+
+            case 'group':
+                $this->group = null;
+                break;
+
+            case 'having':
+                $this->having = null;
+                break;
+
+            case 'order':
+                $this->order = null;
+                break;
+
+            case 'columns':
+                $this->columns = null;
+                break;
+
+            case 'values':
+                $this->values = null;
+                break;
+
+            case 'exec':
+                $this->exec = null;
+                $this->type = null;
+                break;
+
+            case 'call':
+                $this->call = null;
+                $this->type = null;
+                break;
+
+            case 'limit':
+                $this->offset = 0;
+                $this->limit  = 0;
+                break;
+
+            case 'suffix':
+                $this->suffix = null;
+                break;
+
+            case 'union':
+                $this->union = null;
+                break;
+
+            case 'alias':
+                $this->alias = null;
+                break;
+
+            default:
+                $this->type               = null;
+                $this->select             = null;
+                $this->delete             = null;
+                $this->update             = null;
+                $this->insert             = null;
+                $this->from               = null;
+                $this->join               = null;
+                $this->set                = null;
+                $this->where              = null;
+                $this->group              = null;
+                $this->having             = null;
+                $this->order              = null;
+                $this->columns            = null;
+                $this->values             = null;
+                $this->autoIncrementField = null;
+                $this->exec               = null;
+                $this->call               = null;
+                $this->union              = null;
+                $this->offset             = 0;
+                $this->limit              = 0;
+                $this->suffix             = null;
+                $this->bounded            = [];
+                $this->alias              = null;
+                break;
+        }
+
+        return $this;
     }
 
     public function __call(string $name, array $args)

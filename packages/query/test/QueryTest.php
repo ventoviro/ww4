@@ -421,6 +421,27 @@ class QueryTest extends TestCase
         ];
     }
 
+    public function testUnion()
+    {
+        // Select and union
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->where('id', '>', 12);
+
+        $q->union(
+            self::createQuery()
+                ->select('*')
+                ->from('bar')
+                ->where('id', '<', 50)
+        );
+
+        self::assertSqlEquals(
+            '',
+            $q->render(true)
+        );
+    }
+
     /**
      * testAs
      *
