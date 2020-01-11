@@ -82,6 +82,10 @@ class Grammar
             $sql[] = $form;
         }
 
+        if ($join = $query->getJoin()) {
+            $sql[] = $join;
+        }
+
         if ($where = $query->getWhere()) {
             $sql[] = $where;
         }

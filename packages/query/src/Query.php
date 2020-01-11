@@ -16,6 +16,7 @@ use Windwalker\Query\Bounded\ParamType;
 use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Clause\ClauseInterface;
+use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Clause\ValueClause;
 use Windwalker\Query\Expression\Expression;
 use Windwalker\Query\Grammar\Grammar;
@@ -26,6 +27,7 @@ use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
+
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -35,6 +37,7 @@ use function Windwalker\value;
  * @method string|null getType()
  * @method Clause|null getSelect()
  * @method Clause|null getFrom()
+ * @method Clause|null getJoin()
  * @method Clause|null getWhere()
  * @method Clause|null getHaving()
  * @method Clause|null getOrder()
@@ -43,6 +46,10 @@ use function Windwalker\value;
  * @method Clause|null getOffset()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
+ * @method $this leftJoin($table, ?string $alias, ...$on)
+ * @method $this rightJoin($table, ?string $alias, ...$on)
+ * @method $this outerJoin($table, ?string $alias, ...$on)
+ * @method $this innerJoin($table, ?string $alias, ...$on)
  * @method string|array qn($text)
  * @method string|array q($text)
  */
@@ -144,6 +151,11 @@ class Query implements QueryInterface
     protected $escaper;
 
     /**
+     * @var Clause
+     */
+    protected $join;
+
+    /**
      * Query constructor.
      *
      * @param  mixed|\PDO|Escaper  $escaper
@@ -221,23 +233,52 @@ class Query implements QueryInterface
         return $this;
     }
 
-    public function join(string $type, $table, ...$args)
+    /**
+     * join
+     *
+     * @param  string                        $type
+     * @param  string|Query|ClauseInterface  $table
+     * @param  string                        $alias
+     * @param  array                         $on
+     *
+     * @return  static
+     */
+    public function join(string $type, $table, ?string $alias, ...$on)
     {
-        $alias = null;
-        $on = '';
-
-        if (count($args) === 1) {
-            $alias = null;
-            $on = $args[0];
-        } elseif (count($args) > 1) {
-            $alias = array_shift($args);
-            $on = $args;
+        if (!$this->join) {
+            $this->join = $this->clause('', [], ' ');
         }
 
-        $tbl = $this->as($table, $alias);
+        $tbl      = $this->as($table, $alias);
         $joinType = strtoupper($type) . ' JOIN';
 
+        $join = new JoinClause($this, $joinType, $tbl);
 
+        if (count($on) === 1) {
+            ArgumentsAssert::assert(
+                $on[0] instanceof \Closure,
+                '%s if only has 1 on condition, it must be Closure, %s given.',
+                $on[0]
+            );
+
+            $on[0]($join);
+        } elseif (count($on) <= 3) {
+            $join->on(...$on);
+        } else {
+            ArgumentsAssert::assert(
+                count($on) % 3 === 0,
+                '%s if on is not callback, it must be 3 times as many, currently is %s.',
+                count($on)
+            );
+
+            foreach (array_chunk($on, 3) as $cond) {
+                $join->on(...$cond);
+            }
+        }
+
+        $this->join->append($join);
+
+        return $this;
     }
 
     /**
@@ -260,7 +301,7 @@ class Query implements QueryInterface
             $clause->value($value());
         } else {
             if ($value instanceof \Closure) {
-                $value($value = $this->createNewInstance());
+                $value($value = $this->createSubQuery());
             }
 
             if ($value instanceof static) {
@@ -359,7 +400,7 @@ class Query implements QueryInterface
 
         // Closure means to create a sub query as value.
         if ($value instanceof \Closure) {
-            $value($value = $this->createNewInstance());
+            $value($value = $this->createSubQuery());
         }
 
         // Keep origin value a duplicate that we will need it later.
@@ -410,13 +451,14 @@ class Query implements QueryInterface
             throw new \InvalidArgumentException('WHERE glue should only be `OR`, `AND`.');
         }
 
-        $callback($query = $this->createNewInstance());
+        $callback($query = $this->createSubQuery());
 
         /** @var Clause $where */
         $where = $query->$type;
 
+        // If where clause not exists, means this callback has no where call, just return.
         if (!$where) {
-            throw new \LogicException('Where clause not exists.');
+            return;
         }
 
         $this->{$type . 'Raw'}(
@@ -551,11 +593,13 @@ class Query implements QueryInterface
     public function orHaving($wheres)
     {
         if (is_array($wheres)) {
-            return $this->orHaving(static function (Query $query) use ($wheres) {
-                foreach ($wheres as $where) {
-                    $query->having(...$where);
+            return $this->orHaving(
+                static function (Query $query) use ($wheres) {
+                    foreach ($wheres as $where) {
+                        $query->having(...$where);
+                    }
                 }
-            });
+            );
         }
 
         ArgumentsAssert::assert(
@@ -1254,17 +1298,18 @@ class Query implements QueryInterface
     // }
 
     /**
-     * createNewInstacne
+     * createSubQuery
      *
      * @return  static
      */
-    protected function createNewInstance(): self
+    public function createSubQuery(): self
     {
         return new static($this->escaper, $this->grammar);
     }
 
     public function __call(string $name, array $args)
     {
+        // Simple Alias
         $aliases = [
             'qn' => 'quoteName',
             'q' => 'quote',
@@ -1274,10 +1319,24 @@ class Query implements QueryInterface
             return $this->{$aliases[$name]}(...$args);
         }
 
+        // Get Fields
         $field = lcfirst(substr($name, 3));
 
         if (property_exists($this, $field)) {
             return $this->$field;
+        }
+
+        // Join
+        $aliases = [
+            'leftJoin' => 'LEFT',
+            'rightJoin' => 'RIGHT',
+            'innerJoin' => 'INNER',
+            'outerJoin' => 'OUTER',
+            'crossJoin' => 'CROSS',
+        ];
+
+        if (in_array($name, $aliases, true)) {
+            return $this->join($aliases[$name], ...$args);
         }
 
         throw new \BadMethodCallException(

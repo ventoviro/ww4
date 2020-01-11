@@ -20,4 +20,14 @@ namespace PHPSTORM_META {
         \Windwalker\Query\Query::quote(0),
         type(0)
     );
+
+    override(
+        \Windwalker\Query\Query::qn(0),
+        type(0)
+    );
+
+    override(
+        \Windwalker\Query\Query::q(0),
+        type(0)
+    );
 }

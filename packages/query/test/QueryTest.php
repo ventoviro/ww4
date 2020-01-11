@@ -12,9 +12,11 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
 use Windwalker\Query\Test\Mock\MockEscaper;
+
 use function Windwalker\Query\clause;
 use function Windwalker\raw;
 
@@ -75,42 +77,42 @@ class QueryTest extends TestCase
                 [['a', 'b'], 'c', 'd'],
                 null,
                 // expected
-                'SELECT "a", "b", "c", "d"'
+                'SELECT "a", "b", "c", "d"',
             ],
             'AS alias' => [
                 // args
                 [['a AS aaa', 'b'], 'c AS ccc', 'd'],
                 null,
                 // expected
-                'SELECT "a" AS "aaa", "b", "c" AS "ccc", "d"'
+                'SELECT "a" AS "aaa", "b", "c" AS "ccc", "d"',
             ],
             'dots' => [
                 // args
                 [['a.aa AS aaa', 'b.bb'], 'c AS ccc', 'd.dd'],
                 null,
                 // expected
-                'SELECT "a"."aa" AS "aaa", "b"."bb", "c" AS "ccc", "d"."dd"'
+                'SELECT "a"."aa" AS "aaa", "b"."bb", "c" AS "ccc", "d"."dd"',
             ],
             'raw and clause' => [
                 // args
                 [[raw('COUNT(*) AS a')], clause('DISTINCT', ['foo AS bar']), 'c AS ccc'],
                 null,
                 // expected
-                'SELECT COUNT(*) AS a, DISTINCT "foo" AS "bar", "c" AS "ccc"'
+                'SELECT COUNT(*) AS a, DISTINCT "foo" AS "bar", "c" AS "ccc"',
             ],
             'selectAs' => [
                 // args
                 ['b AS bbb'],
                 [raw('COUNT(*)'), 'count'],
                 // expected
-                'SELECT "b" AS "bbb", COUNT(*) AS "count"'
+                'SELECT "b" AS "bbb", COUNT(*) AS "count"',
             ],
             'raw and selectAs with clause' => [
                 // args
                 [[raw('COUNT(*) AS a')], 'c AS ccc'],
                 [clause('DISTINCT', ['foo AS bar'])],
                 // expected
-                'SELECT COUNT(*) AS a, "c" AS "ccc", DISTINCT "foo" AS "bar"'
+                'SELECT COUNT(*) AS a, "c" AS "ccc", DISTINCT "foo" AS "bar"',
             ],
             'sub query with Closure' => [
                 // args
@@ -120,7 +122,7 @@ class QueryTest extends TestCase
                             ->from('foo')
                             ->alias('foooo');
                     },
-                    'bar AS barrr'
+                    'bar AS barrr',
                 ],
                 null,
                 // expected
@@ -134,14 +136,14 @@ class QueryTest extends TestCase
                         ->select('*')
                         ->from('foo')
                         ->alias('foooo'),
-                    'bar AS barrr'
+                    'bar AS barrr',
                 ],
                 null,
                 // expected
                 'SELECT (SELECT * FROM "foo") AS "foooo", "bar" AS "barrr"',
                 // Sub query
                 'foooo',
-                'SELECT (SELECT *, "newcol" FROM "foo") AS "foooo", "bar" AS "barrr"'
+                'SELECT (SELECT *, "newcol" FROM "foo") AS "foooo", "bar" AS "barrr"',
             ],
         ];
     }
@@ -170,31 +172,31 @@ class QueryTest extends TestCase
             'Simple from' => [
                 'foo',
                 null,
-                'SELECT * FROM "foo"'
+                'SELECT * FROM "foo"',
             ],
             'Simple from as' => [
                 'a.foo',
                 'foo',
-                'SELECT * FROM "a"."foo" AS "foo"'
+                'SELECT * FROM "a"."foo" AS "foo"',
             ],
             'Multiple tables' => [
                 ['f' => 'foo', 'b' => 'bar', 'y' => 'yoo'],
                 'nouse',
-                'SELECT * FROM "foo" AS "f", "bar" AS "b", "yoo" AS "y"'
+                'SELECT * FROM "foo" AS "f", "bar" AS "b", "yoo" AS "y"',
             ],
             'single sub query' => [
                 self::createQuery()
                     ->select('*')
                     ->from('flower'),
                 null,
-                'SELECT * FROM (SELECT * FROM "flower")'
+                'SELECT * FROM (SELECT * FROM "flower")',
             ],
             'single sub query as' => [
                 self::createQuery()
                     ->select('*')
                     ->from('flower'),
                 'f',
-                'SELECT * FROM (SELECT * FROM "flower") AS "f"'
+                'SELECT * FROM (SELECT * FROM "flower") AS "f"',
             ],
             'single sub query with self-alias' => [
                 self::createQuery()
@@ -202,7 +204,7 @@ class QueryTest extends TestCase
                     ->from('flower')
                     ->alias('fl'),
                 null,
-                'SELECT * FROM (SELECT * FROM "flower") AS "fl"'
+                'SELECT * FROM (SELECT * FROM "flower") AS "fl"',
             ],
             'single sub query with self-alias and as' => [
                 self::createQuery()
@@ -210,7 +212,7 @@ class QueryTest extends TestCase
                     ->from('flower')
                     ->alias('fl'),
                 'f',
-                'SELECT * FROM (SELECT * FROM "flower") AS "f"'
+                'SELECT * FROM (SELECT * FROM "flower") AS "f"',
             ],
             'Multiple tables with sub query' => [
                 [
@@ -218,10 +220,10 @@ class QueryTest extends TestCase
                     'f' => self::createQuery()
                         ->select('*')
                         ->from('flower')
-                        ->alias('fl_nouse')
+                        ->alias('fl_nouse'),
                 ],
                 'nouse',
-                'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"'
+                'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"',
             ],
             'Multiple tables with sub query closure' => [
                 [
@@ -230,10 +232,191 @@ class QueryTest extends TestCase
                         $q->select('*')
                             ->from('flower')
                             ->alias('fl_nouse');
-                    }
+                    },
                 ],
                 'nouse',
-                'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"'
+                'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"',
+            ],
+        ];
+    }
+
+    /**
+     * testJoin
+     *
+     * @param  string  $expt
+     * @param  mixed   ...$joins
+     *
+     * @return  void
+     *
+     * @dataProvider  joinProvider
+     */
+    public function testJoin(string $expt, ...$joins)
+    {
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foos', 'foo');
+
+        foreach ($joins as $join) {
+            $q->join(...$join);
+        }
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foos" AS "foo" ' . $expt,
+            $q->render(true)
+        );
+    }
+
+    public function joinProvider(): array
+    {
+        return [
+            'Simple left join' => [
+                'LEFT JOIN "bars" AS "bar" ON "bar"."id" = "foo"."bar_id"',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    'bar.id',
+                    '=',
+                    'foo.bar_id',
+                ],
+            ],
+            'Join with simple on' => [
+                'LEFT JOIN "bars" AS "bar" ON "bar"."id" = "foo"."bar_id"',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    'bar.id',
+                    'foo.bar_id',
+                ],
+            ],
+            'Join with multiple on' => [
+                'LEFT JOIN "bars" AS "bar" ON "bar"."id" = "foo"."bar_id" AND "bar"."type" = "foo"."type"',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    'bar.id',
+                    '=',
+                    'foo.bar_id',
+                    'bar.type',
+                    '=',
+                    'foo.type',
+                ],
+            ],
+            'Join with multiple on array' => [
+                'LEFT JOIN "bars" AS "bar" ON "bar"."id" = "foo"."bar_id" AND "bar"."flower" IN (\'rose\', \'sakura\')',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    'bar.id',
+                    '=',
+                    'foo.bar_id',
+                    'bar.flower',
+                    '=',
+                    ['rose', 'sakura'],
+                ],
+            ],
+            'Join with callback on' => [
+                'LEFT JOIN "bars" AS "bar" ON "bar"."id" = "foo"."bar_id" AND "bar"."type" = "foo"."type"',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    static function (JoinClause $join) {
+                        $join->on('bar.id', 'foo.bar_id');
+                        $join->on('bar.type', 'foo.type');
+                    },
+                ],
+            ],
+            'Join with callback onRaw' => [
+                'LEFT JOIN "bars" AS "bar" ON "bar"."id" = "foo"."bar_id" AND "bar"."flower" = \'sakura\'',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    static function (JoinClause $join) {
+                        $join->on('bar.id', 'foo.bar_id');
+                        $join->onRaw('%n = %q', 'bar.flower', 'sakura');
+                    },
+                ],
+            ],
+            'Join with callback nested on' => [
+                'LEFT JOIN "bars" AS "bar" ON ("a" = "b" OR "c" = "d")',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    static function (JoinClause $join) {
+                        $join->on(
+                            static function (JoinClause $join) {
+                                $join->on('a', 'b');
+                                $join->on('c', 'd');
+                            },
+                            'OR'
+                        );
+                    },
+                ],
+            ],
+            'Join with callback or on' => [
+                'LEFT JOIN "bars" AS "bar" ON "bar"."id" = "foo"."bar_id" AND ("a" = "b" OR "c" = "d")',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    static function (JoinClause $join) {
+                        $join->on('bar.id', 'foo.bar_id');
+                        $join->orOn(static function (JoinClause $join) {
+                            $join->on('a', 'b');
+                            $join->on('c', 'd');
+                        });
+                    },
+                ],
+            ],
+            'Multiple join' => [
+                'LEFT JOIN "bars" AS "bar" ON "foo"."bar_id" = "bar"."id" RIGHT JOIN "flowers" AS "fl" ON "fl"."bar_id" = "bar"."id"',
+                [
+                    'LEFT',
+                    'bars',
+                    'bar',
+                    'foo.bar_id',
+                    'bar.id'
+                ],
+                [
+                    'RIGHT',
+                    'flowers',
+                    'fl',
+                    'fl.bar_id',
+                    'bar.id'
+                ],
+            ],
+            'Join sub query' => [
+                'LEFT JOIN (SELECT "COUNT(*)" AS "count", "id" FROM "bar" GROUP BY "bar"."id") AS "bar" ON "foo"."bar_id" = "bar"."id"',
+                [
+                    'LEFT',
+                    self::createQuery()
+                        ->select('COUNT(*) AS count', 'id')
+                        ->from('bar')
+                        ->group('bar.id'),
+                    'bar',
+                    'foo.bar_id',
+                    'bar.id'
+                ]
+            ],
+            'Join sub query callback' => [
+                'LEFT JOIN (SELECT "COUNT(*)" AS "count", "id" FROM "bar" GROUP BY "bar"."id") AS "bar" ON "foo"."bar_id" = "bar"."id"',
+                [
+                    'LEFT',
+                    function (Query $query) {
+                        $query->select('COUNT(*) AS count', 'id')
+                            ->from('bar')
+                            ->group('bar.id');
+                    },
+                    'bar',
+                    'foo.bar_id',
+                    'bar.id'
+                ]
             ],
         ];
     }
@@ -262,19 +445,19 @@ class QueryTest extends TestCase
                 '"foo"',
                 'foo',
                 null,
-                true
+                true,
             ],
             'Column with as' => [
                 '"foo" AS "f"',
                 'foo',
                 'f',
-                true
+                true,
             ],
             'String value' => [
                 '\'foo\'',
                 'foo',
                 'f',
-                false
+                false,
             ],
             'Sub query with as' => [
                 '(SELECT * FROM "bar") AS "bar"',
@@ -282,7 +465,7 @@ class QueryTest extends TestCase
                     ->select('*')
                     ->from('bar'),
                 'bar',
-                true
+                true,
             ],
             'Sub query contains as but override' => [
                 '(SELECT * FROM "bar") AS "bar"',
@@ -291,7 +474,7 @@ class QueryTest extends TestCase
                     ->from('bar')
                     ->alias('b'),
                 'bar',
-                true
+                true,
             ],
             'Sub query contains alias' => [
                 '(SELECT * FROM "bar") AS "b"',
@@ -300,7 +483,7 @@ class QueryTest extends TestCase
                     ->from('bar')
                     ->alias('b'),
                 null,
-                true
+                true,
             ],
             'Sub query contains alias but force ignore' => [
                 '(SELECT * FROM "bar")',
@@ -309,7 +492,7 @@ class QueryTest extends TestCase
                     ->from('bar')
                     ->alias('b'),
                 false,
-                true
+                true,
             ],
             'Sub query as value' => [
                 '(SELECT * FROM "bar")',
@@ -317,8 +500,8 @@ class QueryTest extends TestCase
                     ->select('*')
                     ->from('bar'),
                 'bar',
-                false
-            ]
+                false,
+            ],
         ];
     }
 
@@ -373,11 +556,11 @@ class QueryTest extends TestCase
         return [
             'Simple where =' => [
                 'SELECT * FROM "a" WHERE "foo" = \'bar\'',
-                ['foo', 'bar']
+                ['foo', 'bar'],
             ],
             'Where <' => [
                 'SELECT * FROM "a" WHERE "foo" < \'bar\'',
-                ['foo', '<', 'bar']
+                ['foo', '<', 'bar'],
             ],
             'Where chain' => [
                 'SELECT * FROM "a" WHERE "foo" < 123 AND "baz" = \'bax\' AND "yoo" != \'goo\'',
@@ -387,27 +570,27 @@ class QueryTest extends TestCase
             ],
             'Where null' => [
                 'SELECT * FROM "a" WHERE "foo" IS NULL',
-                ['foo', null]
+                ['foo', null],
             ],
             'Where is null' => [
                 'SELECT * FROM "a" WHERE "foo" IS NULL',
-                ['foo', 'IS', null]
+                ['foo', 'IS', null],
             ],
             'Where is not null' => [
                 'SELECT * FROM "a" WHERE "foo" IS NOT NULL',
-                ['foo', 'IS NOT', null]
+                ['foo', 'IS NOT', null],
             ],
             'Where = null' => [
                 'SELECT * FROM "a" WHERE "foo" IS NULL',
-                ['foo', '=', null]
+                ['foo', '=', null],
             ],
             'Where != null' => [
                 'SELECT * FROM "a" WHERE "foo" IS NOT NULL',
-                ['foo', '!=', null]
+                ['foo', '!=', null],
             ],
             'Where in' => [
                 'SELECT * FROM "a" WHERE "foo" IN (1, 2, \'yoo\')',
-                ['foo', 'in', [1, 2, 'yoo']]
+                ['foo', 'in', [1, 2, 'yoo']],
             ],
             // Bind with name
             // 'Where bind with var name' => [
@@ -422,12 +605,16 @@ class QueryTest extends TestCase
                     [
                         ['foo', 'bar'],
                         ['yoo', '=', 'hello'],
-                        ['flower', 'in', self::createQuery()
-                            ->select('id')
-                            ->from('flower')
-                            ->where('id', 5)]
-                    ]
-                ]
+                        [
+                            'flower',
+                            'in',
+                            self::createQuery()
+                                ->select('id')
+                                ->from('flower')
+                                ->where('id', 5),
+                        ],
+                    ],
+                ],
             ],
             'Where nested' => [
                 'SELECT * FROM "a" WHERE "foo" = \'bar\' AND ("yoo" = \'goo\' AND "flower" != \'Sakura\')',
@@ -436,8 +623,8 @@ class QueryTest extends TestCase
                     static function (Query $query) {
                         $query->where('yoo', 'goo')
                             ->where('flower', '!=', 'Sakura');
-                    }
-                ]
+                    },
+                ],
             ],
 
             'Where nested or' => [
@@ -448,8 +635,8 @@ class QueryTest extends TestCase
                         $query->where('yoo', 'goo')
                             ->where('flower', '!=', 'Sakura');
                     },
-                    'or'
-                ]
+                    'or',
+                ],
             ],
 
             // Sub query
@@ -461,8 +648,8 @@ class QueryTest extends TestCase
                     self::createQuery()
                         ->select('id')
                         ->from('flower')
-                        ->where('id', 5)
-                ]
+                        ->where('id', 5),
+                ],
             ],
             'Where not exists sub query cllback' => [
                 'SELECT * FROM "a" WHERE "foo" NOT EXISTS (SELECT "id" FROM "flower" WHERE "id" = 5)',
@@ -473,8 +660,8 @@ class QueryTest extends TestCase
                         $q->select('id')
                             ->from('flower')
                             ->where('id', 5);
-                    }
-                ]
+                    },
+                ],
             ],
             'Where sub query equals value' => [
                 'SELECT * FROM "a" WHERE (SELECT "id" FROM "flower" WHERE "id" = 123) = 123',
@@ -484,14 +671,14 @@ class QueryTest extends TestCase
                         ->from('flower')
                         ->where('id', 5),
                     '=',
-                    123
-                ]
+                    123,
+                ],
             ],
 
             // Where with raw wrapper
             'Where with raw wrapper' => [
                 'SELECT * FROM "a" WHERE foo = YEAR(date)',
-                [raw('foo'), raw('YEAR(date)')]
+                [raw('foo'), raw('YEAR(date)')],
             ],
         ];
     }
@@ -503,11 +690,13 @@ class QueryTest extends TestCase
             ->select('*')
             ->from('foo')
             ->where('foo', 'bar')
-            ->orWhere([
-                ['yoo', 'goo'],
-                ['flower', '!=', 'Sakura'],
-                ['hello', [1, 2, 3]]
-            ]);
+            ->orWhere(
+                [
+                    ['yoo', 'goo'],
+                    ['flower', '!=', 'Sakura'],
+                    ['hello', [1, 2, 3]],
+                ]
+            );
 
         self::assertSqlEquals(
             'SELECT * FROM "foo" WHERE "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\' OR "hello" IN (1, 2, 3))',
@@ -519,11 +708,13 @@ class QueryTest extends TestCase
             ->select('*')
             ->from('foo')
             ->where('foo', 'bar')
-            ->orWhere(function (Query $query) {
-                $query->where('yoo', 'goo');
-                $query->where('flower', '!=', 'Sakura');
-                $query->where('hello', [1, 2, 3]);
-            });
+            ->orWhere(
+                function (Query $query) {
+                    $query->where('yoo', 'goo');
+                    $query->where('flower', '!=', 'Sakura');
+                    $query->where('hello', [1, 2, 3]);
+                }
+            );
 
         self::assertSqlEquals(
             'SELECT * FROM "foo" WHERE "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\' OR "hello" IN (1, 2, 3))',
@@ -535,14 +726,18 @@ class QueryTest extends TestCase
             ->select('*')
             ->from('foo')
             ->where('foo', 'bar')
-            ->orWhere(function (Query $query) {
-                $query->where('yoo', 'goo');
-                $query->where('flower', '!=', 'Sakura');
-                $query->where(function (Query $query) {
-                    $query->where('hello', [1, 2, 3]);
-                    $query->where('id', '<', 999);
-                });
-            });
+            ->orWhere(
+                function (Query $query) {
+                    $query->where('yoo', 'goo');
+                    $query->where('flower', '!=', 'Sakura');
+                    $query->where(
+                        function (Query $query) {
+                            $query->where('hello', [1, 2, 3]);
+                            $query->where('id', '<', 999);
+                        }
+                    );
+                }
+            );
 
         self::assertSqlFormatEquals(
             <<<SQL
@@ -609,11 +804,11 @@ SQL
         return [
             'Simple having =' => [
                 'SELECT * FROM "a" HAVING "foo" = \'bar\'',
-                ['foo', 'bar']
+                ['foo', 'bar'],
             ],
             'Having <' => [
                 'SELECT * FROM "a" HAVING "foo" < \'bar\'',
-                ['foo', '<', 'bar']
+                ['foo', '<', 'bar'],
             ],
             'Having chain' => [
                 'SELECT * FROM "a" HAVING "foo" < 123 AND "baz" = \'bax\' AND "yoo" != \'goo\'',
@@ -623,27 +818,27 @@ SQL
             ],
             'Having null' => [
                 'SELECT * FROM "a" HAVING "foo" IS NULL',
-                ['foo', null]
+                ['foo', null],
             ],
             'Having is null' => [
                 'SELECT * FROM "a" HAVING "foo" IS NULL',
-                ['foo', 'IS', null]
+                ['foo', 'IS', null],
             ],
             'Having is not null' => [
                 'SELECT * FROM "a" HAVING "foo" IS NOT NULL',
-                ['foo', 'IS NOT', null]
+                ['foo', 'IS NOT', null],
             ],
             'Having = null' => [
                 'SELECT * FROM "a" HAVING "foo" IS NULL',
-                ['foo', '=', null]
+                ['foo', '=', null],
             ],
             'Having != null' => [
                 'SELECT * FROM "a" HAVING "foo" IS NOT NULL',
-                ['foo', '!=', null]
+                ['foo', '!=', null],
             ],
             'Having in' => [
                 'SELECT * FROM "a" HAVING "foo" IN (1, 2, \'yoo\')',
-                ['foo', 'in', [1, 2, 'yoo']]
+                ['foo', 'in', [1, 2, 'yoo']],
             ],
             // Bind with name
             // 'Having bind with var name' => [
@@ -658,12 +853,16 @@ SQL
                     [
                         ['foo', 'bar'],
                         ['yoo', '=', 'hello'],
-                        ['flower', 'in', self::createQuery()
-                            ->select('id')
-                            ->from('flower')
-                            ->having('id', 5)]
-                    ]
-                ]
+                        [
+                            'flower',
+                            'in',
+                            self::createQuery()
+                                ->select('id')
+                                ->from('flower')
+                                ->having('id', 5),
+                        ],
+                    ],
+                ],
             ],
             'Having nested' => [
                 'SELECT * FROM "a" HAVING "foo" = \'bar\' AND ("yoo" = \'goo\' AND "flower" != \'Sakura\')',
@@ -672,8 +871,8 @@ SQL
                     static function (Query $query) {
                         $query->having('yoo', 'goo')
                             ->having('flower', '!=', 'Sakura');
-                    }
-                ]
+                    },
+                ],
             ],
 
             'Having nested or' => [
@@ -684,8 +883,8 @@ SQL
                         $query->having('yoo', 'goo')
                             ->having('flower', '!=', 'Sakura');
                     },
-                    'or'
-                ]
+                    'or',
+                ],
             ],
 
             // Sub query
@@ -697,8 +896,8 @@ SQL
                     self::createQuery()
                         ->select('id')
                         ->from('flower')
-                        ->having('id', 5)
-                ]
+                        ->having('id', 5),
+                ],
             ],
             'Having not exists sub query cllback' => [
                 'SELECT * FROM "a" HAVING "foo" NOT EXISTS (SELECT "id" FROM "flower" HAVING "id" = 5)',
@@ -709,8 +908,8 @@ SQL
                         $q->select('id')
                             ->from('flower')
                             ->having('id', 5);
-                    }
-                ]
+                    },
+                ],
             ],
             'Having sub query equals value' => [
                 'SELECT * FROM "a" HAVING (SELECT "id" FROM "flower" HAVING "id" = 123) = 123',
@@ -720,14 +919,14 @@ SQL
                         ->from('flower')
                         ->having('id', 5),
                     '=',
-                    123
-                ]
+                    123,
+                ],
             ],
 
             // Having with raw wrapper
             'Having with raw wrapper' => [
                 'SELECT * FROM "a" HAVING foo = YEAR(date)',
-                [raw('foo'), raw('YEAR(date)')]
+                [raw('foo'), raw('YEAR(date)')],
             ],
         ];
     }
@@ -739,11 +938,13 @@ SQL
             ->select('*')
             ->from('foo')
             ->having('foo', 'bar')
-            ->orHaving([
-                ['yoo', 'goo'],
-                ['flower', '!=', 'Sakura'],
-                ['hello', [1, 2, 3]]
-            ]);
+            ->orHaving(
+                [
+                    ['yoo', 'goo'],
+                    ['flower', '!=', 'Sakura'],
+                    ['hello', [1, 2, 3]],
+                ]
+            );
 
         self::assertSqlEquals(
             'SELECT * FROM "foo" HAVING "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\' OR "hello" IN (1, 2, 3))',
@@ -755,11 +956,13 @@ SQL
             ->select('*')
             ->from('foo')
             ->having('foo', 'bar')
-            ->orHaving(function (Query $query) {
-                $query->having('yoo', 'goo');
-                $query->having('flower', '!=', 'Sakura');
-                $query->having('hello', [1, 2, 3]);
-            });
+            ->orHaving(
+                function (Query $query) {
+                    $query->having('yoo', 'goo');
+                    $query->having('flower', '!=', 'Sakura');
+                    $query->having('hello', [1, 2, 3]);
+                }
+            );
 
         self::assertSqlEquals(
             'SELECT * FROM "foo" HAVING "foo" = \'bar\' AND ("yoo" = \'goo\' OR "flower" != \'Sakura\' OR "hello" IN (1, 2, 3))',
@@ -771,14 +974,18 @@ SQL
             ->select('*')
             ->from('foo')
             ->having('foo', 'bar')
-            ->orHaving(function (Query $query) {
-                $query->having('yoo', 'goo');
-                $query->having('flower', '!=', 'Sakura');
-                $query->having(function (Query $query) {
-                    $query->having('hello', [1, 2, 3]);
-                    $query->having('id', '<', 999);
-                });
-            });
+            ->orHaving(
+                function (Query $query) {
+                    $query->having('yoo', 'goo');
+                    $query->having('flower', '!=', 'Sakura');
+                    $query->having(
+                        function (Query $query) {
+                            $query->having('hello', [1, 2, 3]);
+                            $query->having('id', '<', 999);
+                        }
+                    );
+                }
+            );
 
         self::assertSqlFormatEquals(
             <<<SQL
@@ -799,12 +1006,14 @@ SQL
         $q = self::createQuery()
             ->select('*')
             ->from('foo')
-            ->order([
-                ['id', 'ASC'],
-                'f1',
-                ['f2', 'DESC'],
-                'f3'
-            ])
+            ->order(
+                [
+                    ['id', 'ASC'],
+                    'f1',
+                    ['f2', 'DESC'],
+                    'f3',
+                ]
+            )
             ->order('f4', 'DESC')
             ->order(raw('COUNT(f5)'));
 
@@ -965,9 +1174,11 @@ SQL
      */
     public function testQuote(): void
     {
-        $q = new Query(static function (string $value) {
-            return addslashes($value);
-        });
+        $q = new Query(
+            static function (string $value) {
+                return addslashes($value);
+            }
+        );
 
         $s = $q->quote("These are Simon's items");
 
@@ -992,9 +1203,11 @@ SQL
      */
     public function testEscape(): void
     {
-        $q = new Query(static function (string $value) {
-            return addslashes($value);
-        });
+        $q = new Query(
+            static function (string $value) {
+                return addslashes($value);
+            }
+        );
 
         $s = $q->escape("These are Simon's items");
 

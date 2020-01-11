@@ -1,6 +1,4 @@
 /**
- * Method to set property ${FIELD_NAME}
- * 
  * @param   ${TYPE_HINT}  $${PARAM_NAME}
  *
 #if (${STATIC} == "static")
