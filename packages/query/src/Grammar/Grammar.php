@@ -76,41 +76,45 @@ class Grammar
 
     public function compileSelect(Query $query): string
     {
-        $sql[] = (string) $query->getSelect();
+        $sql['select'] = (string) $query->getSelect();
 
         if ($form = $query->getFrom()) {
-            $sql[] = $form;
+            $sql['from'] = $form;
         }
 
         if ($join = $query->getJoin()) {
-            $sql[] = $join;
+            $sql['join'] = $join;
         }
 
         if ($where = $query->getWhere()) {
-            $sql[] = $where;
+            $sql['where'] = $where;
         }
 
         if ($having = $query->getHaving()) {
-            $sql[] = $having;
+            $sql['having'] = $having;
         }
 
         if ($group = $query->getGroup()) {
-            $sql[] = $group;
+            $sql['group'] = $group;
         }
 
+        if ($union = $query->getUnion()) {
+            // Is full union
+            if (!$query->getSelect()) {
+                $union->setName('()');
+
+                unset($sql['group']);
+            }
+
+            $sql['union'] = (string) $union;
+        }
+
+        // Only order and limit can after union
         if ($order = $query->getOrder()) {
-            $sql[] = $order;
+            $sql['order'] = $order;
         }
 
         $sql = $this->compileLimit($query, $sql);
-
-        if ($union = $query->getUnion()) {
-            if (!$query->getSelect()) {
-                $query->getUnion()->setName('()');
-            }
-
-            $sql[] = (string) $union;
-        }
 
         return implode(' ', $sql);
     }
@@ -177,7 +181,7 @@ class Grammar
                 $limitOffset->prepend($offset);
             }
 
-            $sql[] = $limitOffset;
+            $sql['limit'] = $limitOffset;
         }
 
         return $sql;

@@ -421,13 +421,14 @@ class QueryTest extends TestCase
         ];
     }
 
-    public function testUnion()
+    public function testUnion(): void
     {
         // Select and union
         $q = self::createQuery()
             ->select('*')
             ->from('foo')
-            ->where('id', '>', 12);
+            ->where('id', '>', 12)
+            ->group('user_id');
 
         $q->union(
             self::createQuery()
@@ -438,11 +439,11 @@ class QueryTest extends TestCase
         );
 
         self::assertSqlEquals(
-            'SELECT * FROM "foo" WHERE "id" > 12 UNION (SELECT * FROM "bar" WHERE "id" < 50)',
+            'SELECT * FROM "foo" WHERE "id" > 12 GROUP BY "user_id" UNION (SELECT * FROM "bar" WHERE "id" < 50)',
             $q->render(true)
         );
 
-        // Union everything
+        // Union wrap every select
         $q = self::createQuery();
 
         $q->union(
@@ -459,8 +460,12 @@ class QueryTest extends TestCase
                 ->where('id', '<', 50)
         );
 
+        // Group will be ignore
+        $q->group('id')
+            ->order('id', 'DESC');
+
         self::assertSqlEquals(
-            'SELECT * FROM "foo" WHERE "id" > 12 UNION (SELECT * FROM "bar" WHERE "id" < 12)',
+            '(SELECT * FROM "foo" WHERE "id" > 12) UNION (SELECT * FROM "bar" WHERE "id" < 50) ORDER BY "id" DESC',
             $q->render(true)
         );
     }
@@ -584,7 +589,7 @@ class QueryTest extends TestCase
             Escaper::replaceQueryParams(
                 $this->instance,
                 (string) $this->instance->render(),
-                $this->instance->mergeBounded()
+                $this->instance->getMergedBounded()
             )
         );
 
@@ -643,7 +648,7 @@ class QueryTest extends TestCase
             // ],
             // Where array and nested
             'Where array' => [
-                'SELECT * FROM "a" WHERE "foo" = \'bar\' AND "yoo" = \'hello\' AND "flower" IN (SELECT "id" FROM "flower" WHERE "id" = \'bar\')',
+                'SELECT * FROM "a" WHERE "foo" = \'bar\' AND "yoo" = \'hello\' AND "flower" IN (SELECT "id" FROM "flower" WHERE "id" = 5)',
                 [
                     // arg 1 is array
                     [
@@ -708,7 +713,7 @@ class QueryTest extends TestCase
                 ],
             ],
             'Where sub query equals value' => [
-                'SELECT * FROM "a" WHERE (SELECT "id" FROM "flower" WHERE "id" = 123) = 123',
+                'SELECT * FROM "a" WHERE (SELECT "id" FROM "flower" WHERE "id" = 5) = 123',
                 [
                     self::createQuery()
                         ->select('id')
@@ -832,7 +837,7 @@ SQL
             Escaper::replaceQueryParams(
                 $this->instance,
                 (string) $this->instance->render(),
-                $this->instance->mergeBounded()
+                $this->instance->getMergedBounded()
             )
         );
 
@@ -891,7 +896,7 @@ SQL
             // ],
             // Having array and nested
             'Having array' => [
-                'SELECT * FROM "a" HAVING "foo" = \'bar\' AND "yoo" = \'hello\' AND "flower" IN (SELECT "id" FROM "flower" HAVING "id" = \'bar\')',
+                'SELECT * FROM "a" HAVING "foo" = \'bar\' AND "yoo" = \'hello\' AND "flower" IN (SELECT "id" FROM "flower" HAVING "id" = 5)',
                 [
                     // arg 1 is array
                     [
@@ -943,7 +948,7 @@ SQL
                         ->having('id', 5),
                 ],
             ],
-            'Having not exists sub query cllback' => [
+            'Having not exists sub query callback' => [
                 'SELECT * FROM "a" HAVING "foo" NOT EXISTS (SELECT "id" FROM "flower" HAVING "id" = 5)',
                 [
                     'foo',
@@ -956,7 +961,7 @@ SQL
                 ],
             ],
             'Having sub query equals value' => [
-                'SELECT * FROM "a" HAVING (SELECT "id" FROM "flower" HAVING "id" = 123) = 123',
+                'SELECT * FROM "a" HAVING (SELECT "id" FROM "flower" HAVING "id" = 5) = 123',
                 [
                     self::createQuery()
                         ->select('id')

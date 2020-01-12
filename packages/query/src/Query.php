@@ -353,9 +353,9 @@ class Query implements QueryInterface
 
         // Clear any ORDER BY clause in UNION query
         // See http://dev.mysql.com/doc/refman/5.0/en/union.html
-        if (null !== $this->order) {
-            $this->clear('order');
-        }
+        // if (null !== $this->order) {
+        //     $this->clear(['order', 'group']);
+        // }
 
         // Create the Clause if it does not exist
         if (null === $this->union) {
@@ -1259,6 +1259,7 @@ class Query implements QueryInterface
 
     public function render(bool $emulatePrepared = false, ?array &$bounded = []): string
     {
+        // Only top level query rendering should create sequence and get merged bounded
         if (!$this->sequence) {
             $bounded = $this->mergeBounded();
         }
@@ -1271,12 +1272,22 @@ class Query implements QueryInterface
             $sql = Escaper::replaceQueryParams($this->getEscaper(), $sql, $bounded);
         }
 
+        // Clear sequence so that next time rendering should re-create new one
         $this->sequence = null;
 
         return $sql;
     }
 
-    public function mergeBounded(?BoundedSequence $sequence = null): array
+    public function getMergedBounded(): array
+    {
+        $bounded = $this->mergeBounded();
+
+        $this->sequence = null;
+
+        return $bounded;
+    }
+
+    private function mergeBounded(?BoundedSequence $sequence = null): array
     {
         $this->sequence = $sequence = $sequence ?: new BoundedSequence('wqp__');
 
@@ -1384,14 +1395,14 @@ class Query implements QueryInterface
      *
      * @return  void
      */
-    // public function __clone()
-    // {
-    //     foreach (get_object_vars($this) as $k => $v) {
-    //         if (is_object($v) || is_array($v)) {
-    //             $this->{$k} = unserialize(serialize($v));
-    //         }
-    //     }
-    // }
+    public function __clone()
+    {
+        foreach (get_object_vars($this) as $k => $v) {
+            if (is_object($v)) {
+                $this->{$k} = clone $v;
+            }
+        }
+    }
 
     /**
      * createSubQuery
@@ -1423,6 +1434,8 @@ class Query implements QueryInterface
 
             return $this;
         }
+
+        // TODO: rewrite clear process
 
         switch ($clauses) {
             case 'select':
