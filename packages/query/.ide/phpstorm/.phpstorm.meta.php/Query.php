@@ -11,23 +11,30 @@ declare(strict_types=1);
 
 namespace PHPSTORM_META {
 
-    override(
-        \Windwalker\Query\Query::quoteName(0),
-        type(0)
+    registerArgumentsSet(
+        'query_join_types',
+        'INNER',
+        'OUTER',
+        'LEFT',
+        'RIGHT'
     );
 
-    override(
-        \Windwalker\Query\Query::quote(0),
-        type(0)
+    expectedArguments(
+        \Windwalker\Query\Query::join(),
+        0,
+        argumentsSet('query_join_types')
     );
 
-    override(
-        \Windwalker\Query\Query::qn(0),
-        type(0)
+    registerArgumentsSet(
+        'query_union_types',
+        '',
+        'DISTINCT',
+        'ALL'
     );
 
-    override(
-        \Windwalker\Query\Query::q(0),
-        type(0)
+    expectedArguments(
+        \Windwalker\Query\Query::union(),
+        1,
+        argumentsSet('query_union_types')
     );
 }

@@ -45,6 +45,9 @@ use function Windwalker\value;
  * @method Clause|null getGroup()
  * @method Clause|null getLimit()
  * @method Clause|null getOffset()
+ * @method Clause|null getInsert()
+ * @method Clause|null getColumns()
+ * @method Clause|null getValues()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
  * @method $this leftJoin($table, ?string $alias, ...$on)
@@ -142,6 +145,16 @@ class Query implements QueryInterface
      * @var Clause
      */
     protected $insert;
+
+    /**
+     * @var Clause
+     */
+    protected $columns;
+
+    /**
+     * @var Clause
+     */
+    protected $values;
 
     /**
      * @var string
@@ -879,10 +892,90 @@ class Query implements QueryInterface
     public function insert(string $table, ?string $incrementField = null)
     {
         $this->type = static::TYPE_INSERT;
-        $this->insert = $this->clause('INSERT INTO', $table);
+        $this->insert = $this->clause('INSERT INTO', $this->quoteName($table));
         $this->incrementField = $incrementField;
 
         return $this;
+    }
+
+    /**
+     * columns
+     *
+     * @param  mixed  ...$columns
+     *
+     * @return  static
+     */
+    public function columns(...$columns)
+    {
+        if (!$this->columns) {
+            $this->columns = $this->clause('COLUMNS ()', [], ', ');
+        }
+
+        $this->columns->append(
+            $this->quoteName(
+                array_values(Arr::flatten($columns))
+            )
+        );
+
+        return $this;
+    }
+
+    /**
+     * values
+     *
+     * @param  mixed  ...$values
+     *
+     * @return  static
+     */
+    public function values(...$values)
+    {
+        if (!$this->values) {
+            $this->values = $this->clause('VALUES ', [], ', ');
+        }
+
+        foreach ($values as $value) {
+            ArgumentsAssert::assert(
+                is_iterable($value),
+                '%s values element should always be array or iterable, %s given.'
+            );
+
+            $clause = $this->clause('()', [], ', ');
+
+            foreach ($value as $val) {
+                $clause->append($this->handleWriteValue($val));
+            }
+
+            $this->values->append($clause);
+        }
+
+        return $this;
+    }
+
+    private function handleWriteValue($value)
+    {
+        $origin = $value;
+
+        if ($value === null) {
+            $value = $this->val(raw('NULL'));
+        } elseif ($value instanceof static) {
+            // Process Aub query object
+            $value = $this->val($value);
+            $this->injectSubQuery($origin);
+        } elseif ($value instanceof RawWrapper) {
+            // Process Raw
+            $value = $this->val($value);
+        } else {
+            ArgumentsAssert::assert(
+                !is_array($value) && !is_object($value),
+                'Write values should be scalar or NULL, %2$s given.',
+                $value
+            );
+
+            // Process simple value compare
+            $this->bindValue(null, $value = $this->val($value));
+        }
+
+        return $value;
     }
 
     /**
@@ -917,7 +1010,7 @@ class Query implements QueryInterface
     /**
      * escape
      *
-     * @param  string|array|WrapperInterface  $value
+     * @param  string|iterable|WrapperInterface  $value
      *
      * @return  string|array
      */
@@ -925,7 +1018,7 @@ class Query implements QueryInterface
     {
         $value = value($value);
 
-        if (is_array($value)) {
+        if (is_iterable($value)) {
             foreach ($value as &$v) {
                 $v = $this->escape($v);
             }
@@ -947,7 +1040,7 @@ class Query implements QueryInterface
     {
         $value = value($value);
 
-        if (is_array($value)) {
+        if (is_iterable($value)) {
             foreach ($value as &$v) {
                 $v = $this->quote($v);
             }
@@ -969,7 +1062,7 @@ class Query implements QueryInterface
     /**
      * quoteName
      *
-     * @param  string|array|WrapperInterface  $name
+     * @param  string|iterable|WrapperInterface  $name
      *
      * @return  string|array
      */
@@ -979,15 +1072,11 @@ class Query implements QueryInterface
             return value($name);
         }
 
-        if ($name === '*') {
-            return $name;
-        }
-
         if ($name instanceof Clause) {
             return $name->setElements($this->quoteName($name->elements));
         }
 
-        if (is_array($name)) {
+        if (is_iterable($name)) {
             foreach ($name as &$n) {
                 $n = $this->quoteName($n);
             }

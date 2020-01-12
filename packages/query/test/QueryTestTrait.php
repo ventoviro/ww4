@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Test;
 
+use Windwalker\Query\Escaper;
+use Windwalker\Query\Query;
 use Windwalker\Test\Helper\TestStringHelper;
 use Windwalker\Test\Traits\BaseAssertionTrait;
 use Windwalker\Utilities\Str;
@@ -52,6 +54,19 @@ trait QueryTestTrait
         return preg_replace('/(\"([\w]+)\")/', Str::wrap('$2', static::$nameQuote), $sql);
     }
 
+    protected static function renderQuery($query): string
+    {
+        if ($query instanceof Query) {
+            $query = Escaper::replaceQueryParams(
+                $query,
+                $query->render(false, $bounded),
+                $bounded
+            );
+        }
+
+        return $query;
+    }
+
     /**
      * format
      *
@@ -64,19 +79,24 @@ trait QueryTestTrait
         return \SqlFormatter::format((string) $sql, false);
     }
 
+    protected static function compress(string $sql): string
+    {
+        return \SqlFormatter::compress((string) $sql);
+    }
+
     public static function assertSqlFormatEquals($sql1, $sql2): void
     {
         self::assertEquals(
             self::format(static::replaceQn($sql1)),
-            self::format($sql2)
+            self::format(static::renderQuery($sql2))
         );
     }
 
     public static function assertSqlEquals($sql1, $sql2): void
     {
         self::assertEquals(
-            \SqlFormatter::compress(static::replaceQn($sql1)),
-            \SqlFormatter::compress($sql2)
+            static::compress(static::replaceQn($sql1)),
+            static::compress(static::renderQuery($sql2))
         );
     }
 }

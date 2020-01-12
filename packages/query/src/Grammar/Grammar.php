@@ -119,9 +119,20 @@ class Grammar
         return implode(' ', $sql);
     }
 
-    public function compileInsert(Query $query)
+    public function compileInsert(Query $query): string
     {
-        //
+        $sql['insert'] = $query->getInsert();
+
+        if ($columns = $query->getColumns()) {
+            $sql['columns'] = $columns;
+        }
+
+        // todo: add SET
+        if ($values = $query->getValues()) {
+            $sql['values'] = $values;
+        }
+
+        return trim(implode(' ', $sql));
     }
 
     public function compileUpdate(Query $query)
@@ -146,6 +157,10 @@ class Grammar
 
     public function quoteName(string $name): string
     {
+        if ($name === '*') {
+            return $name;
+        }
+
         if (stripos($name, ' as ') !== false) {
             [$name, $alias] = preg_split('/ as /i', $name);
 

@@ -466,7 +466,31 @@ class QueryTest extends TestCase
 
         self::assertSqlEquals(
             '(SELECT * FROM "foo" WHERE "id" > 12) UNION (SELECT * FROM "bar" WHERE "id" < 50) ORDER BY "id" DESC',
-            $q->render(true)
+            $q
+        );
+    }
+
+    public function testInsert(): void
+    {
+        $this->instance->insert('foo')
+            ->columns('id', 'title', ['foo', 'bar'], 'yoo')
+            ->values(
+                [1, 'A', 'a', null, raw('CURRENT_TIMESTAMP()')],
+                [2, 'B', 'b', null, raw('CURRENT_TIMESTAMP()')],
+                [3, 'C', 'c', null, raw('CURRENT_TIMESTAMP()')]
+            );
+
+        self::assertSqlEquals(
+            <<<SQL
+INSERT INTO "foo"
+COLUMNS ("id", "title", "foo", "bar", "yoo")
+VALUES
+    (1, 'A', 'a', NULL, CURRENT_TIMESTAMP()),
+    (2, 'B', 'b', NULL, CURRENT_TIMESTAMP()),
+    (3, 'C', 'c', NULL, CURRENT_TIMESTAMP())
+SQL
+            ,
+            $this->instance
         );
     }
 
