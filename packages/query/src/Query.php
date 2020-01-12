@@ -27,6 +27,7 @@ use Windwalker\Utilities\Classes\MarcoableTrait;
 use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
+
 use function Windwalker\raw;
 use function Windwalker\value;
 
@@ -50,6 +51,18 @@ use function Windwalker\value;
  * @method $this rightJoin($table, ?string $alias, ...$on)
  * @method $this outerJoin($table, ?string $alias, ...$on)
  * @method $this innerJoin($table, ?string $alias, ...$on)
+ * @method $this whereIn($column, array $values)
+ * @method $this whereNotIn($column, array $values)
+ * @method $this whereBetween($column, $start, $end)
+ * @method $this whereNotBetween($column, $start, $end)
+ * @method $this whereLike($column, string $search)
+ * @method $this whereNotLike($column, string $search)
+ * @method $this havingIn($column, array $values)
+ * @method $this havingNotIn($column, array $values)
+ * @method $this havingBetween($column, $start, $end)
+ * @method $this havingNotBetween($column, $start, $end)
+ * @method $this havingLike($column, string $search)
+ * @method $this havingNotLike($column, string $search)
  * @method string|array qn($text)
  * @method string|array q($text)
  */
@@ -504,6 +517,7 @@ class Query implements QueryInterface
         $origin = $value;
 
         if ($value === null) {
+            // Process NULL
             if ($operator === '=') {
                 $operator = 'IS';
             } elseif ($operator === '!=') {
@@ -511,6 +525,21 @@ class Query implements QueryInterface
             }
 
             $value = $this->val(raw('NULL'));
+        } elseif (in_array(strtolower($operator), ['between', 'not between'], true)) {
+            // Process BETWEEN
+            ArgumentsAssert::assert(
+                is_array($value) && COUNT($value) === 2,
+                'Between should have at least and only 2 values'
+            );
+
+            $value = $this->clause('', [], ' AND ');
+
+            foreach ($origin as $val) {
+                // Append every value as ValueObject so that we can make placeholders as `IN(?, ?, ?...)`
+                $value->append($vc = $this->val($val));
+
+                $this->bindValue(null, $vc);
+            }
         } elseif (is_array($value)) {
             // Auto convert array value as IN() clause.
             if ($operator === '=') {
@@ -528,11 +557,14 @@ class Query implements QueryInterface
                 $this->bindValue(null, $vc);
             }
         } elseif ($value instanceof static) {
+            // Process Aub query object
             $value = $this->val($value);
             $this->injectSubQuery($origin);
         } elseif ($value instanceof RawWrapper) {
+            // Process Raw
             $value = $this->val($value);
         } else {
+            // Process simple value compare
             $this->bindValue(null, $value = $this->val($value));
         }
 
@@ -703,6 +735,34 @@ class Query implements QueryInterface
         );
 
         return $this->having($wheres, 'OR');
+    }
+
+    private function whereVariant($type, $operator, array $args)
+    {
+        $maps = [
+            'notin' => 'not in',
+            'notbetween' => 'not between',
+            'notlike' => 'not like',
+        ];
+
+        $operator = strtolower($operator);
+
+        $operator = $maps[$operator] ?? $operator;
+
+        $arg1 = array_shift($args);
+
+        if (in_array($operator, ['between', 'not between'], true)) {
+            ArgumentsAssert::assert(
+                count($args) === 2,
+                'BETWEEN or NOT BETWEEN needs 2 values'
+            );
+
+            return $this->$type($arg1, $operator, $args);
+        }
+
+        $arg2 = array_shift($args);
+
+        return $this->$type($arg1, $operator, $arg2);
     }
 
     /**
@@ -1569,6 +1629,19 @@ class Query implements QueryInterface
 
         if (property_exists($this, $field)) {
             return $this->$field;
+        }
+
+        // Where/Having
+        if (strpos($name, 'where') === 0) {
+            $operator = substr($name, 5);
+
+            return $this->whereVariant('where', $operator, $args);
+        }
+
+        if (strpos($name, 'having') === 0) {
+            $operator = substr($name, 6);
+
+            return $this->whereVariant('having', $operator, $args);
         }
 
         // Join

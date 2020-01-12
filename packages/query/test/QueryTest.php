@@ -641,6 +641,14 @@ class QueryTest extends TestCase
                 'SELECT * FROM "a" WHERE "foo" IN (1, 2, \'yoo\')',
                 ['foo', 'in', [1, 2, 'yoo']],
             ],
+            'Where between' => [
+                'SELECT * FROM "a" WHERE "foo" BETWEEN 1 AND 100',
+                ['foo', 'between', [1, 100]],
+            ],
+            'Where not between' => [
+                'SELECT * FROM "a" WHERE "foo" NOT BETWEEN 1 AND 100',
+                ['foo', 'not between', [1, 100]],
+            ],
             // Bind with name
             // 'Where bind with var name' => [
             //     'SELECT * FROM "a" WHERE "foo" = \'Hello\'',
@@ -802,6 +810,38 @@ SQL
         );
     }
 
+    public function testWhereVariant()
+    {
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->whereIn('id', [1, 2, 3])
+            ->whereBetween('time', '2012-03-30', '2020-02-24')
+            ->whereNotIn('created', [55, 66])
+            ->whereNotLike('content', '%qwe%');
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" WHERE "id" IN (1, 2, 3) AND "time" BETWEEN \'2012-03-30\' AND \'2020-02-24\' '
+                . 'AND "created" NOT IN (55, 66) AND "content" NOT LIKE \'%qwe%\'',
+            $q->render(true)
+        );
+
+
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->havingIn('id', [1, 2, 3])
+            ->havingBetween('time', '2012-03-30', '2020-02-24')
+            ->havingNotIn('created', [55, 66])
+            ->havingNotLike('content', '%qwe%');
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" HAVING "id" IN (1, 2, 3) AND "time" BETWEEN \'2012-03-30\' AND \'2020-02-24\' '
+                . 'AND "created" NOT IN (55, 66) AND "content" NOT LIKE \'%qwe%\'',
+            $q->render(true)
+        );
+    }
+
     /**
      * testWhere
      *
@@ -888,6 +928,14 @@ SQL
             'Having in' => [
                 'SELECT * FROM "a" HAVING "foo" IN (1, 2, \'yoo\')',
                 ['foo', 'in', [1, 2, 'yoo']],
+            ],
+            'Having between' => [
+                'SELECT * FROM "a" HAVING "foo" BETWEEN 1 AND 100',
+                ['foo', 'between', [1, 100]],
+            ],
+            'Having not between' => [
+                'SELECT * FROM "a" HAVING "foo" NOT BETWEEN 1 AND 100',
+                ['foo', 'not between', [1, 100]],
             ],
             // Bind with name
             // 'Having bind with var name' => [
