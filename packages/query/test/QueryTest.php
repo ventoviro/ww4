@@ -483,7 +483,7 @@ class QueryTest extends TestCase
         self::assertSqlEquals(
             <<<SQL
 INSERT INTO "foo"
-COLUMNS ("id", "title", "foo", "bar", "yoo")
+("id", "title", "foo", "bar", "yoo")
 VALUES
     (1, 'A', 'a', NULL, CURRENT_TIMESTAMP()),
     (2, 'B', 'b', NULL, CURRENT_TIMESTAMP()),
@@ -491,6 +491,45 @@ VALUES
 SQL
             ,
             $this->instance
+        );
+
+        $q = self::createQuery()
+            ->insert('foo')
+            ->set('id', 1)
+            ->set([
+                'title' => 'A',
+                'foo' => 'a',
+                'bar' => null,
+                'yoo' => raw('CURRENT_TIMESTAMP()')
+            ]);
+
+        self::assertSqlEquals(
+            <<<SQL
+INSERT INTO "foo" SET "id" = 1, "title" = 'A', "foo" = 'a', "bar" = NULL, "yoo" = CURRENT_TIMESTAMP()
+SQL
+            ,
+            $q
+        );
+
+        $q = self::createQuery()
+            ->insert('foo')
+            ->columns('id', 'title')
+            ->values(
+                self::createQuery()
+                    ->select('id', 'title')
+                    ->from('articles'),
+                self::createQuery()
+                    ->select('id', 'title')
+                    ->from('categories')
+            );
+
+        self::assertSqlEquals(
+            <<<SQL
+INSERT INTO "foo" ("id", "title")
+(SELECT "id", "title" FROM "articles") UNION (SELECT "id", "title" FROM "categories")
+SQL
+            ,
+            $q
         );
     }
 

@@ -48,6 +48,7 @@ use function Windwalker\value;
  * @method Clause|null getInsert()
  * @method Clause|null getColumns()
  * @method Clause|null getValues()
+ * @method Clause|null getSet()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
  * @method $this leftJoin($table, ?string $alias, ...$on)
@@ -155,6 +156,11 @@ class Query implements QueryInterface
      * @var Clause
      */
     protected $values;
+
+    /**
+     * @var Clause
+     */
+    protected $set;
 
     /**
      * @var string
@@ -908,7 +914,7 @@ class Query implements QueryInterface
     public function columns(...$columns)
     {
         if (!$this->columns) {
-            $this->columns = $this->clause('COLUMNS ()', [], ', ');
+            $this->columns = $this->clause('()', [], ', ');
         }
 
         $this->columns->append(
@@ -929,24 +935,81 @@ class Query implements QueryInterface
      */
     public function values(...$values)
     {
-        if (!$this->values) {
-            $this->values = $this->clause('VALUES ', [], ', ');
+        if ($values === []) {
+            return $this;
         }
 
         foreach ($values as $value) {
-            ArgumentsAssert::assert(
-                is_iterable($value),
-                '%s values element should always be array or iterable, %s given.'
-            );
+            if ($value instanceof static) {
+                if (!$this->values) {
+                    $this->values = $this->createSubQuery();
+                    $this->injectSubQuery($this->values);
+                }
 
-            $clause = $this->clause('()', [], ', ');
+                ArgumentsAssert::assert(
+                    $this->values instanceof static,
+                    'You must set sub query as values to %s since current mode is INSERT ... SELECT ..., %s given',
+                    $value
+                );
 
-            foreach ($value as $val) {
-                $clause->append($this->handleWriteValue($val));
+                $this->values->union($value);
+            } else {
+                if (!$this->values) {
+                    $this->values = $this->clause('VALUES ', [], ', ');
+                }
+
+                ArgumentsAssert::assert(
+                    $this->values instanceof Clause,
+                    'You must set array as values to %s since current mode is VALUES (...), %s given',
+                    $value
+                );
+
+                $clause = $this->clause('()', [], ', ');
+
+                foreach ($value as $val) {
+                    $clause->append($this->handleWriteValue($val));
+                }
+
+                ArgumentsAssert::assert(
+                    is_iterable($value),
+                    '%s values element should always be array or iterable, %s given.'
+                );
+
+                $this->values->append($clause);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * set
+     *
+     * @param  string|iterable $column
+     * @param  mixed           $value
+     *
+     * @return  static
+     */
+    public function set($column, $value = null)
+    {
+        if (!$this->set) {
+            $this->set = $this->clause('SET', [], ', ');
+        }
+
+        if (is_iterable($column)) {
+            foreach ($column as $col => $val) {
+                $this->set($col, $val);
             }
 
-            $this->values->append($clause);
+            return $this;
         }
+
+        $this->set->append(
+            $this->clause(
+                '',
+                [$this->quoteName($column), '=', $this->handleWriteValue($value)]
+            )
+        );
 
         return $this;
     }

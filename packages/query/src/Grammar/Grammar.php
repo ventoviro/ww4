@@ -123,13 +123,16 @@ class Grammar
     {
         $sql['insert'] = $query->getInsert();
 
-        if ($columns = $query->getColumns()) {
-            $sql['columns'] = $columns;
-        }
+        if ($set = $query->getSet()) {
+            $sql['set'] = $set;
+        } else {
+            if ($columns = $query->getColumns()) {
+                $sql['columns'] = $columns;
+            }
 
-        // todo: add SET
-        if ($values = $query->getValues()) {
-            $sql['values'] = $values;
+            if ($values = $query->getValues()) {
+                $sql['values'] = $values;
+            }
         }
 
         return trim(implode(' ', $sql));
