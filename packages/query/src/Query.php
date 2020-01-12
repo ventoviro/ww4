@@ -139,6 +139,16 @@ class Query implements QueryInterface
     protected $offset;
 
     /**
+     * @var Clause
+     */
+    protected $insert;
+
+    /**
+     * @var string
+     */
+    protected $incrementField;
+
+    /**
      * @var array
      */
     protected $subQueries = [];
@@ -854,6 +864,23 @@ class Query implements QueryInterface
     public function offset(?int $offset)
     {
         $this->offset = $offset;
+
+        return $this;
+    }
+
+    /**
+     * insert
+     *
+     * @param  string  $table
+     * @param  string  $incrementField
+     *
+     * @return  static
+     */
+    public function insert(string $table, ?string $incrementField = null)
+    {
+        $this->type = static::TYPE_INSERT;
+        $this->insert = $this->clause('INSERT INTO', $table);
+        $this->incrementField = $incrementField;
 
         return $this;
     }
