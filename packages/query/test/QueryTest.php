@@ -1201,6 +1201,48 @@ SQL
         );
     }
 
+    public function testSubQueryBounded(): void
+    {
+        $q = self::createQuery()
+            ->select('a.*')
+            ->from('foo', 'a')
+            ->leftJoin(
+                self::createQuery()
+                    ->select('*')
+                    ->from('bar')
+                    ->where('id', 'in', [1, 2, 3]),
+                'b',
+                'b.foo_id',
+                '=',
+                'a.id'
+            )
+            ->where('a.id', 123);
+
+        self::assertSqlEquals(
+            <<<SQL
+SELECT "a".* FROM "foo" AS "a"
+    LEFT JOIN
+    (SELECT * FROM "bar" WHERE "id" IN (:wqp__1, :wqp__2, :wqp__3))
+    AS "b" ON "b"."foo_id" = "a"."id"
+    WHERE "a"."id" = :wqp__0
+SQL
+            ,
+            (string) $q
+        );
+
+        self::assertSqlEquals(
+            <<<SQL
+SELECT "a".* FROM "foo" AS "a"
+    LEFT JOIN
+    (SELECT * FROM "bar" WHERE "id" IN (1, 2, 3))
+    AS "b" ON "b"."foo_id" = "a"."id"
+    WHERE "a"."id" = 123
+SQL
+            ,
+            $q
+        );
+    }
+
     public function testFormat()
     {
         $result = $this->instance->format('SELECT %n FROM %n WHERE %n = %a', 'foo', '#__bar', 'id', 10);

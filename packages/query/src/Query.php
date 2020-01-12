@@ -1769,7 +1769,7 @@ class Query implements QueryInterface
             'crossJoin' => 'CROSS',
         ];
 
-        if (in_array($name, $aliases, true)) {
+        if (isset($aliases[$name])) {
             return $this->join($aliases[$name], ...$args);
         }
 
