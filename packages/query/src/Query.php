@@ -20,6 +20,7 @@ use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Clause\ValueClause;
 use Windwalker\Query\Expression\Expression;
 use Windwalker\Query\Grammar\Grammar;
+use Windwalker\Query\Wrapper\FormatRawWrapper;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Classes\FlowControlTrait;
@@ -36,6 +37,7 @@ use function Windwalker\value;
  *
  * @method string|null getType()
  * @method Clause|null getSelect()
+ * @method Clause|null getDelete()
  * @method Clause|null getFrom()
  * @method Clause|null getJoin()
  * @method Clause|null getUnion()
@@ -46,6 +48,7 @@ use function Windwalker\value;
  * @method Clause|null getLimit()
  * @method Clause|null getOffset()
  * @method Clause|null getInsert()
+ * @method Clause|null getUpdate()
  * @method Clause|null getColumns()
  * @method Clause|null getValues()
  * @method Clause|null getSet()
@@ -100,6 +103,11 @@ class Query implements QueryInterface
     /**
      * @var Clause
      */
+    protected $delete;
+
+    /**
+     * @var Clause
+     */
     protected $from;
 
     /**
@@ -146,6 +154,11 @@ class Query implements QueryInterface
      * @var Clause
      */
     protected $insert;
+
+    /**
+     * @var Clause
+     */
+    protected $update;
 
     /**
      * @var Clause
@@ -905,6 +918,35 @@ class Query implements QueryInterface
     }
 
     /**
+     * update
+     *
+     * @param  string       $table
+     * @param  string|null  $alias
+     *
+     * @return  static
+     */
+    public function update(string $table, ?string $alias = null)
+    {
+        $this->type = static::TYPE_UPDATE;
+        $this->update = $this->clause('UPDATE', $this->as($table, $alias));
+
+        return $this;
+    }
+
+    public function delete(string $table, ?string $alias = null)
+    {
+        $this->type = static::TYPE_DELETE;
+
+        if (!$this->delete) {
+            $this->delete = $this->clause('DELETE');
+        }
+
+        $this->from($table, $alias);
+
+        return $this;
+    }
+
+    /**
      * columns
      *
      * @param  mixed  ...$columns
@@ -1167,6 +1209,15 @@ class Query implements QueryInterface
     public function nullDate(): string
     {
         return $this->getGrammar()->nullDate();
+    }
+
+    public function raw(string $string, ...$args): RawWrapper
+    {
+        if ($args === []) {
+            return raw($string);
+        }
+
+        return new FormatRawWrapper($this, $string, $args);
     }
 
     /**

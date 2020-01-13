@@ -533,6 +533,78 @@ SQL
         );
     }
 
+    public function testUpdate(): void
+    {
+        $q = self::createQuery()
+            ->update('foo')
+            ->set('a', 'b')
+            ->set('c', 5)
+            ->set([
+                'foo' => 'bar',
+                'yoo' => 'goo'
+            ])
+            ->where('id', 123);
+
+        self::assertSqlEquals(
+            'UPDATE "foo" SET "a" = \'b\', "c" = 5, "foo" = \'bar\', "yoo" = \'goo\' WHERE "id" = 123',
+            $q
+        );
+
+        $q = self::createQuery()
+            ->update('foo', 'f')
+            ->leftJoin('hoo', 'h', 'h.foo_id', 'foo.id')
+            ->set(
+                'a',
+                self::createQuery()
+                    ->select('*')
+                    ->from('yoo')
+                    ->where('id', 1)
+            )
+            ->set([
+                'f.col' => $q->raw('%n + 1', 'b.col')
+            ])
+            ->where('id', 123);
+
+        self::assertSqlEquals(
+            <<<'SQL'
+UPDATE "foo" AS "f"
+    LEFT JOIN "hoo" AS "h" ON "h"."foo_id" = "foo"."id"
+SET "a" = (SELECT * FROM "yoo" WHERE "id" = 1),
+    "f"."col" = "b"."col" + 1
+WHERE "id" = 123
+SQL
+            ,
+            $q
+        );
+    }
+
+    public function testDelete()
+    {
+        $q = self::createQuery()
+            ->delete('foo')
+            ->where('id', 123);
+
+        self::assertSqlEquals(
+            'DELETE FROM "foo" WHERE "id" = 123',
+            $q
+        );
+
+        $q = self::createQuery()
+            ->delete('foo', 'f')
+            ->leftJoin('hoo', 'h', 'h.foo_id', 'foo.id')
+            ->where('h.created', '<', '2020-03-02');
+
+        self::assertSqlEquals(
+            <<<'SQL'
+DELETE FROM "foo" AS "f"
+LEFT JOIN "hoo" AS "h" ON "h"."foo_id" = "foo"."id"
+WHERE "h"."created" < '2020-03-02'
+SQL
+            ,
+            $q
+        );
+    }
+
     /**
      * testAs
      *

@@ -138,19 +138,42 @@ class Grammar
         return trim(implode(' ', $sql));
     }
 
-    public function compileUpdate(Query $query)
+    public function compileUpdate(Query $query): string
     {
-        //
+        $sql['update'] = $query->getUpdate();
+
+        if ($join = $query->getJoin()) {
+            $sql['join'] = $join;
+        }
+
+        if ($set = $query->getSet()) {
+            $sql['set'] = $set;
+        }
+
+        if ($where = $query->getWhere()) {
+            $sql['where'] = $where;
+        }
+
+        return trim(implode(' ', $sql));
     }
 
-    public function compileDelete(Query $query)
+    public function compileDelete(Query $query): string
     {
-        //
-    }
+        $sql['delete'] = $query->getDelete();
 
-    public function compileUnion(Query $query)
-    {
-        //
+        if ($form = $query->getFrom()) {
+            $sql['from'] = $form;
+        }
+
+        if ($join = $query->getJoin()) {
+            $sql['join'] = $join;
+        }
+
+        if ($where = $query->getWhere()) {
+            $sql['where'] = $where;
+        }
+
+        return trim(implode(' ', $sql));
     }
 
     public function compileCustom(Query $query)
