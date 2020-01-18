@@ -1819,7 +1819,32 @@ class Query implements QueryInterface
      */
     public function clear($clauses = null)
     {
-        $this->sql = null;
+        $handlers = [
+            'select' => ['type'],
+            'delete' => ['type'],
+            'update' => ['type'],
+            'insert' => ['type', 'autoIncrementField'],
+            'sql' => ['type'],
+            'form' => [],
+            'join' => [],
+            'set' => [],
+            'where' => [],
+            'group' => [],
+            'having' => [],
+            'order' => [],
+            'columns' => [],
+            'values' => [],
+            'limit' => [],
+            'offset' => [],
+            'suffix' => [],
+            'union' => [],
+            'alias' => [],
+            'subQueries' => []
+        ];
+
+        if ($clauses === null) {
+            $clauses = array_keys($handlers);
+        }
 
         if (is_array($clauses)) {
             foreach ($clauses as $clause) {
@@ -1829,118 +1854,14 @@ class Query implements QueryInterface
             return $this;
         }
 
-        // TODO: rewrite clear process
+        $this->$clauses = null;
 
-        switch ($clauses) {
-            case 'select':
-                $this->select = null;
-                $this->type   = null;
-                break;
+        if ($clauses === 'subQueries') {
+            $this->$clauses = [];
+        }
 
-            case 'delete':
-                $this->delete = null;
-                $this->type   = null;
-                break;
-
-            case 'update':
-                $this->update = null;
-                $this->type   = null;
-                break;
-
-            case 'insert':
-                $this->insert             = null;
-                $this->type               = null;
-                $this->autoIncrementField = null;
-                break;
-
-            case 'from':
-                $this->from = null;
-                break;
-
-            case 'join':
-                $this->join = null;
-                break;
-
-            case 'set':
-                $this->set = null;
-                break;
-
-            case 'where':
-                $this->where = null;
-                break;
-
-            case 'group':
-                $this->group = null;
-                break;
-
-            case 'having':
-                $this->having = null;
-                break;
-
-            case 'order':
-                $this->order = null;
-                break;
-
-            case 'columns':
-                $this->columns = null;
-                break;
-
-            case 'values':
-                $this->values = null;
-                break;
-
-            case 'exec':
-                $this->exec = null;
-                $this->type = null;
-                break;
-
-            case 'call':
-                $this->call = null;
-                $this->type = null;
-                break;
-
-            case 'limit':
-                $this->offset = 0;
-                $this->limit  = 0;
-                break;
-
-            case 'suffix':
-                $this->suffix = null;
-                break;
-
-            case 'union':
-                $this->union = null;
-                break;
-
-            case 'alias':
-                $this->alias = null;
-                break;
-
-            default:
-                $this->type               = null;
-                $this->select             = null;
-                $this->delete             = null;
-                $this->update             = null;
-                $this->insert             = null;
-                $this->from               = null;
-                $this->join               = null;
-                $this->set                = null;
-                $this->where              = null;
-                $this->group              = null;
-                $this->having             = null;
-                $this->order              = null;
-                $this->columns            = null;
-                $this->values             = null;
-                $this->autoIncrementField = null;
-                $this->exec               = null;
-                $this->call               = null;
-                $this->union              = null;
-                $this->offset             = 0;
-                $this->limit              = 0;
-                $this->suffix             = null;
-                $this->bounded            = [];
-                $this->alias              = null;
-                break;
+        foreach ($handlers[$clauses] ?? [] as $field) {
+            $this->$field = null;
         }
 
         return $this;

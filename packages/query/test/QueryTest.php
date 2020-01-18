@@ -14,6 +14,7 @@ namespace Windwalker\Query\Test;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Escaper;
+use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Query\Query;
 use Windwalker\Query\Test\Mock\MockEscaper;
 
@@ -1484,7 +1485,12 @@ SQL
 
     public static function createQuery($conn = null): Query
     {
-        return new Query($conn ?: new MockEscaper());
+        return new Query($conn ?: new MockEscaper(), self::createGrammar());
+    }
+
+    public static function createGrammar(): Grammar
+    {
+        return new Grammar();
     }
 
     protected function setUp(): void
