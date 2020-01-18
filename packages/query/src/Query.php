@@ -54,6 +54,8 @@ use function Windwalker\value;
  * @method Clause|null getSet()
  * @method Query[]     getSubQueries()
  * @method string|null getAlias()
+ * @method Clause|null getSuffix()
+ * @method string|null getSql()
  * @method $this leftJoin($table, ?string $alias, ...$on)
  * @method $this rightJoin($table, ?string $alias, ...$on)
  * @method $this outerJoin($table, ?string $alias, ...$on)
@@ -85,8 +87,6 @@ class Query implements QueryInterface
     public const TYPE_UPDATE = 'update';
 
     public const TYPE_DELETE = 'delete';
-
-    public const TYPE_UNION = 'union';
 
     public const TYPE_CUSTOM = 'custom';
 
@@ -176,6 +176,11 @@ class Query implements QueryInterface
     protected $set;
 
     /**
+     * @var Clause
+     */
+    protected $suffix;
+
+    /**
      * @var string
      */
     protected $incrementField;
@@ -199,6 +204,11 @@ class Query implements QueryInterface
      * @var string
      */
     protected $alias;
+
+    /**
+     * @var string
+     */
+    protected $sql;
 
     /**
      * @var array
@@ -226,6 +236,11 @@ class Query implements QueryInterface
         $this->grammar = $grammar ?: new Grammar();
 
         $this->setEscaper($escaper);
+    }
+
+    public function getName(): string
+    {
+        return $this->getGrammar()::getName();
     }
 
     /**
@@ -1206,9 +1221,82 @@ class Query implements QueryInterface
         return $this;
     }
 
+    /**
+     * suffix
+     *
+     * @param  string|array $suffix
+     * @param  mixed  ...$args
+     *
+     * @return  static
+     */
+    public function suffix($suffix, ...$args)
+    {
+        if (is_array($suffix)) {
+            foreach ($suffix as $values) {
+                if (is_string($values)) {
+                    $this->suffix($values);
+                } else {
+                    $this->suffix(...$values);
+                }
+            }
+
+            return $this;
+        }
+
+        if (null === $this->suffix) {
+            $this->suffix = $this->clause('', []);
+        }
+
+        if (is_string($suffix) && $args !== []) {
+            $suffix = $this->format($suffix, ...$args);
+        }
+
+        $this->suffix->append($suffix);
+
+        return $this;
+    }
+
+    /**
+     * Add FOR UPDATE after query string.
+     *
+     * @return  static
+     *
+     * @since   3.2.7
+     */
+    public function forUpdate()
+    {
+        return $this->suffix('FOR UPDATE');
+    }
+
+    /**
+     * sql
+     *
+     * @param  string  $sql
+     * @param  mixed   ...$args
+     *
+     * @return  static
+     */
+    public function sql(string $sql, ...$args)
+    {
+        $this->type = static::TYPE_CUSTOM;
+
+        if ($args !== []) {
+            $sql = $this->format($sql, ...$args);
+        }
+
+        $this->sql = $sql;
+
+        return $this;
+    }
+
     public function nullDate(): string
     {
         return $this->getGrammar()->nullDate();
+    }
+
+    public function dateFormat(): string
+    {
+        return $this->getGrammar()->dateFormat();
     }
 
     public function raw(string $string, ...$args): RawWrapper
@@ -1554,9 +1642,7 @@ class Query implements QueryInterface
             $bounded = $this->mergeBounded();
         }
 
-        $method = 'compile' . ucfirst($this->type);
-
-        $sql = $this->getGrammar()->$method($this);
+        $sql = $this->getGrammar()->compile((string) $this->type, $this);
 
         if ($emulatePrepared) {
             $sql = Escaper::replaceQueryParams($this->getEscaper(), $sql, $bounded);
@@ -1564,6 +1650,24 @@ class Query implements QueryInterface
 
         // Clear sequence so that next time rendering should re-create new one
         $this->sequence = null;
+
+        return $sql;
+    }
+
+    /**
+     * debug
+     *
+     * @param  bool  $pre
+     *
+     * @return  string
+     */
+    public function debug(bool $pre = false): string
+    {
+        $sql = $this->render(true);
+
+        if ($pre) {
+            $sql = '<pre class="c-windwalker-db-query">' . $sql . '</pre>';
+        }
 
         return $sql;
     }

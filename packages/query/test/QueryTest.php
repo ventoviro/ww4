@@ -1380,67 +1380,12 @@ SQL
     }
 
     /**
-     * @see  Query::clause
-     */
-    public function testClause(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Query::getEscaper
-     */
-    public function testGetConnection(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Query::setEscaper
-     */
-    public function testSetConnection(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Query::__get
-     */
-    public function test__get(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  Query::quoteName
      */
     public function testQuoteName(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Query::getGrammar
-     */
-    public function testGetGrammar(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Query::__construct
-     */
-    public function test__construct(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Query::__toString
-     */
-    public function test__toString(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $this->assertEquals('"foo"', $this->instance->quoteName('foo'));
+        $this->assertEquals(['"foo"'], $this->instance->quoteName(['foo']));
     }
 
     /**
@@ -1501,12 +1446,40 @@ SQL
         self::assertEquals("These are Simon\'s items", $s);
     }
 
-    /**
-     * @see  Query::alias
-     */
-    public function testAlias(): void
+    public function testSuffix()
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->where('a', '<', 123)
+            ->suffix('FOR UPDATE');
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" WHERE "a" < 123 FOR UPDATE',
+            $q
+        );
+
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->where('a', '<', 123)
+            ->forUpdate();
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" WHERE "a" < 123 FOR UPDATE',
+            $q
+        );
+    }
+
+    public function testSql()
+    {
+        $q = self::createQuery()
+            ->sql('SELECT * FROM foo WHERE id = 5');
+
+        self::assertSqlEquals(
+            'SELECT * FROM foo WHERE id = 5',
+            $q
+        );
     }
 
     public static function createQuery($conn = null): Query

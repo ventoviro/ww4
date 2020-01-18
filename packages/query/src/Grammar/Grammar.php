@@ -71,7 +71,13 @@ class Grammar
             );
         }
 
-        return $this->$method($query);
+        $sql = $this->$method($query);
+
+        if ($suffix = $query->getSuffix()) {
+            $sql .= ' ' . $suffix;
+        }
+
+        return $sql;
     }
 
     public function compileSelect(Query $query): string
@@ -176,9 +182,9 @@ class Grammar
         return trim(implode(' ', $sql));
     }
 
-    public function compileCustom(Query $query)
+    public function compileCustom(Query $query): string
     {
-        //
+        return (string) $query->getSql();
     }
 
     public function quoteName(string $name): string
