@@ -18,6 +18,8 @@ use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Query\Query;
 use Windwalker\Query\Test\Mock\MockEscaper;
 
+use Windwalker\Test\TestHelper;
+
 use function Windwalker\Query\clause;
 use function Windwalker\raw;
 
@@ -66,7 +68,7 @@ class QueryTest extends TestCase
 
             $sub->select('newcol');
 
-            self::assertEquals($modifiedSql, (string) $q);
+            self::assertSqlEquals($modifiedSql, (string) $q);
         }
     }
 
@@ -393,11 +395,12 @@ class QueryTest extends TestCase
                 ],
             ],
             'Join sub query' => [
-                'LEFT JOIN (SELECT "COUNT(*)" AS "count", "id" FROM "bar" GROUP BY "bar"."id") AS "bar" ON "foo"."bar_id" = "bar"."id"',
+                'LEFT JOIN (SELECT COUNT(*) AS "count", "id" FROM "bar" GROUP BY "bar"."id") AS "bar" ON "foo"."bar_id" = "bar"."id"',
                 [
                     'LEFT',
                     self::createQuery()
-                        ->select('COUNT(*) AS count', 'id')
+                        ->selectAs(raw('COUNT(*)'), 'count')
+                        ->select('id')
                         ->from('bar')
                         ->group('bar.id'),
                     'bar',
@@ -406,11 +409,12 @@ class QueryTest extends TestCase
                 ]
             ],
             'Join sub query callback' => [
-                'LEFT JOIN (SELECT "COUNT(*)" AS "count", "id" FROM "bar" GROUP BY "bar"."id") AS "bar" ON "foo"."bar_id" = "bar"."id"',
+                'LEFT JOIN (SELECT COUNT(*) AS "count", "id" FROM "bar" GROUP BY "bar"."id") AS "bar" ON "foo"."bar_id" = "bar"."id"',
                 [
                     'LEFT',
                     function (Query $query) {
-                        $query->select('COUNT(*) AS count', 'id')
+                        $query->selectRaw('COUNT(*) AS %n', 'count')
+                            ->select('id')
                             ->from('bar')
                             ->group('bar.id');
                     },
@@ -473,7 +477,7 @@ class QueryTest extends TestCase
 
     public function testInsert(): void
     {
-        $this->instance->insert('foo')
+        $this->instance->insert('foo', 'id')
             ->columns('id', 'title', ['foo', 'bar'], 'yoo')
             ->values(
                 [1, 'A', 'a', null, raw('CURRENT_TIMESTAMP()')],
@@ -1385,8 +1389,8 @@ SQL
      */
     public function testQuoteName(): void
     {
-        $this->assertEquals('"foo"', $this->instance->quoteName('foo'));
-        $this->assertEquals(['"foo"'], $this->instance->quoteName(['foo']));
+        $this->assertEquals(self::replaceQn('"foo"'), $this->instance->quoteName('foo'));
+        $this->assertEquals([self::replaceQn('"foo"')], $this->instance->quoteName(['foo']));
     }
 
     /**
@@ -1470,6 +1474,17 @@ SQL
             'SELECT * FROM "foo" WHERE "a" < 123 FOR UPDATE',
             $q
         );
+
+        $q = self::createQuery()
+            ->select('*')
+            ->from('foo')
+            ->where('a', '<', 123)
+            ->forShare('NOWAIT');
+
+        self::assertSqlEquals(
+            'SELECT * FROM "foo" WHERE "a" < 123 FOR SHARE NOWAIT',
+            $q
+        );
     }
 
     public function testSql()
@@ -1483,9 +1498,139 @@ SQL
         );
     }
 
+    /**
+     * Method to test clear().
+     *
+     * @return void
+     */
+    public function testClear()
+    {
+        $query = self::createQuery();
+
+        $query->select('*')->from('foo');
+
+        $query->clear();
+
+        $this->assertNull($query->getSelect());
+        $this->assertNull($query->getFrom());
+    }
+
+    /**
+     * Method to test clear().
+     *
+     * @return void
+     *
+     * @throws \ReflectionException
+     */
+    public function testClearClause()
+    {
+        $q = self::createQuery();
+
+        $clauses = [
+            'from' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'join' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'set' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'where' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'group' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'having' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            // Union should before order because it will clear order.
+            'union' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'order' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'columns' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'values' => [['foo', 'asc'], ['yoo', 'goo']],
+        ];
+
+        // Set the clauses
+        foreach ($clauses as $clause => $args) {
+            $q->$clause(...$args);
+        }
+
+        // Test each clause.
+        foreach (array_keys($clauses) as $clause) {
+            $query = clone $q;
+
+            // Clear the clause.
+            $query->clear($clause);
+
+            // Check that clause was cleared.
+            $this->assertNull($query->{'get' . ucfirst($clause)}());
+
+            // Check the state of the other clauses.
+            foreach (array_keys($clauses) as $clause2) {
+                if ($clause !== $clause2) {
+                    $this->assertNotNull(
+                        TestHelper::getValue($query, $clause2),
+                        $clause2 . ' Should not be NULL if we clear ' . $clause . '.'
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Method to test clear().
+     *
+     * @return void
+     *
+     * @throws \ReflectionException
+     */
+    public function testClearType()
+    {
+        $q = self::createQuery();
+
+        $types = [
+            'select',
+            'delete',
+            'update',
+            'insert',
+        ];
+
+        $clauses = [
+            'from' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'join' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'set' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'where' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'group' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'having' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'union' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'order' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'columns' => ['foo', 'asc', 'yoo', 'goo', 'hoo'],
+            'values' => [['foo', 'asc'], ['yoo', 'goo']],
+        ];
+
+        // Set the clauses
+        foreach ($clauses as $clause => $args) {
+            $q->$clause(...$args);
+        }
+
+        // Check that all properties have been cleared
+        foreach ($types as $type) {
+            $query = clone $q;
+
+            // Set the type.
+            $query->$type('foo', 'bar');
+
+            // Clear the type.
+            $query->clear($type);
+
+            // Check the type has been cleared.
+            $this->assertNull($query->getType(), 'Query property: ' . $type . ' should be null.');
+
+            $this->assertNull($query->{'get' . ucfirst($type)}(), $type . ' should be null.');
+
+            // Now check the claues have not been affected.
+            foreach (array_keys($clauses) as $clause) {
+                $this->assertNotNull(
+                    TestHelper::getValue($query, $clause),
+                    $clause . ' should exists if we clear ' . $type
+                );
+            }
+        }
+    }
+
     public static function createQuery($conn = null): Query
     {
-        return new Query($conn ?: new MockEscaper(), self::createGrammar());
+        return new Query($conn ?: new MockEscaper(), static::createGrammar());
     }
 
     public static function createGrammar(): Grammar

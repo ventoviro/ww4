@@ -56,6 +56,7 @@ use function Windwalker\value;
  * @method string|null getAlias()
  * @method Clause|null getSuffix()
  * @method string|null getSql()
+ * @method string|null getIncrementField()
  * @method $this leftJoin($table, ?string $alias, ...$on)
  * @method $this rightJoin($table, ?string $alias, ...$on)
  * @method $this outerJoin($table, ?string $alias, ...$on)
@@ -229,11 +230,13 @@ class Query implements QueryInterface
      * Query constructor.
      *
      * @param  mixed|\PDO|Escaper  $escaper
-     * @param  Grammar|null        $grammar
+     * @param  Grammar|string|null        $grammar
      */
-    public function __construct($escaper = null, Grammar $grammar = null)
+    public function __construct($escaper = null, $grammar = null)
     {
-        $this->grammar = $grammar ?: new Grammar();
+        $this->grammar = $grammar instanceof Grammar
+            ? $grammar
+            : Grammar::create($grammar);
 
         $this->setEscaper($escaper);
     }
@@ -269,12 +272,43 @@ class Query implements QueryInterface
      */
     public function selectAs($column, ?string $alias = null)
     {
+        $this->selectRaw($this->as($column, $alias));
+
+        return $this;
+    }
+
+    /**
+     * selectRaw
+     *
+     * @param  string|array  $column
+     * @param  mixed         ...$args
+     *
+     * @return  static
+     */
+    public function selectRaw($column, ...$args)
+    {
+        if (is_array($column)) {
+            foreach ($column as $col) {
+                if (is_array($col)) {
+                    $this->selectRaw(...$col);
+                } else {
+                    $this->selectRaw($col);
+                }
+            }
+
+            return $this;
+        }
+
         if (!$this->select) {
             $this->type   = static::TYPE_SELECT;
             $this->select = $this->clause('SELECT', [], ', ');
         }
 
-        $this->select->append($this->as($column, $alias));
+        if (is_string($column) && $args !== []) {
+            $column = $this->format($column, ...$args);
+        }
+
+        $this->select->append($column);
 
         return $this;
     }
@@ -925,8 +959,8 @@ class Query implements QueryInterface
      */
     public function insert(string $table, ?string $incrementField = null)
     {
-        $this->type = static::TYPE_INSERT;
-        $this->insert = $this->clause('INSERT INTO', $this->quoteName($table));
+        $this->type           = static::TYPE_INSERT;
+        $this->insert         = $this->clause('INSERT INTO', $this->quoteName($table));
         $this->incrementField = $incrementField;
 
         return $this;
@@ -942,7 +976,7 @@ class Query implements QueryInterface
      */
     public function update(string $table, ?string $alias = null)
     {
-        $this->type = static::TYPE_UPDATE;
+        $this->type   = static::TYPE_UPDATE;
         $this->update = $this->clause('UPDATE', $this->as($table, $alias));
 
         return $this;
@@ -1042,8 +1076,8 @@ class Query implements QueryInterface
     /**
      * set
      *
-     * @param  string|iterable $column
-     * @param  mixed           $value
+     * @param  string|iterable  $column
+     * @param  mixed            $value
      *
      * @return  static
      */
@@ -1224,8 +1258,8 @@ class Query implements QueryInterface
     /**
      * suffix
      *
-     * @param  string|array $suffix
-     * @param  mixed  ...$args
+     * @param  string|array  $suffix
+     * @param  mixed         ...$args
      *
      * @return  static
      */
@@ -1259,13 +1293,44 @@ class Query implements QueryInterface
     /**
      * Add FOR UPDATE after query string.
      *
-     * @return  static
+     * @param  string  $for
+     * @param  string  $do
      *
-     * @since   3.2.7
+     * @return  static
      */
-    public function forUpdate()
+    public function rowLock(string $for = 'UPDATE', ?string $do = null)
     {
-        return $this->suffix('FOR UPDATE');
+        $suffix = 'FOR ' . $for;
+
+        if ($do) {
+            $suffix .= ' ' . $do;
+        }
+
+        return $this->suffix($suffix);
+    }
+
+    /**
+     * forUpdate
+     *
+     * @param  string|null  $do
+     *
+     * @return  static
+     */
+    public function forUpdate(?string $do = null)
+    {
+        return $this->rowLock('UPDATE', $do);
+    }
+
+    /**
+     * forShare
+     *
+     * @param  string|null  $do
+     *
+     * @return  static
+     */
+    public function forShare(?string $do = null)
+    {
+        return $this->rowLock('SHARE', $do);
     }
 
     /**
@@ -1746,6 +1811,10 @@ class Query implements QueryInterface
      */
     public function setEscaper($escaper)
     {
+        if ($escaper === null) {
+            $escaper = DefaultConnection::getEscaper();
+        }
+
         $this->escaper = $escaper instanceof Escaper ? $escaper : new Escaper($escaper, $this);
 
         return $this;
@@ -1823,9 +1892,9 @@ class Query implements QueryInterface
             'select' => ['type'],
             'delete' => ['type'],
             'update' => ['type'],
-            'insert' => ['type', 'autoIncrementField'],
+            'insert' => ['type', 'incrementField'],
             'sql' => ['type'],
-            'form' => [],
+            'from' => [],
             'join' => [],
             'set' => [],
             'where' => [],
@@ -1839,7 +1908,8 @@ class Query implements QueryInterface
             'suffix' => [],
             'union' => [],
             'alias' => [],
-            'subQueries' => []
+            'subQueries' => [],
+            'bounded' => [],
         ];
 
         if ($clauses === null) {
@@ -1856,12 +1926,12 @@ class Query implements QueryInterface
 
         $this->$clauses = null;
 
-        if ($clauses === 'subQueries') {
-            $this->$clauses = [];
-        }
-
         foreach ($handlers[$clauses] ?? [] as $field) {
-            $this->$field = null;
+            if (is_array($this->$field)) {
+                $this->$field = [];
+            } else {
+                $this->$field = null;
+            }
         }
 
         return $this;

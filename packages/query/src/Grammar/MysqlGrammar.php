@@ -14,18 +14,21 @@ namespace Windwalker\Query\Grammar;
 /**
  * The MySQLGrammar class.
  */
-class MySQLGrammar extends Grammar
+class MysqlGrammar extends Grammar
 {
     /**
      * @var string
      */
-    protected static $name = 'MySQL';
+    protected static $name = 'Mysql';
 
     /**
      * @var array
      */
-    protected $nameQuote = ['`', '`'];
+    protected static $nameQuote = ['`', '`'];
 
+    /**
+     * @var string
+     */
     protected static $nullDate = '1000-01-01 00:00:00';
 
     /**

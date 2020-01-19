@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Query\Grammar;
 
 use Windwalker\Query\Clause\Clause;
+use Windwalker\Query\DefaultConnection;
 use Windwalker\Query\Query;
 
 /**
@@ -38,6 +39,30 @@ class Grammar
      * @var string
      */
     protected static $dateFormat = 'Y-m-d H:i:s';
+
+    /**
+     * create
+     *
+     * @param  string|null  $name
+     *
+     * @return  static
+     */
+    public static function create(?string $name = null)
+    {
+        if ($name === null) {
+            if ($grammar = DefaultConnection::getGrammar()) {
+                return $grammar;
+            }
+        }
+
+        $class = sprintf('%s\%sGrammar', __NAMESPACE__, ucfirst((string) $name));
+
+        if (!class_exists($class)) {
+            $class = static::class;
+        }
+
+        return new $class();
+    }
 
     /**
      * Method to get property Name

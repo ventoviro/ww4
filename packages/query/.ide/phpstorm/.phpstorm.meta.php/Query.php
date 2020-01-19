@@ -37,4 +37,6 @@ namespace PHPSTORM_META {
         1,
         argumentsSet('query_union_types')
     );
+
+    // todo: add row lock hints
 }

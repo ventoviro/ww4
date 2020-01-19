@@ -12,22 +12,17 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test;
 
 use Windwalker\Query\Grammar\Grammar;
-use Windwalker\Query\Grammar\MysqlGrammar;
+use Windwalker\Query\Grammar\SqliteGrammar;
 
 /**
- * The MySQLQueryTest class.
+ * The SqliteQueryTest class.
  */
-class MySQLQueryTest extends QueryTest
+class SqliteQueryTest extends QueryTest
 {
     protected static $nameQuote = ['`', '`'];
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     public static function createGrammar(): Grammar
     {
-        return new MysqlGrammar();
+        return new SqliteGrammar();
     }
 }
