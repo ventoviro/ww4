@@ -10,7 +10,7 @@
     "homepage": "https://github.com/ventoviro/windwalker-utilities",
     "license": "MIT",
     "require": {
-        "php": ">=7.2"
+        "php": ">=7.2.5"
     },
     "require-dev": {
         "windwalker/test": "~3.0",
@@ -37,6 +37,11 @@
     "extra": {
         "branch-alias": {
             "dev-master": "4.x-dev"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "7.2.5"
         }
     }
 }
