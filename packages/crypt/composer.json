@@ -15,12 +15,12 @@
     "license": "MIT",
     "require": {
         "php": ">=7.2.5",
-        "paragonie/constant_time_encoding": "^2.3",
-        "ext-sodium": "*"
+        "paragonie/constant_time_encoding": "^2.3"
     },
     "require-dev": {
         "windwalker/test": "~4.0",
-        "ext-openssl": "*"
+        "ext-openssl": "*",
+        "ext-sodium": "*"
     },
     "suggest": {
         "ext-openssl": "Install openssl to support legacy openssl cipher."

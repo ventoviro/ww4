@@ -34,7 +34,7 @@ class Path
      *
      * @since   2.0
      */
-    public static function setPermissions($path, $filemode = '0644', $foldermode = '0755')
+    public static function setPermissions(string $path, $filemode = '0644', $foldermode = '0755'): bool
     {
         // Initialise return value
         $ret = true;
@@ -50,11 +50,9 @@ class Path
                         if (!self::setPermissions($fullpath, $filemode, $foldermode)) {
                             $ret = false;
                         }
-                    } else {
-                        if (isset($filemode)) {
-                            if (!@ chmod($fullpath, octdec($filemode))) {
-                                $ret = false;
-                            }
+                    } elseif (isset($filemode)) {
+                        if (!@ chmod($fullpath, octdec($filemode))) {
+                            $ret = false;
                         }
                     }
                 }
@@ -62,15 +60,11 @@ class Path
 
             closedir($dh);
 
-            if (isset($foldermode)) {
-                if (!@ chmod($path, octdec($foldermode))) {
-                    $ret = false;
-                }
+            if (isset($foldermode) && !@ chmod($path, octdec($foldermode))) {
+                $ret = false;
             }
-        } else {
-            if (isset($filemode)) {
-                $ret = @ chmod($path, octdec($filemode));
-            }
+        } elseif (isset($filemode)) {
+            $ret = @ chmod($path, octdec($filemode));
         }
 
         return $ret;
@@ -86,7 +80,7 @@ class Path
      *
      * @since   2.0
      */
-    public static function getPermissions($path, $toString = false)
+    public static function getPermissions(string $path, bool $toString = false): string
     {
         $path = self::clean($path);
         $mode = @ decoct(@ fileperms($path) & 0777);
@@ -103,13 +97,13 @@ class Path
 
         for ($i = 0; $i < 3; $i++) {
             // Read
-            $parsedMode .= ($mode[$i] & 04) ? "r" : "-";
+            $parsedMode .= ($mode[$i] & 04) ? 'r' : '-';
 
             // Write
-            $parsedMode .= ($mode[$i] & 02) ? "w" : "-";
+            $parsedMode .= ($mode[$i] & 02) ? 'w' : '-';
 
             // Execute
-            $parsedMode .= ($mode[$i] & 01) ? "x" : "-";
+            $parsedMode .= ($mode[$i] & 01) ? 'x' : '-';
         }
 
         return $parsedMode;
@@ -127,7 +121,7 @@ class Path
      * @throws  \InvalidArgumentException
      * @since   2.0
      */
-    public static function clean(string $path, string $ds = DIRECTORY_SEPARATOR)
+    public static function clean(string $path, string $ds = DIRECTORY_SEPARATOR): string
     {
         if ($path === '') {
             return $path;
@@ -153,7 +147,7 @@ class Path
             $path   = $matches[2];
         }
 
-        $path = trim($path);
+        $path = trim($path, ' ');
 
         if (($ds === '\\') && ($path[0] === '\\') && ($path[1] === '\\')) {
             // Remove double slashes and backslashes and convert all slashes and backslashes to DIRECTORY_SEPARATOR
