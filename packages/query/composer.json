@@ -1,18 +1,19 @@
 {
-    "name": "windwalker/queue",
+    "name": "windwalker/query",
     "type": "windwalker-package",
-    "description": "Windwalker Queue package",
+    "description": "Windwalker Query package",
     "keywords": [
         "windwalker",
         "framework",
-        "queue"
+        "query builder",
+        "database",
+        "sql"
     ],
-    "homepage": "https://github.com/ventoviro/windwalker-queue",
+    "homepage": "https://github.com/ventoviro/windwalker-query",
     "license": "MIT",
     "require": {
         "php": ">=7.2.5",
-        "windwalker/event": "~3.0",
-        "ext-json": "*"
+        "windwalker/utilities": "~4.0"
     },
     "require-dev": {
         "windwalker/test": "~4.0"
@@ -22,7 +23,7 @@
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\Queue\\": "src/"
+            "Windwalker\\Query\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
@@ -30,7 +31,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Queue\\Test\\": "test/"
+            "Windwalker\\Query\\Test\\": "test/"
         }
     },
     "extra": {
