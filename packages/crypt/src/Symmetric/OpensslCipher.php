@@ -35,6 +35,8 @@ class OpensslCipher implements CipherInterface
 
     public const PBKDF2_HASH_BYTE_SIZE = 32;
 
+    public const HMAC_SIZE = 32;
+
     /**
      * Property type.
      *
@@ -65,8 +67,7 @@ class OpensslCipher implements CipherInterface
 
         $this->options = array_merge(
             [
-                'pbkdf2_iteration' => 12000,
-                'legacy' => false,
+                'pbkdf2_iteration' => 12000
             ],
             $options
         );
@@ -79,29 +80,50 @@ class OpensslCipher implements CipherInterface
      */
     public function decrypt(string $str, Key $key, string $encoder = SafeEncoder::BASE64): HiddenString
     {
-        [$hmac, $salt, $iv, $encrypted] = explode(':', $str);
+        $message = SafeEncoder::decode($encoder, $str);
 
-        $hmac      = SafeEncoder::decode($encoder, $hmac);
-        $salt      = SafeEncoder::decode($encoder, $salt);
-        $iv        = SafeEncoder::decode($encoder, $iv);
-        $encrypted = SafeEncoder::decode($encoder, $encrypted);
+        $length = CryptHelper::strlen($message);
+
+        // Split string
+        $salt      = CryptHelper::substr($message, 0, static::PBKDF2_SALT_BYTE_SIZE);
+        $iv        = CryptHelper::substr($message, static::PBKDF2_SALT_BYTE_SIZE, $this->getIVSize());
+        $encrypted = CryptHelper::substr(
+            $message,
+            static::PBKDF2_SALT_BYTE_SIZE + $this->getIVSize(),
+            $length - (static::PBKDF2_SALT_BYTE_SIZE + $this->getIVSize() + static::HMAC_SIZE)
+        );
+
+        $hmac = CryptHelper::substr(
+            $message,
+            $length - static::HMAC_SIZE
+        );
 
         [$encKey, $hmacKey] = $this->derivateSecureKeys($key->get(), $salt);
 
-        $calculatedHmac = $this->hmac($salt . $iv . $encrypted, $hmacKey);
+        $calc = $this->hmac($salt . $iv . $encrypted, $hmacKey);
 
-        if (!hash_equals($calculatedHmac, $hmac)) {
+        if (!hash_equals($calc, $hmac)) {
             throw new CryptException('HMAC ERROR: Invalid HMAC.');
-        }
-
-        if ($this->options['legacy']) {
-            $encKey = CryptHelper::repeatToLength($key->get(), 24, true);
         }
 
         $decrypted = openssl_decrypt($encrypted, $this->getMethod(), $encKey, OPENSSL_RAW_DATA, $iv);
 
         if ($decrypted === false) {
             throw new CryptException('Openssl decrypt failed: ' . openssl_error_string());
+        }
+
+        if (function_exists('sodium_memzero')) {
+            try {
+                \sodium_memzero($message);
+                \sodium_memzero($calc);
+                \sodium_memzero($salt);
+                \sodium_memzero($iv);
+                \sodium_memzero($hmacKey);
+                \sodium_memzero($encrypted);
+                \sodium_memzero($encKey);
+            } catch (\SodiumException $e) {
+                // No actions
+            }
         }
 
         // Decrypt the data.
@@ -119,10 +141,6 @@ class OpensslCipher implements CipherInterface
 
         $iv = $this->getIV();
 
-        if ($this->options['legacy']) {
-            $encKey = CryptHelper::repeatToLength($key->get(), 24, true);
-        }
-
         // Encrypt the data.
         $encrypted = openssl_encrypt(
             $str->get(),
@@ -134,14 +152,24 @@ class OpensslCipher implements CipherInterface
 
         $hmac = $this->hmac($salt . $iv . $encrypted, $hmacKey);
 
-        return implode(
-            ':',
-            [
-                SafeEncoder::encode($encoder, $hmac),
-                SafeEncoder::encode($encoder, $salt),
-                SafeEncoder::encode($encoder, $iv),
-                SafeEncoder::encode($encoder, $encrypted),
-            ]
+        $message = $salt . $iv . $encrypted . $hmac;
+
+        if (function_exists('sodium_memzero')) {
+            try {
+                \sodium_memzero($encKey);
+                \sodium_memzero($hmacKey);
+                \sodium_memzero($iv);
+                \sodium_memzero($salt);
+                \sodium_memzero($encrypted);
+                \sodium_memzero($hmac);
+            } catch (\SodiumException $e) {
+                // No actions
+            }
+        }
+
+        return SafeEncoder::encode(
+            $encoder,
+            $message
         );
     }
 

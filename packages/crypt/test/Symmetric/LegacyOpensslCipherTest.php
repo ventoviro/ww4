@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Windwalker\Crypt\HiddenString;
 use Windwalker\Crypt\Key;
 use Windwalker\Crypt\SafeEncoder;
+use Windwalker\Crypt\Symmetric\LegacyOpensslCipher;
 use Windwalker\Crypt\Symmetric\OpensslCipher;
 
 /**
@@ -22,7 +23,7 @@ use Windwalker\Crypt\Symmetric\OpensslCipher;
  *
  * @since 2.0
  */
-class OpensslCipherTest extends TestCase
+class LegacyOpensslCipherTest extends TestCase
 {
     /**
      * Test instance.
@@ -53,43 +54,41 @@ class OpensslCipherTest extends TestCase
     }
 
     /**
-     * Method to test encrypt().
+     * testLegacy
      *
      * @param  string  $method
+     * @param  string  $str
      *
-     * @return void
+     * @return  void
      *
-     * @dataProvider methodsProvider
+     * @dataProvider methodsLegacyProvider
      */
-    public function testEncrypt(string $method): void
+    public function testLegacy(string $method, string $str): void
     {
-        $methods = \openssl_get_cipher_methods(true);
+        $key = new Key('foo');
 
-        if (!in_array(strtolower($method), $methods, true)) {
-            self::markTestSkipped('Algorithm: ' . $method . ' no support.');
-        }
+        $cipher = new LegacyOpensslCipher($method);
 
-        $key = new Key('hello');
-
-        $cipher = new OpensslCipher($method);
-
-        $data = $cipher->encrypt(new HiddenString('windwalker'), $key, SafeEncoder::HEX);
-
-        $data = $cipher->decrypt($data, $key, SafeEncoder::HEX);
+        $data = $cipher->decrypt($str, $key);
 
         $this->assertEquals('windwalker', $data->get());
     }
 
-    public function methodsProvider(): array
+    public function methodsLegacyProvider(): array
     {
         return [
-            ['AES-256-CBC'],
-            ['AES-128-CFB'],
-            ['BF-CBC'],
-            ['BF-CFB'],
-            ['IDEA-CBC'],
-            ['AES128'],
-            ['blowfish'],
+            'AES-256-CBC' => [
+                'AES-256-CBC',
+                'EoklxV3fqZO5ma8XwWL7G2cK3i2k5AXKBz9m8PGeE2k=:LkfmL1i7Tjck+mxEnjgGKkb2VPIT8VC2pYV9Sr9BN24=:5CC6bDdRjeyNP+OAYuPolA==:i0i0TSq9oVZfxvcacicj7Q==',
+            ],
+            'des-ede3-cbc' => [
+                'des-ede3-cbc',
+                'vH8xcBwXQiXZ/YSvw+h0eWLbnftFHJNb5dc/Ob2vOHU=:MZIUaSKqBsnb0ZeMG5vJDzVwbyrrAPqYoqXNTO6RoUw=:/cEHJARlmjg=:fd0YQLROmEQRiEIyoOcXag==',
+            ],
+            'bf-cbc' => [
+                'bf-cbc',
+                '5ZTJ03ITnhshMxghJh/+b9d2+kSAPsGdHrcXXBp7Zso=:MS1jDSc5uxuf30ImrARNdXqn8oFexce+olpGj6PBbpA=:5WjBQfVXLuk=:S54cmXm3Lp3k42q7VRawVQ==',
+            ],
         ];
     }
 }
