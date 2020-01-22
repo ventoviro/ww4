@@ -39,7 +39,7 @@ class DsnHelper
         return $values;
     }
 
-    public static function build(array $params, ?string $dbtype = null): string
+    public static function build(array $params, ?string $dbtype = null, string $delimiter = ';'): string
     {
         if ($dbtype) {
             $method = 'handle' . ucfirst($dbtype);
@@ -57,7 +57,7 @@ class DsnHelper
             $dsn[] = $key . '=' . $value;
         }
 
-        $dsn = implode(';', $dsn);
+        $dsn = implode($delimiter, $dsn);
 
         if ($dbtype) {
             $dsn = $dbtype . ':' . $dsn;

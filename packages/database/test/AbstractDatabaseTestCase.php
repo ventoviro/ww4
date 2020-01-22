@@ -50,13 +50,18 @@ abstract class AbstractDatabaseTestCase extends TestCase
         }
 
         static::$dbname = $params['database'];
-        $params['dbname'] = $params['database'];
-        unset($params['database']);
+        $user = $params['username'];
+        $pass = $params['password'];
+        unset(
+            $params['database'],
+            $params['username'],
+            $params['password']
+        );
 
         static::$baseConn = new \PDO(
             DsnHelper::build($params, static::$platform),
-            $params['username'],
-            $params['password']
+            $user,
+            $pass
         );
         static::$baseConn->exec('CREATE DATABASE ' . static::qn(static::$dbname));
     }
