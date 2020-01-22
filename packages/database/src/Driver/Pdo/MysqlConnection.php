@@ -20,12 +20,14 @@ class MysqlConnection extends AbstractPdoConnection
 {
     protected static $dbtype = 'mysql';
 
-    public function getDsnParameters(array $options): array
+    public function getParameters(array $options): array
     {
         $params['host'] = $options['host'] ?? null;
         $params['port'] = $options['port'] ?? null;
         $params['dbname'] = $options['database'] ?? null;
 
-        return $params;
+        $options['dsn'] = $this->getDsn($params);
+
+        return $options;
     }
 }

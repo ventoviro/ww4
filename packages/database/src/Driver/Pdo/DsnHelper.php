@@ -41,10 +41,12 @@ class DsnHelper
 
     public static function build(array $params, ?string $dbtype = null): string
     {
+        $params = array_filter($params);
+
         $dsn = [];
 
         foreach ($params as $key => $value) {
-            $params[] = $key . '=' . $value;
+            $dsn[] = $key . '=' . $value;
         }
 
         $dsn = implode(';', $dsn);

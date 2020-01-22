@@ -24,6 +24,20 @@ abstract class AbstractPdoConnection extends AbstractConnection
     protected static $dbtype = '';
 
     /**
+     * isSupported
+     *
+     * @return  bool
+     */
+    public static function isSupported(): bool
+    {
+        if (!class_exists(\PDO::class)) {
+            return false;
+        }
+
+        return in_array(strtolower(static::$dbtype), \PDO::getAvailableDrivers(), true);
+    }
+
+    /**
      * getDsn
      *
      * @param  array  $options
@@ -32,30 +46,32 @@ abstract class AbstractPdoConnection extends AbstractConnection
      */
     public function getDsn(array $options): string
     {
-        return DsnHelper::build($this->getDsnParameters($options), static::$dbtype);
+        return DsnHelper::build($options, static::$dbtype);
     }
 
-    abstract public function getDsnParameters(array $options): array;
+    /**
+     * doConnect
+     *
+     * @param  array  $options
+     *
+     * @return  \PDO
+     */
+    protected function doConnect(array $options)
+    {
+        return new \PDO(
+            $options['dsn'],
+            $options['username'] ?? null,
+            $options['password'] ?? null,
+            $options['pdo_attributes'] ?? []
+        );
+    }
 
     /**
-     * @inheritDoc
+     * @return \PDO|null
      */
-    public function connect()
+    public function getConnection(): ?\PDO
     {
-        if ($this->connection) {
-            return $this->connection;
-        }
-
-        $pdo = new \PDO(
-            $this->getDsn($this->options),
-            $this->options['username'] ?? null,
-            $this->options['password'] ?? null,
-            $this->options['pdo_attributes'] ?? []
-        );
-
-        $this->connection = $pdo;
-
-        return $this->connection;
+        return parent::getConnection();
     }
 
     /**

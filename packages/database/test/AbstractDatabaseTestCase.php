@@ -27,7 +27,7 @@ abstract class AbstractDatabaseTestCase extends TestCase
 
     protected static $driver = '';
 
-    protected static $dbname = 'windwalker_test';
+    protected static $dbname = '';
 
     /**
      * @var \PDO
@@ -48,6 +48,10 @@ abstract class AbstractDatabaseTestCase extends TestCase
         if (!$params) {
             self::markTestSkipped('DSN of ' . static::$platform . ' not available.');
         }
+
+        static::$dbname = $params['database'];
+        $params['dbname'] = $params['database'];
+        unset($params['database']);
 
         static::$baseConn = new \PDO(
             DsnHelper::build($params, static::$platform),

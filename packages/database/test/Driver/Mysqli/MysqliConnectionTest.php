@@ -9,29 +9,36 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Test\Driver\Pdo;
+namespace Windwalker\Database\Test\Driver\Mysqli;
 
 use Windwalker\Database\Driver\AbstractConnection;
-use Windwalker\Database\Driver\Pdo\MysqlConnection;
+use Windwalker\Database\Driver\Mysqli\MysqliConnection;
 use Windwalker\Database\Test\Driver\AbstractConnectionTest;
 
 /**
- * The MysqlConnectionTest class.
+ * The MysqliConnectionTest class.
  */
-class MysqlConnectionTest extends AbstractConnectionTest
+class MysqliConnectionTest extends AbstractConnectionTest
 {
     protected static $platform = 'mysql';
 
     protected static function createConnection(): AbstractConnection
     {
-        return new MysqlConnection(static::getTestParams());
+        return new MysqliConnection(self::getTestParams());
     }
 
+    /**
+     * assertConnected
+     *
+     * @param  MysqliConnection  $conn
+     *
+     * @return  void
+     */
     public function assertConnected(AbstractConnection $conn): void
     {
-        $pdo = $conn->getConnection();
+        $mysqli = $conn->getConnection();
 
-        $r = $pdo->query('SELECT 1')->fetch(\PDO::FETCH_NUM);
+        $r = $mysqli->query('SELECT 1')->fetch_row();
 
         self::assertEquals([1], $r);
     }

@@ -11,20 +11,24 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Driver;
 
+use Windwalker\Utilities\Classes\OptionAccessTrait;
+
 /**
  * The AbstractConnection class.
  */
 abstract class AbstractConnection
 {
-    /**
-     * @var array
-     */
-    protected $options = [];
+    use OptionAccessTrait;
 
     /**
      * @var mixed
      */
     protected $connection;
+
+    /**
+     * @var array
+     */
+    protected $defaultOptions = [];
 
     /**
      * AbstractConnection constructor.
@@ -33,22 +37,43 @@ abstract class AbstractConnection
      */
     public function __construct(array $options)
     {
-        $this->options = $options;
+        $this->prepareOptions(
+            $this->defaultOptions,
+            $options
+        );
 
         $this->prepare();
     }
+
+    /**
+     * isSupported
+     *
+     * @return  bool
+     */
+    abstract public static function isSupported(): bool;
 
     protected function prepare(): void
     {
         //
     }
 
+    abstract public function getParameters(array $options): array;
+
     /**
      * connect
      *
      * @return  mixed
      */
-    abstract public function connect();
+    public function connect()
+    {
+        if ($this->connection) {
+            return $this->connection;
+        }
+
+        return $this->connection = $this->doConnect($this->getParameters($this->options));
+    }
+
+    abstract protected function doConnect(array $options);
 
     /**
      * disconnect
@@ -58,10 +83,10 @@ abstract class AbstractConnection
     abstract public function disconnect();
 
     /**
-     * @return \WeakReference
+     * @return mixed
      */
-    public function getConnection(): \WeakReference
+    public function getConnection()
     {
-        return \WeakReference::create($this->connection);
+        return $this->connection;
     }
 }

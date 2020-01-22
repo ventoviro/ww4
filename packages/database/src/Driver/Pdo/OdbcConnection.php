@@ -21,7 +21,7 @@ class OdbcConnection extends AbstractPdoConnection
      */
     protected static $dbtype = 'odbc';
 
-    public function getDsnParameters(array $options): array
+    public function getParameters(array $options): array
     {
         $params = [];
 
@@ -41,6 +41,8 @@ class OdbcConnection extends AbstractPdoConnection
             $params['Database'] = $options['database'];
         }
 
-        return $params;
+        $options['dsn'] = $this->getDsn($params);
+
+        return $options;
     }
 }
