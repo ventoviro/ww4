@@ -32,13 +32,7 @@ abstract class AbstractPdoConnection extends AbstractConnection
      */
     public function getDsn(array $options): string
     {
-        $params = [];
-
-        foreach ($this->getDsnParameters($options) as $key => $value) {
-            $params[] = $key . '=' . $value;
-        }
-
-        return static::$dbtype . ':' . implode(';', $params);
+        return DsnHelper::build($this->getDsnParameters($options), static::$dbtype);
     }
 
     abstract public function getDsnParameters(array $options): array;
@@ -52,11 +46,12 @@ abstract class AbstractPdoConnection extends AbstractConnection
             return $this->connection;
         }
 
-        $pdo = new \PDO($this->getDsn($this->options));
-
-        foreach ($this->options['pdo_attributes'] ?? [] as $key => $value) {
-            $pdo->setAttribute($key, $value);
-        }
+        $pdo = new \PDO(
+            $this->getDsn($this->options),
+            $this->options['username'] ?? null,
+            $this->options['password'] ?? null,
+            $this->options['pdo_attributes'] ?? []
+        );
 
         $this->connection = $pdo;
 

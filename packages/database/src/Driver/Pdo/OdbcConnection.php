@@ -25,8 +25,22 @@ class OdbcConnection extends AbstractPdoConnection
     {
         $params = [];
 
-        if ($options['host'] ?? null) {
-            // $params['host']
+        if ($options['driver'] ?? null) {
+            $params['Driver'] = $options['driver'];
         }
+
+        if ($options['host'] ?? null) {
+            $params['Server'] = $options['host'];
+        }
+
+        if ($options['port'] ?? null) {
+            $params['Port'] = $options['port'];
+        }
+
+        if ($options['database'] ?? null) {
+            $params['Database'] = $options['database'];
+        }
+
+        return $params;
     }
 }
