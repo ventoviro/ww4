@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test\Driver;
 
 use Windwalker\Database\Driver\AbstractConnection;
+use Windwalker\Database\Driver\Mysqli\MysqliConnection;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
 /**
@@ -24,10 +25,29 @@ abstract class AbstractConnectionTest extends AbstractDatabaseTestCase
     /**
      * @var AbstractConnection
      */
+    protected static $className = AbstractConnection::class;
+
+    /**
+     * @var AbstractConnection
+     */
     protected $instance;
 
     protected static function setupDatabase(): void
     {
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function setUpBeforeClass(): void
+    {
+        $className = static::$className;
+
+        if (!$className::isSupported()) {
+            self::markTestSkipped('Driver for: ' . $className . ' not available.');
+        }
+
+        parent::setUpBeforeClass();
     }
 
     protected function setUp(): void
@@ -35,7 +55,12 @@ abstract class AbstractConnectionTest extends AbstractDatabaseTestCase
         $this->instance = static::createConnection();
     }
 
-    abstract protected static function createConnection(): AbstractConnection;
+    protected static function createConnection(): AbstractConnection
+    {
+        $className = static::$className;
+
+        return new $className(self::getTestParams());
+    }
 
     /**
      * assertConnected
@@ -68,14 +93,8 @@ abstract class AbstractConnectionTest extends AbstractDatabaseTestCase
         $conn = $this->instance;
         $conn->connect();
 
-        $ref = \WeakReference::create($conn->getConnection());
-
         $conn->disconnect();
 
         self::assertNull($conn->getConnection());
-
-        if (PHP_VERSION_ID >= 70400) {
-            self::assertNull($ref->get());
-        }
     }
 }

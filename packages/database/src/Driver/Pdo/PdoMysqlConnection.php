@@ -16,7 +16,7 @@ use Windwalker\Utilities\Arr;
 /**
  * The MysqlConnection class.
  */
-class MysqlConnection extends AbstractPdoConnection
+class PdoMysqlConnection extends AbstractPdoConnection
 {
     protected static $dbtype = 'mysql';
 

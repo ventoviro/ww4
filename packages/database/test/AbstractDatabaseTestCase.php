@@ -75,9 +75,11 @@ abstract class AbstractDatabaseTestCase extends TestCase
         // First let's look to see if we have a DSN defined or in the environment variables.
         if (defined($const) || getenv($const)) {
             $dsn = (defined($const) ? constant($const) : getenv($const));
+
+            return DsnHelper::extract($dsn);
         }
 
-        return DsnHelper::extract($dsn);
+        return [];
     }
 
     public static function getGrammar(): Grammar

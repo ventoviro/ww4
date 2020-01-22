@@ -22,10 +22,7 @@ class MysqliConnectionTest extends AbstractConnectionTest
 {
     protected static $platform = 'mysql';
 
-    protected static function createConnection(): AbstractConnection
-    {
-        return new MysqliConnection(self::getTestParams());
-    }
+    protected static $className = MysqliConnection::class;
 
     /**
      * assertConnected

@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test\Driver\Pdo;
 
 use Windwalker\Database\Driver\AbstractConnection;
-use Windwalker\Database\Driver\Pdo\MysqlConnection;
+use Windwalker\Database\Driver\Pdo\PdoMysqlConnection;
 use Windwalker\Database\Test\Driver\AbstractConnectionTest;
 
 /**
@@ -22,10 +22,7 @@ class MysqlConnectionTest extends AbstractConnectionTest
 {
     protected static $platform = 'mysql';
 
-    protected static function createConnection(): AbstractConnection
-    {
-        return new MysqlConnection(static::getTestParams());
-    }
+    protected static $className = PdoMysqlConnection::class;
 
     public function assertConnected(AbstractConnection $conn): void
     {
