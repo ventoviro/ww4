@@ -26,7 +26,6 @@
         "paragonie/constant_time_encoding": "^2.3",
         "masterminds/html5": "^2.7",
         "ext-json": "*",
-        "ext-sodium": "*",
         "ext-dom": "*"
     },
     "require-dev": {
@@ -48,6 +47,8 @@
         "symfony/dom-crawler": "^4.4",
         "symfony/css-selector": "^4.4",
         "ext-openssl": "*",
+        "ext-sodium": "*",
+        "ext-pdo": "*",
         "jdorn/sql-formatter": "^1.2"
     },
     "suggest": {

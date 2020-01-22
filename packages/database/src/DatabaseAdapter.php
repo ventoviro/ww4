@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database;
 
 use Windwalker\Database\Driver\AbstractDriver;
+use Windwalker\Database\Driver\DriverFactory;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
 
@@ -55,7 +56,7 @@ class DatabaseAdapter
     public function getDriver(): AbstractDriver
     {
         if (!$this->driver) {
-            $this->driver = AbstractDriver::create($this->getOption('driver'), $this);
+            $this->driver = DriverFactory::create($this->getOption('driver'), $this);
         }
 
         return $this->driver;
@@ -66,6 +67,6 @@ class DatabaseAdapter
      */
     public function getPlatform(): AbstractPlatform
     {
-        return $this->getDriver()->getPlatformName();
+        return $this->getDriver()->getPlatform();
     }
 }

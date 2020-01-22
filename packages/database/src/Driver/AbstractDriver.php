@@ -40,12 +40,10 @@ abstract class AbstractDriver
      */
     protected $db;
 
-    public static function create(string $driver, DatabaseAdapter $db)
-    {
-        $class = __NAMESPACE__ . '\\' . StrNormalise::toPascalCase($driver) . 'Driver';
-
-        return new $class($db);
-    }
+    /**
+     * @var mixed
+     */
+    protected $connection;
 
     /**
      * AbstractPlatform constructor.
@@ -56,6 +54,20 @@ abstract class AbstractDriver
     {
         $this->db = $db;
     }
+
+    /**
+     * Connect to Database.
+     *
+     * @return  mixed
+     */
+    abstract public function connect();
+
+    /**
+     * Discount the database.
+     *
+     * @return  mixed
+     */
+    abstract public function disconnect();
 
     /**
      * @return string
@@ -72,5 +84,37 @@ abstract class AbstractDriver
         }
 
         return $this->platform;
+    }
+
+    /**
+     * @param  string  $platformName
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setPlatformName(string $platformName)
+    {
+        $this->platformName = $platformName;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+
+    /**
+     * @param  mixed  $connection
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setConnection($connection)
+    {
+        $this->connection = $connection;
+
+        return $this;
     }
 }
