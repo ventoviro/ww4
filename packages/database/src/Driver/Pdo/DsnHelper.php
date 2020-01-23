@@ -41,14 +41,6 @@ class DsnHelper
 
     public static function build(array $params, ?string $dbtype = null, string $delimiter = ';'): string
     {
-        if ($dbtype) {
-            $method = 'handle' . ucfirst($dbtype);
-
-            if (method_exists(static::class, $method)) {
-                $params = static::$method($params);
-            }
-        }
-
         $params = array_filter($params);
 
         $dsn = [];
@@ -62,16 +54,6 @@ class DsnHelper
         if ($dbtype) {
             $dsn = $dbtype . ':' . $dsn;
         }
-
-        return $dsn;
-    }
-
-    protected static function handleSqlsrv(array $params): array
-    {
-        $dsn = [];
-
-        $dsn['Server'] = $params['host'];
-        $dsn['Database'] = $params['database'] ?? null;
 
         return $dsn;
     }

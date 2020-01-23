@@ -28,7 +28,7 @@ class PgsqlConnection extends AbstractConnection
         return extension_loaded('pgsql');
     }
 
-    public function getParameters(array $options): array
+    public static function getParameters(array $options): array
     {
         $params = [];
 

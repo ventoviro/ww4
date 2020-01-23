@@ -14,14 +14,14 @@ namespace Windwalker\Database\Driver\Pdo;
 /**
  * The OdbcConnection class.
  */
-class OdbcConnection extends AbstractPdoConnection
+class PdoOdbcConnection extends AbstractPdoConnection
 {
     /**
      * @var string
      */
     protected static $dbtype = 'odbc';
 
-    public function getParameters(array $options): array
+    public static function getParameters(array $options): array
     {
         $params = [];
 
@@ -41,7 +41,7 @@ class OdbcConnection extends AbstractPdoConnection
             $params['Database'] = $options['database'];
         }
 
-        $options['dsn'] = $this->getDsn($params);
+        $options['dsn'] = static::getDsn($params);
 
         return $options;
     }

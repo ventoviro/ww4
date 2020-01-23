@@ -82,6 +82,7 @@ abstract class AbstractConnectionTest extends AbstractDatabaseTestCase
     public function testConnectWrong()
     {
         $conn = $this->instance;
+        $conn->setOption('username', 'notexists');
         $conn->setOption('password', 'This-is-wrong-password');
 
         $this->expectException(\RuntimeException::class);

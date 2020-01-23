@@ -12,15 +12,15 @@ declare(strict_types=1);
 namespace Windwalker\Database\Driver\Pdo;
 
 /**
- * The MysqlConnection class.
+ * The PdoPgsqlConnection class.
  */
-class PdoMysqlConnection extends AbstractPdoConnection
+class PdoPgsqlConnection extends AbstractPdoConnection
 {
-    protected static $dbtype = 'mysql';
+    protected static $dbtype = 'pgsql';
 
     public static function getParameters(array $options): array
     {
-        $params['host'] = $options['host'] ?? null;
+        $params['host'] = $options['host'];
         $params['port'] = $options['port'] ?? null;
         $params['dbname'] = $options['database'] ?? null;
         $params['charset'] = $options['charset'] ?? null;

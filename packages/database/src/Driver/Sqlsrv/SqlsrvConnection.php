@@ -27,7 +27,7 @@ class SqlsrvConnection extends AbstractConnection
         return extension_loaded('sqlsrv');
     }
 
-    public function getParameters(array $options): array
+    public static function getParameters(array $options): array
     {
         $params = [];
 

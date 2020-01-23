@@ -57,7 +57,7 @@ abstract class AbstractConnection
         //
     }
 
-    abstract public function getParameters(array $options): array;
+    abstract public static function getParameters(array $options): array;
 
     /**
      * connect

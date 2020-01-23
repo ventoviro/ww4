@@ -32,7 +32,7 @@ class MysqliConnection extends AbstractConnection
         return extension_loaded('mysqli');
     }
 
-    public function getParameters(array $options): array
+    public static function getParameters(array $options): array
     {
         return $options;
     }

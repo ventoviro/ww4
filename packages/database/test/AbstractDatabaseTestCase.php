@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Database\Driver\Pdo\AbstractPdoConnection;
 use Windwalker\Database\Driver\Pdo\DsnHelper;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Query\Test\QueryTestTrait;
@@ -49,19 +50,25 @@ abstract class AbstractDatabaseTestCase extends TestCase
             self::markTestSkipped('DSN of ' . static::$platform . ' not available.');
         }
 
-        static::$dbname = $params['database'];
-        $user = $params['username'];
-        $pass = $params['password'];
-        unset(
-            $params['database'],
-            $params['username'],
-            $params['password']
-        );
+        /** @var AbstractPdoConnection $connClass */
+        $connClass = 'Windwalker\Database\Driver\Pdo\Pdo' . ucfirst(static::$platform) . 'Connection';
+
+        if (!class_exists($connClass) || !is_subclass_of($connClass, AbstractPdoConnection::class)) {
+            throw new \LogicException(
+                sprintf(
+                    '%s should exists and extends %s',
+                    $connClass,
+                    AbstractPdoConnection::class
+                )
+            );
+        }
+
+        $dsn = $connClass::getParameters($params)['dsn'];
 
         static::$baseConn = new \PDO(
-            DsnHelper::build($params, static::$platform),
-            $user,
-            $pass
+            $dsn,
+            $params['username'] ?? null,
+            $params['password'] ?? null
         );
         static::$baseConn->exec('CREATE DATABASE ' . static::qn(static::$dbname));
     }
@@ -95,7 +102,7 @@ abstract class AbstractDatabaseTestCase extends TestCase
     /**
      * quote
      *
-     * @param string $text
+     * @param  string  $text
      *
      * @return  string
      */

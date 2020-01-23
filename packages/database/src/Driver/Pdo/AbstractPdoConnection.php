@@ -44,7 +44,7 @@ abstract class AbstractPdoConnection extends AbstractConnection
      *
      * @return  string
      */
-    public function getDsn(array $options): string
+    public static function getDsn(array $options): string
     {
         return DsnHelper::build($options, static::$dbtype);
     }
