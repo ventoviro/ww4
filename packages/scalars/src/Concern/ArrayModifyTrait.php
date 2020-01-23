@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Scalars\Concern;
 
-use Windwalker\Data\Traits\CollectionTrait;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\TypeCast;
 

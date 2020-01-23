@@ -15,5 +15,5 @@ use Windwalker\Data\Collection;
 
 function collect($storage): Collection
 {
-    return new Collection($storage);
+    return Collection::wrap($storage);
 }

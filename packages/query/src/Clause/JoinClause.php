@@ -182,7 +182,7 @@ class JoinClause implements ClauseInterface
                 // Append every value as ValueObject so that we can make placeholders as `IN(?, ?, ?...)`
                 $value->append($vc = $this->query->quote($col));
 
-                $this->query->bindValue(null, $vc);
+                $this->query->bind(null, $vc);
             }
         } elseif ($value instanceof Query) {
             $value = $this->query->as($origin, false);

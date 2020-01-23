@@ -11,8 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Query\Bounded\BindableInterface;
 use Windwalker\Query\Bounded\BoundedSequence;
-use Windwalker\Query\Bounded\ParamType;
+use Windwalker\Query\Bounded\BindableTrait;
 use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Clause\ClauseInterface;
@@ -76,10 +77,11 @@ use function Windwalker\value;
  * @method string|array qn($text)
  * @method string|array q($text)
  */
-class Query implements QueryInterface
+class Query implements QueryInterface, BindableInterface
 {
     use MarcoableTrait;
     use FlowControlTrait;
+    use BindableTrait;
 
     public const TYPE_SELECT = 'select';
 
@@ -210,11 +212,6 @@ class Query implements QueryInterface
      * @var string
      */
     protected $sql;
-
-    /**
-     * @var array
-     */
-    protected $bounded = [];
 
     /**
      * @var BoundedSequence
@@ -629,7 +626,7 @@ class Query implements QueryInterface
                 // Append every value as ValueObject so that we can make placeholders as `IN(?, ?, ?...)`
                 $value->append($vc = $this->val($val));
 
-                $this->bindValue(null, $vc);
+                $this->bind(null, $vc);
             }
         } elseif (is_array($value)) {
             // Auto convert array value as IN() clause.
@@ -645,7 +642,7 @@ class Query implements QueryInterface
                 // Append every value as ValueObject so that we can make placeholders as `IN(?, ?, ?...)`
                 $value->append($vc = $this->val($val));
 
-                $this->bindValue(null, $vc);
+                $this->bind(null, $vc);
             }
         } elseif ($value instanceof static) {
             // Process Aub query object
@@ -656,7 +653,7 @@ class Query implements QueryInterface
             $value = $this->val($value);
         } else {
             // Process simple value compare
-            $this->bindValue(null, $value = $this->val($value));
+            $this->bind(null, $value = $this->val($value));
         }
 
         return [strtoupper($operator), $value, $origin];
@@ -1126,7 +1123,7 @@ class Query implements QueryInterface
             );
 
             // Process simple value compare
-            $this->bindValue(null, $value = $this->val($value));
+            $this->bind(null, $value = $this->val($value));
         }
 
         return $value;
@@ -1557,142 +1554,6 @@ class Query implements QueryInterface
     }
 
     /**
-     * Method to add a variable to an internal array that will be bound to a prepared SQL statement before query
-     * execution. Also removes a variable that has been bounded from the internal bounded array when the passed in
-     * value is null.
-     *
-     * @param  string|integer|array  $key            The key that will be used in your SQL query to reference the value.
-     *                                               Usually of the form ':key', but can also be an integer.
-     * @param  mixed                &$value          The value that will be bound. The value is passed by reference to
-     *                                               support output parameters such as those possible with stored
-     *                                               procedures.
-     * @param  mixed                 $dataType       Constant corresponding to a SQL datatype.
-     * @param  integer               $length         The length of the variable. Usually required for OUTPUT parameters.
-     * @param  array                 $driverOptions  Optional driver options to be used.
-     *
-     * @return  static
-     *
-     * @since   3.5.5
-     */
-    public function bind(
-        $key = null,
-        &$value = null,
-        $dataType = null,
-        int $length = 0,
-        $driverOptions = null
-    ) {
-        // If is array, loop for all elements.
-        if (is_array($key)) {
-            foreach ($key as $k => &$v) {
-                $this->bind($k, $v, $dataType, $length, $driverOptions);
-            }
-
-            return $this;
-        }
-
-        if ($dataType === null) {
-            $dataType = ParamType::guessType(
-                $value instanceof ValueClause ? $value->getValue() : $value
-            );
-        }
-
-        $bounded = [
-            'value' => &$value,
-            'dataType' => $dataType,
-            'length' => $length,
-            'driverOptions' => $driverOptions,
-        ];
-
-        if ($key === null) {
-            $this->bounded[] = $bounded;
-        } else {
-            $this->bounded[$key] = $bounded;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Method to add a variable to an internal array that will be bound to a prepared SQL statement before query
-     * execution. Also removes a variable that has been bounded from the internal bounded array when the passed in
-     * value is null.
-     *
-     * @param  string|integer|array  $key            The key that will be used in your SQL query to reference the
-     *                                               value. Usually of the form ':key', but can also be an integer.
-     * @param  mixed                &$value          The value that will be bound. The value is passed by reference to
-     *                                               support output parameters such as those possible with stored
-     *                                               procedures.
-     * @param  mixed                 $dataType       Constant corresponding to a SQL datatype.
-     * @param  integer               $length         The length of the variable. Usually required for OUTPUT
-     *                                               parameters.
-     * @param  array                 $driverOptions  Optional driver options to be used.
-     *
-     * @return  static
-     *
-     * @since   2.0
-     */
-    public function bindValue(
-        $key = null,
-        $value = null,
-        $dataType = null,
-        int $length = 0,
-        $driverOptions = null
-    ) {
-        return $this->bind($key, $value, $dataType, $length, $driverOptions);
-    }
-
-    /**
-     * Retrieves the bound parameters array when key is null and returns it by reference. If a key is provided then
-     * that item is returned.
-     *
-     * @param  mixed  $key  The bounded variable key to retrieve.
-     *
-     * @return  array|null
-     *
-     * @since   2.0
-     */
-    public function &getBounded($key = null): ?array
-    {
-        if (empty($key)) {
-            return $this->bounded;
-        }
-
-        return $this->bounded[$key] ?? null;
-    }
-
-    /**
-     * resetBounded
-     *
-     * @return  static
-     *
-     * @since  3.5.12
-     */
-    public function resetBounded()
-    {
-        $this->bounded = [];
-
-        return $this;
-    }
-
-    /**
-     * unbind
-     *
-     * @param  string|array  $keys
-     *
-     * @return  static
-     *
-     * @since  3.5.12
-     */
-    public function unbind($keys)
-    {
-        $keys = (array) $keys;
-
-        $this->bounded = array_diff_key($this->bounded, array_flip($keys));
-
-        return $this;
-    }
-
-    /**
      * @inheritDoc
      */
     public function __toString()
@@ -1702,6 +1563,8 @@ class Query implements QueryInterface
 
     public function render(bool $emulatePrepared = false, ?array &$bounded = []): string
     {
+        $bounded = $bounded ?? [];
+
         // Only top level query rendering should create sequence and get merged bounded
         if (!$this->sequence) {
             $bounded = $this->mergeBounded();

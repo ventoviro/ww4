@@ -11,10 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Driver\Pdo;
 
-use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\StatementInterface;
-use Windwalker\Query\Query;
+use Windwalker\Query\Escaper;
 
 /**
  * The PdoDriver class.
@@ -30,14 +29,6 @@ class PdoDriver extends AbstractDriver
      * @var string
      */
     protected $platformName = 'odbc';
-
-    /**
-     * @inheritDoc
-     */
-    public function __construct(DatabaseAdapter $db)
-    {
-        parent::__construct($db);
-    }
 
     protected function getConnectionClass(): string
     {
@@ -55,7 +46,7 @@ class PdoDriver extends AbstractDriver
     public function prepare($query, array $options = []): StatementInterface
     {
         /** @var \PDO $pdo */
-        $pdo = $this->getConnection()->get();
+        $pdo = $this->connect()->get();
 
         $query = $this->handleQuery($query, $bounded);
 
@@ -75,6 +66,10 @@ class PdoDriver extends AbstractDriver
      */
     public function quote(string $value): string
     {
+        /** @var \PDO $pdo */
+        $pdo = $this->connect()->get();
+
+        return $pdo->quote($value);
     }
 
     /**
@@ -82,5 +77,6 @@ class PdoDriver extends AbstractDriver
      */
     public function escape(string $value): string
     {
+        return Escaper::stripQuote($this->quote($value));
     }
 }

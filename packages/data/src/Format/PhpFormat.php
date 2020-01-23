@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Data\Format;
 
-use Windwalker\Data\DataHelper;
-
 /**
  * PHP class format handler for Data
  *
@@ -24,31 +22,25 @@ class PhpFormat implements FormatInterface
      * Converts an object into a php class string.
      * - NOTE: Only one depth level is supported.
      *
-     * @param  object  $data     Data Source Object
-     * @param  array   $options  Parameters used by the formatter
+     * @param  array  $data     Data Source Object
+     * @param  array  $options  Parameters used by the formatter
      *
      * @return  string
      */
     public function dump($data, array $options = []): string
     {
-        $header  = $options['header'] ?? '';
-        $asArray = $options['return'] ?? false;
-        $strict  = $options['strict'] ?? true;
+        $header = $options['header'] ?? '';
+        $return = $options['return'] ?? false;
+        $strict = $options['strict'] ?? true;
 
         // Build the object variables string
-        $vars = '';
+        $vars = static::getArrayString((array) $data);
 
-        foreach ($data as $k => $v) {
-            if (is_scalar($v)) {
-                $vars .= sprintf("    '%s' => '%s',\n", $k, addcslashes($v, '\\\''));
-            } elseif (is_array($v) || is_object($v)) {
-                $vars .= sprintf("    '%s' => %s,\n", $k, static::getArrayString((array) $v));
-            }
-        }
+        $str = '';
 
-        if (!$asArray) {
+        if ($return) {
             if ($strict) {
-                $str = "<?php\n";
+                $str = "<?php\n\ndeclare(strict_types=1);\n";
             } else {
                 $str = "<?php\n";
             }
@@ -57,15 +49,12 @@ class PhpFormat implements FormatInterface
                 $str .= $header . "\n";
             }
 
-            $str .= "\nreturn [\n";
-        } else {
-            $str = "[\n";
+            $str .= "\nreturn ";
         }
 
         $str .= $vars;
-        $str .= ']';
 
-        if (!$asArray) {
+        if ($return) {
             $str .= ";\n";
 
             // Use the closing tag if set to true in parameters.
@@ -87,17 +76,18 @@ class PhpFormat implements FormatInterface
      */
     public function parse(string $string, array $options = []): array
     {
-        return $string;
+        throw new \LogicException('Currently does not support parse php array.');
     }
 
     /**
      * Method to get an array as an exported string.
      *
      * @param  array  $a  The array to get as a string.
+     * @param  int    $level
      *
      * @return  string
      */
-    protected static function getArrayString($a, $level = 2)
+    protected static function getArrayString(array $a, int $level = 1): string
     {
         $s = "[\n";
         $i = 0;
@@ -114,6 +104,8 @@ class PhpFormat implements FormatInterface
 
             if (is_array($v) || is_object($v)) {
                 $s .= static::getArrayString((array) $v, $level + 1);
+            } elseif (is_int($v) || is_float($v)) {
+                $s .= $v;
             } else {
                 $s .= "'" . addslashes($v) . "'";
             }
@@ -132,8 +124,6 @@ class PhpFormat implements FormatInterface
      * @param  array  $array
      *
      * @return  bool
-     *
-     * @since  3.5.14
      */
     private static function isAssociative(array $array): bool
     {

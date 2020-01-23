@@ -21,9 +21,9 @@ interface DriverInterface
     /**
      * connect
      *
-     * @return  mixed
+     * @return  ConnectionInterface
      */
-    public function connect();
+    public function connect(): ConnectionInterface;
 
     /**
      * disconnect

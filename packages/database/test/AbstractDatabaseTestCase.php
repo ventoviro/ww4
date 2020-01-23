@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Test;
 
+use Asika\SqlSplitter\SqlSplitter;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Driver\Pdo\AbstractPdoConnection;
 use Windwalker\Database\Driver\Pdo\DsnHelper;
@@ -25,8 +26,6 @@ abstract class AbstractDatabaseTestCase extends TestCase
     use QueryTestTrait;
 
     protected static $platform = '';
-
-    protected static $driver = '';
 
     protected static $dbname = '';
 
@@ -73,13 +72,56 @@ abstract class AbstractDatabaseTestCase extends TestCase
         static::$baseConn->exec('CREATE DATABASE ' . static::qn(static::$dbname));
     }
 
+    /**
+     * setupDatabase
+     *
+     * @return  void
+     */
     abstract protected static function setupDatabase(): void;
 
+    /**
+     * importFromFile
+     *
+     * @param  string  $file
+     *
+     * @return  void
+     */
+    protected static function importFromFile(string $file): void
+    {
+        self::importIterator(SqlSplitter::splitFromFile($file));
+    }
+
+    /**
+     * importIterator
+     *
+     * @param  iterable  $queries
+     *
+     * @return  void
+     */
+    protected static function importIterator(iterable $queries): void
+    {
+        foreach ($queries as $query) {
+            if (trim($query) === '') {
+                continue;
+            }
+
+            static::$baseConn->exec($query);
+        }
+    }
+
+    /**
+     * __destruct
+     */
     public function __destruct()
     {
         // static::$baseConn->exec('DROP DATABASE ' . static::qn(static::$dbname));
     }
 
+    /**
+     * getTestParams
+     *
+     * @return  array
+     */
     protected static function getTestParams(): array
     {
         $const = 'WINDWALKER_TEST_DB_DSN_' . strtoupper(static::$platform);
@@ -94,6 +136,11 @@ abstract class AbstractDatabaseTestCase extends TestCase
         return [];
     }
 
+    /**
+     * getGrammar
+     *
+     * @return  Grammar
+     */
     public static function getGrammar(): Grammar
     {
         return Grammar::create(static::$platform);

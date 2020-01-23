@@ -31,6 +31,13 @@ interface ConnectionInterface
     public function disconnect();
 
     /**
+     * isConnected
+     *
+     * @return  bool
+     */
+    public function isConnected(): bool;
+
+    /**
      * @return mixed
      */
     public function get();

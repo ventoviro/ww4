@@ -34,7 +34,7 @@ class EscaperTest extends TestCase
         $sql = 'SELECT * FROM foo WHERE foo = :foo AND bar = ? AND yoo IN(?, ?, ?) AND flower = :flower';
 
         $query = new Query();
-        $query->bindValue([
+        $query->bind([
             'baz',
             1,
             2,

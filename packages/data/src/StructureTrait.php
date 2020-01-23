@@ -109,7 +109,7 @@ trait StructureTrait
     protected function loadData($data, ?string $format = null, array $options = []): array
     {
         if (is_array($data) || is_object($data)) {
-            $storage = TypeCast::toArray($data, $options['to_array'] ?? true);
+            $storage = TypeCast::toArray($data, $options['to_array'] ?? false);
         } else {
             $registry = $this->getFormatRegistry();
 

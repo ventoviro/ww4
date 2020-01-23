@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Test\Traits;
 
 use Throwable;
+use Windwalker\Data\Format\PhpFormat;
 use Windwalker\Test\Helper\TestStringHelper;
+use Windwalker\Utilities\TypeCast;
 
 /**
  * StringTestTrait
@@ -124,5 +126,12 @@ trait BaseAssertionTrait
                 static::assertContains($value, $array);
             }
         }
+    }
+
+    public static function dumpArray($array, array $options = []): string
+    {
+        $options['return'] = false;
+
+        return (new PhpFormat())->dump(TypeCast::toArray($array, true), $options);
     }
 }

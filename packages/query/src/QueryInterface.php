@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Query\Bounded\BindableInterface;
+
 /**
  * Interface QueryInterface
  */

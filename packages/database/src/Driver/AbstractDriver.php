@@ -63,11 +63,13 @@ abstract class AbstractDriver implements DriverInterface
      *
      * @return  string
      */
-    protected function handleQuery($query, array &$bounded = []): string
+    protected function handleQuery($query, ?array &$bounded = []): string
     {
         if ($query instanceof Query) {
             return $query->render(false, $bounded);
         }
+
+        $bounded = $bounded ?? [];
 
         return (string) $query;
     }
@@ -75,11 +77,19 @@ abstract class AbstractDriver implements DriverInterface
     /**
      * connect
      *
-     * @return  mixed
+     * @return  ConnectionInterface
      */
-    public function connect()
+    public function connect(): ConnectionInterface
     {
-        return $this->getConnection()->connect();
+        $conn = $this->getConnection();
+
+        if ($conn->isConnected()) {
+            return $conn;
+        }
+
+        $conn->connect();
+
+        return $conn;
     }
 
     /**

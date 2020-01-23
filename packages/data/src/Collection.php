@@ -83,7 +83,7 @@ class Collection extends ArrayObject
 
         TypeAssert::assert(
             is_array($new->storage) || is_object($new->storage) || $new->storage === null,
-            'Method: %s extract to sub element should should be array or object or NULL, got %s.',
+            'Method: %s extract to sub element should be array, object or NULL, got %s.',
             $new->storage
         );
 
@@ -107,6 +107,18 @@ class Collection extends ArrayObject
     public function proxy(string $path)
     {
         return $this->extract($path, true);
+    }
+
+    /**
+     * proxyMap
+     *
+     * @param  string|null  $column
+     *
+     * @return  MapProxy|Collection
+     */
+    public function mapProxy(?string $column = null): MapProxy
+    {
+        return new MapProxy($this, $column);
     }
 
     /**
@@ -149,7 +161,7 @@ class Collection extends ArrayObject
      * @param  mixed   $value
      * @param  string  $delimiter
      *
-     * @return  Collection
+     * @return  static
      *
      * @since  __DEPLOY_VERSION__
      */

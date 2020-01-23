@@ -83,6 +83,16 @@ abstract class AbstractConnection implements ConnectionInterface
     abstract public function disconnect();
 
     /**
+     * isConnected
+     *
+     * @return  bool
+     */
+    public function isConnected(): bool
+    {
+        return $this->connection !== null;
+    }
+
+    /**
      * @return mixed
      */
     public function get()
