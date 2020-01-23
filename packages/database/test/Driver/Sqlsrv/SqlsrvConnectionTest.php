@@ -33,7 +33,7 @@ class SqlsrvConnectionTest extends AbstractConnectionTest
      */
     public function assertConnected(AbstractConnection $conn): void
     {
-        $res = $conn->getConnection();
+        $res = $conn->get();
 
         $cursor = sqlsrv_query($res, 'SELECT 1');
 

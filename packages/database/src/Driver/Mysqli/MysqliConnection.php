@@ -61,8 +61,8 @@ class MysqliConnection extends AbstractConnection
     /**
      * @return \mysqli
      */
-    public function getConnection(): ?\mysqli
+    public function get(): ?\mysqli
     {
-        return parent::getConnection();
+        return parent::get();
     }
 }

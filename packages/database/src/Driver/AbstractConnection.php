@@ -16,7 +16,7 @@ use Windwalker\Utilities\Classes\OptionAccessTrait;
 /**
  * The AbstractConnection class.
  */
-abstract class AbstractConnection
+abstract class AbstractConnection implements ConnectionInterface
 {
     use OptionAccessTrait;
 
@@ -70,7 +70,7 @@ abstract class AbstractConnection
             return $this->connection;
         }
 
-        return $this->connection = $this->doConnect($this->getParameters($this->options));
+        return $this->connection = $this->doConnect(static::getParameters($this->options));
     }
 
     abstract protected function doConnect(array $options);
@@ -85,7 +85,7 @@ abstract class AbstractConnection
     /**
      * @return mixed
      */
-    public function getConnection()
+    public function get()
     {
         return $this->connection;
     }

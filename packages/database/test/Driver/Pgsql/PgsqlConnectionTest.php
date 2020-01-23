@@ -29,7 +29,7 @@ class PgsqlConnectionTest extends AbstractConnectionTest
      */
     public function assertConnected(AbstractConnection $conn): void
     {
-        $cursor = pg_query($conn->getConnection(), 'SELECT 1');
+        $cursor = pg_query($conn->get(), 'SELECT 1');
 
         $r = pg_fetch_result($cursor, 0);
 

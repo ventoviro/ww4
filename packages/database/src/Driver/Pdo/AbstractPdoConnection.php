@@ -69,9 +69,9 @@ abstract class AbstractPdoConnection extends AbstractConnection
     /**
      * @return \PDO|null
      */
-    public function getConnection(): ?\PDO
+    public function get(): ?\PDO
     {
-        return parent::getConnection();
+        return parent::get();
     }
 
     /**

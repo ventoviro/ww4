@@ -33,7 +33,7 @@ class MysqliConnectionTest extends AbstractConnectionTest
      */
     public function assertConnected(AbstractConnection $conn): void
     {
-        $mysqli = $conn->getConnection();
+        $mysqli = $conn->get();
 
         $r = $mysqli->query('SELECT 1')->fetch_row();
 

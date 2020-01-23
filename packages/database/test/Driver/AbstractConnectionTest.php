@@ -96,6 +96,6 @@ abstract class AbstractConnectionTest extends AbstractDatabaseTestCase
 
         $conn->disconnect();
 
-        self::assertNull($conn->getConnection());
+        self::assertNull($conn->get());
     }
 }

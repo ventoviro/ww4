@@ -13,12 +13,12 @@ namespace Windwalker\Database\Driver;
 
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Platform\AbstractPlatform;
-use Windwalker\Utilities\StrNormalise;
+use Windwalker\Query\Query;
 
 /**
  * The AbstractDriver class.
  */
-abstract class AbstractDriver
+abstract class AbstractDriver implements DriverInterface
 {
     /**
      * @var string
@@ -41,7 +41,7 @@ abstract class AbstractDriver
     protected $db;
 
     /**
-     * @var mixed
+     * @var ConnectionInterface
      */
     protected $connection;
 
@@ -56,18 +56,41 @@ abstract class AbstractDriver
     }
 
     /**
-     * Connect to Database.
+     * handleQuery
      *
-     * @return  mixed
+     * @param  string|Query  $query
+     * @param  array         $bounded
+     *
+     * @return  string
      */
-    abstract public function connect();
+    protected function handleQuery($query, array &$bounded = []): string
+    {
+        if ($query instanceof Query) {
+            return $query->render(false, $bounded);
+        }
+
+        return (string) $query;
+    }
 
     /**
-     * Discount the database.
+     * connect
      *
      * @return  mixed
      */
-    abstract public function disconnect();
+    public function connect()
+    {
+        return $this->getConnection()->connect();
+    }
+
+    /**
+     * disconnect
+     *
+     * @return  mixed
+     */
+    public function disconnect()
+    {
+        return $this->getConnection()->disconnect();
+    }
 
     /**
      * @return string
@@ -99,19 +122,41 @@ abstract class AbstractDriver
     }
 
     /**
-     * @return mixed
+     * @return ConnectionInterface
      */
-    public function getConnection()
+    public function getConnection(): ConnectionInterface
     {
+        if (!$this->connection) {
+            $this->connection = $this->createConnection();
+        }
+
         return $this->connection;
     }
 
+    public function createConnection(): ConnectionInterface
+    {
+        $class = $this->getConnectionClass();
+
+        return new $class($this->db->getOptions());
+    }
+
+    protected function getConnectionClass(): string
+    {
+        $class = __NAMESPACE__ . '\%s\%sConnection';
+
+        return sprintf(
+            $class,
+            ucfirst($this->name),
+            ucfirst($this->name)
+        );
+    }
+
     /**
-     * @param  mixed  $connection
+     * @param  ConnectionInterface  $connection
      *
      * @return  static  Return self to support chaining.
      */
-    public function setConnection($connection)
+    public function setConnection(ConnectionInterface $connection)
     {
         $this->connection = $connection;
 

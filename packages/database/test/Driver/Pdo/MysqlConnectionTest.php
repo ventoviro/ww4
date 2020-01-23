@@ -26,7 +26,7 @@ class MysqlConnectionTest extends AbstractConnectionTest
 
     public function assertConnected(AbstractConnection $conn): void
     {
-        $pdo = $conn->getConnection();
+        $pdo = $conn->get();
 
         $r = $pdo->query('SELECT 1')->fetch(\PDO::FETCH_NUM);
 
