@@ -39,11 +39,11 @@ class DatabaseAdapter
             [
                 'driver' => '',
                 'host' => 'localhost',
-                'database' => '',
-                'username' => '',
-                'password' => '',
-                'port' => '',
-                'charset' => '',
+                'database' => null,
+                'username' => null,
+                'password' => null,
+                'port' => null,
+                'charset' => null,
                 'driverOptions' => [],
             ],
             $options
@@ -68,5 +68,10 @@ class DatabaseAdapter
     public function getPlatform(): AbstractPlatform
     {
         return $this->getDriver()->getPlatform();
+    }
+
+    public function replacePrefix(string $query): string
+    {
+        return $query;
     }
 }

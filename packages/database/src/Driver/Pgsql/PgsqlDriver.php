@@ -9,22 +9,26 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Driver\Mysqli;
+namespace Windwalker\Database\Driver\Pgsql;
 
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\StatementInterface;
+use Windwalker\Database\Platform\PostgresqlPlatform;
 
 /**
- * The MysqliDriver class.
+ * The PgsqlDriver class.
  */
-class MysqliDriver extends AbstractDriver
+class PgsqlDriver extends AbstractDriver
 {
-    protected $name = 'mysqli';
+    /**
+     * @var string
+     */
+    protected $name = 'pgsql';
 
     /**
      * @var string
      */
-    protected $platformName = 'mysql';
+    protected $platformName = 'postgresql';
 
     /**
      * @inheritDoc
@@ -35,7 +39,7 @@ class MysqliDriver extends AbstractDriver
 
         $query = $this->handleQuery($query, $bounded);
 
-        return new MysqliStatement($conn, $query, $bounded);
+        return new PgsqlStatement($conn, $query, $bounded);
     }
 
     /**
@@ -43,10 +47,10 @@ class MysqliDriver extends AbstractDriver
      */
     public function lastInsertId(?string $sequence = null): ?string
     {
-        /** @var \mysqli $mysqli */
-        $mysqli = $this->connect()->get();
+        /** @var PostgresqlPlatform $platform */
+        $platform = $this->getPlatform();
 
-        return (string) $mysqli->insert_id;
+        return $platform->lastInsertId($this->lastQuery, $sequence);
     }
 
     /**
@@ -62,9 +66,6 @@ class MysqliDriver extends AbstractDriver
      */
     public function escape(string $value): string
     {
-        /** @var \mysqli $mysqli */
-        $mysqli = $this->connect()->get();
-
-        return $mysqli->real_escape_string($value);
+        return pg_escape_string($this->connect()->get(), $value);
     }
 }

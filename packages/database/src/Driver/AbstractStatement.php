@@ -16,6 +16,9 @@ use Windwalker\Data\Collection;
 use Windwalker\Database\Exception\StatementException;
 use Windwalker\Database\Iterator\StatementIterator;
 use Windwalker\Query\Bounded\BindableTrait;
+use Windwalker\Query\Bounded\ParamType;
+use Windwalker\Utilities\TypeCast;
+
 use function Windwalker\collect;
 use function Windwalker\tap;
 use function Windwalker\where;
@@ -170,5 +173,42 @@ abstract class AbstractStatement implements StatementInterface
     public function isExecuted(): bool
     {
         return $this->executed;
+    }
+
+    public static function replaceStatement(string $sql, string $symbol = '?', array $params = []): array
+    {
+        $values = [];
+        $i = 0;
+        $s = 1;
+
+        $sql = (string) preg_replace_callback('/(:[\w_]+|\?)/', function ($matched) use (
+            &$values,
+            &$i,
+            &$s,
+            $symbol,
+            $params
+        ) {
+            $name = $matched[0];
+
+            if ($name === '?') {
+                $values[] = $params[$i];
+                $i++;
+            } else {
+                if (!array_key_exists($name, $params) && !array_key_exists(ltrim($name, ':'), $params)) {
+                    return $name;
+                }
+
+                $values[] = $params[$name] ?? $params[ltrim($name, ':')] ?? null;
+            }
+
+            if (strpos($symbol, '%d') !== false) {
+                $symbol = str_replace('%d', $s, $symbol);
+                $s++;
+            }
+
+            return $symbol;
+        }, $sql);
+
+        return [$sql, $values];
     }
 }

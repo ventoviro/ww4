@@ -9,30 +9,23 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Driver\Mysqli;
+namespace Windwalker\Database\Driver\Pgsql;
 
 use Windwalker\Data\Collection;
-use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\AbstractStatement;
 use Windwalker\Query\Bounded\ParamType;
-use Windwalker\Query\Escaper;
 
 use function Windwalker\collect;
 
 /**
- * The MysqliStatement class.
+ * The PgsqlStatement class.
  */
-class MysqliStatement extends AbstractStatement
+class PgsqlStatement extends AbstractStatement
 {
     /**
-     * @var \mysqli_stmt
+     * @var resource
      */
-    protected $cursor;
-
-    /**
-     * @var \mysqli_result
-     */
-    protected $result;
+    protected $conn;
 
     /**
      * @var string
@@ -40,18 +33,18 @@ class MysqliStatement extends AbstractStatement
     protected $query;
 
     /**
-     * @var \mysqli
+     * @var resource
      */
-    protected $conn;
+    protected $stmt;
 
     /**
-     * @inheritDoc
+     * PgsqlStatement constructor.
      */
-    public function __construct(\mysqli $conn, string $query, array $bounded = [])
+    public function __construct($conn, string $query, array $bounded = [])
     {
-        $this->bounded = $bounded;
-        $this->query = $query;
         $this->conn = $conn;
+        $this->query = $query;
+        $this->bounded = $bounded;
     }
 
     /**
@@ -74,30 +67,17 @@ class MysqliStatement extends AbstractStatement
             $params = $this->bounded;
         }
 
-        [$query, $params] = static::replaceStatement($this->query, '?', $params);
+        [$query, $params] = static::replaceStatement($this->query, '$%d', $params);
 
-        $this->cursor = $stmt = $this->conn->prepare($query);
+        $this->stmt = $stmt = pg_prepare($this->conn, $stname = uniqid('pg-'), $query);
 
-        if ($params !== []) {
-            $types = '';
-            $args = [];
+        $args = [];
 
-            foreach ($params as $param) {
-                $type = $param['dataType'] ?? ParamType::guessType($param['value']);
-
-                $types .= ParamType::convertToMysqli($type);
-                $args[] = &$param['value'];
-            }
-
-            $stmt->bind_param(
-                $types,
-                ...$args
-            );
+        foreach ($params as $param) {
+            $args[] = &$param['value'];
         }
 
-        $stmt->execute();
-
-        $this->result = $stmt->get_result();
+        $this->cursor = pg_execute($this->conn, $stname, $args);
 
         return true;
     }
@@ -109,11 +89,7 @@ class MysqliStatement extends AbstractStatement
     {
         $this->execute();
 
-        if (!$this->result) {
-            return null;
-        }
-
-        $row = $this->result->fetch_assoc();
+        $row = pg_fetch_assoc($this->cursor);
 
         return $row ? collect($row) : null;
     }
@@ -123,7 +99,8 @@ class MysqliStatement extends AbstractStatement
      */
     public function close()
     {
-        $this->cursor->free_result();
+        // pg_free_result($this->cursor);
+
         // $this->cursor = null;
         $this->executed = false;
 
@@ -135,6 +112,6 @@ class MysqliStatement extends AbstractStatement
      */
     public function count(): int
     {
-        return $this->cursor->affected_rows;
+        return pg_affected_rows($this->cursor);
     }
 }

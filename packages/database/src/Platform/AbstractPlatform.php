@@ -37,6 +37,10 @@ abstract class AbstractPlatform
 
     public static function create(string $platform, DatabaseAdapter $db)
     {
+        if ($platform === 'pgsql') {
+            $platform = 'postgresql';
+        }
+
         $class = __NAMESPACE__ . '\\' . ucfirst($platform) . 'Platform';
 
         return new $class($db);
@@ -59,10 +63,10 @@ abstract class AbstractPlatform
 
     public function getQuery(): Query
     {
-        if (!$this->query) {
-            $this->query = new Query($this->db, $this->name);
-        }
+        // if (!$this->query) {
+        //     $this->query = new Query($this->db->getDriver(), $this->name);
+        // }
 
-        return $this->query;
+        return new Query($this->db->getDriver(), $this->name);
     }
 }

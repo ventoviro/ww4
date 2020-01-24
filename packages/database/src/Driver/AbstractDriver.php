@@ -46,6 +46,11 @@ abstract class AbstractDriver implements DriverInterface
     protected $connection;
 
     /**
+     * @var Query|string
+     */
+    protected $lastQuery;
+
+    /**
      * AbstractPlatform constructor.
      *
      * @param  DatabaseAdapter  $db
@@ -53,6 +58,14 @@ abstract class AbstractDriver implements DriverInterface
     public function __construct(DatabaseAdapter $db)
     {
         $this->db = $db;
+    }
+
+    /**
+     * @return DatabaseAdapter
+     */
+    public function getDb(): DatabaseAdapter
+    {
+        return $this->db;
     }
 
     /**
@@ -65,6 +78,8 @@ abstract class AbstractDriver implements DriverInterface
      */
     protected function handleQuery($query, ?array &$bounded = []): string
     {
+        $this->lastQuery = $query;
+
         if ($query instanceof Query) {
             return $query->render(false, $bounded);
         }

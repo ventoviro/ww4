@@ -14,6 +14,7 @@ namespace Windwalker\Database\Test\Driver;
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\DriverFactory;
+use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Platform\MysqlPlatform;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 use Windwalker\Utilities\TypeCast;
@@ -190,7 +191,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
     public function testExecuteInsert(): void
     {
         $st = static::$driver->execute(
-            'INSERT INTO ww_flower SET title = ?',
+            'INSERT INTO ww_flower (title) VALUES (?)',
             [
                 'Test',
             ]
@@ -265,7 +266,12 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
         $platform = static::$driver->getPlatform();
 
         self::assertInstanceOf(
-            MysqlPlatform::class,
+            get_class(
+                AbstractPlatform::create(
+                    static::$driver->getPlatformName(),
+                    static::$driver->getDb()
+                )
+            ),
             $platform
         );
     }
@@ -315,7 +321,10 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
 
     protected static function createDriver(?array $params = null): AbstractDriver
     {
-        return DriverFactory::create(static::$driverName, new DatabaseAdapter($params ?? self::getTestParams()));
+        $params = $params ?? self::getTestParams();
+        $params['driver'] = static::$driverName;
+
+        return (new DatabaseAdapter($params))->getDriver();
     }
 
     protected static function setupDatabase(): void

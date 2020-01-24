@@ -59,7 +59,7 @@ interface DriverInterface
      *
      * @return  string
      */
-    public function lastInsertId(?string $sequence = null): string;
+    public function lastInsertId(?string $sequence = null): ?string;
 
     /**
      * Quote and escape a value.
