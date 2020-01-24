@@ -12,8 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Database\Exception;
 
 /**
- * The ConnectException class.
+ * The StatementException class.
  */
-class DbConnectException extends DatabaseException
+class StatementException extends DatabaseException
 {
+    //
 }

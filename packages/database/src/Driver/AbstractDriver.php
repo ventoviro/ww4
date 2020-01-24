@@ -103,6 +103,16 @@ abstract class AbstractDriver implements DriverInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function execute($query): bool
+    {
+        $this->prepare($query)->execute();
+
+        return true;
+    }
+
+    /**
      * @return string
      */
     public function getPlatformName(): string

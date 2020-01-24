@@ -15,10 +15,12 @@ use Windwalker\Data\Collection;
 use Windwalker\Database\Driver\AbstractStatement;
 use Windwalker\Query\Bounded\ParamType;
 
+use function Windwalker\collect;
+
 /**
  * The PdoStatement class.
  *
- * @method \PDOStatement getInnerStatement()
+ * @method \PDOStatement getCursor()
  */
 class PdoStatement extends AbstractStatement
 {
@@ -26,11 +28,6 @@ class PdoStatement extends AbstractStatement
      * @var \PDOStatement
      */
     protected $cursor;
-
-    /**
-     * @var bool
-     */
-    protected $executed = false;
 
     /**
      * PdoStatement constructor.
@@ -55,29 +52,24 @@ class PdoStatement extends AbstractStatement
         }
     }
 
-    public function execute(?array $params = null): bool
+    /**
+     * @inheritDoc
+     */
+    protected function doExecute(?array $params = null): bool
     {
-        if ($this->executed) {
-            return true;
-        }
-
-        $r = $this->cursor->execute($params);
-
-        $this->executed = true;
-
-        return $r;
+        return (bool) $this->cursor->execute($params);
     }
 
     /**
      * @inheritDoc
      */
-    public function fetchOne(string $class = Collection::class, array $args = []): ?Collection
+    public function fetch(string $class = Collection::class, array $args = []): ?Collection
     {
         $this->execute();
 
         $item = $this->cursor->fetch(\PDO::FETCH_ASSOC);
 
-        return $item !== false ? \Windwalker\collect($item) : null;
+        return $item !== false ? collect($item) : null;
     }
 
     /**
@@ -119,10 +111,12 @@ class PdoStatement extends AbstractStatement
     /**
      * @inheritDoc
      */
-    public function close(): bool
+    public function close()
     {
+        $this->cursor->closeCursor();
+
         $this->executed = false;
 
-        return $this->cursor->closeCursor();
+        return $this;
     }
 }

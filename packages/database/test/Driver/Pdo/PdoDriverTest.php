@@ -35,7 +35,6 @@ class PdoDriverTest extends AbstractDatabaseTestCase
      */
     public function testPrepare(): void
     {
-        /** @var PdoStatement $st */
         $st = static::$driver->prepare('SELECT * FROM ww_flower WHERE id <= :id')
             ->bind('id', 2);
 
@@ -55,21 +54,55 @@ class PdoDriverTest extends AbstractDatabaseTestCase
                 ->only(['id', 'title'])
                 ->dump(true)
         );
+    }
 
+    public function testPrepareBounded(): void
+    {
         // Bind param
-        /** @var PdoStatement $st */
         $id = 1;
         $st = static::$driver->prepare('SELECT * FROM ww_flower WHERE id = :id')
             ->bindParam(':id', $id);
 
-        show($st->fetchAll());
-        $st->close();
+        self::assertEquals(
+            'Alstroemeria',
+            $st->fetchOne()->title
+        );
         $id++;
-        show($st->fetchAll());
-        $st->close();
+        self::assertEquals(
+            'Amaryllis',
+            $st->fetchOne()->title
+        );
         $id++;
-        show($st->fetchAll());
-        $id++;
+        self::assertEquals(
+            'Anemone',
+            $st->fetchOne()->title
+        );
+    }
+
+    /**
+     * @see  PdoDriver::execute
+     */
+    public function testExecute(): void
+    {
+        $st = static::$driver->prepare('SELECT * FROM ww_flower WHERE id <= ?')
+            ->execute([2]);
+
+        self::assertEquals(
+            [
+                [
+                    'id' => '1',
+                    'title' => 'Alstroemeria'
+                ],
+                [
+                    'id' => '2',
+                    'title' => 'Amaryllis'
+                ]
+            ],
+            $st->fetchAll()
+                ->mapProxy()
+                ->only(['id', 'title'])
+                ->dump(true)
+        );
     }
 
     /**
@@ -108,14 +141,6 @@ class PdoDriverTest extends AbstractDatabaseTestCase
      * @see  PdoDriver::getPlatformName
      */
     public function testGetPlatformName(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  PdoDriver::execute
-     */
-    public function testExecute(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }

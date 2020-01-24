@@ -56,14 +56,6 @@ class PdoDriver extends AbstractDriver
     /**
      * @inheritDoc
      */
-    public function execute($query): bool
-    {
-        return $this->prepare($query)->execute();
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function quote(string $value): string
     {
         /** @var \PDO $pdo */

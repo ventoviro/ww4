@@ -19,24 +19,47 @@ use Windwalker\Query\Bounded\BindableInterface;
  */
 interface StatementInterface extends BindableInterface, \IteratorAggregate
 {
-    public function execute(?array $params = null): bool;
+    /**
+     * execute
+     *
+     * @param  array|null  $params
+     *
+     * @return  static
+     */
+    public function execute(?array $params = null);
 
     /**
-     * fetchOne
+     * Fetch 1 row and move cursor to next position.
+     *
+     * @param  string  $class
+     * @param  array   $args
      *
      * @return  Collection|null
      */
-    public function fetchOne(): ?Collection;
+    public function fetch(string $class = Collection::class, array $args = []): ?Collection;
 
     /**
-     * fetchObjectList
+     * Fetch 1 row and close ths cursor.
+     *
+     * @param  string  $class
+     * @param  array   $args
+     *
+     * @return  Collection|null
+     */
+    public function fetchOne(string $class = Collection::class, array $args = []): ?Collection;
+
+    /**
+     * Fetch all items and close cursor.
+     *
+     * @param  string  $class
+     * @param  array   $args
      *
      * @return  Collection[]|Collection
      */
-    public function fetchAll(): Collection;
+    public function fetchAll(string $class = Collection::class, array $args = []): Collection;
 
     /**
-     * fetchColumn
+     * Fetch all column values and close the cursor.
      *
      * @param  int|string  $offset
      *
@@ -45,25 +68,25 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate
     public function fetchColumn($offset = 0): Collection;
 
     /**
-     * fetchResult
+     * Fetch first cell and close the cursor.
      *
      * @return  string|null
      */
     public function fetchResult(): ?string;
 
     /**
-     * Close statement and free result.
+     * Close cursor and free result.
      *
-     * @return  bool
+     * @return  static
      */
-    public function close(): bool;
+    public function close();
 
     /**
-     * getInnerStatement
+     * Get current cursor.
      *
      * @return  mixed
      */
-    public function getInnerStatement();
+    public function getCursor();
 
     /**
      * isExecuted

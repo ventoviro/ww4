@@ -13,8 +13,10 @@ namespace Windwalker\Database\Driver;
 
 use Windwalker\Data\Collection;
 
+use Windwalker\Database\Exception\StatementException;
 use Windwalker\Query\Bounded\BindableTrait;
 use function Windwalker\collect;
+use function Windwalker\tap;
 
 /**
  * The AbstractStatement class.
@@ -41,28 +43,60 @@ abstract class AbstractStatement implements StatementInterface
         return new \ArrayIterator([]);
     }
 
-    protected function handle(\Closure $callback)
+    /**
+     * execute
+     *
+     * @param  array|null  $params
+     *
+     * @return  static
+     */
+    public function execute(?array $params = null)
     {
-        $this->execute();
+        if ($this->executed) {
+            return $this;
+        }
 
-        $result = $callback();
+        $r = $this->doExecute($params);
 
-        $this->close();
+        if (!$r) {
+            throw new StatementException('Execute query statement failed.');
+        }
 
-        return $result;
+        $this->executed = true;
+
+        return $this;
+    }
+
+    /**
+     * Execute query by driver.
+     *
+     * @param  array|null  $params
+     *
+     * @return  bool
+     */
+    abstract protected function doExecute(?array $params = null): bool;
+
+    /**
+     * @inheritDoc
+     */
+    public function fetchOne(string $class = Collection::class, array $args = []): ?Collection
+    {
+        return tap($this->fetch($class, $args), function () {
+            $this->close();
+        });
     }
 
     /**
      * @inheritDoc
      */
-    public function fetchAll(): Collection
+    public function fetchAll(string $class = Collection::class, array $args = []): Collection
     {
         $this->execute();
 
         $array = [];
 
         // Get all of the rows from the result set.
-        while ($row = $this->fetchOne()) {
+        while ($row = $this->fetch($class, $args)) {
             $array[] = $row;
         }
 
@@ -103,7 +137,7 @@ abstract class AbstractStatement implements StatementInterface
      *
      * @return  mixed|resource
      */
-    public function getInnerStatement()
+    public function getCursor()
     {
         return $this->cursor;
     }
