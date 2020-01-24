@@ -25,6 +25,11 @@ abstract class AbstractPdoConnection extends AbstractConnection
      */
     protected static $dbtype = '';
 
+    protected static $defaultAttributes = [
+        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        \PDO::ATTR_EMULATE_PREPARES => false
+    ];
+
     /**
      * isSupported
      *
@@ -61,10 +66,7 @@ abstract class AbstractPdoConnection extends AbstractConnection
     protected function doConnect(array $options)
     {
         $attrs = array_replace(
-            [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_EMULATE_PREPARES => false
-            ],
+            static::$defaultAttributes,
             $options['driverOptions'] ?? []
         );
 

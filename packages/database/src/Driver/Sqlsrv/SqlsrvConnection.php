@@ -72,6 +72,10 @@ class SqlsrvConnection extends AbstractConnection
      */
     public function disconnect()
     {
+        if (!$this->isConnected()) {
+            return true;
+        }
+
         $r = sqlsrv_close($this->connection);
 
         $this->connection = null;

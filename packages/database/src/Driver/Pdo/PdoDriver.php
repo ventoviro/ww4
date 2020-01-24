@@ -23,7 +23,7 @@ class PdoDriver extends AbstractDriver
     /**
      * @var string
      */
-    protected $name = 'pdo';
+    protected static $name = 'pdo';
 
     /**
      * @var string

@@ -60,18 +60,24 @@ abstract class AbstractDatabaseTestCase extends TestCase
             );
         }
 
-        static::$dbname = $params['database'];
-        unset($params['database']);
+        if (static::$platform !== 'sqlite') {
+            static::$dbname = $params['database'];
+            unset($params['database']);
 
-        $pdo = static::createBaseConnect($params, $connClass);
+            $pdo = static::createBaseConnect($params, $connClass);
 
-        $pdo->exec('DROP DATABASE IF EXISTS ' . static::qn(static::$dbname));
-        $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
+            $pdo->exec('DROP DATABASE IF EXISTS ' . static::qn(static::$dbname));
+            $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
 
-        // Disconnect.
-        $pdo = null;
+            // Disconnect.
+            $pdo = null;
 
-        $params['database'] = static::$dbname;
+            $params['database'] = static::$dbname;
+        } else {
+            static::$dbname = $params['database'];
+
+            @unlink(static::$dbname);
+        }
 
         static::$baseConn = static::createBaseConnect($params, $connClass);
 
@@ -136,6 +142,8 @@ abstract class AbstractDatabaseTestCase extends TestCase
     public function __destruct()
     {
         // static::$baseConn->exec('DROP DATABASE ' . static::qn(static::$dbname));
+
+        static::$baseConn = null;
     }
 
     /**
@@ -177,5 +185,15 @@ abstract class AbstractDatabaseTestCase extends TestCase
     protected static function qn(string $text): string
     {
         return static::getGrammar()->quoteName($text);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+
+        static::$baseConn = null;
     }
 }

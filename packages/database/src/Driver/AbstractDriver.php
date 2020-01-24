@@ -23,7 +23,7 @@ abstract class AbstractDriver implements DriverInterface
     /**
      * @var string
      */
-    protected $name = '';
+    protected static $name = '';
 
     /**
      * @var string
@@ -179,8 +179,8 @@ abstract class AbstractDriver implements DriverInterface
 
         return sprintf(
             $class,
-            ucfirst($this->name),
-            ucfirst($this->name)
+            ucfirst(static::$name),
+            ucfirst(static::$name)
         );
     }
 
@@ -194,5 +194,15 @@ abstract class AbstractDriver implements DriverInterface
         $this->connection = $connection;
 
         return $this;
+    }
+
+    public function isSupported(): bool
+    {
+        return $this->getConnectionClass()::isSupported();
+    }
+
+    public function __destruct()
+    {
+        $this->disconnect();
     }
 }

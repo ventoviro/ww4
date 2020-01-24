@@ -1,3 +1,4 @@
+DROP SEQUENCE IF EXISTS "ww_flower_id_seq";
 CREATE TABLE IF NOT EXISTS "ww_flower" (
 	id serial NOT NULL,
 	catid int NOT NULL DEFAULT 0,

@@ -56,8 +56,15 @@ class MysqliConnection extends AbstractConnection
      */
     public function disconnect()
     {
-        $this->connection->close();
+        if (!$this->isConnected()) {
+            return true;
+        }
+
+        $r = $this->connection->close();
+
         $this->connection = null;
+
+        return $r;
     }
 
     /**

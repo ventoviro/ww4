@@ -133,7 +133,7 @@ class MysqliStatement extends AbstractStatement
     /**
      * @inheritDoc
      */
-    public function count(): int
+    public function countAffected(): int
     {
         return $this->cursor->affected_rows;
     }

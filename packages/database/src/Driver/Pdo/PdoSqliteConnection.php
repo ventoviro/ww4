@@ -20,7 +20,7 @@ class PdoSqliteConnection extends AbstractPdoConnection
 
     public static function getParameters(array $options): array
     {
-        $options['dsn'] = static::$dbtype . ':' . ($options['database'] ?? ':memory:');
+        $options['dsn'] = static::$dbtype . ':' . ($options['database'] ?? $options['file']);
 
         return $options;
     }

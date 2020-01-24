@@ -18,6 +18,8 @@ use Windwalker\Query\Query;
  */
 interface DriverInterface
 {
+    public function isSupported(): bool;
+
     /**
      * connect
      *

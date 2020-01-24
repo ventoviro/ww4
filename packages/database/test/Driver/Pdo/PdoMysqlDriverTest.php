@@ -9,20 +9,18 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Test\Driver\Mysqli;
+namespace Windwalker\Database\Test\Driver\Pdo;
 
-use PHPUnit\Framework\TestCase;
-use Windwalker\Database\Driver\Mysqli\MysqliDriver;
 use Windwalker\Database\Test\Driver\AbstractDriverTest;
 
 /**
- * The MysqliDriverTest class.
+ * The PdoMysqlDriverTest class.
  */
-class MysqliDriverTest extends AbstractDriverTest
+class PdoMysqlDriverTest extends AbstractDriverTest
 {
     protected static $platform = 'mysql';
 
-    protected static $driverName = 'mysqli';
+    protected static $driverName = 'pdo_mysql';
 
     /**
      * @see  AbstractDriver::quote

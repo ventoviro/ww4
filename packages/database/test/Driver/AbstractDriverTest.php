@@ -13,9 +13,7 @@ namespace Windwalker\Database\Test\Driver;
 
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\AbstractDriver;
-use Windwalker\Database\Driver\DriverFactory;
 use Windwalker\Database\Platform\AbstractPlatform;
-use Windwalker\Database\Platform\MysqlPlatform;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 use Windwalker\Utilities\TypeCast;
 
@@ -151,8 +149,8 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
                 ],
                 [
                     'id' => '3',
-                    'title' => 'Anemone'
-                ]
+                    'title' => 'Anemone',
+                ],
             ],
             $st->loadAll()
                 ->mapProxy()
@@ -184,7 +182,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             3,
-            $st->count()
+            $st->countAffected()
         );
     }
 
@@ -204,16 +202,8 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             1,
-            $st->count()
+            $st->countAffected()
         );
-    }
-
-    public function testCountResult(): void
-    {
-        $st = static::$driver->prepare('SELECT * FROM ww_flower WHERE id <= ?')
-            ->execute([5]);
-
-        self::assertEquals(5, $st->count());
     }
 
     public function testIterator(): void
@@ -282,7 +272,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
     public function testQuote(): void
     {
         self::assertEquals(
-            "'foo\'s #hello --options'",
+            "'foo''s #hello --options'",
             static::$driver->quote("foo's #hello --options")
         );
     }
@@ -293,7 +283,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
     public function testEscape(): void
     {
         self::assertEquals(
-            "foo\'s #hello --options",
+            "foo''s #hello --options",
             static::$driver->escape("foo's #hello --options")
         );
     }
@@ -316,12 +306,16 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
 
         static::$driver = self::createDriver();
 
+        if (!static::$driver->isSupported()) {
+            self::markTestSkipped('Driver: ' . static::$driverName . ' not available.');
+        }
+
         static::$driver->setPlatformName(static::$platform);
     }
 
     protected static function createDriver(?array $params = null): AbstractDriver
     {
-        $params = $params ?? self::getTestParams();
+        $params           = $params ?? self::getTestParams();
         $params['driver'] = static::$driverName;
 
         return (new DatabaseAdapter($params))->getDriver();
@@ -330,5 +324,16 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
     protected static function setupDatabase(): void
     {
         self::importFromFile(__DIR__ . '/../stub/' . static::$platform . '.sql');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+
+        static::$driver->disconnect();
+        static::$driver = null;
     }
 }

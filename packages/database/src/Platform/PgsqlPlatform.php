@@ -17,7 +17,7 @@ use Windwalker\Query\Query;
 /**
  * The PostgresqlPlatform class.
  */
-class PostgresqlPlatform extends AbstractPlatform
+class PgsqlPlatform extends AbstractPlatform
 {
     public function lastInsertId($insertQuery, ?string $sequence = null): ?string
     {
@@ -54,7 +54,7 @@ class PostgresqlPlatform extends AbstractPlatform
         $insertidQuery = $this->getQuery();
 
         $insertidQuery->selectRaw($changedColName);
-        show($insertidQuery->render(true));
+
         try {
             return $this->db->getDriver()->prepare($insertidQuery)->loadResult();
         } catch (\PDOException $e) {

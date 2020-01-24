@@ -19,7 +19,7 @@ use Windwalker\Database\Driver\StatementInterface;
  */
 class MysqliDriver extends AbstractDriver
 {
-    protected $name = 'mysqli';
+    protected static $name = 'mysqli';
 
     /**
      * @var string

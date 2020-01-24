@@ -266,7 +266,7 @@ class Grammar
      *
      * @return  string
      */
-    protected function unsafeEscape(string $text): string
+    public function localEscape(string $text): string
     {
         $text = str_replace("'", "''", $text);
 

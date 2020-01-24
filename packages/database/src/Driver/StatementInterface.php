@@ -86,7 +86,7 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate
      *
      * @return  int
      */
-    public function count(): int;
+    public function countAffected(): int;
 
     /**
      * Get current cursor.

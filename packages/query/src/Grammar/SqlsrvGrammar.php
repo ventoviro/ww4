@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Grammar;
 
-use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Query;
 
 /**
@@ -51,7 +50,7 @@ class SqlsrvGrammar extends Grammar
 
             if ($query->getIncrementField()) {
                 $elements = $sql['insert']->getElements();
-                $table = $elements[array_key_first($elements)];
+                $table    = $elements[array_key_first($elements)];
 
                 $sql = array_merge(
                     ['id_insert_on' => sprintf('SET IDENTITY_INSERT %s ON;', $table)],
@@ -93,5 +92,40 @@ class SqlsrvGrammar extends Grammar
             [$q],
             ['end_row_number' => ') AS A) AS A WHERE RowNumber > ' . (int) $offset]
         );
+    }
+
+    /**
+     * If no connection set, we escape it with default function.
+     *
+     * @see https://stackoverflow.com/a/2526717
+     *
+     * @param  string  $text
+     *
+     * @return  string
+     */
+    public function localEscape(string $text): string
+    {
+        if ($text === '') {
+            return $text;
+        }
+
+        if (is_numeric($text)) {
+            return $text;
+        }
+
+        $nonDisplayables = [
+            '/%0[0-8bcef]/',            // url encoded 00-08, 11, 12, 14, 15
+            '/%1[0-9a-f]/',             // url encoded 16-31
+            '/[\x00-\x08]/',            // 00-08
+            '/\x0b/',                   // 11
+            '/\x0c/',                   // 12
+            '/[\x0e-\x1f]/'             // 14-31
+        ];
+
+        foreach ($nonDisplayables as $regex) {
+            $text = preg_replace($regex, '', $text);
+        }
+
+        return str_replace("'", "''", $text);
     }
 }

@@ -42,7 +42,7 @@ class MysqlGrammar extends Grammar
      *
      * @return  string
      */
-    protected function unsafeEscape(string $text): string
+    public function localEscape(string $text): string
     {
         return str_replace(
             ['\\', "\0", "\n", "\r", "'", '"', "\x1a"],

@@ -145,6 +145,6 @@ class StatementIterator implements \Countable, \Iterator
      */
     public function count(): int
     {
-        return $this->stmt->count();
+        return $this->stmt->countAffected();
     }
 }

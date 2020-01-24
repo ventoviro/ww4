@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Driver\Pgsql;
+namespace Windwalker\Database\Driver\Sqlsrv;
 
 use Windwalker\Data\Collection;
 use Windwalker\Database\Driver\AbstractStatement;
@@ -18,9 +18,9 @@ use Windwalker\Query\Bounded\ParamType;
 use function Windwalker\collect;
 
 /**
- * The PgsqlStatement class.
+ * The SqlsrvStatement class.
  */
-class PgsqlStatement extends AbstractStatement
+class SqlsrvStatement extends AbstractStatement
 {
     /**
      * @var resource
@@ -33,12 +33,7 @@ class PgsqlStatement extends AbstractStatement
     protected $query;
 
     /**
-     * @var resource
-     */
-    protected $stmt;
-
-    /**
-     * PgsqlStatement constructor.
+     * SqlsrvStatement constructor.
      *
      * @param  resource  $conn
      * @param  string    $query
@@ -46,9 +41,9 @@ class PgsqlStatement extends AbstractStatement
      */
     public function __construct($conn, string $query, array $bounded = [])
     {
-        $this->conn    = $conn;
-        $this->query   = $query;
         $this->bounded = $bounded;
+        $this->conn = $conn;
+        $this->query = $query;
     }
 
     /**
@@ -71,9 +66,7 @@ class PgsqlStatement extends AbstractStatement
             $params = $this->bounded;
         }
 
-        [$query, $params] = static::replaceStatement($this->query, '$%d', $params);
-
-        $this->stmt = $stmt = pg_prepare($this->conn, $stname = uniqid('pg-'), $query);
+        [$query, $params] = static::replaceStatement($this->query, '?', $params);
 
         $args = [];
 
@@ -81,9 +74,9 @@ class PgsqlStatement extends AbstractStatement
             $args[] = &$param['value'];
         }
 
-        $this->cursor = pg_execute($this->conn, $stname, $args);
+        $this->cursor = sqlsrv_prepare($this->conn, $query, $args);
 
-        return true;
+        return sqlsrv_execute($this->cursor);
     }
 
     /**
@@ -93,7 +86,7 @@ class PgsqlStatement extends AbstractStatement
     {
         $this->execute();
 
-        $row = pg_fetch_assoc($this->cursor);
+        $row = sqlsrv_next_result($this->cursor);
 
         return $row ? collect($row) : null;
     }
@@ -103,10 +96,8 @@ class PgsqlStatement extends AbstractStatement
      */
     public function close()
     {
-        pg_free_result($this->cursor);
-
+        sqlsrv_free_stmt($this->cursor);
         $this->cursor = null;
-        $this->stmt = null;
         $this->executed = false;
 
         return $this;
@@ -117,6 +108,6 @@ class PgsqlStatement extends AbstractStatement
      */
     public function countAffected(): int
     {
-        return pg_affected_rows($this->cursor);
+        return (int) sqlsrv_rows_affected($this->cursor);
     }
 }

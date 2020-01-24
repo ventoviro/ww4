@@ -16,7 +16,7 @@ SET IDENTITY_INSERT ww_categories OFF;
 create table ww_flower
 (
 	id int identity,
-	catid int,
+	catid int DEFAULT 0,
 	title varchar(255),
 	meaning varchar(max),
 	ordering int,

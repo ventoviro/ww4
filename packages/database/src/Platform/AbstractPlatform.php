@@ -37,10 +37,6 @@ abstract class AbstractPlatform
 
     public static function create(string $platform, DatabaseAdapter $db)
     {
-        if ($platform === 'pgsql') {
-            $platform = 'postgresql';
-        }
-
         $class = __NAMESPACE__ . '\\' . ucfirst($platform) . 'Platform';
 
         return new $class($db);

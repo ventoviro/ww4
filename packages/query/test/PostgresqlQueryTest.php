@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test;
 
 use Windwalker\Query\Grammar\Grammar;
-use Windwalker\Query\Grammar\PostgresqlGrammar;
+use Windwalker\Query\Grammar\PgsqlGrammar;
 
 /**
  * The PostgresqlQueryTest class.
@@ -67,6 +67,6 @@ class PostgresqlQueryTest extends QueryTest
 
     public static function createGrammar(): Grammar
     {
-        return new PostgresqlGrammar();
+        return new PgsqlGrammar();
     }
 }

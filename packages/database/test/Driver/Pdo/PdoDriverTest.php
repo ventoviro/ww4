@@ -37,4 +37,26 @@ class PdoDriverTest extends AbstractDriverTest
             $conn
         );
     }
+
+    /**
+     * @see  AbstractDriver::quote
+     */
+    public function testQuote(): void
+    {
+        self::assertEquals(
+            "'foo\'s #hello --options'",
+            static::$driver->quote("foo's #hello --options")
+        );
+    }
+
+    /**
+     * @see  AbstractDriver::escape
+     */
+    public function testEscape(): void
+    {
+        self::assertEquals(
+            "foo\'s #hello --options",
+            static::$driver->escape("foo's #hello --options")
+        );
+    }
 }

@@ -17,7 +17,7 @@ use Windwalker\Query\Query;
 /**
  * The PostgresqlGrammar class.
  */
-class PostgresqlGrammar extends Grammar
+class PgsqlGrammar extends Grammar
 {
     /**
      * @var string

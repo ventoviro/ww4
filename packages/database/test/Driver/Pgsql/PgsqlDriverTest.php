@@ -22,26 +22,8 @@ class PgsqlDriverTest extends AbstractDriverTest
 
     protected static $driverName = 'pgsql';
 
-
-    /**
-     * @see  AbstractDriver::quote
-     */
-    public function testQuote(): void
+    protected static function setupDatabase(): void
     {
-        self::assertEquals(
-            "'foo''s #hello --options'",
-            static::$driver->quote("foo's #hello --options")
-        );
-    }
-
-    /**
-     * @see  AbstractDriver::escape
-     */
-    public function testEscape(): void
-    {
-        self::assertEquals(
-            "foo''s #hello --options",
-            static::$driver->escape("foo's #hello --options")
-        );
+        parent::setupDatabase();
     }
 }

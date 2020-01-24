@@ -9,26 +9,19 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Driver\Pgsql;
+namespace Windwalker\Database\Driver\Sqlsrv;
 
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\StatementInterface;
-use Windwalker\Database\Platform\PgsqlPlatform;
 
 /**
- * The PgsqlDriver class.
+ * The SqlsrvDriver class.
  */
-class PgsqlDriver extends AbstractDriver
+class SqlsrvDriver extends AbstractDriver
 {
-    /**
-     * @var string
-     */
-    protected static $name = 'pgsql';
+    protected static $name = 'sqlsrv';
 
-    /**
-     * @var string
-     */
-    protected $platformName = 'pgsql';
+    protected $platformName = 'sqlsrv';
 
     /**
      * @inheritDoc
@@ -39,7 +32,7 @@ class PgsqlDriver extends AbstractDriver
 
         $query = $this->handleQuery($query, $bounded);
 
-        return new PgsqlStatement($conn, $query, $bounded);
+        return new SqlsrvStatement($conn, $query, $bounded);
     }
 
     /**
@@ -47,10 +40,7 @@ class PgsqlDriver extends AbstractDriver
      */
     public function lastInsertId(?string $sequence = null): ?string
     {
-        /** @var PgsqlPlatform $platform */
-        $platform = $this->getPlatform();
-
-        return $platform->lastInsertId($this->lastQuery, $sequence);
+        return $this->prepare('SELECT @@IDENTITY')->loadResult();
     }
 
     /**
@@ -66,6 +56,6 @@ class PgsqlDriver extends AbstractDriver
      */
     public function escape(string $value): string
     {
-        return pg_escape_string($this->connect()->get(), $value);
+        return $this->getPlatform()->getGrammar()->localEscape($value);
     }
 }
