@@ -77,6 +77,14 @@ class PdoStatement extends AbstractStatement
      */
     public function bindParam($key = null, &$value = null, $dataType = null, int $length = 0, $driverOptions = null)
     {
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->bindParam($k, $v);
+            }
+
+            return $this;
+        }
+
         $dataType = $dataType ?? ParamType::guessType($value);
 
         $this->cursor->bindParam(
@@ -86,24 +94,6 @@ class PdoStatement extends AbstractStatement
             $length,
             $driverOptions
         );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function bind($key = null, $value = null, $dataType = null)
-    {
-        if (is_array($key)) {
-            foreach ($key as $k => $v) {
-                $this->bind($k, $v);
-            }
-
-            return $this;
-        }
-
-        $this->bindParam($key, $value, $dataType);
 
         return $this;
     }

@@ -38,6 +38,16 @@ abstract class AbstractStatement implements StatementInterface
     protected $executed = false;
 
     /**
+     * AbstractStatement constructor.
+     *
+     * @param  mixed|resource  $cursor
+     */
+    public function __construct($cursor)
+    {
+        $this->cursor = $cursor;
+    }
+
+    /**
      * @inheritDoc
      */
     public function getIterator($class = Collection::class, array $args = []): \Generator

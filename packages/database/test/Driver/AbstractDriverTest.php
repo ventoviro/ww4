@@ -14,7 +14,6 @@ namespace Windwalker\Database\Test\Driver;
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\DriverFactory;
-use Windwalker\Database\Driver\Pdo\PdoSqlsrvConnection;
 use Windwalker\Database\Platform\MysqlPlatform;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 use Windwalker\Utilities\TypeCast;
@@ -135,6 +134,30 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
                 ->only(['id', 'title'])
                 ->dump(true)
         );
+
+        $st = static::$driver->prepare('SELECT * FROM ww_flower WHERE id IN(?, ?, ?)')
+            ->execute([1, 2, 3]);
+
+        self::assertEquals(
+            [
+                [
+                    'id' => '1',
+                    'title' => 'Alstroemeria',
+                ],
+                [
+                    'id' => '2',
+                    'title' => 'Amaryllis',
+                ],
+                [
+                    'id' => '3',
+                    'title' => 'Anemone'
+                ]
+            ],
+            $st->loadAll()
+                ->mapProxy()
+                ->only(['id', 'title'])
+                ->dump(true)
+        );
     }
 
     /**
@@ -211,21 +234,6 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
                 ],
             ],
             TypeCast::toArray($it, true)
-        );
-    }
-
-    /**
-     * @see  AbstractDriver::setPlatformName
-     */
-    public function testSetPlatformName(): void
-    {
-        $driver = self::createDriver([]);
-        $driver->setPlatformName('sqlsrv');
-        $conn = $driver->createConnection();
-
-        self::assertInstanceOf(
-            PdoSqlsrvConnection::class,
-            $conn
         );
     }
 
