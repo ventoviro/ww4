@@ -11,12 +11,13 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Test\Driver\Pdo;
 
-use Windwalker\Data\Collection;
-use Windwalker\Data\Format\PhpFormat;
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\Pdo\PdoDriver;
-use Windwalker\Database\Driver\Pdo\PdoStatement;
+use Windwalker\Database\Driver\Pdo\PdoMysqlConnection;
+use Windwalker\Database\Driver\Pdo\PdoSqlsrvConnection;
+use Windwalker\Database\Platform\MysqlPlatform;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
+use Windwalker\Utilities\TypeCast;
 
 /**
  * The PdoDriverTest class.
@@ -42,12 +43,12 @@ class PdoDriverTest extends AbstractDatabaseTestCase
             [
                 [
                     'id' => '1',
-                    'title' => 'Alstroemeria'
+                    'title' => 'Alstroemeria',
                 ],
                 [
                     'id' => '2',
-                    'title' => 'Amaryllis'
-                ]
+                    'title' => 'Amaryllis',
+                ],
             ],
             $st->fetchAll()
                 ->mapProxy()
@@ -82,7 +83,7 @@ class PdoDriverTest extends AbstractDatabaseTestCase
     /**
      * @see  PdoDriver::execute
      */
-    public function testExecute(): void
+    public function testPrepareAndExecute(): void
     {
         $st = static::$driver->prepare('SELECT * FROM ww_flower WHERE id <= ?')
             ->execute([2]);
@@ -91,12 +92,12 @@ class PdoDriverTest extends AbstractDatabaseTestCase
             [
                 [
                     'id' => '1',
-                    'title' => 'Alstroemeria'
+                    'title' => 'Alstroemeria',
                 ],
                 [
                     'id' => '2',
-                    'title' => 'Amaryllis'
-                ]
+                    'title' => 'Amaryllis',
+                ],
             ],
             $st->fetchAll()
                 ->mapProxy()
@@ -106,19 +107,80 @@ class PdoDriverTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  PdoDriver::getConnection
+     * @see  PdoDriver::execute
      */
-    public function testGetConnection(): void
+    public function testExecute(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $st = static::$driver->execute(
+            'UPDATE ww_flower SET params = ? WHERE id <= ?',
+            [
+                'hello',
+                3,
+            ]
+        );
+
+        self::assertEquals(
+            'hello',
+            static::$driver->prepare(
+                'SELECT params FROM ww_flower WHERE id = 1'
+            )
+                ->fetchResult()
+        );
+
+        self::assertEquals(
+            3,
+            $st->count()
+        );
     }
 
-    /**
-     * @see  PdoDriver::setConnection
-     */
-    public function testSetConnection(): void
+    public function testExecuteInsert(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $st = static::$driver->execute(
+            'INSERT INTO ww_flower SET title = ?',
+            [
+                'Test',
+            ]
+        );
+
+        self::assertEquals(
+            86,
+            static::$driver->lastInsertId()
+        );
+
+        self::assertEquals(
+            1,
+            $st->count()
+        );
+    }
+
+    public function testCountResult(): void
+    {
+        $st = static::$driver->prepare('SELECT * FROM ww_flower WHERE id <= ?')
+            ->execute([5]);
+
+        self::assertEquals(5, $st->count());
+    }
+
+    public function testIterator(): void
+    {
+        $st = static::$driver->prepare('SELECT id, title FROM ww_flower WHERE id <= ?')
+            ->execute([2]);
+
+        $it = $st->getIterator();
+
+        self::assertEquals(
+            [
+                [
+                    'id' => '1',
+                    'title' => 'Alstroemeria',
+                ],
+                [
+                    'id' => '2',
+                    'title' => 'Amaryllis',
+                ],
+            ],
+            TypeCast::toArray($it, true)
+        );
     }
 
     /**
@@ -126,7 +188,10 @@ class PdoDriverTest extends AbstractDatabaseTestCase
      */
     public function testCreateConnection(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertInstanceOf(
+            PdoMysqlConnection::class,
+            static::$driver->createConnection()
+        );
     }
 
     /**
@@ -134,7 +199,14 @@ class PdoDriverTest extends AbstractDatabaseTestCase
      */
     public function testSetPlatformName(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $driver = new PdoDriver(new DatabaseAdapter([]));
+        $driver->setPlatformName('sqlsrv');
+        $conn = $driver->createConnection();
+
+        self::assertInstanceOf(
+            PdoSqlsrvConnection::class,
+            $conn
+        );
     }
 
     /**
@@ -150,15 +222,11 @@ class PdoDriverTest extends AbstractDatabaseTestCase
      */
     public function testDisconnect(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
+        static::$driver->disconnect();
 
-    /**
-     * @see  PdoDriver::__construct
-     */
-    public function test__construct(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertFalse(static::$driver->getConnection()->isConnected());
+
+        self::assertNull(static::$driver->getConnection()->get());
     }
 
     /**
@@ -166,7 +234,12 @@ class PdoDriverTest extends AbstractDatabaseTestCase
      */
     public function testGetPlatform(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $platform = static::$driver->getPlatform();
+
+        self::assertInstanceOf(
+            MysqlPlatform::class,
+            $platform
+        );
     }
 
     /**
@@ -174,15 +247,10 @@ class PdoDriverTest extends AbstractDatabaseTestCase
      */
     public function testQuote(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  PdoDriver::connect
-     */
-    public function testConnect(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertEquals(
+            "'foo\'s #hello --options'",
+            static::$driver->quote("foo's #hello --options")
+        );
     }
 
     /**
@@ -190,12 +258,15 @@ class PdoDriverTest extends AbstractDatabaseTestCase
      */
     public function testEscape(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertEquals(
+            "foo\'s #hello --options",
+            static::$driver->escape("foo's #hello --options")
+        );
     }
 
     protected function setUp(): void
     {
-        $this->instance = null;
+        //
     }
 
     protected function tearDown(): void

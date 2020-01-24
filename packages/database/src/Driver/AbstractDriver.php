@@ -105,11 +105,9 @@ abstract class AbstractDriver implements DriverInterface
     /**
      * @inheritDoc
      */
-    public function execute($query): bool
+    public function execute($query, ?array $params = null): StatementInterface
     {
-        $this->prepare($query)->execute();
-
-        return true;
+        return $this->prepare($query)->execute($params);
     }
 
     /**

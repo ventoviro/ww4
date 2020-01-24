@@ -119,4 +119,12 @@ class PdoStatement extends AbstractStatement
 
         return $this;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function count(): int
+    {
+        return $this->cursor->rowCount();
+    }
 }

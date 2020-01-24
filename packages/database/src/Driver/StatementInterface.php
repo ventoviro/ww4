@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Driver;
 
 use Windwalker\Data\Collection;
+use Windwalker\Database\Iterator\StatementIterator;
 use Windwalker\Query\Bounded\BindableInterface;
 
 /**
@@ -82,6 +83,13 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate
     public function close();
 
     /**
+     * Count results.
+     *
+     * @return  int
+     */
+    public function count(): int;
+
+    /**
      * Get current cursor.
      *
      * @return  mixed
@@ -94,4 +102,14 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate
      * @return  bool
      */
     public function isExecuted(): bool;
+
+    /**
+     * getIterator
+     *
+     * @param  string  $class
+     * @param  array   $args
+     *
+     * @return  \Generator
+     */
+    public function getIterator($class = Collection::class, array $args = []): \Generator;
 }

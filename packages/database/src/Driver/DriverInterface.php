@@ -45,11 +45,21 @@ interface DriverInterface
     /**
      * Execute a query.
      *
-     * @param string|Query $query
+     * @param  string|Query  $query
+     * @param  array|null    $params
      *
-     * @return  bool
+     * @return StatementInterface
      */
-    public function execute($query): bool;
+    public function execute($query, ?array $params = null): StatementInterface;
+
+    /**
+     * Method to get last auto-increment ID value.
+     *
+     * @param  string|null  $sequence
+     *
+     * @return  string
+     */
+    public function lastInsertId(?string $sequence = null): string;
 
     /**
      * Quote and escape a value.

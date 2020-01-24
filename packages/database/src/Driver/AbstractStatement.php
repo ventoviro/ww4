@@ -14,9 +14,11 @@ namespace Windwalker\Database\Driver;
 use Windwalker\Data\Collection;
 
 use Windwalker\Database\Exception\StatementException;
+use Windwalker\Database\Iterator\StatementIterator;
 use Windwalker\Query\Bounded\BindableTrait;
 use function Windwalker\collect;
 use function Windwalker\tap;
+use function Windwalker\where;
 
 /**
  * The AbstractStatement class.
@@ -38,9 +40,17 @@ abstract class AbstractStatement implements StatementInterface
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    public function getIterator($class = Collection::class, array $args = []): \Generator
     {
-        return new \ArrayIterator([]);
+        $gen = function () use ($class, $args) {
+            $this->execute();
+
+            while (($row = $this->fetch($class, $args)) !== null) {
+                yield $row;
+            }
+        };
+
+        return $gen();
     }
 
     /**

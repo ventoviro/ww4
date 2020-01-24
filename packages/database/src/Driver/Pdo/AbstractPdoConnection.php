@@ -58,11 +58,19 @@ abstract class AbstractPdoConnection extends AbstractConnection
      */
     protected function doConnect(array $options)
     {
+        $attrs = array_replace(
+            [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_EMULATE_PREPARES => false
+            ],
+            $options['driverOptions'] ?? []
+        );
+
         return new \PDO(
             $options['dsn'],
             $options['username'] ?? null,
             $options['password'] ?? null,
-            $options['pdo_attributes'] ?? []
+            $attrs
         );
     }
 

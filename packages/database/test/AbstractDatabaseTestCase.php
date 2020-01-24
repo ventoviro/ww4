@@ -39,8 +39,6 @@ abstract class AbstractDatabaseTestCase extends TestCase
      */
     public static function setUpBeforeClass(): void
     {
-        static::setupDatabase();
-
         parent::setUpBeforeClass();
 
         $params = static::getTestParams();
@@ -62,14 +60,33 @@ abstract class AbstractDatabaseTestCase extends TestCase
             );
         }
 
+        static::$dbname = $params['database'];
+        unset($params['database']);
+
+        $pdo = static::createBaseConnect($params, $connClass);
+
+        $pdo->exec('DROP DATABASE IF EXISTS ' . static::qn(static::$dbname));
+        $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
+
+        // Disconnect.
+        $pdo = null;
+
+        $params['database'] = static::$dbname;
+
+        static::$baseConn = static::createBaseConnect($params, $connClass);
+
+        static::setupDatabase();
+    }
+
+    protected static function createBaseConnect(array $params, string $connClass): \PDO
+    {
         $dsn = $connClass::getParameters($params)['dsn'];
 
-        static::$baseConn = new \PDO(
+        return new \PDO(
             $dsn,
             $params['username'] ?? null,
             $params['password'] ?? null
         );
-        static::$baseConn->exec('CREATE DATABASE ' . static::qn(static::$dbname));
     }
 
     /**

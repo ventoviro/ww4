@@ -56,6 +56,17 @@ class PdoDriver extends AbstractDriver
     /**
      * @inheritDoc
      */
+    public function lastInsertId(?string $sequence = null): string
+    {
+        /** @var \PDO $pdo */
+        $pdo = $this->connect()->get();
+
+        return $pdo->lastInsertId($sequence);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function quote(string $value): string
     {
         /** @var \PDO $pdo */
