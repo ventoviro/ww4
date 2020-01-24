@@ -89,7 +89,7 @@ abstract class AbstractStatement implements StatementInterface
     /**
      * @inheritDoc
      */
-    public function fetchOne(string $class = Collection::class, array $args = []): ?Collection
+    public function loadOne(string $class = Collection::class, array $args = []): ?Collection
     {
         return tap($this->fetch($class, $args), function () {
             $this->close();
@@ -99,7 +99,7 @@ abstract class AbstractStatement implements StatementInterface
     /**
      * @inheritDoc
      */
-    public function fetchAll(string $class = Collection::class, array $args = []): Collection
+    public function loadAll(string $class = Collection::class, array $args = []): Collection
     {
         $this->execute();
 
@@ -120,9 +120,9 @@ abstract class AbstractStatement implements StatementInterface
     /**
      * @inheritDoc
      */
-    public function fetchColumn($offset = 0): Collection
+    public function loadColumn($offset = 0): Collection
     {
-        return $this->fetchAll()
+        return $this->loadAll()
             ->mapProxy()
             ->values()
             ->column($offset);
@@ -131,9 +131,9 @@ abstract class AbstractStatement implements StatementInterface
     /**
      * @inheritDoc
      */
-    public function fetchResult(): ?string
+    public function loadResult(): ?string
     {
-        $assoc = $this->fetchOne();
+        $assoc = $this->loadOne();
 
         if ($assoc === null) {
             return $assoc;

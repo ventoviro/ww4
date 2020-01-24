@@ -41,4 +41,9 @@ interface ConnectionInterface
      * @return mixed
      */
     public function get();
+
+    /**
+     * @return string
+     */
+    public static function getName(): string;
 }

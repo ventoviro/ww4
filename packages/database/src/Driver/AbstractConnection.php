@@ -21,6 +21,11 @@ abstract class AbstractConnection implements ConnectionInterface
     use OptionAccessTrait;
 
     /**
+     * @var string
+     */
+    protected static $name = '';
+
+    /**
      * @var mixed
      */
     protected $connection;
@@ -98,5 +103,13 @@ abstract class AbstractConnection implements ConnectionInterface
     public function get()
     {
         return $this->connection;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getName(): string
+    {
+        return static::$name;
     }
 }

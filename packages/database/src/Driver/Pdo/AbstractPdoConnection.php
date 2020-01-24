@@ -18,6 +18,8 @@ use Windwalker\Database\Driver\AbstractConnection;
  */
 abstract class AbstractPdoConnection extends AbstractConnection
 {
+    protected static $name = 'pdo';
+
     /**
      * @var string
      */

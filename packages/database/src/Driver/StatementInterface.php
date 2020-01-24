@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Windwalker\Database\Driver;
 
 use Windwalker\Data\Collection;
-use Windwalker\Database\Iterator\StatementIterator;
 use Windwalker\Query\Bounded\BindableInterface;
 
 /**
@@ -47,7 +46,7 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate
      *
      * @return  Collection|null
      */
-    public function fetchOne(string $class = Collection::class, array $args = []): ?Collection;
+    public function loadOne(string $class = Collection::class, array $args = []): ?Collection;
 
     /**
      * Fetch all items and close cursor.
@@ -57,7 +56,7 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate
      *
      * @return  Collection[]|Collection
      */
-    public function fetchAll(string $class = Collection::class, array $args = []): Collection;
+    public function loadAll(string $class = Collection::class, array $args = []): Collection;
 
     /**
      * Fetch all column values and close the cursor.
@@ -66,14 +65,14 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate
      *
      * @return  Collection
      */
-    public function fetchColumn($offset = 0): Collection;
+    public function loadColumn($offset = 0): Collection;
 
     /**
      * Fetch first cell and close the cursor.
      *
      * @return  string|null
      */
-    public function fetchResult(): ?string;
+    public function loadResult(): ?string;
 
     /**
      * Close cursor and free result.

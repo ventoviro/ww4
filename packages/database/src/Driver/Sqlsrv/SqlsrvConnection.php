@@ -19,6 +19,8 @@ use Windwalker\Database\Exception\DbConnectException;
  */
 class SqlsrvConnection extends AbstractConnection
 {
+    protected static $name = 'sqlsrv';
+
     /**
      * @inheritDoc
      */

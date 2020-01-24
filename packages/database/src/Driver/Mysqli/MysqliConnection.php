@@ -19,6 +19,8 @@ use Windwalker\Database\Exception\DbConnectException;
  */
 class MysqliConnection extends AbstractConnection
 {
+    protected static $name = 'mysqli';
+
     /**
      * @var \mysqli
      */

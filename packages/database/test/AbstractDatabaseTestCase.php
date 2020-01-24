@@ -44,7 +44,7 @@ abstract class AbstractDatabaseTestCase extends TestCase
         $params = static::getTestParams();
 
         if (!$params) {
-            self::markTestSkipped('DSN of ' . static::$platform . ' not available.');
+            self::markTestSkipped('DSN of ' . static::$platform . ' not available for test case: ' . static::class);
         }
 
         /** @var AbstractPdoConnection $connClass */
@@ -105,6 +105,10 @@ abstract class AbstractDatabaseTestCase extends TestCase
      */
     protected static function importFromFile(string $file): void
     {
+        if (!is_file($file)) {
+            throw new \RuntimeException('File not found: ' . $file);
+        }
+
         self::importIterator(SqlSplitter::splitFromFile($file));
     }
 
