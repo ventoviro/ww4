@@ -12,7 +12,10 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Data\Collection;
+use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
+
+use Windwalker\Utilities\Str;
 
 use function Windwalker\raw;
 
@@ -142,6 +145,16 @@ class MysqlPlatform extends AbstractPlatform
                 }
 
                 $erratas['permitted_values'] = $permittedValues;
+            }
+
+            // After MariaDB 10.2.7, the COLUMN_DEFAULT will surround with quotes if is string type.
+            // @see https://mariadb.com/kb/en/information-schema-columns-table/
+            if (
+                is_string($row['COLUMN_DEFAULT'])
+                && Str::startsWith($row['COLUMN_DEFAULT'], "'")
+                && Str::endsWith($row['COLUMN_DEFAULT'], "'")
+            ) {
+                $row['COLUMN_DEFAULT'] = Escaper::stripQuote($row['COLUMN_DEFAULT']);
             }
 
             $columns[$row['COLUMN_NAME']] = [
