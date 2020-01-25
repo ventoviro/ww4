@@ -183,6 +183,8 @@ class MysqlPlatform extends AbstractPlatform
         $schema = $schema ?? static::DEFAULT_SCHEMA;
 
         // JOIN of INFORMATION_SCHEMA table is very slow, we use 3 separate query to get constraints.
+        // @see Commit: 4d6e7848268bd9a6add3f7ddc68e879f2f105da5
+        // TODO: Test join version at MariaDB or 64bit MySQL
 
         // Query 1: TABLE_CONSTRAINTS
         $query = $this->db->getQuery(true)

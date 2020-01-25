@@ -284,7 +284,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     public function testGetConstraints(): void
     {
         $constraints = $this->instance->getConstraints('articles', static::$dbname);
-
+echo self::dumpArray($constraints);
         self::assertEquals(
             [
                 'PRIMARY' => [
@@ -301,6 +301,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'table_name' => 'articles',
                     'columns' => [
                         'alias'
+                    ]
+                ],
+                'price' => [
+                    'constraint_name' => 'price',
+                    'constraint_type' => 'CHECK',
+                    'table_name' => 'articles',
+                    'columns' => [
+                        //
                     ]
                 ],
                 'fk_articles_category_id' => [
