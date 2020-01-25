@@ -283,7 +283,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
      */
     public function testGetConstraints(): void
     {
-        $constraints = $this->instance->getConstraints2('articles', static::$dbname);
+        $constraints = $this->instance->getConstraints('articles', static::$dbname);
 
         self::assertEquals(
             [
