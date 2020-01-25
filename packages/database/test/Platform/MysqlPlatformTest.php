@@ -51,6 +51,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
+     * @see  MysqlPlatform::getViews
+     */
+    public function testGetViews(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
      * @see  MysqlPlatform::getColumns
      */
     public function testGetColumns(): void
@@ -284,7 +292,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     public function testGetConstraints(): void
     {
         $constraints = $this->instance->getConstraints('articles', static::$dbname);
-echo self::dumpArray($constraints);
+
         self::assertEquals(
             [
                 'PRIMARY' => [
@@ -332,37 +340,36 @@ echo self::dumpArray($constraints);
         );
     }
 
-    /**
-     * @see  MysqlPlatform::getConstraintKeys
-     */
-    public function testGetConstraintKeys(): void
+    public function testGetIndexes()
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $indexes = $this->instance->getIndexes('articles', static::$dbname);
+
+        show($indexes);
     }
 
-    /**
-     * @see  MysqlPlatform::getViews
-     */
-    public function testGetViews(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
+    // /**
+    //  * @see  MysqlPlatform::getConstraintKeys
+    //  */
+    // public function testGetConstraintKeys(): void
+    // {
+    //     self::markTestIncomplete(); // TODO: Complete this test
+    // }
 
-    /**
-     * @see  MysqlPlatform::getTriggerNames
-     */
-    public function testGetTriggerNames(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  MysqlPlatform::getTriggers
-     */
-    public function testGetTriggers(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
+    // /**
+    //  * @see  MysqlPlatform::getTriggerNames
+    //  */
+    // public function testGetTriggerNames(): void
+    // {
+    //     self::markTestIncomplete(); // TODO: Complete this test
+    // }
+    //
+    // /**
+    //  * @see  MysqlPlatform::getTriggers
+    //  */
+    // public function testGetTriggers(): void
+    // {
+    //     self::markTestIncomplete(); // TODO: Complete this test
+    // }
 
     protected function setUp(): void
     {

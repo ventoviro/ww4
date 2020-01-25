@@ -14,10 +14,7 @@ namespace Windwalker\Database\Platform;
 use Windwalker\Data\Collection;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
-
 use Windwalker\Utilities\Str;
-
-use function Windwalker\raw;
 
 /**
  * The MysqlPlatform class.
@@ -192,18 +189,20 @@ class MysqlPlatform extends AbstractPlatform
                 [
                     'TABLE_NAME',
                     'CONSTRAINT_NAME',
-                    'CONSTRAINT_TYPE'
+                    'CONSTRAINT_TYPE',
                 ]
             )
             ->from('INFORMATION_SCHEMA.TABLE_CONSTRAINTS')
             ->where('TABLE_NAME', $table)
-            ->tap(static function (Query $query) use ($schema) {
-                if ($schema !== self::DEFAULT_SCHEMA) {
-                    $query->where('TABLE_SCHEMA', $schema);
-                } else {
-                    $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+            ->tap(
+                static function (Query $query) use ($schema) {
+                    if ($schema !== self::DEFAULT_SCHEMA) {
+                        $query->where('TABLE_SCHEMA', $schema);
+                    } else {
+                        $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                    }
                 }
-            });
+            );
 
         $constraintItems = $this->db->prepare($query)->loadAll()->keyBy('CONSTRAINT_NAME');
 
@@ -220,15 +219,17 @@ class MysqlPlatform extends AbstractPlatform
             )
             ->from('INFORMATION_SCHEMA.KEY_COLUMN_USAGE')
             ->where('TABLE_NAME', $table)
-            ->tap(static function (Query $query) use ($schema) {
-                if ($schema !== self::DEFAULT_SCHEMA) {
-                    $query->where('TABLE_SCHEMA', $schema);
-                } else {
-                    $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+            ->tap(
+                static function (Query $query) use ($schema) {
+                    if ($schema !== self::DEFAULT_SCHEMA) {
+                        $query->where('TABLE_SCHEMA', $schema);
+                    } else {
+                        $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                    }
                 }
-            });
+            );
 
-        $kcuItems = $this->db->prepare($query)->loadAll()->keyBy('CONSTRAINT_NAME');
+        $kcuGroup = $this->db->prepare($query)->loadAll()->group('CONSTRAINT_NAME');
 
         // Query 3: REFERENTIAL_CONSTRAINTS
         $query = $this->db->getQuery(true)
@@ -242,54 +243,56 @@ class MysqlPlatform extends AbstractPlatform
             )
             ->from('INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS')
             ->where('TABLE_NAME', $table)
-            ->tap(static function (Query $query) use ($schema) {
-                if ($schema !== self::DEFAULT_SCHEMA) {
-                    $query->where('CONSTRAINT_SCHEMA', $schema);
-                } else {
-                    $query->where('CONSTRAINT_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+            ->tap(
+                static function (Query $query) use ($schema) {
+                    if ($schema !== self::DEFAULT_SCHEMA) {
+                        $query->where('CONSTRAINT_SCHEMA', $schema);
+                    } else {
+                        $query->where('CONSTRAINT_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                    }
                 }
-            });
+            );
 
         $rcItems = $this->db->prepare($query)->loadAll()->keyBy('CONSTRAINT_NAME');
 
-        $realName = null;
+        $realName    = null;
         $constraints = [];
 
         foreach ($constraintItems as $name => $row) {
-            $kcuItem = $kcuItems[$name] ?? new Collection();
-            $rcItem  = $rcItems[$name] ?? new Collection();
+            $kcuItems = $kcuGroup[$name] ?? new Collection();
+            $rcItem   = $rcItems[$name] ?? new Collection();
 
-            if ($row['CONSTRAINT_NAME'] !== $realName) {
-                $realName = $row['CONSTRAINT_NAME'];
-                $isFK     = ('FOREIGN KEY' === $row['CONSTRAINT_TYPE']);
+            $realName = $row['CONSTRAINT_NAME'];
+            $isFK     = ('FOREIGN KEY' === $row['CONSTRAINT_TYPE']);
 
-                if ($isFK || $schema !== static::DEFAULT_SCHEMA) {
-                    $name = $realName;
-                } else {
-                    $name = $row['TABLE_NAME'] . '_' . $realName;
-                }
-
-                $constraints[$name] = [
-                    'constraint_name' => $name,
-                    'constraint_type' => $row['CONSTRAINT_TYPE'],
-                    'table_name' => $row['TABLE_NAME'],
-                    'columns' => [],
-                ];
-
-                if ($isFK) {
-                    $constraints[$name]['referenced_table_schema'] = $kcuItem['REFERENCED_TABLE_SCHEMA'];
-                    $constraints[$name]['referenced_table_name']   = $kcuItem['REFERENCED_TABLE_NAME'];
-                    $constraints[$name]['referenced_columns']      = [];
-                    $constraints[$name]['match_option']            = $rcItem['MATCH_OPTION'];
-                    $constraints[$name]['update_rule']             = $rcItem['UPDATE_RULE'];
-                    $constraints[$name]['delete_rule']             = $rcItem['DELETE_RULE'];
-                }
+            if ($isFK || $schema !== static::DEFAULT_SCHEMA) {
+                $name = $realName;
+            } else {
+                $name = $row['TABLE_NAME'] . '_' . $realName;
             }
 
-            $constraints[$name]['columns'][] = $kcuItem['COLUMN_NAME'];
+            $constraints[$name] = [
+                'constraint_name' => $name,
+                'constraint_type' => $row['CONSTRAINT_TYPE'],
+                'table_name' => $row['TABLE_NAME'],
+                'columns' => [],
+            ];
 
             if ($isFK) {
-                $constraints[$name]['referenced_columns'][] = $kcuItem['REFERENCED_COLUMN_NAME'];
+                $constraints[$name]['referenced_table_schema'] = $kcuItems[0]['REFERENCED_TABLE_SCHEMA'];
+                $constraints[$name]['referenced_table_name']   = $kcuItems[0]['REFERENCED_TABLE_NAME'];
+                $constraints[$name]['referenced_columns']      = [];
+                $constraints[$name]['match_option']            = $rcItem['MATCH_OPTION'];
+                $constraints[$name]['update_rule']             = $rcItem['UPDATE_RULE'];
+                $constraints[$name]['delete_rule']             = $rcItem['DELETE_RULE'];
+            }
+
+            foreach ($kcuItems as $kcuItem) {
+                $constraints[$name]['columns'][] = $kcuItem['COLUMN_NAME'];
+
+                if ($isFK) {
+                    $constraints[$name]['referenced_columns'][] = $kcuItem['REFERENCED_COLUMN_NAME'];
+                }
             }
         }
 
@@ -299,21 +302,37 @@ class MysqlPlatform extends AbstractPlatform
     /**
      * @inheritDoc
      */
-    public function getConstraintKeys(string $constraint, string $table, ?string $schema = null): array
+    public function getIndexes(string $table, ?string $schema = null): array
     {
-    }
+        $schema = $schema ?? static::DEFAULT_SCHEMA;
 
-    /**
-     * @inheritDoc
-     */
-    public function getTriggerNames(?string $schema = null): array
-    {
-    }
+        $query = $this->db->getQuery(true)
+            ->select(
+                [
+                    'NON_UNIQUE',
+                    'INDEX_NAME',
+                    'SEQ_IN_INDEX',
+                    'COLUMN_NAME',
+                    'COLLATION',
+                    'CARDINALITY',
+                    'SUB_PART',
+                    'INDEX_COMMENT'
+                ]
+            )
+            ->from('INFORMATION_SCHEMA.STATISTICS')
+            ->where('TABLE_NAME', $table)
+            ->where('INDEX_NAME', '!=', 'PRIMARY');
 
-    /**
-     * @inheritDoc
-     */
-    public function getTriggers(?string $schema = null): array
-    {
+        if ($schema !== self::DEFAULT_SCHEMA) {
+            $query->where('TABLE_SCHEMA', $schema);
+        } else {
+            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+        }
+
+        $indexes = [];
+
+        foreach ($this->db->prepare($query) as $index) {
+            //
+        }
     }
 }

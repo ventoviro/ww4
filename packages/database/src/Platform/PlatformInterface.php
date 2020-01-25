@@ -78,18 +78,12 @@ interface PlatformInterface
     public function getConstraints(string $table, ?string $schema = null): array;
 
     /**
-     * Get trigger names
+     * getIndexes
      *
-     * @param null|string $schema
-     * @return string[]
-     */
-    public function getTriggerNames(?string $schema = null): array;
-
-    /**
-     * Get triggers
+     * @param  string       $table
+     * @param  string|null  $schema
      *
-     * @param null|string $schema
-     * @return array
+     * @return  array
      */
-    public function getTriggers(?string $schema = null): array;
+    public function getIndexes(string $table, ?string $schema = null): array;
 }
