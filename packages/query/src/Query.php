@@ -360,12 +360,12 @@ class Query implements QueryInterface, BindableInterface
 
         $join = new JoinClause($this, $joinType, $tbl);
 
-        if (count($on) === 1) {
-            ArgumentsAssert::assert(
-                $on[0] instanceof \Closure,
-                '%s if only has 1 on condition, it must be Closure, %s given.',
-                $on[0]
-            );
+        if (count($on) === 1 && $on[0] instanceof \Closure) {
+            // ArgumentsAssert::assert(
+            //     $on[0] instanceof \Closure,
+            //     '%s if only has 1 on condition, it must be Closure, %s given.',
+            //     $on[0]
+            // );
 
             $on[0]($join);
         } elseif (count($on) <= 3) {
@@ -1586,15 +1586,20 @@ class Query implements QueryInterface, BindableInterface
      * debug
      *
      * @param  bool  $pre
+     * @param  bool  $format
      *
      * @return  string
      */
-    public function debug(bool $pre = false): string
+    public function debug(bool $pre = false, bool $format = true): string
     {
         $sql = $this->render(true);
 
         if ($pre) {
             $sql = '<pre class="c-windwalker-db-query">' . $sql . '</pre>';
+        }
+
+        if ($format && class_exists(\SqlFormatter::class)) {
+            $sql = \SqlFormatter::format($sql, false);
         }
 
         return $sql;

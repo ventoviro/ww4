@@ -13,12 +13,12 @@ namespace Windwalker\Database\Test\Driver;
 
 use Windwalker\Database\Driver\AbstractConnection;
 use Windwalker\Database\Driver\Mysqli\MysqliConnection;
-use Windwalker\Database\Test\AbstractDatabaseTestCase;
+use Windwalker\Database\Test\AbstractDatabaseDriverTestCase;
 
 /**
  * The AbstractConnectionTest class.
  */
-abstract class AbstractConnectionTest extends AbstractDatabaseTestCase
+abstract class AbstractConnectionTest extends AbstractDatabaseDriverTestCase
 {
     protected static $platform = '';
 

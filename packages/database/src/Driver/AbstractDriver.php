@@ -14,7 +14,6 @@ namespace Windwalker\Database\Driver;
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Event\QueryEndEvent;
 use Windwalker\Database\Event\QueryFailedEvent;
-use Windwalker\Database\Exception\DatabaseException;
 use Windwalker\Database\Exception\DatabaseQueryException;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Query\Query;
@@ -138,34 +137,40 @@ abstract class AbstractDriver implements DriverInterface
         $stmt->addDispatcherDealer($this->db->getDispatcher());
 
         // Register monitor events
-        $stmt->on(QueryFailedEvent::class, static function (QueryFailedEvent $event) use (
-            $query,
-            $sql,
-            $bounded
-        ) {
-            $event['query'] = $query;
-            $event['sql'] = $sql;
-            $event['bounded'] = $bounded;
+        $stmt->on(
+            QueryFailedEvent::class,
+            static function (QueryFailedEvent $event) use (
+                $query,
+                $sql,
+                $bounded
+            ) {
+                $event['query']   = $query;
+                $event['sql']     = $sql;
+                $event['bounded'] = $bounded;
 
-            /** @var \Throwable|\PDOException $e */
-            $e = $event['exception'];
+                /** @var \Throwable|\PDOException $e */
+                $e = $event['exception'];
 
-            $event['exception'] = new DatabaseQueryException(
-                $e->getMessage() . ' - SQL: ' . ($query instanceof Query ? $query->render(true) : $query),
-                (int) $e->getCode(),
-                $e
-            );
-        });
+                $event['exception'] = new DatabaseQueryException(
+                    $e->getMessage() . ' - SQL: ' . ($query instanceof Query ? $query->render(true) : $query),
+                    (int) $e->getCode(),
+                    $e
+                );
+            }
+        );
 
-        $stmt->on(QueryEndEvent::class, static function (QueryEndEvent $event) use (
-            $query,
-            $sql,
-            $bounded
-        ) {
-            $event['query'] = $query;
-            $event['sql'] = $sql;
-            $event['bounded'] = $bounded;
-        });
+        $stmt->on(
+            QueryEndEvent::class,
+            static function (QueryEndEvent $event) use (
+                $query,
+                $sql,
+                $bounded
+            ) {
+                $event['query']   = $query;
+                $event['sql']     = $sql;
+                $event['bounded'] = $bounded;
+            }
+        );
 
         return $stmt;
     }
@@ -180,7 +185,6 @@ abstract class AbstractDriver implements DriverInterface
 
     private function registerStatementEvents(StatementInterface $stmt)
     {
-
     }
 
     /**

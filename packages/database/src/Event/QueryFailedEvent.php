@@ -25,9 +25,4 @@ class QueryFailedEvent extends Event
     {
         parent::__construct(null, $arguments);
     }
-
-    public function __destruct()
-    {
-        show(__METHOD__);
-    }
 }

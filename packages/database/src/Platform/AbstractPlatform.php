@@ -12,13 +12,15 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Database\DatabaseAdapter;
+use Windwalker\Database\Metadata\AbstractMetadata;
+use Windwalker\Database\Metadata\MetadataInterface;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Query\Query;
 
 /**
  * The AbstractPlatform class.
  */
-abstract class AbstractPlatform
+abstract class AbstractPlatform implements PlatformInterface
 {
     /**
      * @var string
@@ -29,6 +31,11 @@ abstract class AbstractPlatform
      * @var Query
      */
     protected $query;
+
+    /**
+     * @var Grammar
+     */
+    protected $grammar;
 
     /**
      * @var DatabaseAdapter
@@ -54,15 +61,23 @@ abstract class AbstractPlatform
 
     public function getGrammar(): Grammar
     {
-        return $this->createQuery()->getGrammar();
+        if (!$this->grammar) {
+            $this->grammar = $this->createQuery()->getGrammar();
+        }
+
+        return $this->grammar;
     }
 
     public function createQuery(): Query
     {
-        // if (!$this->query) {
-        //     $this->query = new Query($this->db->getDriver(), $this->name);
-        // }
-
         return new Query($this->db->getDriver(), $this->name);
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

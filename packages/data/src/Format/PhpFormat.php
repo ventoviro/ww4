@@ -104,10 +104,14 @@ class PhpFormat implements FormatInterface
 
             if (is_array($v) || is_object($v)) {
                 $s .= static::getArrayString((array) $v, $level + 1);
+            } elseif ($v === null) {
+                $s .= 'null';
+            } elseif (is_bool($v)) {
+                $s .= $v ? 'true' : 'false';
             } elseif (is_int($v) || is_float($v)) {
                 $s .= $v;
             } else {
-                $s .= "'" . addslashes($v) . "'";
+                $s .= "'" . addslashes((string) $v) . "'";
             }
 
             $i++;

@@ -14,6 +14,7 @@ namespace Windwalker\Database;
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\DriverFactory;
 use Windwalker\Database\Driver\StatementInterface;
+use Windwalker\Database\Metadata\MetadataInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Event\EventAttachableInterface;
 use Windwalker\Event\ListenableTrait;
@@ -32,6 +33,11 @@ class DatabaseAdapter implements EventAttachableInterface
      * @var AbstractDriver
      */
     protected $driver;
+
+    /**
+     * @var MetadataInterface
+     */
+    protected $metadata;
 
     /**
      * @var Query|string
@@ -80,7 +86,7 @@ class DatabaseAdapter implements EventAttachableInterface
      *
      * @param  bool  $new
      *
-     * @return  string|Query|null
+     * @return  string|Query
      */
     public function getQuery(bool $new = false)
     {

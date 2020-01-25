@@ -16,14 +16,14 @@ use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Event\QueryEndEvent;
 use Windwalker\Database\Exception\DatabaseQueryException;
 use Windwalker\Database\Platform\AbstractPlatform;
-use Windwalker\Database\Test\AbstractDatabaseTestCase;
+use Windwalker\Database\Test\AbstractDatabaseDriverTestCase;
 use Windwalker\Event\EventInterface;
 use Windwalker\Utilities\TypeCast;
 
 /**
  * The AbstractDriverTest class.
  */
-abstract class AbstractDriverTest extends AbstractDatabaseTestCase
+abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
 {
     protected static $platform = '';
 
