@@ -283,9 +283,45 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
      */
     public function testGetConstraints(): void
     {
-        $constraints = $this->instance->getConstraints('articles', static::$dbname);
+        $constraints = $this->instance->getConstraints2('articles', static::$dbname);
 
-        show($constraints);
+        self::assertEquals(
+            [
+                'PRIMARY' => [
+                    'constraint_name' => 'PRIMARY',
+                    'constraint_type' => 'PRIMARY KEY',
+                    'table_name' => 'articles',
+                    'columns' => [
+                        'id'
+                    ]
+                ],
+                'idx_articles_alias' => [
+                    'constraint_name' => 'idx_articles_alias',
+                    'constraint_type' => 'UNIQUE',
+                    'table_name' => 'articles',
+                    'columns' => [
+                        'alias'
+                    ]
+                ],
+                'fk_articles_category_id' => [
+                    'constraint_name' => 'fk_articles_category_id',
+                    'constraint_type' => 'FOREIGN KEY',
+                    'table_name' => 'articles',
+                    'columns' => [
+                        'category_id'
+                    ],
+                    'referenced_table_schema' => 'windwalker_test',
+                    'referenced_table_name' => 'categories',
+                    'referenced_columns' => [
+                        'id'
+                    ],
+                    'match_option' => 'NONE',
+                    'update_rule' => 'RESTRICT',
+                    'delete_rule' => 'RESTRICT'
+                ]
+            ],
+            $constraints
+        );
     }
 
     /**

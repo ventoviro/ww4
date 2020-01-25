@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Platform;
 
+use Windwalker\Data\Collection;
+use Windwalker\Query\Query;
+
 use function Windwalker\raw;
 
 /**
@@ -126,12 +129,12 @@ class MysqlPlatform extends AbstractPlatform
                 $permittedValues = $matches[1];
 
                 if (
-                preg_match_all(
-                    "/\\s*'((?:[^']++|'')*+)'\\s*(?:,|\$)/",
-                    $permittedValues,
-                    $matches,
-                    PREG_PATTERN_ORDER
-                )
+                    preg_match_all(
+                        "/\\s*'((?:[^']++|'')*+)'\\s*(?:,|\$)/",
+                        $permittedValues,
+                        $matches,
+                        PREG_PATTERN_ORDER
+                    )
                 ) {
                     $permittedValues = str_replace("''", "'", $matches[1]);
                 } else {
@@ -165,6 +168,127 @@ class MysqlPlatform extends AbstractPlatform
     public function getConstraints(string $table, ?string $schema = null): array
     {
         $schema = $schema ?? static::DEFAULT_SCHEMA;
+
+        // JOIN of INFORMATION_SCHEMA table is very slow, we use 3 separate query to get constraints.
+
+        // Query 1: TABLE_CONSTRAINTS
+        $query = $this->db->getQuery(true)
+            ->select(
+                [
+                    'TABLE_NAME',
+                    'CONSTRAINT_NAME',
+                    'CONSTRAINT_TYPE'
+                ]
+            )
+            ->from('INFORMATION_SCHEMA.TABLE_CONSTRAINTS')
+            ->where('TABLE_NAME', $table)
+            ->tap(static function (Query $query) use ($schema) {
+                if ($schema !== self::DEFAULT_SCHEMA) {
+                    $query->where('TABLE_SCHEMA', $schema);
+                } else {
+                    $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                }
+            });
+
+        $constraintItems = $this->db->prepare($query)->loadAll()->keyBy('CONSTRAINT_NAME');
+
+        // Query 2: KEY_COLUMN_USAGE
+        $query = $this->db->getQuery(true)
+            ->select(
+                [
+                    'CONSTRAINT_NAME',
+                    'COLUMN_NAME',
+                    'REFERENCED_TABLE_SCHEMA',
+                    'REFERENCED_TABLE_NAME',
+                    'REFERENCED_COLUMN_NAME',
+                ]
+            )
+            ->from('INFORMATION_SCHEMA.KEY_COLUMN_USAGE')
+            ->where('TABLE_NAME', $table)
+            ->tap(static function (Query $query) use ($schema) {
+                if ($schema !== self::DEFAULT_SCHEMA) {
+                    $query->where('TABLE_SCHEMA', $schema);
+                } else {
+                    $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                }
+            });
+
+        $kcuItems = $this->db->prepare($query)->loadAll()->keyBy('CONSTRAINT_NAME');
+
+        // Query 3: REFERENTIAL_CONSTRAINTS
+        $query = $this->db->getQuery(true)
+            ->select(
+                [
+                    'CONSTRAINT_NAME',
+                    'MATCH_OPTION',
+                    'UPDATE_RULE',
+                    'DELETE_RULE',
+                ]
+            )
+            ->from('INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS')
+            ->where('TABLE_NAME', $table)
+            ->tap(static function (Query $query) use ($schema) {
+                if ($schema !== self::DEFAULT_SCHEMA) {
+                    $query->where('CONSTRAINT_SCHEMA', $schema);
+                } else {
+                    $query->where('CONSTRAINT_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                }
+            });
+
+        $rcItems = $this->db->prepare($query)->loadAll()->keyBy('CONSTRAINT_NAME');
+
+        $realName = null;
+        $constraints = [];
+
+        foreach ($constraintItems as $name => $row) {
+            $kcuItem = $kcuItems[$name] ?? new Collection();
+            $rcItem  = $rcItems[$name] ?? new Collection();
+
+            if ($row['CONSTRAINT_NAME'] !== $realName) {
+                $realName = $row['CONSTRAINT_NAME'];
+                $isFK     = ('FOREIGN KEY' === $row['CONSTRAINT_TYPE']);
+
+                if ($isFK || $schema !== static::DEFAULT_SCHEMA) {
+                    $name = $realName;
+                } else {
+                    $name = $row['TABLE_NAME'] . '_' . $realName;
+                }
+
+                $constraints[$name] = [
+                    'constraint_name' => $name,
+                    'constraint_type' => $row['CONSTRAINT_TYPE'],
+                    'table_name' => $row['TABLE_NAME'],
+                    'columns' => [],
+                ];
+
+                if ($isFK) {
+                    $constraints[$name]['referenced_table_schema'] = $kcuItem['REFERENCED_TABLE_SCHEMA'];
+                    $constraints[$name]['referenced_table_name']   = $kcuItem['REFERENCED_TABLE_NAME'];
+                    $constraints[$name]['referenced_columns']      = [];
+                    $constraints[$name]['match_option']            = $rcItem['MATCH_OPTION'];
+                    $constraints[$name]['update_rule']             = $rcItem['UPDATE_RULE'];
+                    $constraints[$name]['delete_rule']             = $rcItem['DELETE_RULE'];
+                }
+            }
+
+            $constraints[$name]['columns'][] = $kcuItem['COLUMN_NAME'];
+
+            if ($isFK) {
+                $constraints[$name]['referenced_columns'][] = $kcuItem['REFERENCED_COLUMN_NAME'];
+            }
+        }
+
+        return $constraints;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getConstraints2(string $table, ?string $schema = null): array
+    {
+        $schema = $schema ?? static::DEFAULT_SCHEMA;
+
+        $this->db->execute('set global innodb_stats_on_metadata=0;');
 
         $query = $this->db->getQuery(true)
             ->select(

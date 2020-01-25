@@ -47,7 +47,7 @@ interface PlatformInterface
      *
      * @param null|string $schema
      * @param bool $includeViews
-     * @return Object\TableObject[]
+     * @return array
      */
     public function getTables(?string $schema = null, bool $includeViews = false): array;
 
@@ -55,7 +55,7 @@ interface PlatformInterface
      * Get views
      *
      * @param null|string $schema
-     * @return Object\ViewObject[]
+     * @return array
      */
     public function getViews(?string $schema = null): array;
 
@@ -64,7 +64,7 @@ interface PlatformInterface
      *
      * @param string $table
      * @param null|string $schema
-     * @return Object\ColumnObject[]
+     * @return array
      */
     public function getColumns(string $table, ?string $schema = null): array;
 
@@ -73,19 +73,9 @@ interface PlatformInterface
      *
      * @param string $table
      * @param null|string $schema
-     * @return Object\ConstraintObject[]
+     * @return array
      */
     public function getConstraints(string $table, ?string $schema = null): array;
-
-    /**
-     * Get constraint keys
-     *
-     * @param string $constraint
-     * @param string $table
-     * @param null|string $schema
-     * @return Object\ConstraintKeyObject[]
-     */
-    public function getConstraintKeys(string $constraint, string $table, ?string $schema = null): array;
 
     /**
      * Get trigger names
@@ -99,7 +89,7 @@ interface PlatformInterface
      * Get triggers
      *
      * @param null|string $schema
-     * @return Object\TriggerObject[]
+     * @return array
      */
     public function getTriggers(?string $schema = null): array;
 }
