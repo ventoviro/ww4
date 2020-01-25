@@ -13,20 +13,30 @@ namespace Windwalker\Database;
 
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\DriverFactory;
+use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
+use Windwalker\Event\EventAttachableInterface;
+use Windwalker\Event\ListenableTrait;
+use Windwalker\Query\Query;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
 
 /**
  * The DatabaseAdapter class.
  */
-class DatabaseAdapter
+class DatabaseAdapter implements EventAttachableInterface
 {
     use OptionAccessTrait;
+    use ListenableTrait;
 
     /**
      * @var AbstractDriver
      */
     protected $driver;
+
+    /**
+     * @var Query|string
+     */
+    protected $query;
 
     /**
      * DatabaseAdapter constructor.
@@ -43,11 +53,42 @@ class DatabaseAdapter
                 'username' => null,
                 'password' => null,
                 'port' => null,
+                'prefix' => null,
                 'charset' => null,
                 'driverOptions' => [],
             ],
             $options
         );
+    }
+
+    public function prepare($query, array $options = []): StatementInterface
+    {
+        $this->query = $query;
+
+        return $this->getDriver()->prepare($query, $options);
+    }
+
+    public function execute($query, ?array $params = null): StatementInterface
+    {
+        $this->query = $query;
+
+        return $this->getDriver()->execute($query, $params);
+    }
+
+    /**
+     * getQuery
+     *
+     * @param  bool  $new
+     *
+     * @return  string|Query|null
+     */
+    public function getQuery(bool $new = false)
+    {
+        if ($new) {
+            return $this->getPlatform()->createQuery();
+        }
+
+        return $this->query;
     }
 
     /**

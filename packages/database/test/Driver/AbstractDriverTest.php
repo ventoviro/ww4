@@ -13,8 +13,11 @@ namespace Windwalker\Database\Test\Driver;
 
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\AbstractDriver;
+use Windwalker\Database\Event\QueryEndEvent;
+use Windwalker\Database\Exception\DatabaseQueryException;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
+use Windwalker\Event\EventInterface;
 use Windwalker\Utilities\TypeCast;
 
 /**
@@ -84,7 +87,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
     {
         $id    = 1;
         $query = static::$driver->getPlatform()
-            ->getQuery()
+            ->createQuery()
             ->select('*')
             ->from('ww_flower')
             ->whereRaw('id = :id')
@@ -203,6 +206,44 @@ abstract class AbstractDriverTest extends AbstractDatabaseTestCase
         self::assertEquals(
             1,
             $st->countAffected()
+        );
+    }
+
+    public function testQueryFailed(): void
+    {
+        $sql = 'SELECT * FROM notexists WHERE foo = 123';
+
+        $this->expectException(DatabaseQueryException::class);
+        $this->expectExceptionMessageMatches(sprintf('/(%s)/', preg_quote($sql)));
+
+        static::$driver->prepare($sql)->loadOne();
+    }
+
+    public function testEvents()
+    {
+        $stmt = static::$driver->prepare(
+            $q = static::$driver->getDb()
+                ->getQuery(true)
+                ->select('*')
+                ->from('ww_flower')
+                ->where('id', 'in', [1, 2, 3])
+                ->where('title', '!=', 'Hello')
+        );
+
+        $data = [];
+
+        $stmt->on(
+            QueryEndEvent::class,
+            static function (EventInterface $event) use (&$data) {
+                $data['end'] = $event['query']->render(true);
+            }
+        );
+
+        $stmt->execute()->close();
+
+        self::assertSqlEquals(
+            $q->render(true),
+            $data['end']
         );
     }
 

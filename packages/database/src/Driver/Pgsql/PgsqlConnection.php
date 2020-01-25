@@ -13,7 +13,7 @@ namespace Windwalker\Database\Driver\Pgsql;
 
 use Windwalker\Database\Driver\AbstractConnection;
 use Windwalker\Database\Driver\Pdo\DsnHelper;
-use Windwalker\Database\Exception\DbConnectException;
+use Windwalker\Database\Exception\DatabaseConnectException;
 
 /**
  * The PgsqlConnection class.
@@ -57,7 +57,7 @@ class PgsqlConnection extends AbstractConnection
         $res = @pg_connect($options['params']);
 
         if (!$res) {
-            throw new DbConnectException('Unable to connect to pgsql.');
+            throw new DatabaseConnectException('Unable to connect to pgsql.');
         }
 
         return $res;

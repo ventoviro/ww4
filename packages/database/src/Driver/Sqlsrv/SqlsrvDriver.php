@@ -26,11 +26,9 @@ class SqlsrvDriver extends AbstractDriver
     /**
      * @inheritDoc
      */
-    public function prepare($query, array $options = []): StatementInterface
+    public function doPrepare(string $query, array $bounded = [], array $options = []): StatementInterface
     {
         $conn = $this->connect()->get();
-
-        $query = $this->handleQuery($query, $bounded);
 
         return new SqlsrvStatement($conn, $query, $bounded);
     }

@@ -12,6 +12,10 @@ declare(strict_types=1);
 namespace Windwalker\Database\Driver;
 
 use Windwalker\Database\DatabaseAdapter;
+use Windwalker\Database\Event\QueryEndEvent;
+use Windwalker\Database\Event\QueryFailedEvent;
+use Windwalker\Database\Exception\DatabaseException;
+use Windwalker\Database\Exception\DatabaseQueryException;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Query\Query;
 
@@ -117,12 +121,66 @@ abstract class AbstractDriver implements DriverInterface
         return $this->getConnection()->disconnect();
     }
 
+    abstract protected function doPrepare(string $query, array $bounded = [], array $options = []): StatementInterface;
+
+    /**
+     * @inheritDoc
+     */
+    public function prepare($query, array $options = []): StatementInterface
+    {
+        // Convert query to string and get merged bounded
+        $sql = $this->handleQuery($query, $bounded);
+
+        // Prepare actions by driver
+        $stmt = $this->doPrepare($sql, $bounded, $options);
+
+        // Make DatabaseAdapter listen to statement events
+        $stmt->addDispatcherDealer($this->db->getDispatcher());
+
+        // Register monitor events
+        $stmt->on(QueryFailedEvent::class, static function (QueryFailedEvent $event) use (
+            $query,
+            $sql,
+            $bounded
+        ) {
+            $event['query'] = $query;
+            $event['sql'] = $sql;
+            $event['bounded'] = $bounded;
+
+            /** @var \Throwable|\PDOException $e */
+            $e = $event['exception'];
+
+            $event['exception'] = new DatabaseQueryException(
+                $e->getMessage() . ' - SQL: ' . ($query instanceof Query ? $query->render(true) : $query),
+                (int) $e->getCode(),
+                $e
+            );
+        });
+
+        $stmt->on(QueryEndEvent::class, static function (QueryEndEvent $event) use (
+            $query,
+            $sql,
+            $bounded
+        ) {
+            $event['query'] = $query;
+            $event['sql'] = $sql;
+            $event['bounded'] = $bounded;
+        });
+
+        return $stmt;
+    }
+
     /**
      * @inheritDoc
      */
     public function execute($query, ?array $params = null): StatementInterface
     {
         return $this->prepare($query)->execute($params);
+    }
+
+    private function registerStatementEvents(StatementInterface $stmt)
+    {
+
     }
 
     /**

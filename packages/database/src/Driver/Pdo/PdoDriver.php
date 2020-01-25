@@ -43,14 +43,31 @@ class PdoDriver extends AbstractDriver
     /**
      * @inheritDoc
      */
-    public function prepare($query, array $options = []): StatementInterface
+    public function doPrepare(string $query, array $bounded = [], array $options = []): StatementInterface
     {
         /** @var \PDO $pdo */
         $pdo = $this->connect()->get();
 
-        $query = $this->handleQuery($query, $bounded);
+        return new PdoStatement(
+            static function () use ($pdo, $query, $options, $bounded) {
+                return [
+                    $pdo->prepare($query, $options),
+                    static function (PdoStatement $stmt) use ($bounded) {
+                        foreach ($bounded as $key => $bound) {
+                            $key = is_int($key) ? $key + 1 : $key;
 
-        return new PdoStatement($pdo->prepare($query, $options), $bounded);
+                            $stmt->bindParam(
+                                $key,
+                                $bound['value'],
+                                $bound['dataType'] ?? null,
+                                $bound['length'] ?? 0,
+                                $bound['driverOptions'] ?? null
+                            );
+                        }
+                    }
+                ];
+            }
+        );
     }
 
     /**

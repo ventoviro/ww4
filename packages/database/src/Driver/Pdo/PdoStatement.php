@@ -30,26 +30,31 @@ class PdoStatement extends AbstractStatement
     protected $cursor;
 
     /**
+     * @var \Closure
+     */
+    protected $prepare;
+
+    /**
      * PdoStatement constructor.
      *
-     * @param  \PDOStatement  $stmt
-     * @param  array          $bounded
+     * @param  \Closure  $prepare
      */
-    public function __construct(\PDOStatement $stmt, array $bounded = [])
+    public function __construct(\Closure $prepare)
     {
-        $this->cursor = $stmt;
+        $this->prepare = $prepare;
+    }
 
-        foreach ($bounded as $key => $bound) {
-            $key = is_int($key) ? $key + 1 : $key;
+    private function prepareCursor(): \PDOStatement
+    {
+        if (!$this->cursor) {
+            $prepare = $this->prepare;
+            [$this->cursor, $bound] = $prepare();
 
-            $this->bindParam(
-                $key,
-                $bound['value'],
-                $bound['dataType'] ?? null,
-                $bound['length'] ?? 0,
-                $bound['driverOptions'] ?? null
-            );
+            $bound($this);
+            $this->prepare = null;
         }
+
+        return $this->cursor;
     }
 
     /**
@@ -57,7 +62,7 @@ class PdoStatement extends AbstractStatement
      */
     protected function doExecute(?array $params = null): bool
     {
-        return (bool) $this->cursor->execute($params);
+        return (bool) $this->prepareCursor()->execute($params);
     }
 
     /**
@@ -67,7 +72,7 @@ class PdoStatement extends AbstractStatement
     {
         $this->execute();
 
-        $item = $this->cursor->fetch(\PDO::FETCH_ASSOC);
+        $item = $this->prepareCursor()->fetch(\PDO::FETCH_ASSOC);
 
         return $item !== false ? collect($item) : null;
     }
@@ -87,7 +92,7 @@ class PdoStatement extends AbstractStatement
 
         $dataType = $dataType ?? ParamType::guessType($value);
 
-        $this->cursor->bindParam(
+        $this->prepareCursor()->bindParam(
             $key,
             $value,
             ParamType::convertToPDO($dataType),
@@ -103,7 +108,9 @@ class PdoStatement extends AbstractStatement
      */
     public function close()
     {
-        $this->cursor->closeCursor();
+        if ($this->cursor) {
+            $this->cursor->closeCursor();
+        }
 
         $this->executed = false;
 
@@ -115,6 +122,6 @@ class PdoStatement extends AbstractStatement
      */
     public function countAffected(): int
     {
-        return $this->cursor->rowCount();
+        return $this->prepareCursor()->rowCount();
     }
 }

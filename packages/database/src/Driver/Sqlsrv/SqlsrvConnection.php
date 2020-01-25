@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Driver\Sqlsrv;
 
 use Windwalker\Database\Driver\AbstractConnection;
-use Windwalker\Database\Exception\DbConnectException;
+use Windwalker\Database\Exception\DatabaseConnectException;
 
 /**
  * The SqlsrvConnection class.
@@ -54,7 +54,7 @@ class SqlsrvConnection extends AbstractConnection
         if (!$conn) {
             $errors = sqlsrv_errors();
 
-            throw new DbConnectException(
+            throw new DatabaseConnectException(
                 sprintf(
                     'SQLSTATE: %s Message: %s',
                     $errors[0]['SQLSTATE'],

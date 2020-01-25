@@ -40,23 +40,23 @@ class PgsqlPlatform extends AbstractPlatform
         }
 
         /* find sequence column name */
-        $colNameQuery = $this->getQuery();
+        $colNameQuery = $this->createQuery();
 
         $colNameQuery->select('column_default')
             ->from('information_schema.columns')
             ->where('table_name', $this->db->replacePrefix(trim($table[0], '" ')))
             ->where('column_default', 'LIKE', '%nextval%');
 
-        $colName = $this->db->getDriver()->prepare($colNameQuery)->loadOne()->first();
+        $colName = $this->db->prepare($colNameQuery)->loadOne()->first();
 
         $changedColName = str_replace('nextval', 'currval', $colName);
 
-        $insertidQuery = $this->getQuery();
+        $insertidQuery = $this->createQuery();
 
         $insertidQuery->selectRaw($changedColName);
 
         try {
-            return $this->db->getDriver()->prepare($insertidQuery)->loadResult();
+            return $this->db->prepare($insertidQuery)->loadResult();
         } catch (\PDOException $e) {
             // 55000 means we trying to insert value to serial column
             // Just return because insertedId get the last generated value.

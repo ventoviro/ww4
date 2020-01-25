@@ -103,7 +103,9 @@ class PgsqlStatement extends AbstractStatement
      */
     public function close()
     {
-        pg_free_result($this->cursor);
+        if ($this->cursor) {
+            pg_free_result($this->cursor);
+        }
 
         $this->cursor = null;
         $this->stmt = null;

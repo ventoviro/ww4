@@ -11,13 +11,15 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Driver;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Windwalker\Data\Collection;
+use Windwalker\Event\EventAttachableInterface;
 use Windwalker\Query\Bounded\BindableInterface;
 
 /**
  * Interface StatementInterface
  */
-interface StatementInterface extends BindableInterface, \IteratorAggregate
+interface StatementInterface extends BindableInterface, \IteratorAggregate, EventAttachableInterface
 {
     /**
      * execute
@@ -111,4 +113,13 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate
      * @return  \Generator
      */
     public function getIterator($class = Collection::class, array $args = []): \Generator;
+
+    /**
+     * addDispatcherDealer
+     *
+     * @param  EventDispatcherInterface  $dispatcher
+     *
+     * @return  void
+     */
+    public function addDispatcherDealer(EventDispatcherInterface $dispatcher): void;
 }

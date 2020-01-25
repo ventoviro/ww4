@@ -11,17 +11,18 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Driver;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Windwalker\Data\Collection;
-
+use Windwalker\Database\Event\QueryEndEvent;
+use Windwalker\Database\Event\QueryFailedEvent;
+use Windwalker\Database\Event\QueryStartEvent;
 use Windwalker\Database\Exception\StatementException;
-use Windwalker\Database\Iterator\StatementIterator;
+use Windwalker\Event\EventEmitter;
+use Windwalker\Event\ListenableTrait;
 use Windwalker\Query\Bounded\BindableTrait;
-use Windwalker\Query\Bounded\ParamType;
-use Windwalker\Utilities\TypeCast;
 
 use function Windwalker\collect;
 use function Windwalker\tap;
-use function Windwalker\where;
 
 /**
  * The AbstractStatement class.
@@ -29,6 +30,7 @@ use function Windwalker\where;
 abstract class AbstractStatement implements StatementInterface
 {
     use BindableTrait;
+    use ListenableTrait;
 
     /**
      * @var mixed|resource
@@ -39,6 +41,11 @@ abstract class AbstractStatement implements StatementInterface
      * @var bool
      */
     protected $executed = false;
+
+    /**
+     * @var EventEmitter
+     */
+    protected $dispatcher;
 
     /**
      * AbstractStatement constructor.
@@ -79,9 +86,23 @@ abstract class AbstractStatement implements StatementInterface
             return $this;
         }
 
-        $r = $this->doExecute($params);
+        $statement = $this;
+        $dispatcher = $this->getDispatcher();
 
-        if (!$r) {
+        $dispatcher->emit(new QueryStartEvent(compact('params')));
+
+        try {
+            $result = $this->doExecute($params);
+        } catch (\RuntimeException $exception) {
+            $statement->close();
+            $event = $dispatcher->emit(new QueryFailedEvent(compact('exception')));
+
+            throw $event['exception'];
+        }
+
+        $dispatcher->emit(new QueryEndEvent(compact('result')));
+
+        if (!$result) {
             throw new StatementException('Execute query statement failed.');
         }
 
@@ -104,9 +125,12 @@ abstract class AbstractStatement implements StatementInterface
      */
     public function loadOne(string $class = Collection::class, array $args = []): ?Collection
     {
-        return tap($this->fetch($class, $args), function () {
-            $this->close();
-        });
+        return tap(
+            $this->fetch($class, $args),
+            function () {
+                $this->close();
+            }
+        );
     }
 
     /**
@@ -178,37 +202,49 @@ abstract class AbstractStatement implements StatementInterface
     public static function replaceStatement(string $sql, string $symbol = '?', array $params = []): array
     {
         $values = [];
-        $i = 0;
-        $s = 1;
+        $i      = 0;
+        $s      = 1;
 
-        $sql = (string) preg_replace_callback('/(:[\w_]+|\?)/', function ($matched) use (
-            &$values,
-            &$i,
-            &$s,
-            $symbol,
-            $params
-        ) {
-            $name = $matched[0];
+        $sql = (string) preg_replace_callback(
+            '/(:[\w_]+|\?)/',
+            function ($matched) use (
+                &$values,
+                &$i,
+                &$s,
+                $symbol,
+                $params
+            ) {
+                $name = $matched[0];
 
-            if ($name === '?') {
-                $values[] = $params[$i];
-                $i++;
-            } else {
-                if (!array_key_exists($name, $params) && !array_key_exists(ltrim($name, ':'), $params)) {
-                    return $name;
+                if ($name === '?') {
+                    $values[] = $params[$i];
+                    $i++;
+                } else {
+                    if (!array_key_exists($name, $params) && !array_key_exists(ltrim($name, ':'), $params)) {
+                        return $name;
+                    }
+
+                    $values[] = $params[$name] ?? $params[ltrim($name, ':')] ?? null;
                 }
 
-                $values[] = $params[$name] ?? $params[ltrim($name, ':')] ?? null;
-            }
+                if (strpos($symbol, '%d') !== false) {
+                    $symbol = str_replace('%d', $s, $symbol);
+                    $s++;
+                }
 
-            if (strpos($symbol, '%d') !== false) {
-                $symbol = str_replace('%d', $s, $symbol);
-                $s++;
-            }
-
-            return $symbol;
-        }, $sql);
+                return $symbol;
+            },
+            $sql
+        );
 
         return [$sql, $values];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addDispatcherDealer(EventDispatcherInterface $dispatcher): void
+    {
+        $this->getDispatcher()->registerDealer($dispatcher);
     }
 }

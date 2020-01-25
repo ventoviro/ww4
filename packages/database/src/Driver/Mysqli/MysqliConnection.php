@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Driver\Mysqli;
 
 use Windwalker\Database\Driver\AbstractConnection;
-use Windwalker\Database\Exception\DbConnectException;
+use Windwalker\Database\Exception\DatabaseConnectException;
 
 /**
  * The MysqliConnection class.

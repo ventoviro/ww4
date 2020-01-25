@@ -14,6 +14,6 @@ namespace Windwalker\Database\Exception;
 /**
  * The ConnectException class.
  */
-class DbConnectException extends DatabaseException
+class DatabaseConnectException extends DatabaseException
 {
 }

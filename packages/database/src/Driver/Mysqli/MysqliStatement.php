@@ -123,8 +123,11 @@ class MysqliStatement extends AbstractStatement
      */
     public function close()
     {
-        $this->cursor->free_result();
-        // $this->cursor = null;
+        if ($this->cursor) {
+            $this->cursor->free_result();
+        }
+
+        $this->cursor = null;
         $this->executed = false;
 
         return $this;

@@ -54,10 +54,10 @@ abstract class AbstractPlatform
 
     public function getGrammar(): Grammar
     {
-        return $this->getQuery()->getGrammar();
+        return $this->createQuery()->getGrammar();
     }
 
-    public function getQuery(): Query
+    public function createQuery(): Query
     {
         // if (!$this->query) {
         //     $this->query = new Query($this->db->getDriver(), $this->name);
