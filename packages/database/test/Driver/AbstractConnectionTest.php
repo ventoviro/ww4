@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test\Driver;
 
 use Windwalker\Database\Driver\AbstractConnection;
-use Windwalker\Database\Driver\Mysqli\MysqliConnection;
 use Windwalker\Database\Test\AbstractDatabaseDriverTestCase;
 
 /**
@@ -97,5 +96,13 @@ abstract class AbstractConnectionTest extends AbstractDatabaseDriverTestCase
         $conn->disconnect();
 
         self::assertNull($conn->get());
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->instance->disconnect();
+        $this->instance = null;
     }
 }

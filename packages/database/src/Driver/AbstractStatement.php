@@ -93,6 +93,10 @@ abstract class AbstractStatement implements StatementInterface
 
         try {
             $result = $this->doExecute($params);
+
+            if (!$result) {
+                throw new StatementException('Execute query statement failed.');
+            }
         } catch (\RuntimeException $exception) {
             $statement->close();
             $event = $dispatcher->emit(new QueryFailedEvent(compact('exception')));
@@ -101,10 +105,6 @@ abstract class AbstractStatement implements StatementInterface
         }
 
         $dispatcher->emit(new QueryEndEvent(compact('result')));
-
-        if (!$result) {
-            throw new StatementException('Execute query statement failed.');
-        }
 
         $this->executed = true;
 

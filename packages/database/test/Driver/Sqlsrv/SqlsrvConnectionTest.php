@@ -24,6 +24,14 @@ class SqlsrvConnectionTest extends AbstractConnectionTest
 
     protected static $className = SqlsrvConnection::class;
 
+    public function testConnect(): void
+    {
+        $conn = $this->instance;
+        $conn->connect();
+
+        $this->assertConnected($conn);
+    }
+
     /**
      * assertConnected
      *

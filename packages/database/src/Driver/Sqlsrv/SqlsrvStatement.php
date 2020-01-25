@@ -86,7 +86,7 @@ class SqlsrvStatement extends AbstractStatement
     {
         $this->execute();
 
-        $row = sqlsrv_next_result($this->cursor);
+        $row = sqlsrv_fetch_array($this->cursor, SQLSRV_FETCH_ASSOC);
 
         return $row ? collect($row) : null;
     }

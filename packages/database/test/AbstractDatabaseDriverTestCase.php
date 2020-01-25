@@ -66,6 +66,16 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
 
             $pdo = static::createBaseConnect($params, $connClass);
 
+            // TODO: Use faster way to refresh test DB and tables
+            if (static::$platform === 'sqlsrv') {
+                $pdo->exec(
+                    sprintf(
+                        'ALTER DATABASE %s SET SINGLE_USER WITH ROLLBACK IMMEDIATE',
+                        static::$dbname
+                    )
+                );
+            }
+
             $pdo->exec('DROP DATABASE IF EXISTS ' . static::qn(static::$dbname));
             $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
 

@@ -274,7 +274,10 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
      */
     public function testGetPlatformName(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertEquals(
+            static::$platform,
+            static::$driver->getPlatformName()
+        );
     }
 
     /**
