@@ -311,14 +311,6 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                         'alias'
                     ]
                 ],
-                'price' => [
-                    'constraint_name' => 'price',
-                    'constraint_type' => 'CHECK',
-                    'table_name' => 'articles',
-                    'columns' => [
-                        //
-                    ]
-                ],
                 'fk_articles_category_id' => [
                     'constraint_name' => 'fk_articles_category_id',
                     'constraint_type' => 'FOREIGN KEY',
@@ -334,17 +326,141 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'match_option' => 'NONE',
                     'update_rule' => 'RESTRICT',
                     'delete_rule' => 'RESTRICT'
+                ],
+                'fk_articles_category_more' => [
+                    'constraint_name' => 'fk_articles_category_more',
+                    'constraint_type' => 'FOREIGN KEY',
+                    'table_name' => 'articles',
+                    'columns' => [
+                        'page_id',
+                        'created_by'
+                    ],
+                    'referenced_table_schema' => 'windwalker_test',
+                    'referenced_table_name' => 'categories',
+                    'referenced_columns' => [
+                        'parent_id',
+                        'level'
+                    ],
+                    'match_option' => 'NONE',
+                    'update_rule' => 'RESTRICT',
+                    'delete_rule' => 'RESTRICT'
                 ]
             ],
             $constraints
         );
     }
 
-    public function testGetIndexes()
+    public function testGetIndexes(): void
     {
         $indexes = $this->instance->getIndexes('articles', static::$dbname);
 
-        show($indexes);
+        self::assertEquals(
+            [
+                'PRIMARY' => [
+                    'table_schema' => 'windwalker_test',
+                    'table_name' => 'articles',
+                    'is_unique' => true,
+                    'is_primary' => true,
+                    'index_name' => 'PRIMARY',
+                    'index_comment' => '',
+                    'columns' => [
+                        'id' => [
+                            'column_name' => 'id',
+                            'sub_part' => null
+                        ]
+                    ]
+                ],
+                'idx_articles_alias' => [
+                    'table_schema' => 'windwalker_test',
+                    'table_name' => 'articles',
+                    'is_unique' => true,
+                    'is_primary' => false,
+                    'index_name' => 'idx_articles_alias',
+                    'index_comment' => '',
+                    'columns' => [
+                        'alias' => [
+                            'column_name' => 'alias',
+                            'sub_part' => 150
+                        ]
+                    ]
+                ],
+                'fk_articles_category_more' => [
+                    'table_schema' => 'windwalker_test',
+                    'table_name' => 'articles',
+                    'is_unique' => false,
+                    'is_primary' => false,
+                    'index_name' => 'fk_articles_category_more',
+                    'index_comment' => '',
+                    'columns' => [
+                        'page_id' => [
+                            'column_name' => 'page_id',
+                            'sub_part' => null
+                        ],
+                        'created_by' => [
+                            'column_name' => 'created_by',
+                            'sub_part' => null
+                        ]
+                    ]
+                ],
+                'idx_articles_category_id' => [
+                    'table_schema' => 'windwalker_test',
+                    'table_name' => 'articles',
+                    'is_unique' => false,
+                    'is_primary' => false,
+                    'index_name' => 'idx_articles_category_id',
+                    'index_comment' => '',
+                    'columns' => [
+                        'category_id' => [
+                            'column_name' => 'category_id',
+                            'sub_part' => null
+                        ]
+                    ]
+                ],
+                'idx_articles_created_by' => [
+                    'table_schema' => 'windwalker_test',
+                    'table_name' => 'articles',
+                    'is_unique' => false,
+                    'is_primary' => false,
+                    'index_name' => 'idx_articles_created_by',
+                    'index_comment' => '',
+                    'columns' => [
+                        'created_by' => [
+                            'column_name' => 'created_by',
+                            'sub_part' => null
+                        ]
+                    ]
+                ],
+                'idx_articles_language' => [
+                    'table_schema' => 'windwalker_test',
+                    'table_name' => 'articles',
+                    'is_unique' => false,
+                    'is_primary' => false,
+                    'index_name' => 'idx_articles_language',
+                    'index_comment' => '',
+                    'columns' => [
+                        'language' => [
+                            'column_name' => 'language',
+                            'sub_part' => null
+                        ]
+                    ]
+                ],
+                'idx_articles_page_id' => [
+                    'table_schema' => 'windwalker_test',
+                    'table_name' => 'articles',
+                    'is_unique' => false,
+                    'is_primary' => false,
+                    'index_name' => 'idx_articles_page_id',
+                    'index_comment' => '',
+                    'columns' => [
+                        'page_id' => [
+                            'column_name' => 'page_id',
+                            'sub_part' => null
+                        ]
+                    ]
+                ]
+            ],
+            $indexes
+        );
     }
 
     // /**

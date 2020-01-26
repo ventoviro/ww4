@@ -309,9 +309,10 @@ class MysqlPlatform extends AbstractPlatform
         $query = $this->db->getQuery(true)
             ->select(
                 [
+                    'TABLE_SCHEMA',
+                    'TABLE_NAME',
                     'NON_UNIQUE',
                     'INDEX_NAME',
-                    'SEQ_IN_INDEX',
                     'COLUMN_NAME',
                     'COLLATION',
                     'CARDINALITY',
@@ -320,8 +321,7 @@ class MysqlPlatform extends AbstractPlatform
                 ]
             )
             ->from('INFORMATION_SCHEMA.STATISTICS')
-            ->where('TABLE_NAME', $table)
-            ->where('INDEX_NAME', '!=', 'PRIMARY');
+            ->where('TABLE_NAME', $table);
 
         if ($schema !== self::DEFAULT_SCHEMA) {
             $query->where('TABLE_SCHEMA', $schema);
@@ -329,10 +329,36 @@ class MysqlPlatform extends AbstractPlatform
             $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
         }
 
+        $indexGroup = $this->db->prepare($query)->loadAll()->group('INDEX_NAME');
+
         $indexes = [];
 
-        foreach ($this->db->prepare($query) as $index) {
-            //
+        foreach ($indexGroup as $keys) {
+            $index = [];
+            $name = $keys[0]['INDEX_NAME'];
+
+            if ($schema === self::DEFAULT_SCHEMA) {
+                $name = $keys[0]['TABLE_NAME'] . '_' . $name;
+            }
+
+            $index['table_schema']  = $keys[0]['TABLE_SCHEMA'];
+            $index['table_name']    = $keys[0]['TABLE_NAME'];
+            $index['is_unique']     = (string) $keys[0]['NON_UNIQUE'] === '0';
+            $index['is_primary']    = $keys[0]['INDEX_NAME'] === 'PRIMARY';
+            $index['index_name']    = $keys[0]['INDEX_NAME'];
+            $index['index_comment'] = $keys[0]['INDEX_COMMENT'];
+            $index['columns'] = [];
+
+            foreach ($keys as $key) {
+                $index['columns'][$key['COLUMN_NAME']] = [
+                    'column_name' => $key['COLUMN_NAME'],
+                    'sub_part' => $key['SUB_PART'],
+                ];
+            }
+
+            $indexes[$name] = $index;
         }
+
+        return $indexes;
     }
 }
