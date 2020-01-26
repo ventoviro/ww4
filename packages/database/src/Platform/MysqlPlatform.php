@@ -33,7 +33,7 @@ class MysqlPlatform extends AbstractPlatform
             ->from('INFORMATION_SCHEMA.SCHEMATA')
             ->where('SCHEMA_NAME', '!=', 'INFORMATION_SCHEMA');
 
-        return $this->schemas = $this->db->prepare($query)->loadColumn()->dump();
+        return $this->db->prepare($query)->loadColumn()->dump();
     }
 
     /**
@@ -257,7 +257,7 @@ class MysqlPlatform extends AbstractPlatform
             $realName = $row['CONSTRAINT_NAME'];
             $isFK     = ('FOREIGN KEY' === $row['CONSTRAINT_TYPE']);
 
-            if ($isFK || $schema !== static::DEFAULT_SCHEMA) {
+            if ($isFK || $schema !== null) {
                 $name = $realName;
             } else {
                 $name = $row['TABLE_NAME'] . '_' . $realName;
@@ -327,7 +327,7 @@ class MysqlPlatform extends AbstractPlatform
             $index = [];
             $name  = $keys[0]['INDEX_NAME'];
 
-            if ($schema === self::DEFAULT_SCHEMA) {
+            if ($schema === null) {
                 $name = $keys[0]['TABLE_NAME'] . '_' . $name;
             }
 

@@ -76,7 +76,7 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
                 );
             }
 
-            $pdo->exec('DROP DATABASE IF EXISTS ' . static::qn(static::$dbname));
+            $pdo->exec('DROP DATABASE ' . static::qn(static::$dbname));
             $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
 
             // Disconnect.
