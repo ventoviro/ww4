@@ -19,8 +19,6 @@ use Windwalker\Query\Query;
  */
 interface PlatformInterface
 {
-    public const DEFAULT_SCHEMA = '__DEFAULT_SCHEMA__';
-
     /**
      * getGrammar
      *

@@ -41,14 +41,12 @@ class MysqlPlatform extends AbstractPlatform
      */
     public function getTables(?string $schema = null, bool $includeViews = false): array
     {
-        $schema = $schema ?? static::DEFAULT_SCHEMA;
-
         $query = $this->db->getQuery(true)
             ->select('TABLE_NAME')
             ->from('INFORMATION_SCHEMA.TABLES')
             ->where('TABLE_TYPE', 'BASE TABLE');
 
-        if ($schema !== self::DEFAULT_SCHEMA) {
+        if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
         } else {
             $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
@@ -71,14 +69,12 @@ class MysqlPlatform extends AbstractPlatform
      */
     public function getViews(?string $schema = null): array
     {
-        $schema = $schema ?? static::DEFAULT_SCHEMA;
-
         $query = $this->db->getQuery(true)
             ->select('TABLE_NAME')
             ->from('INFORMATION_SCHEMA.TABLES')
             ->where('TABLE_TYPE', 'VIEW');
 
-        if ($schema !== self::DEFAULT_SCHEMA) {
+        if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
         } else {
             $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
@@ -92,8 +88,6 @@ class MysqlPlatform extends AbstractPlatform
      */
     public function getColumns(string $table, ?string $schema = null): array
     {
-        $schema = $schema ?? static::DEFAULT_SCHEMA;
-
         $query = $this->db->getQuery(true)
             ->select(
                 [
@@ -113,7 +107,7 @@ class MysqlPlatform extends AbstractPlatform
             ->from('INFORMATION_SCHEMA.COLUMNS')
             ->where('TABLE_NAME', $table);
 
-        if ($schema !== self::DEFAULT_SCHEMA) {
+        if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
         } else {
             $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
@@ -177,8 +171,6 @@ class MysqlPlatform extends AbstractPlatform
      */
     public function getConstraints(string $table, ?string $schema = null): array
     {
-        $schema = $schema ?? static::DEFAULT_SCHEMA;
-
         // JOIN of INFORMATION_SCHEMA table is very slow, we use 3 separate query to get constraints.
         // @see Commit: 4d6e7848268bd9a6add3f7ddc68e879f2f105da5
         // TODO: Test join version at MariaDB or 64bit MySQL
@@ -196,7 +188,7 @@ class MysqlPlatform extends AbstractPlatform
             ->where('TABLE_NAME', $table)
             ->tap(
                 static function (Query $query) use ($schema) {
-                    if ($schema !== self::DEFAULT_SCHEMA) {
+                    if ($schema !== null) {
                         $query->where('TABLE_SCHEMA', $schema);
                     } else {
                         $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
@@ -221,7 +213,7 @@ class MysqlPlatform extends AbstractPlatform
             ->where('TABLE_NAME', $table)
             ->tap(
                 static function (Query $query) use ($schema) {
-                    if ($schema !== self::DEFAULT_SCHEMA) {
+                    if ($schema !== null) {
                         $query->where('TABLE_SCHEMA', $schema);
                     } else {
                         $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
@@ -245,7 +237,7 @@ class MysqlPlatform extends AbstractPlatform
             ->where('TABLE_NAME', $table)
             ->tap(
                 static function (Query $query) use ($schema) {
-                    if ($schema !== self::DEFAULT_SCHEMA) {
+                    if ($schema !== null) {
                         $query->where('CONSTRAINT_SCHEMA', $schema);
                     } else {
                         $query->where('CONSTRAINT_SCHEMA', '!=', 'INFORMATION_SCHEMA');
@@ -304,8 +296,6 @@ class MysqlPlatform extends AbstractPlatform
      */
     public function getIndexes(string $table, ?string $schema = null): array
     {
-        $schema = $schema ?? static::DEFAULT_SCHEMA;
-
         $query = $this->db->getQuery(true)
             ->select(
                 [
@@ -317,13 +307,13 @@ class MysqlPlatform extends AbstractPlatform
                     'COLLATION',
                     'CARDINALITY',
                     'SUB_PART',
-                    'INDEX_COMMENT'
+                    'INDEX_COMMENT',
                 ]
             )
             ->from('INFORMATION_SCHEMA.STATISTICS')
             ->where('TABLE_NAME', $table);
 
-        if ($schema !== self::DEFAULT_SCHEMA) {
+        if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
         } else {
             $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
@@ -335,7 +325,7 @@ class MysqlPlatform extends AbstractPlatform
 
         foreach ($indexGroup as $keys) {
             $index = [];
-            $name = $keys[0]['INDEX_NAME'];
+            $name  = $keys[0]['INDEX_NAME'];
 
             if ($schema === self::DEFAULT_SCHEMA) {
                 $name = $keys[0]['TABLE_NAME'] . '_' . $name;
@@ -347,6 +337,7 @@ class MysqlPlatform extends AbstractPlatform
             $index['is_primary']    = $keys[0]['INDEX_NAME'] === 'PRIMARY';
             $index['index_name']    = $keys[0]['INDEX_NAME'];
             $index['index_comment'] = $keys[0]['INDEX_COMMENT'];
+
             $index['columns'] = [];
 
             foreach ($keys as $key) {
