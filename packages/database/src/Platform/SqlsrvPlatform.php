@@ -56,21 +56,7 @@ class SqlsrvPlatform extends AbstractPlatform
     /**
      * @inheritDoc
      */
-    public function getConstraintKeys(string $constraint, string $table, ?string $schema = null): array
-    {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getTriggerNames(?string $schema = null): array
-    {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getTriggers(?string $schema = null): array
+    public function getIndexes(string $table, ?string $schema = null): array
     {
     }
 }

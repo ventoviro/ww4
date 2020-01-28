@@ -128,4 +128,33 @@ class SqlsrvGrammar extends Grammar
 
         return str_replace("'", "''", $text);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function listDatabases($where = null): Query
+    {
+        return $this->createQuery()
+            ->select('name')
+            ->from('master.dbo.sysdatabases');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listTables(?string $dbname): Query
+    {
+        $query = $this->createQuery()
+            ->select('TABLE_NAME')
+            ->from('INFORMATION_SCHEMA.TABLES')
+            ->where('TABLE_TYPE', 'BASE TABLE');
+
+        if ($dbname !== null) {
+            $query->where('TABLE_CATALOG', $dbname);
+        } else {
+            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+        }
+
+        return $query;
+    }
 }

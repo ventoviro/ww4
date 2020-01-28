@@ -1,5 +1,5 @@
 
-DROP TABLE `ww_flower`;
+DROP TABLE IF EXISTS `ww_flower`;
 CREATE TABLE IF NOT EXISTS `ww_flower` (
   `id` integer PRIMARY KEY AUTOINCREMENT,
   `catid` int(11) NOT NULL DEFAULT 0,

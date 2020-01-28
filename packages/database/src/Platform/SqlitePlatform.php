@@ -73,4 +73,11 @@ class SqlitePlatform extends AbstractPlatform
     public function getTriggers(?string $schema = null): array
     {
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIndexes(string $table, ?string $schema = null): array
+    {
+    }
 }

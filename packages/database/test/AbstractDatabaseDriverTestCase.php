@@ -48,7 +48,7 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
             self::markTestSkipped('DSN of ' . static::$platform . ' not available for test case: ' . static::class);
         }
 
-        /** @var AbstractPdoConnection $connClass */
+        /** @var AbstractPdoConnection|string $connClass */
         $connClass = 'Windwalker\Database\Driver\Pdo\Pdo' . ucfirst(static::$platform) . 'Connection';
 
         if (!class_exists($connClass) || !is_subclass_of($connClass, AbstractPdoConnection::class)) {
@@ -67,23 +67,12 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
 
             $pdo = static::createBaseConnect($params, $connClass);
 
-            // TODO: Use faster way to refresh test DB and tables
-            if (static::$platform === 'sqlsrv') {
-                $pdo->exec(
-                    sprintf(
-                        'ALTER DATABASE %s SET SINGLE_USER WITH ROLLBACK IMMEDIATE',
-                        static::$dbname
-                    )
-                );
-            }
+            $grammar = static::getGrammar(\WeakReference::create($pdo));
 
-            $grammar = static::getGrammar($pdo);
-
-            $st = $pdo->query(
+            $dbs = $pdo->query(
                 $grammar->listDatabases()->render(true)
-            );
-            $st->execute();
-            $dbs = $st->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+            )
+                ->fetchAll(\PDO::FETCH_COLUMN) ?: [];
 
             if (!in_array(static::$dbname, $dbs, true)) {
                 $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
@@ -103,16 +92,18 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
 
         static::$baseConn = static::createBaseConnect($params, $connClass);
 
-        $grammar = static::getGrammar(static::$baseConn);
-        $tables = static::$baseConn->query(
-            $grammar
-                ->listTables(static::$dbname)
-                ->render(true)
-        )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+        if (static::$platform !== 'sqlite') {
+            $grammar = static::getGrammar(\WeakReference::create(static::$baseConn));
+            $tables = static::$baseConn->query(
+                $grammar
+                    ->listTables(static::$dbname)
+                    ->render(true)
+            )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
 
-        if ($tables) {
-            foreach ($tables as $table) {
-                static::$baseConn->exec($grammar->dropTable($table, true));
+            if ($tables) {
+                foreach ($tables as $table) {
+                    static::$baseConn->exec($grammar->dropTable($table, true));
+                }
             }
         }
 

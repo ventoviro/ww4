@@ -15,6 +15,7 @@ use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\DefaultConnection;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 
 /**
  * The AbstractGrammar class.
@@ -90,6 +91,10 @@ class Grammar
      */
     public function compile(string $type, Query $query): string
     {
+        if ($type === '') {
+            throw new \InvalidArgumentException('Type shouldn\'t be empty string');
+        }
+
         $method = 'compile' . ucfirst($type);
 
         if (!method_exists($this, $method)) {
@@ -231,9 +236,13 @@ class Grammar
         }
 
         if (strpos($name, '.') !== false) {
-            [$name1, $name2] = explode('.', $name);
-
-            return static::quoteName($name1) . '.' . static::quoteName($name2);
+            return implode(
+                '.',
+                array_map(
+                    [static::class, 'quoteName'],
+                    explode('.', $name)
+                )
+            );
         }
 
         return static::$nameQuote[0] . $name . static::$nameQuote[1];

@@ -1574,6 +1574,10 @@ class Query implements QueryInterface, BindableInterface
     {
         $bounded = $bounded ?? [];
 
+        if (!$this->type) {
+            return '';
+        }
+
         // Only top level query rendering should create sequence and get merged bounded
         if (!$this->sequence) {
             $bounded = $this->mergeBounded();
