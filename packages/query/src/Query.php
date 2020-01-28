@@ -324,17 +324,26 @@ class Query implements QueryInterface, BindableInterface
             $this->from = $this->clause('FROM', [], ', ');
         }
 
-        if (!is_array($tables) && $alias !== null) {
-            $tables = [$alias => $tables];
-        }
+        // if (!is_array($tables) && $alias !== null) {
+        //     $tables = [$alias => $tables];
+        // }
 
         if (is_array($tables)) {
-            foreach ($tables as $tableAlias => $table) {
-                $this->from->append($this->as($table, $tableAlias));
+            foreach ($tables as $table) {
+                ArgumentsAssert::assert(
+                    is_array($table),
+                    '%s if use array as argument 1, every element should be a sub-array, '
+                        . ' example: [\'foo\', \'f\'], got: %s.',
+                    $table
+                );
+
+                $this->from(...$table);
             }
-        } else {
-            $this->from->append($this->as($tables, $alias));
+
+            return $this;
         }
+
+        $this->from->append($this->as($tables, $alias));
 
         return $this;
     }
@@ -1235,7 +1244,7 @@ class Query implements QueryInterface, BindableInterface
             return $name;
         }
 
-        return $this->getGrammar()->quoteName((string) $name);
+        return $this->getGrammar()::quoteName((string) $name);
     }
 
     /**
@@ -1353,12 +1362,12 @@ class Query implements QueryInterface, BindableInterface
 
     public function nullDate(): string
     {
-        return $this->getGrammar()->nullDate();
+        return $this->getGrammar()::nullDate();
     }
 
     public function dateFormat(): string
     {
-        return $this->getGrammar()->dateFormat();
+        return $this->getGrammar()::dateFormat();
     }
 
     public function raw(string $string, ...$args): RawWrapper
@@ -1685,6 +1694,8 @@ class Query implements QueryInterface, BindableInterface
 
         $this->escaper = $escaper instanceof Escaper ? $escaper : new Escaper($escaper, $this);
 
+        $this->grammar->setEscaper($this->escaper);
+
         return $this;
     }
 
@@ -1740,7 +1751,7 @@ class Query implements QueryInterface, BindableInterface
      *
      * @return  static
      */
-    public function createSubQuery(): self
+    public function createSubQuery()
     {
         return new static($this->escaper, $this->grammar);
     }

@@ -35,7 +35,7 @@ class Escaper
      * @param  \PDO|callable|mixed  $connection
      * @param  Query                $query
      */
-    public function __construct($connection, Query $query)
+    public function __construct($connection, Query $query = null)
     {
         $this->connection = $connection;
         $this->query      = $query;

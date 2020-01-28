@@ -15,6 +15,7 @@ use Asika\SqlSplitter\SqlSplitter;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Driver\Pdo\AbstractPdoConnection;
 use Windwalker\Database\Driver\Pdo\DsnHelper;
+use Windwalker\Query\Escaper;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Query\Test\QueryTestTrait;
 
@@ -76,8 +77,19 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
                 );
             }
 
-            $pdo->exec('DROP DATABASE ' . static::qn(static::$dbname));
-            $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
+            $grammar = static::getGrammar($pdo);
+
+            $st = $pdo->query(
+                $grammar->listDatabases()->render(true)
+            );
+            $st->execute();
+            $dbs = $st->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+
+            if (!in_array(static::$dbname, $dbs, true)) {
+                $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
+            }
+
+            // $pdo->exec('DROP DATABASE ' . static::qn(static::$dbname));
 
             // Disconnect.
             $pdo = null;
@@ -91,6 +103,19 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
 
         static::$baseConn = static::createBaseConnect($params, $connClass);
 
+        $grammar = static::getGrammar(static::$baseConn);
+        $tables = static::$baseConn->query(
+            $grammar
+                ->listTables(static::$dbname)
+                ->render(true)
+        )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+
+        if ($tables) {
+            foreach ($tables as $table) {
+                static::$baseConn->exec($grammar->dropTable($table, true));
+            }
+        }
+
         static::setupDatabase();
     }
 
@@ -101,7 +126,10 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
         return new \PDO(
             $dsn,
             $params['username'] ?? null,
-            $params['password'] ?? null
+            $params['password'] ?? null,
+            [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+            ]
         );
     }
 
@@ -142,7 +170,15 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
                 continue;
             }
 
-            static::$baseConn->exec($query);
+            try {
+                static::$baseConn->exec($query);
+            } catch (\PDOException $e) {
+                throw new \PDOException(
+                    $e->getMessage() . ' - SQ: ' . $query,
+                    (int) $e->getCode(),
+                    $e
+                );
+            }
         }
     }
 
@@ -178,11 +214,19 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
     /**
      * getGrammar
      *
+     * @param mixed $escaper
+     *
      * @return  Grammar
      */
-    public static function getGrammar(): Grammar
+    public static function getGrammar($escaper = null): Grammar
     {
-        return Grammar::create(static::$platform);
+        $grammar = Grammar::create(static::$platform);
+
+        if ($escaper) {
+            $grammar->setEscaper(new Escaper($escaper));
+        }
+
+        return $grammar;
     }
 
     /**
@@ -194,7 +238,7 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
      */
     protected static function qn(string $text): string
     {
-        return static::getGrammar()->quoteName($text);
+        return static::getGrammar()::quoteName($text);
     }
 
     /**

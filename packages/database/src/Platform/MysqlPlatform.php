@@ -28,12 +28,11 @@ class MysqlPlatform extends AbstractPlatform
      */
     public function getSchemas(): array
     {
-        $query = $this->db->getQuery(true)
-            ->select('SCHEMA_NAME')
-            ->from('INFORMATION_SCHEMA.SCHEMATA')
-            ->where('SCHEMA_NAME', '!=', 'INFORMATION_SCHEMA');
-
-        return $this->db->prepare($query)->loadColumn()->dump();
+        return $this->db->prepare(
+            $this->getGrammar()->listDatabases()
+        )
+            ->loadColumn()
+            ->dump();
     }
 
     /**
@@ -41,18 +40,11 @@ class MysqlPlatform extends AbstractPlatform
      */
     public function getTables(?string $schema = null, bool $includeViews = false): array
     {
-        $query = $this->db->getQuery(true)
-            ->select('TABLE_NAME')
-            ->from('INFORMATION_SCHEMA.TABLES')
-            ->where('TABLE_TYPE', 'BASE TABLE');
-
-        if ($schema !== null) {
-            $query->where('TABLE_SCHEMA', $schema);
-        } else {
-            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
-        }
-
-        $tables = $this->db->prepare($query)->loadColumn()->dump();
+        $tables = $this->db->prepare(
+            $this->getGrammar()->listTables($schema)
+        )
+            ->loadColumn()
+            ->dump();
 
         if ($includeViews) {
             $tables = array_merge(

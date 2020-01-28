@@ -13,6 +13,7 @@ namespace Windwalker\Query\Grammar;
 
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\DefaultConnection;
+use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
 
 /**
@@ -39,6 +40,11 @@ class Grammar
      * @var string
      */
     protected static $dateFormat = 'Y-m-d H:i:s';
+
+    /**
+     * @var Escaper
+     */
+    protected $escaper;
 
     /**
      * create
@@ -212,7 +218,7 @@ class Grammar
         return (string) $query->getSql();
     }
 
-    public function quoteName(string $name): string
+    public static function quoteName(string $name): string
     {
         if ($name === '*') {
             return $name;
@@ -221,13 +227,13 @@ class Grammar
         if (stripos($name, ' as ') !== false) {
             [$name, $alias] = preg_split('/ as /i', $name);
 
-            return $this->quoteName($name) . ' AS ' . $this->quoteName($alias);
+            return static::quoteName($name) . ' AS ' . static::quoteName($alias);
         }
 
         if (strpos($name, '.') !== false) {
             [$name1, $name2] = explode('.', $name);
 
-            return $this->quoteName($name1) . '.' . $this->quoteName($name2);
+            return static::quoteName($name1) . '.' . static::quoteName($name2);
         }
 
         return static::$nameQuote[0] . $name . static::$nameQuote[1];
@@ -273,13 +279,107 @@ class Grammar
         return addcslashes($text, "\000\n\r\\\032");
     }
 
-    public function nullDate(): string
+    public static function nullDate(): string
     {
         return static::$nullDate;
     }
 
-    public function dateFormat(): string
+    public static function dateFormat(): string
     {
         return static::$dateFormat;
+    }
+
+    /**
+     * clause
+     *
+     * @param  string  $name
+     * @param  mixed   $elements
+     * @param  string  $glue
+     *
+     * @return  Clause
+     */
+    public static function clause(string $name = '', $elements = [], string $glue = ' '): Clause
+    {
+        return new Clause($name, $elements, $glue);
+    }
+
+    /**
+     * build
+     *
+     * @param  string|null  ...$args
+     *
+     * @return  string
+     */
+    public static function build(?string ...$args): string
+    {
+        $sql = [];
+
+        foreach ($args as $arg) {
+            if ($arg === '' || $arg === null || $arg === false) {
+                continue;
+            }
+
+            $sql[] = $arg;
+        }
+
+        return implode(' ', $sql);
+    }
+
+    /**
+     * @param  Escaper  $escaper
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setEscaper(Escaper $escaper)
+    {
+        $this->escaper = $escaper;
+
+        return $this;
+    }
+
+    public function createQuery(): Query
+    {
+        return new Query($this->escaper, $this);
+    }
+
+    /**
+     * listDatabases
+     *
+     * @return  Query
+     */
+    public function listDatabases(): Query
+    {
+        return $this->createQuery();
+    }
+
+    /**
+     * listTables
+     *
+     * @param  string  $dbname
+     *
+     * @return  Query
+     */
+    public function listTables(?string $dbname): Query
+    {
+        return $this->createQuery();
+    }
+
+    /**
+     * dropTable
+     *
+     * @param  string  $table
+     * @param  bool    $ifExists
+     * @param  mixed   ...$options
+     *
+     * @return  string
+     */
+    public function dropTable(string $table, bool $ifExists = false, ...$options): string
+    {
+        return static::build(
+            'DROP TABLE',
+            $ifExists ? 'IF EXISTS' : null,
+            self::quoteName($table),
+            ...$options
+        );
     }
 }

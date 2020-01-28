@@ -183,7 +183,11 @@ class QueryTest extends TestCase
                 'SELECT * FROM "a"."foo" AS "foo"',
             ],
             'Multiple tables' => [
-                ['f' => 'foo', 'b' => 'bar', 'y' => 'yoo'],
+                [
+                    ['foo', 'f'],
+                    ['bar', 'b'],
+                    ['yoo', 'y']
+                ],
                 'nouse',
                 'SELECT * FROM "foo" AS "f", "bar" AS "b", "yoo" AS "y"',
             ],
@@ -219,23 +223,29 @@ class QueryTest extends TestCase
             ],
             'Multiple tables with sub query' => [
                 [
-                    'a' => 'ace',
-                    'f' => self::createQuery()
-                        ->select('*')
-                        ->from('flower')
-                        ->alias('fl_nouse'),
+                    ['ace', 'a'],
+                    [
+                        self::createQuery()
+                            ->select('*')
+                            ->from('flower')
+                            ->alias('fl_nouse'),
+                        'f'
+                    ]
                 ],
                 'nouse',
                 'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"',
             ],
             'Multiple tables with sub query closure' => [
                 [
-                    'a' => 'ace',
-                    'f' => function (Query $q) {
-                        $q->select('*')
-                            ->from('flower')
-                            ->alias('fl_nouse');
-                    },
+                    ['ace', 'a'],
+                    [
+                        static function (Query $q) {
+                            $q->select('*')
+                                ->from('flower')
+                                ->alias('fl_nouse');
+                        },
+                        'f'
+                    ]
                 ],
                 'nouse',
                 'SELECT * FROM "ace" AS "a", (SELECT * FROM "flower") AS "f"',

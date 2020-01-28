@@ -56,7 +56,9 @@ class Clause implements \Countable, ClauseInterface
         $this->name = $name;
         $this->glue = $glue;
 
-        $this->append($elements);
+        if ($elements !== null) {
+            $this->append($elements);
+        }
     }
 
     /**

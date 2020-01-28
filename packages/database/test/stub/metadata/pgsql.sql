@@ -1,4 +1,4 @@
-DROP SEQUENCE IF EXISTS "categories_seq_id";
+DROP SEQUENCE IF EXISTS "categories_seq_id" CASCADE;
 CREATE TABLE categories
 (
     id          serial                                      NOT NULL PRIMARY KEY,
@@ -40,7 +40,7 @@ CREATE INDEX idx_categories_path
     ON categories (path);
 
 
-DROP SEQUENCE IF EXISTS "articles_seq_id";
+DROP SEQUENCE IF EXISTS "articles_seq_id" CASCADE;
 CREATE TABLE articles
 (
     id          serial                                       NOT NULL,

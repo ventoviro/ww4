@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Grammar;
 
+use Windwalker\Query\Query;
+
 /**
  * The MySQLGrammar class.
  */
@@ -49,5 +51,35 @@ class MysqlGrammar extends Grammar
             ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'],
             $text
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listDatabases($where = null): Query
+    {
+        return $this->createQuery()
+            ->select('SCHEMA_NAME')
+            ->from('INFORMATION_SCHEMA.SCHEMATA')
+            ->where('SCHEMA_NAME', '!=', 'INFORMATION_SCHEMA');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listTables(?string $dbname): Query
+    {
+        $query = $this->createQuery()
+            ->select('TABLE_NAME')
+            ->from('INFORMATION_SCHEMA.TABLES')
+            ->where('TABLE_TYPE', 'BASE TABLE');
+
+        if ($dbname !== null) {
+            $query->where('TABLE_SCHEMA', $dbname);
+        } else {
+            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+        }
+
+        return $query;
     }
 }
