@@ -725,7 +725,7 @@ SQL
         // Test self merged bounded
         self::assertSqlEquals(
             $expt,
-            BoundedHelper::simulatePrepared(
+            BoundedHelper::emulatePrepared(
                 $this->instance,
                 (string) $this->instance->render(false, $bounded),
                 $bounded
@@ -735,7 +735,7 @@ SQL
         // Test double bounded should get same sequence
         self::assertSqlEquals(
             $expt,
-            BoundedHelper::simulatePrepared(
+            BoundedHelper::emulatePrepared(
                 $this->instance,
                 (string) $this->instance->render(),
                 $this->instance->getMergedBounded()
@@ -1013,7 +1013,7 @@ SQL
         // Test self merged bounded
         self::assertSqlEquals(
             $expt,
-            BoundedHelper::simulatePrepared(
+            BoundedHelper::emulatePrepared(
                 $this->instance,
                 (string) $this->instance->render(false, $bounded),
                 $bounded
@@ -1023,7 +1023,7 @@ SQL
         // Test double bounded should get same sequence
         self::assertSqlEquals(
             $expt,
-            BoundedHelper::simulatePrepared(
+            BoundedHelper::emulatePrepared(
                 $this->instance,
                 (string) $this->instance->render(),
                 $this->instance->getMergedBounded()

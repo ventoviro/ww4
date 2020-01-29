@@ -143,9 +143,9 @@ class BoundedHelperTest extends TestCase
     }
 
     /**
-     * @see  BoundedHelper::simulatePrepared
+     * @see  BoundedHelper::emulatePrepared
      */
-    public function testSimulatePrepared(): void
+    public function testEmulatePrepared(): void
     {
         $sql = 'SELECT * FROM foo WHERE foo = :foo AND bar = ? AND yoo IN(?, ?, ?) AND flower = :flower';
 
@@ -161,7 +161,7 @@ class BoundedHelperTest extends TestCase
             ]
         );
 
-        $sql2 = BoundedHelper::simulatePrepared(
+        $sql2 = BoundedHelper::emulatePrepared(
             new MockEscaper(),
             $sql,
             $query->getBounded()

@@ -1587,7 +1587,7 @@ class Query implements QueryInterface, BindableInterface
         $sql = $this->getGrammar()->compile((string) $this->type, $this);
 
         if ($emulatePrepared) {
-            $sql = BoundedHelper::simulatePrepared($this->getEscaper(), $sql, $bounded);
+            $sql = BoundedHelper::emulatePrepared($this->getEscaper(), $sql, $bounded);
         }
 
         // Clear sequence so that next time rendering should re-create new one

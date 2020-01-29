@@ -57,7 +57,7 @@ trait QueryTestTrait
     protected static function renderQuery($query): string
     {
         if ($query instanceof Query) {
-            $query = BoundedHelper::simulatePrepared(
+            $query = BoundedHelper::emulatePrepared(
                 $query,
                 $query->render(false, $bounded),
                 $bounded
