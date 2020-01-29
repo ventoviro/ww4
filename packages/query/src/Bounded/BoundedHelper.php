@@ -64,13 +64,13 @@ class BoundedHelper
     /**
      * simulatePrepared
      *
-     * @param  \PDO|callable|Query|mixed  $db
+     * @param  \PDO|callable|Query|mixed  $escaper
      * @param  string                     $sql
      * @param  array                      $bounded
      *
      * @return  string
      */
-    public static function emulatePrepared($db, $sql, array $bounded): string
+    public static function emulatePrepared($escaper, $sql, array $bounded): string
     {
         if ($bounded === []) {
             return $sql;
@@ -83,7 +83,7 @@ class BoundedHelper
         foreach ($params as $param) {
             switch ($param['dataType']) {
                 case ParamType::STRING:
-                    $v = Escaper::tryQuote($db, (string) $param['value']);
+                    $v = Escaper::tryQuote($escaper, (string) $param['value']);
                     break;
                 default:
                     $v = $param['value'];
