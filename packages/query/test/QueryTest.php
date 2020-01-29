@@ -12,12 +12,11 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Query\Clause\JoinClause;
-use Windwalker\Query\Escaper;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Query\Query;
 use Windwalker\Query\Test\Mock\MockEscaper;
-
 use Windwalker\Test\TestHelper;
 
 use function Windwalker\Query\clause;
@@ -726,7 +725,7 @@ SQL
         // Test self merged bounded
         self::assertSqlEquals(
             $expt,
-            Escaper::replaceQueryParams(
+            BoundedHelper::simulatePrepared(
                 $this->instance,
                 (string) $this->instance->render(false, $bounded),
                 $bounded
@@ -736,7 +735,7 @@ SQL
         // Test double bounded should get same sequence
         self::assertSqlEquals(
             $expt,
-            Escaper::replaceQueryParams(
+            BoundedHelper::simulatePrepared(
                 $this->instance,
                 (string) $this->instance->render(),
                 $this->instance->getMergedBounded()
@@ -1014,7 +1013,7 @@ SQL
         // Test self merged bounded
         self::assertSqlEquals(
             $expt,
-            Escaper::replaceQueryParams(
+            BoundedHelper::simulatePrepared(
                 $this->instance,
                 (string) $this->instance->render(false, $bounded),
                 $bounded
@@ -1024,7 +1023,7 @@ SQL
         // Test double bounded should get same sequence
         self::assertSqlEquals(
             $expt,
-            Escaper::replaceQueryParams(
+            BoundedHelper::simulatePrepared(
                 $this->instance,
                 (string) $this->instance->render(),
                 $this->instance->getMergedBounded()

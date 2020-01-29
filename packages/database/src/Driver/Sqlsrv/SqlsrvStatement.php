@@ -13,6 +13,7 @@ namespace Windwalker\Database\Driver\Sqlsrv;
 
 use Windwalker\Data\Collection;
 use Windwalker\Database\Driver\AbstractStatement;
+use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Query\Bounded\ParamType;
 
 use function Windwalker\collect;
@@ -66,7 +67,7 @@ class SqlsrvStatement extends AbstractStatement
             $params = $this->bounded;
         }
 
-        [$query, $params] = static::replaceStatement($this->query, '?', $params);
+        [$query, $params] = BoundedHelper::replaceParams($this->query, '?', $params);
 
         $args = [];
 

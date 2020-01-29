@@ -13,6 +13,7 @@ namespace Windwalker\Database\Driver\Pgsql;
 
 use Windwalker\Data\Collection;
 use Windwalker\Database\Driver\AbstractStatement;
+use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Query\Bounded\ParamType;
 
 use function Windwalker\collect;
@@ -71,7 +72,7 @@ class PgsqlStatement extends AbstractStatement
             $params = $this->bounded;
         }
 
-        [$query, $params] = static::replaceStatement($this->query, '$%d', $params);
+        [$query, $params] = BoundedHelper::replaceParams($this->query, '$%d', $params);
 
         $this->stmt = $stmt = pg_prepare($this->conn, $stname = uniqid('pg-'), $query);
 

@@ -12,8 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Query;
 
 use Windwalker\Query\Bounded\BindableInterface;
-use Windwalker\Query\Bounded\BoundedSequence;
 use Windwalker\Query\Bounded\BindableTrait;
+use Windwalker\Query\Bounded\BoundedHelper;
+use Windwalker\Query\Bounded\BoundedSequence;
 use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Clause\ClauseInterface;
@@ -1586,7 +1587,7 @@ class Query implements QueryInterface, BindableInterface
         $sql = $this->getGrammar()->compile((string) $this->type, $this);
 
         if ($emulatePrepared) {
-            $sql = Escaper::replaceQueryParams($this->getEscaper(), $sql, $bounded);
+            $sql = BoundedHelper::simulatePrepared($this->getEscaper(), $sql, $bounded);
         }
 
         // Clear sequence so that next time rendering should re-create new one

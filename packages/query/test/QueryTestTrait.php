@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Test;
 
-use Windwalker\Query\Escaper;
+use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Query\Query;
 use Windwalker\Test\Helper\TestStringHelper;
 use Windwalker\Test\Traits\BaseAssertionTrait;
@@ -57,7 +57,7 @@ trait QueryTestTrait
     protected static function renderQuery($query): string
     {
         if ($query instanceof Query) {
-            $query = Escaper::replaceQueryParams(
+            $query = BoundedHelper::simulatePrepared(
                 $query,
                 $query->render(false, $bounded),
                 $bounded

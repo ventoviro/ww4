@@ -11,9 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
-use Windwalker\Query\Bounded\ParamType;
-use Windwalker\Utilities\TypeCast;
-
 /**
  * The Escaper class.
  */
@@ -111,61 +108,6 @@ class Escaper
             ),
             1
         );
-    }
-
-    /**
-     * replaceQueryParams
-     *
-     * @param  \PDO|callable|Query|mixed  $db
-     * @param  string                     $sql
-     * @param  array                      $bounded
-     *
-     * @return  string
-     */
-    public static function replaceQueryParams($db, $sql, array $bounded): string
-    {
-        if ($bounded === []) {
-            return $sql;
-        }
-
-        $params = [];
-        $values = [];
-
-        foreach ($bounded as $k => $param) {
-            switch ($param['dataType']) {
-                case ParamType::STRING:
-                    $v = static::tryQuote($db, (string) $param['value']);
-                    break;
-                default:
-                    $v = $param['value'];
-                    break;
-            }
-
-            if (TypeCast::tryInteger($k, true) !== null) {
-                $values[] = $v;
-            } else {
-                $params[$k] = $v;
-            }
-        }
-
-        $sql = str_replace('%', '%%', $sql);
-        $sql = str_replace('?', '%s', $sql);
-
-        if ($values !== []) {
-            $sql = sprintf($sql, ...$values);
-        }
-
-        return preg_replace_callback('/(:[\w_]+)/', function ($matched) use ($params, $db) {
-            $name = $matched[0];
-
-            $param = $params[$name] ?? $params[ltrim($name, ':')] ?? null;
-
-            if (!$param) {
-                return $name;
-            }
-
-            return $param;
-        }, $sql);
     }
 
     /**

@@ -12,10 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Database\Driver\Mysqli;
 
 use Windwalker\Data\Collection;
-use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\AbstractStatement;
+use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Query\Bounded\ParamType;
-use Windwalker\Query\Escaper;
 
 use function Windwalker\collect;
 
@@ -74,7 +73,7 @@ class MysqliStatement extends AbstractStatement
             $params = $this->bounded;
         }
 
-        [$query, $params] = static::replaceStatement($this->query, '?', $params);
+        [$query, $params] = BoundedHelper::replaceParams($this->query, '?', $params);
 
         $this->cursor = $stmt = $this->conn->prepare($query);
 

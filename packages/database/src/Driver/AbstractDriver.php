@@ -183,10 +183,6 @@ abstract class AbstractDriver implements DriverInterface
         return $this->prepare($query)->execute($params);
     }
 
-    private function registerStatementEvents(StatementInterface $stmt)
-    {
-    }
-
     /**
      * @return string
      */
