@@ -14,7 +14,7 @@ namespace Windwalker\Query\Test;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Query\Clause\JoinClause;
-use Windwalker\Query\Grammar\Grammar;
+use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;
 use Windwalker\Query\Test\Mock\MockEscaper;
 use Windwalker\Test\TestHelper;
@@ -1642,9 +1642,9 @@ SQL
         return new Query($conn ?: new MockEscaper(), static::createGrammar());
     }
 
-    public static function createGrammar(): Grammar
+    public static function createGrammar(): AbstractGrammar
     {
-        return new Grammar();
+        return new AbstractGrammar();
     }
 
     protected function setUp(): void

@@ -20,7 +20,7 @@ use Windwalker\Utilities\Assert\ArgumentsAssert;
 /**
  * The AbstractGrammar class.
  */
-class Grammar
+abstract class AbstractGrammar
 {
     /**
      * @var string
@@ -65,7 +65,7 @@ class Grammar
         $class = sprintf('%s\%sGrammar', __NAMESPACE__, ucfirst((string) $name));
 
         if (!class_exists($class)) {
-            $class = static::class;
+            $class = BaseGrammar::class;
         }
 
         return new $class();
@@ -356,22 +356,25 @@ class Grammar
      *
      * @return  Query
      */
-    public function listDatabases(): Query
-    {
-        return $this->createQuery();
-    }
+    abstract public function listDatabases(): Query;
 
     /**
      * listTables
      *
-     * @param  string  $dbname
+     * @param  string  $schema
      *
      * @return  Query
      */
-    public function listTables(?string $dbname): Query
-    {
-        return $this->createQuery();
-    }
+    abstract public function listTables(?string $schema = null): Query;
+
+    /**
+     * listTables
+     *
+     * @param  string  $schema
+     *
+     * @return  Query
+     */
+    abstract public function listViews(?string $schema = null): Query;
 
     /**
      * dropTable
@@ -386,6 +389,25 @@ class Grammar
     {
         return static::build(
             'DROP TABLE',
+            $ifExists ? 'IF EXISTS' : null,
+            self::quoteName($table),
+            ...$options
+        );
+    }
+
+    /**
+     * dropTable
+     *
+     * @param  string  $table
+     * @param  bool    $ifExists
+     * @param  mixed   ...$options
+     *
+     * @return  string
+     */
+    public function dropView(string $table, bool $ifExists = false, ...$options): string
+    {
+        return static::build(
+            'DROP VIEW',
             $ifExists ? 'IF EXISTS' : null,
             self::quoteName($table),
             ...$options

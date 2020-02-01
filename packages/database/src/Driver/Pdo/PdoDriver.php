@@ -13,6 +13,7 @@ namespace Windwalker\Database\Driver\Pdo;
 
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\StatementInterface;
+use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Query\Escaper;
 
 /**
@@ -32,23 +33,9 @@ class PdoDriver extends AbstractDriver
 
     protected function getConnectionClass(): string
     {
-        $platform = $this->platformName;
-
-        switch (strtolower($platform)) {
-            case 'postgresql':
-                $platform = 'pgsql';
-                break;
-
-            case 'sqlserver':
-                $platform = 'sqlsrv';
-                break;
-        }
-
-        $class = __NAMESPACE__ . '\Pdo%sConnection';
-
         return sprintf(
-            $class,
-            ucfirst($platform)
+            __NAMESPACE__ . '\Pdo%sConnection',
+            ucfirst(AbstractPlatform::getShortName($this->platformName))
         );
     }
 

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Test;
 
-use Windwalker\Query\Grammar\Grammar;
+use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Grammar\MySQLGrammar;
 
 /**
@@ -26,7 +26,7 @@ class MySQLQueryTest extends QueryTest
         parent::setUp();
     }
 
-    public static function createGrammar(): Grammar
+    public static function createGrammar(): AbstractGrammar
     {
         return new MySQLGrammar();
     }

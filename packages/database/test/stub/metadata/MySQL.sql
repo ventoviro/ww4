@@ -82,3 +82,4 @@ CREATE INDEX idx_articles_language
 CREATE INDEX idx_articles_page_id
     ON articles (page_id);
 
+CREATE VIEW `articles_view` AS SELECT * FROM `articles`;

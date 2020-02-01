@@ -16,7 +16,7 @@ use Windwalker\Query\Query;
 /**
  * The OracleGrammar class.
  */
-class OracleGrammar extends Grammar
+class OracleGrammar extends BaseGrammar
 {
     /**
      * @var string

@@ -13,10 +13,12 @@ namespace Windwalker\Query\Grammar;
 
 use Windwalker\Query\Query;
 
+use function Windwalker\raw;
+
 /**
  * The MySQLGrammar class.
  */
-class MySQLGrammar extends Grammar
+class MySQLGrammar extends AbstractGrammar
 {
     /**
      * @var string
@@ -67,17 +69,36 @@ class MySQLGrammar extends Grammar
     /**
      * @inheritDoc
      */
-    public function listTables(?string $dbname): Query
+    public function listTables(?string $schema = null): Query
     {
         $query = $this->createQuery()
             ->select('TABLE_NAME')
             ->from('INFORMATION_SCHEMA.TABLES')
             ->where('TABLE_TYPE', 'BASE TABLE');
 
-        if ($dbname !== null) {
-            $query->where('TABLE_SCHEMA', $dbname);
+        if ($schema !== null) {
+            $query->where('TABLE_SCHEMA', $schema);
         } else {
-            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+            $query->where('TABLE_SCHEMA', raw('(SELECT DATABASE())'));
+        }
+
+        return $query;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listViews(?string $schema = null): Query
+    {
+        $query = $this->createQuery()
+            ->select('TABLE_NAME')
+            ->from('INFORMATION_SCHEMA.TABLES')
+            ->where('TABLE_TYPE', 'VIEW');
+
+        if ($schema !== null) {
+            $query->where('TABLE_SCHEMA', $schema);
+        } else {
+            $query->where('TABLE_SCHEMA', raw('(SELECT DATABASE())'));
         }
 
         return $query;

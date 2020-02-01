@@ -43,7 +43,7 @@ CREATE INDEX idx_categories_path
 DROP SEQUENCE IF EXISTS "articles_seq_id" CASCADE;
 CREATE TABLE articles
 (
-    id          serial                                       NOT NULL,
+    id          serial                                       NOT NULL PRIMARY KEY,
     category_id int            DEFAULT 0                     NOT NULL,
     page_id     int            DEFAULT 0                     NOT NULL,
     type        char(15)       DEFAULT 'bar'                 NOT NULL,
@@ -68,7 +68,7 @@ ALTER TABLE articles
         FOREIGN KEY (page_id, created_by) REFERENCES categories (parent_id, level) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 CREATE UNIQUE INDEX idx_articles_alias
-    ON articles (alias);
+    ON articles ("type", alias);
 
 CREATE INDEX idx_articles_category_id
     ON articles (category_id);
@@ -82,3 +82,4 @@ CREATE INDEX idx_articles_language
 CREATE INDEX idx_articles_page_id
     ON articles (page_id);
 
+CREATE VIEW "articles_view" AS SELECT * FROM "articles";

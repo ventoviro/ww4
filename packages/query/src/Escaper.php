@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Utilities\Str;
+
 /**
  * The Escaper class.
  */
@@ -108,6 +110,23 @@ class Escaper
             ),
             1
         );
+    }
+
+    /**
+     * stripQuoteIfExists
+     *
+     * @param  string  $value
+     * @param  string  $sign
+     *
+     * @return  string
+     */
+    public static function stripQuoteIfExists(string $value, string $sign = "'"): string
+    {
+        if (Str::startsWith($value, $sign) && Str::endsWith($value, $sign)) {
+            return static::stripQuote($value);
+        }
+
+        return $value;
     }
 
     /**

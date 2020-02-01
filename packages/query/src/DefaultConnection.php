@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
-use Windwalker\Query\Grammar\Grammar;
+use Windwalker\Query\Grammar\AbstractGrammar;
 
 /**
  * The DefaultConnection class.
@@ -21,7 +21,7 @@ class DefaultConnection
     protected static $escaper;
 
     /**
-     * @var Grammar
+     * @var AbstractGrammar
      */
     protected static $grammar;
 
@@ -44,19 +44,19 @@ class DefaultConnection
     }
 
     /**
-     * @return Grammar
+     * @return AbstractGrammar
      */
-    public static function getGrammar(): ?Grammar
+    public static function getGrammar(): ?AbstractGrammar
     {
         return static::$grammar;
     }
 
     /**
-     * @param  Grammar  $grammar
+     * @param  AbstractGrammar  $grammar
      *
      * @return  void
      */
-    public static function setGrammar(Grammar $grammar)
+    public static function setGrammar(AbstractGrammar $grammar)
     {
         static::$grammar = $grammar;
     }

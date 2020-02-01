@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Driver\Pdo\AbstractPdoConnection;
 use Windwalker\Database\Driver\Pdo\DsnHelper;
 use Windwalker\Query\Escaper;
-use Windwalker\Query\Grammar\Grammar;
+use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Test\QueryTestTrait;
 
 /**
@@ -106,15 +106,30 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
 
         if (static::$platform !== 'sqlite') {
             $grammar = static::getGrammar(\WeakReference::create(static::$baseConn));
+
+            // Drop Tables
             $tables = static::$baseConn->query(
                 $grammar
-                    ->listTables(static::$dbname)
+                    ->listTables()
                     ->render(true)
             )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
 
             if ($tables) {
                 foreach ($tables as $table) {
                     static::$baseConn->exec($grammar->dropTable($table, true));
+                }
+            }
+
+            // Drop Views
+            $views = static::$baseConn->query(
+                $grammar
+                    ->listViews()
+                    ->render(true)
+            )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+
+            if ($views) {
+                foreach ($views as $view) {
+                    static::$baseConn->exec($grammar->dropView($view, true));
                 }
             }
         }
@@ -219,11 +234,11 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
      *
      * @param mixed $escaper
      *
-     * @return  Grammar
+     * @return  AbstractGrammar
      */
-    public static function getGrammar($escaper = null): Grammar
+    public static function getGrammar($escaper = null): AbstractGrammar
     {
-        $grammar = Grammar::create(static::$platform);
+        $grammar = AbstractGrammar::create(static::$platform);
 
         if ($escaper) {
             $grammar->setEscaper(new Escaper($escaper));

@@ -16,6 +16,8 @@ use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Str;
 
+use function Windwalker\raw;
+
 /**
  * The MysqlPlatform class.
  */
@@ -26,61 +28,9 @@ class MySQLPlatform extends AbstractPlatform
     /**
      * @inheritDoc
      */
-    public function getDatabases(): array
-    {
-        return $this->db->prepare(
-            $this->getGrammar()->listDatabases()
-        )
-            ->loadColumn()
-            ->dump();
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getSchemas(): array
     {
         return $this->getDatabases();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getTables(?string $schema = null, bool $includeViews = false): array
-    {
-        $tables = $this->db->prepare(
-            $this->getGrammar()->listTables($schema)
-        )
-            ->loadColumn()
-            ->dump();
-
-        if ($includeViews) {
-            $tables = array_merge(
-                $tables,
-                $this->getViews($schema)
-            );
-        }
-
-        return $tables;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getViews(?string $schema = null): array
-    {
-        $query = $this->db->getQuery(true)
-            ->select('TABLE_NAME')
-            ->from('INFORMATION_SCHEMA.TABLES')
-            ->where('TABLE_TYPE', 'VIEW');
-
-        if ($schema !== null) {
-            $query->where('TABLE_SCHEMA', $schema);
-        } else {
-            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
-        }
-
-        return $this->db->prepare($query)->loadColumn()->dump();
     }
 
     /**
@@ -102,6 +52,7 @@ class MySQLPlatform extends AbstractPlatform
                     'COLUMN_NAME',
                     'COLUMN_TYPE',
                     'COLUMN_COMMENT',
+                    'EXTRA',
                 ]
             )
             ->from('INFORMATION_SCHEMA.COLUMNS')
@@ -110,7 +61,7 @@ class MySQLPlatform extends AbstractPlatform
         if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
         } else {
-            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+            $query->where('TABLE_SCHEMA', raw('(SELECT DATABASE())'));
         }
 
         $columns = [];
@@ -159,6 +110,7 @@ class MySQLPlatform extends AbstractPlatform
                 'numeric_scale' => $row['NUMERIC_SCALE'],
                 'numeric_unsigned' => (false !== strpos($row['COLUMN_TYPE'], 'unsigned')),
                 'comment' => $row['COLUMN_COMMENT'],
+                'auto_increment' => $row['EXTRA'] === 'auto_increment',
                 'erratas' => $erratas,
             ];
         }
@@ -173,7 +125,7 @@ class MySQLPlatform extends AbstractPlatform
     {
         // JOIN of INFORMATION_SCHEMA table is very slow, we use 3 separate query to get constraints.
         // @see Commit: 4d6e7848268bd9a6add3f7ddc68e879f2f105da5
-        // TODO: Test join version at MariaDB or 64bit MySQL
+        // TODO: Test speed with DATABASE()
 
         // Query 1: TABLE_CONSTRAINTS
         $query = $this->db->getQuery(true)
@@ -191,7 +143,7 @@ class MySQLPlatform extends AbstractPlatform
                     if ($schema !== null) {
                         $query->where('TABLE_SCHEMA', $schema);
                     } else {
-                        $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                        $query->where('TABLE_SCHEMA', raw('SELECT DATABASE()'));
                     }
                 }
             );
@@ -216,7 +168,7 @@ class MySQLPlatform extends AbstractPlatform
                     if ($schema !== null) {
                         $query->where('TABLE_SCHEMA', $schema);
                     } else {
-                        $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                        $query->where('TABLE_SCHEMA', raw('SELECT DATABASE()'));
                     }
                 }
             );
@@ -240,7 +192,7 @@ class MySQLPlatform extends AbstractPlatform
                     if ($schema !== null) {
                         $query->where('CONSTRAINT_SCHEMA', $schema);
                     } else {
-                        $query->where('CONSTRAINT_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+                        $query->where('CONSTRAINT_SCHEMA', raw('SELECT DATABASE()'));
                     }
                 }
             );
@@ -267,7 +219,7 @@ class MySQLPlatform extends AbstractPlatform
                 'constraint_name' => $name,
                 'constraint_type' => $row['CONSTRAINT_TYPE'],
                 'table_name' => $row['TABLE_NAME'],
-                'columns' => [],
+                'columns' => []
             ];
 
             if ($isFK) {
@@ -316,7 +268,7 @@ class MySQLPlatform extends AbstractPlatform
         if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
         } else {
-            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+            $query->where('TABLE_SCHEMA', raw('SELECT DATABASE()'));
         }
 
         $indexGroup = $this->db->prepare($query)->loadAll()->group('INDEX_NAME');

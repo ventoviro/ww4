@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Platform;
 
-use Windwalker\Query\Grammar\Grammar;
+use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;
 
 /**
@@ -22,9 +22,9 @@ interface PlatformInterface
     /**
      * getGrammar
      *
-     * @return  Grammar
+     * @return  AbstractGrammar
      */
-    public function getGrammar(): Grammar;
+    public function getGrammar(): AbstractGrammar;
 
     /**
      * createQuery

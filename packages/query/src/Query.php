@@ -21,7 +21,7 @@ use Windwalker\Query\Clause\ClauseInterface;
 use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Clause\ValueClause;
 use Windwalker\Query\Expression\Expression;
-use Windwalker\Query\Grammar\Grammar;
+use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Wrapper\FormatRawWrapper;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Assert\ArgumentsAssert;
@@ -195,7 +195,7 @@ class Query implements QueryInterface, BindableInterface
     protected $subQueries = [];
 
     /**
-     * @var Grammar
+     * @var AbstractGrammar
      */
     protected $grammar;
 
@@ -227,14 +227,14 @@ class Query implements QueryInterface, BindableInterface
     /**
      * Query constructor.
      *
-     * @param  mixed|\PDO|Escaper  $escaper
-     * @param  Grammar|string|null        $grammar
+     * @param  mixed|\PDO|Escaper           $escaper
+     * @param  AbstractGrammar|string|null  $grammar
      */
     public function __construct($escaper = null, $grammar = null)
     {
-        $this->grammar = $grammar instanceof Grammar
+        $this->grammar = $grammar instanceof AbstractGrammar
             ? $grammar
-            : Grammar::create($grammar);
+            : AbstractGrammar::create($grammar);
 
         $this->setEscaper($escaper);
     }
@@ -1707,11 +1707,11 @@ class Query implements QueryInterface, BindableInterface
     /**
      * Method to get property Grammar
      *
-     * @return  Grammar
+     * @return  AbstractGrammar
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getGrammar(): Grammar
+    public function getGrammar(): AbstractGrammar
     {
         return $this->grammar;
     }

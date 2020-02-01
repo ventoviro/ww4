@@ -11,54 +11,64 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Test\Platform;
 
-use Windwalker\Database\Platform\MySQLPlatform;
+use Windwalker\Database\Platform\PostgreSQLPlatform;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
 /**
- * The MysqlPlatformTest class.
+ * The PostgreSQLPlatformTest class.
  */
-class MysqlPlatformTest extends AbstractDatabaseTestCase
+class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
 {
+    protected static $platform = 'PostgreSQL';
+
+    protected static $driver = 'pdo_pgsql';
+
+    protected static $schema = 'public';
+
     /**
-     * @var MySQLPlatform
+     * @var PostgreSQLPlatform
      */
     protected $instance;
 
     /**
-     * Will be set at setUp()
-     *
-     * @var string
-     */
-    protected static $schema = '';
-
-    /**
-     * @see  MySQLPlatform::getDatabases()
+     * @see  PostgreSQLPlatform::getDatabases()
      */
     public function testGetDatabases(): void
     {
-        $schemas = $this->instance->getDatabases();
+        $databases = $this->instance->getDatabases();
 
         self::assertContains(
             self::getTestParams()['database'],
-            $schemas
+            $databases
         );
     }
 
     /**
-     * @see  MySQLPlatform::getSchemas
+     * @see  PostgreSQLPlatform::getSchemas
      */
     public function testGetSchemas(): void
     {
         $schemas = $this->instance->getSchemas();
 
-        self::assertContains(
-            self::getTestParams()['database'],
-            $schemas
+        $defaults = [
+            'pg_catalog',
+            'public',
+            'information_schema',
+        ];
+
+        self::assertEquals(
+            $defaults,
+            array_values(
+                array_intersect(
+                    $schemas,
+                    $defaults
+                )
+            )
         );
     }
 
     /**
-     * @see  MySQLPlatform::getTables
+     * @see  PostgreSQLPlatform::getTables
      */
     public function testGetTables(): void
     {
@@ -71,7 +81,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  MySQLPlatform::getViews
+     * @see  PostgreSQLPlatform::getViews
      */
     public function testGetViews(): void
     {
@@ -84,7 +94,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  MySQLPlatform::getColumns
+     * @see  PostgreSQLPlatform::getColumns
      */
     public function testGetColumns(): void
     {
@@ -94,16 +104,16 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
             [
                 'id' => [
                     'ordinal_position' => 1,
-                    'column_default' => null,
+                    'column_default' => 0,
                     'is_nullable' => false,
-                    'data_type' => 'int',
+                    'data_type' => 'integer',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
+                    'numeric_precision' => 32,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => true,
-                    'comment' => 'Primary Key',
+                    'numeric_unsigned' => false,
                     'auto_increment' => true,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -112,14 +122,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 2,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'int',
+                    'data_type' => 'integer',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
+                    'numeric_precision' => 32,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => true,
-                    'comment' => 'Category ID',
+                    'numeric_unsigned' => false,
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -128,14 +138,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 3,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'int',
+                    'data_type' => 'integer',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
+                    'numeric_precision' => 32,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => true,
-                    'comment' => 'Page ID',
+                    'numeric_unsigned' => false,
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -144,34 +154,30 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 4,
                     'column_default' => 'bar',
                     'is_nullable' => false,
-                    'data_type' => 'enum',
-                    'character_maximum_length' => 3,
-                    'character_octet_length' => 12,
+                    'data_type' => 'character',
+                    'character_maximum_length' => 15,
+                    'character_octet_length' => 60,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'comment' => '',
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
-                        'permitted_values' => [
-                            'foo',
-                            'bar',
-                            'yoo'
-                        ]
+
                     ]
                 ],
                 'price' => [
                     'ordinal_position' => 5,
-                    'column_default' => '0.000000',
+                    'column_default' => '0.0',
                     'is_nullable' => true,
-                    'data_type' => 'decimal',
+                    'data_type' => 'numeric',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
                     'numeric_precision' => 20,
                     'numeric_scale' => 6,
-                    'numeric_unsigned' => true,
-                    'comment' => '',
+                    'numeric_unsigned' => false,
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -186,8 +192,8 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'comment' => 'Title',
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -202,8 +208,8 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'comment' => 'Alias',
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -212,14 +218,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 8,
                     'column_default' => null,
                     'is_nullable' => false,
-                    'data_type' => 'longtext',
-                    'character_maximum_length' => 4294967295,
-                    'character_octet_length' => 4294967295,
+                    'data_type' => 'text',
+                    'character_maximum_length' => null,
+                    'character_octet_length' => 1073741824,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'comment' => 'Intro Text',
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -228,14 +234,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 9,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'tinyint',
+                    'data_type' => 'integer',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 3,
+                    'numeric_precision' => 32,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'comment' => '0: unpublished, 1:published',
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -244,14 +250,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 10,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'int',
+                    'data_type' => 'integer',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
+                    'numeric_precision' => 32,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => true,
-                    'comment' => 'Ordering',
+                    'numeric_unsigned' => false,
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -260,14 +266,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 11,
                     'column_default' => '1000-01-01 00:00:00',
                     'is_nullable' => false,
-                    'data_type' => 'datetime',
+                    'data_type' => 'timestamp without time zone',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'comment' => 'Created Date',
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -276,14 +282,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 12,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'int',
+                    'data_type' => 'integer',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
+                    'numeric_precision' => 32,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => true,
-                    'comment' => 'Author',
+                    'numeric_unsigned' => false,
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -292,14 +298,14 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 13,
                     'column_default' => '',
                     'is_nullable' => false,
-                    'data_type' => 'char',
+                    'data_type' => 'character',
                     'character_maximum_length' => 7,
                     'character_octet_length' => 28,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'comment' => 'Language',
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -309,13 +315,13 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'column_default' => null,
                     'is_nullable' => false,
                     'data_type' => 'text',
-                    'character_maximum_length' => 65535,
-                    'character_octet_length' => 65535,
+                    'character_maximum_length' => null,
+                    'character_octet_length' => 1073741824,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'comment' => 'Params',
                     'auto_increment' => false,
+                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -326,28 +332,24 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  MySQLPlatform::getConstraints
+     * @see  PostgreSQLPlatform::getConstraints
      */
     public function testGetConstraints(): void
     {
         $constraints = $this->instance->getConstraints('articles', static::$schema);
 
+        $constraints = array_filter($constraints, function (array $constraint) {
+            return $constraint['constraint_type'] !== 'CHECK';
+        });
+
         self::assertEquals(
             [
-                'PRIMARY' => [
-                    'constraint_name' => 'PRIMARY',
+                'articles_pkey' => [
+                    'constraint_name' => 'articles_pkey',
                     'constraint_type' => 'PRIMARY KEY',
                     'table_name' => 'articles',
                     'columns' => [
                         'id'
-                    ]
-                ],
-                'idx_articles_alias' => [
-                    'constraint_name' => 'idx_articles_alias',
-                    'constraint_type' => 'UNIQUE',
-                    'table_name' => 'articles',
-                    'columns' => [
-                        'alias'
                     ]
                 ],
                 'fk_articles_category_id' => [
@@ -357,7 +359,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     'columns' => [
                         'category_id'
                     ],
-                    'referenced_table_schema' => 'windwalker_test',
+                    'referenced_table_schema' => 'public',
                     'referenced_table_name' => 'categories',
                     'referenced_columns' => [
                         'id'
@@ -374,11 +376,11 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                         'page_id',
                         'created_by'
                     ],
-                    'referenced_table_schema' => 'windwalker_test',
-                    'referenced_table_name' => 'categories',
+                    'referenced_table_schema' => null,
+                    'referenced_table_name' => null,
                     'referenced_columns' => [
-                        'parent_id',
-                        'level'
+                        null,
+                        null
                     ],
                     'match_option' => 'NONE',
                     'update_rule' => 'RESTRICT',
@@ -395,12 +397,12 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             [
-                'PRIMARY' => [
-                    'table_schema' => 'windwalker_test',
+                'articles_pkey' => [
+                    'table_schema' => 'public',
                     'table_name' => 'articles',
                     'is_unique' => true,
                     'is_primary' => true,
-                    'index_name' => 'PRIMARY',
+                    'index_name' => 'articles_pkey',
                     'index_comment' => '',
                     'columns' => [
                         'id' => [
@@ -410,39 +412,25 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_alias' => [
-                    'table_schema' => 'windwalker_test',
+                    'table_schema' => 'public',
                     'table_name' => 'articles',
                     'is_unique' => true,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_alias',
                     'index_comment' => '',
                     'columns' => [
-                        'alias' => [
-                            'column_name' => 'alias',
-                            'sub_part' => 150
-                        ]
-                    ]
-                ],
-                'fk_articles_category_more' => [
-                    'table_schema' => 'windwalker_test',
-                    'table_name' => 'articles',
-                    'is_unique' => false,
-                    'is_primary' => false,
-                    'index_name' => 'fk_articles_category_more',
-                    'index_comment' => '',
-                    'columns' => [
-                        'page_id' => [
-                            'column_name' => 'page_id',
+                        'type' => [
+                            'column_name' => 'type',
                             'sub_part' => null
                         ],
-                        'created_by' => [
-                            'column_name' => 'created_by',
+                        'alias' => [
+                            'column_name' => 'alias',
                             'sub_part' => null
                         ]
                     ]
                 ],
                 'idx_articles_category_id' => [
-                    'table_schema' => 'windwalker_test',
+                    'table_schema' => 'public',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -456,7 +444,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_created_by' => [
-                    'table_schema' => 'windwalker_test',
+                    'table_schema' => 'public',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -470,7 +458,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_language' => [
-                    'table_schema' => 'windwalker_test',
+                    'table_schema' => 'public',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -484,7 +472,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_page_id' => [
-                    'table_schema' => 'windwalker_test',
+                    'table_schema' => 'public',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -503,7 +491,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     // /**
-    //  * @see  MysqlPlatform::getConstraintKeys
+    //  * @see  PostgreSQLPlatform::getConstraintKeys
     //  */
     // public function testGetConstraintKeys(): void
     // {
@@ -511,7 +499,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     // }
 
     // /**
-    //  * @see  MysqlPlatform::getTriggerNames
+    //  * @see  PostgreSQLPlatform::getTriggerNames
     //  */
     // public function testGetTriggerNames(): void
     // {
@@ -519,7 +507,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     // }
     //
     // /**
-    //  * @see  MysqlPlatform::getTriggers
+    //  * @see  PostgreSQLPlatform::getTriggers
     //  */
     // public function testGetTriggers(): void
     // {
@@ -529,8 +517,6 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     protected function setUp(): void
     {
         $this->instance = static::$db->getPlatform();
-
-        static::$schema = static::$dbname;
     }
 
     protected function tearDown(): void

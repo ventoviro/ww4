@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Database\DatabaseAdapter;
-use Windwalker\Query\Grammar\Grammar;
+use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;
 
 /**
@@ -31,7 +31,7 @@ abstract class AbstractPlatform implements PlatformInterface
     protected $query;
 
     /**
-     * @var Grammar
+     * @var AbstractGrammar
      */
     protected $grammar;
 
@@ -67,6 +67,46 @@ abstract class AbstractPlatform implements PlatformInterface
         return new $class($db);
     }
 
+    public static function getPlatformName(string $platform): string
+    {
+        switch (strtolower($platform)) {
+            case 'pgsql':
+            case 'postgresql':
+                $platform = 'PostgreSQL';
+                break;
+
+            case 'sqlsrv':
+            case 'sqlserver':
+                $platform = 'SQLServer';
+                break;
+
+            case 'mysql':
+                $platform = 'MySQL';
+                break;
+
+            case 'sqlite':
+                $platform = 'SQLite';
+                break;
+        }
+
+        return $platform;
+    }
+
+    public static function getShortName(string $platform): string
+    {
+        switch (strtolower($platform)) {
+            case 'postgresql':
+                $platform = 'pgsql';
+                break;
+
+            case 'sqlserver':
+                $platform = 'sqlsrv';
+                break;
+        }
+
+        return strtolower($platform);
+    }
+
     /**
      * AbstractPlatform constructor.
      *
@@ -77,7 +117,7 @@ abstract class AbstractPlatform implements PlatformInterface
         $this->db = $db;
     }
 
-    public function getGrammar(): Grammar
+    public function getGrammar(): AbstractGrammar
     {
         if (!$this->grammar) {
             $this->grammar = $this->createQuery()->getGrammar();
@@ -97,5 +137,50 @@ abstract class AbstractPlatform implements PlatformInterface
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDatabases(): array
+    {
+        return $this->db->prepare(
+            $this->getGrammar()->listDatabases()
+        )
+            ->loadColumn()
+            ->dump();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTables(?string $schema = null, bool $includeViews = false): array
+    {
+        $tables = $this->db->prepare(
+            $this->getGrammar()->listTables($schema)
+        )
+            ->loadColumn()
+            ->dump();
+
+        if ($includeViews) {
+            $tables = array_merge(
+                $tables,
+                $this->getViews($schema)
+            );
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getViews(?string $schema = null): array
+    {
+        return $this->db->prepare(
+            $this->getGrammar()->listViews($schema)
+        )
+            ->loadColumn()
+            ->dump();
     }
 }

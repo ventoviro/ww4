@@ -16,7 +16,7 @@ use Windwalker\Query\Query;
 /**
  * The SqlsrvGrammar class.
  */
-class SQLServerGrammar extends Grammar
+class SQLServerGrammar extends AbstractGrammar
 {
     /**
      * @var string
@@ -142,15 +142,34 @@ class SQLServerGrammar extends Grammar
     /**
      * @inheritDoc
      */
-    public function listTables(?string $dbname): Query
+    public function listTables(?string $schema = null): Query
     {
         $query = $this->createQuery()
             ->select('TABLE_NAME')
             ->from('INFORMATION_SCHEMA.TABLES')
             ->where('TABLE_TYPE', 'BASE TABLE');
 
-        if ($dbname !== null) {
-            $query->where('TABLE_CATALOG', $dbname);
+        if ($schema !== null) {
+            $query->where('TABLE_CATALOG', $schema);
+        } else {
+            $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
+        }
+
+        return $query;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listViews(?string $schema = null): Query
+    {
+        $query = $this->createQuery()
+            ->select('TABLE_NAME')
+            ->from('INFORMATION_SCHEMA.TABLES')
+            ->where('TABLE_TYPE', 'VIEW');
+
+        if ($schema !== null) {
+            $query->where('TABLE_CATALOG', $schema);
         } else {
             $query->where('TABLE_SCHEMA', '!=', 'INFORMATION_SCHEMA');
         }
