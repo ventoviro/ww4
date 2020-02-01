@@ -58,36 +58,6 @@ class MySQLGrammar extends AbstractGrammar
     /**
      * @inheritDoc
      */
-    public function listDatabases($where = null): Query
-    {
-        return $this->createQuery()
-            ->select('SCHEMA_NAME')
-            ->from('INFORMATION_SCHEMA.SCHEMATA')
-            ->where('SCHEMA_NAME', '!=', 'INFORMATION_SCHEMA');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function listTables(?string $schema = null): Query
-    {
-        $query = $this->createQuery()
-            ->select('TABLE_NAME')
-            ->from('INFORMATION_SCHEMA.TABLES')
-            ->where('TABLE_TYPE', 'BASE TABLE');
-
-        if ($schema !== null) {
-            $query->where('TABLE_SCHEMA', $schema);
-        } else {
-            $query->where('TABLE_SCHEMA', raw('(SELECT DATABASE())'));
-        }
-
-        return $query;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function listViews(?string $schema = null): Query
     {
         $query = $this->createQuery()

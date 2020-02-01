@@ -176,4 +176,52 @@ class SQLServerGrammar extends AbstractGrammar
 
         return $query;
     }
+
+    /**
+     * dropTable
+     *
+     * @param  string  $table
+     * @param  bool    $ifExists
+     * @param  mixed   ...$options
+     *
+     * @return  string
+     */
+    public function dropTable(string $table, bool $ifExists = false, ...$options): string
+    {
+        // Drop all foreign key reference to this table
+        // @see https://social.msdn.microsoft.com/Forums/sqlserver/en-US/219f8a19-0026-49a1-a086-11c5d57d9c97/tsql-to-drop-all-constraints?forum=transactsql
+        $dropFK = <<<SQL
+declare @str varchar(max)
+declare cur cursor for
+
+    SELECT 'ALTER TABLE ' + '[' + s.name + '].[' + t.name + '] DROP CONSTRAINT ['+ f.name + ']'
+    FROM sys.foreign_keys AS f
+    LEFT JOIN sys.objects AS t ON f.parent_object_id = t.object_id
+    LEFT JOIN sys.schemas AS s ON t.schema_id = s.schema_id
+    WHERE s.name = 'dbo' AND f.referenced_object_id = object_id(%q)
+    ORDER BY t.type
+
+open cur
+FETCH NEXT FROM cur INTO @str
+WHILE (@@fetch_status = 0) BEGIN
+    PRINT @str
+    EXEC (@str)
+    FETCH NEXT FROM cur INTO @str
+END
+
+close cur
+deallocate cur;
+SQL;
+
+        return static::build(
+            $this->createQuery()->format(
+                $dropFK,
+                $table
+            ),
+            'DROP TABLE',
+            $ifExists ? 'IF EXISTS' : null,
+            self::quoteName($table),
+            ...$options
+        );
+    }
 }

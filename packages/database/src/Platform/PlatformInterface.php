@@ -41,11 +41,25 @@ interface PlatformInterface
     public function getDatabases(): array;
 
     /**
+     * listDatabasesQuery
+     *
+     * @return  Query
+     */
+    public function listDatabasesQuery(): Query;
+
+    /**
      * Get schemas.
      *
      * @return string[]
      */
     public function getSchemas(): array;
+
+    /**
+     * listSchemaQuery
+     *
+     * @return  Query
+     */
+    public function listSchemaQuery(): Query;
 
     /**
      * Get tables.

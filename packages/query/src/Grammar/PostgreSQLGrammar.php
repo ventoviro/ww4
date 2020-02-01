@@ -53,17 +53,6 @@ class PostgreSQLGrammar extends AbstractGrammar
     /**
      * @inheritDoc
      */
-    public function listDatabases(): Query
-    {
-        return $this->createQuery()
-            ->select('datname')
-            ->from('pg_database')
-            ->where('datistemplate', raw('false'));
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function listTables(?string $schema = null): Query
     {
         $query = $this->createQuery()

@@ -352,31 +352,6 @@ abstract class AbstractGrammar
     }
 
     /**
-     * listDatabases
-     *
-     * @return  Query
-     */
-    abstract public function listDatabases(): Query;
-
-    /**
-     * listTables
-     *
-     * @param  string  $schema
-     *
-     * @return  Query
-     */
-    abstract public function listTables(?string $schema = null): Query;
-
-    /**
-     * listTables
-     *
-     * @param  string  $schema
-     *
-     * @return  Query
-     */
-    abstract public function listViews(?string $schema = null): Query;
-
-    /**
      * dropTable
      *
      * @param  string  $table

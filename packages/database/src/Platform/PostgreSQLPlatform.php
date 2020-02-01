@@ -28,22 +28,56 @@ class PostgreSQLPlatform extends AbstractPlatform
 {
     protected $name = 'PostgreSQL';
 
-    /**
-     * @inheritDoc
-     */
-    public function getSchemas(): array
+    public function listDatabasesQuery(): Query
     {
-        $query = $this->db->getQuery(true)
-            ->select('schema_name')
-            ->from('information_schema.schemata');
-
-        return $this->db->prepare($query)->loadColumn()->dump();
+        return $this->createQuery()
+            ->select('datname')
+            ->from('pg_database')
+            ->where('datistemplate', raw('false'));
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getColumns(string $table, ?string $schema = null): array
+    public function listSchemaQuery(): Query
+    {
+        return $this->db->getQuery(true)
+            ->select('schema_name')
+            ->from('information_schema.schemata');
+    }
+
+    public function listTablesQuery(?string $schema): Query
+    {
+        $query = $this->createQuery()
+            ->select('table_name AS Name')
+            ->from('information_schema.tables')
+            ->where('table_type', 'BASE TABLE')
+            ->order('table_name', 'ASC');
+
+        if ($schema) {
+            $query->where('table_schema', $schema);
+        } else {
+            $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
+        }
+
+        return $query;
+    }
+
+    public function listViewsQuery(?string $schema): Query
+    {
+        $query = $this->createQuery()
+            ->select('table_name AS Name')
+            ->from('information_schema.tables')
+            ->where('table_type', 'VIEW')
+            ->order('table_name', 'ASC');
+
+        if ($schema) {
+            $query->where('table_schema', $schema);
+        } else {
+            $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
+        }
+
+        return $query;
+    }
+
+    public function listColumnsQuery(string $table, ?string $schema): Query
     {
         $query = $this->db->getQuery(true)
             ->select(
@@ -68,55 +102,12 @@ class PostgreSQLPlatform extends AbstractPlatform
             $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
         }
 
-        $columns = [];
-
-        foreach ($this->db->prepare($query) as $row) {
-            $columns[$row['column_name']] = [
-                'ordinal_position' => $row['ordinal_position'],
-                'column_default' => $row['column_default'],
-                'is_nullable' => ('YES' === $row['is_nullable']),
-                'data_type' => $row['data_type'],
-                'character_maximum_length' => $row['character_maximum_length'],
-                'character_octet_length' => $row['character_octet_length'],
-                'numeric_precision' => $row['numeric_precision'],
-                'numeric_scale' => $row['numeric_scale'],
-                'numeric_unsigned' => false,
-                'auto_increment' => false,
-                'comment' => '',
-                'erratas' => [],
-            ];
-        }
-
-        foreach ($columns as &$column) {
-            if (strpos((string) $column['column_default'], 'nextval') !== false) {
-                $column['auto_increment'] = true;
-                $column['column_default'] = 0;
-            }
-
-            if (preg_match('/^NULL::*/', (string) $column['column_default'])) {
-                $column['column_default'] = null;
-            }
-
-            if (preg_match("/'(.*)'::[\w\s]/", (string) $column['column_default'], $matches)) {
-                $column['column_default'] = $matches[1] ?? '';
-            }
-
-            if (strpos((string) $column['data_type'], 'character varying') !== false) {
-                $column['data_type'] = str_replace('character varying', 'varchar', $column['data_type']);
-            }
-        }
-
-        return $columns;
+        return $query;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getConstraints(string $table, ?string $schema = null): array
+    public function listConstraintsQuery(string $table, ?string $schema): Query
     {
-        $query = $this->createQuery();
-
-        $query->select(
+        $query = $this->createQuery()->select(
             [
                 't.table_name',
                 'tc.constraint_name',
@@ -194,56 +185,10 @@ class PostgreSQLPlatform extends AbstractPlatform
 
         $query->order(raw($order));
 
-        $constraintGroup = $this->db->prepare($query)->loadAll()->group('constraint_name');
-
-        $name = null;
-        $constraints = [];
-
-        foreach ($constraintGroup as $name => $rows) {
-            $constraints[$name] = [
-                'constraint_name' => $name,
-                'constraint_type' => $rows[0]['constraint_type'],
-                'table_name'      => $rows[0]['table_name'],
-                'columns' => []
-            ];
-
-            if ('CHECK' === $rows[0]['constraint_type']) {
-                $constraints[$name]['check_clause'] = $rows[0]['check_clause'];
-                continue;
-            }
-
-            $isFK = 'FOREIGN KEY' === $rows[0]['constraint_type'];
-
-            if ($isFK) {
-                $constraints[$name]['referenced_table_schema'] = $rows[0]['referenced_table_schema'];
-                $constraints[$name]['referenced_table_name']   = $rows[0]['referenced_table_name'];
-                $constraints[$name]['referenced_columns']      = [];
-                $constraints[$name]['match_option']       = $rows[0]['match_option'];
-                $constraints[$name]['update_rule']        = $rows[0]['update_rule'];
-                $constraints[$name]['delete_rule']        = $rows[0]['delete_rule'];
-            }
-
-            foreach ($rows as $row) {
-                if ('CHECK' === $row['constraint_type']) {
-                    $constraints[$name]['check_clause'] = $row['check_clause'];
-                    continue;
-                }
-
-                $constraints[$name]['columns'][] = $row['column_name'];
-
-                if ($isFK) {
-                    $constraints[$name]['referenced_columns'][] = $row['referenced_column_name'];
-                }
-            }
-        }
-
-        return $constraints;
+        return $query;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getIndexes(string $table, ?string $schema = null): array
+    public function listIndexesQuery(string $table, ?string $schema): Query
     {
         $query = $this->createQuery();
 
@@ -271,42 +216,7 @@ class PostgreSQLPlatform extends AbstractPlatform
             $query->whereNotIn('schemaname', ['pg_catalog', 'information_schema']);
         }
 
-        $indexes = [];
-
-        foreach ($this->db->prepare($query) as $row) {
-            preg_match(
-                '/CREATE (UNIQUE )?INDEX [\w]+ ON [\w.]+ USING [\w]+ \(([\w, ]+)\)/',
-                $row['indexdef'],
-                $matches
-            );
-
-            $index['table_schema']  = $row['schemaname'];
-            $index['table_name']    = $row['tablename'];
-            $index['is_unique']     = trim($matches[1]) === 'UNIQUE';
-            $index['is_primary']    = (bool) $row['is_primary'];
-            $index['index_name']    = $row['indexname'];
-            $index['index_comment'] = '';
-
-            $index['columns'] = [];
-
-            $columns = ArrayObject::explode(',', $matches[2])
-                ->map('trim')
-                ->map(static function (string $index) {
-                    return Escaper::stripQuoteIfExists($index, '"');
-                })
-                ->dump();
-
-            foreach ($columns as $column) {
-                $index['columns'][$column] = [
-                    'column_name' => $column,
-                    'sub_part' => null,
-                ];
-            }
-
-            $indexes[$row['indexname']] = $index;
-        }
-
-        return $indexes;
+        return $query;
     }
 
     public function lastInsertId($insertQuery, ?string $sequence = null): ?string

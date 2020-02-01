@@ -18,7 +18,7 @@ use Windwalker\Query\Query;
 /**
  * The AbstractPlatform class.
  */
-abstract class AbstractPlatform implements PlatformInterface
+abstract class AbstractPlatform
 {
     /**
      * @var string
@@ -139,48 +139,17 @@ abstract class AbstractPlatform implements PlatformInterface
         return $this->name;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getDatabases(): array
-    {
-        return $this->db->prepare(
-            $this->getGrammar()->listDatabases()
-        )
-            ->loadColumn()
-            ->dump();
-    }
+    abstract public function listDatabasesQuery(): Query;
 
-    /**
-     * @inheritDoc
-     */
-    public function getTables(?string $schema = null, bool $includeViews = false): array
-    {
-        $tables = $this->db->prepare(
-            $this->getGrammar()->listTables($schema)
-        )
-            ->loadColumn()
-            ->dump();
+    abstract public function listSchemaQuery(): Query;
 
-        if ($includeViews) {
-            $tables = array_merge(
-                $tables,
-                $this->getViews($schema)
-            );
-        }
+    abstract public function listTablesQuery(?string $schema): Query;
 
-        return $tables;
-    }
+    abstract public function listViewsQuery(?string $schema): Query;
 
-    /**
-     * @inheritDoc
-     */
-    public function getViews(?string $schema = null): array
-    {
-        return $this->db->prepare(
-            $this->getGrammar()->listViews($schema)
-        )
-            ->loadColumn()
-            ->dump();
-    }
+    abstract public function listColumnsQuery(string $table, ?string $schema): Query;
+
+    abstract public function listConstraintsQuery(string $table, ?string $schema): Query;
+
+    abstract public function listIndexesQuery(string $table, ?string $schema): Query;
 }

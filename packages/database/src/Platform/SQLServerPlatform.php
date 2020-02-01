@@ -23,6 +23,13 @@ class SQLServerPlatform extends AbstractPlatform
      */
     public function getDatabases(): array
     {
+        return $this->db->prepare(
+            $this->db->getQuery(true)
+                ->select('name')
+                ->from('master.dbo.sysdatabases')
+        )
+            ->loadColumn()
+            ->dump();
     }
 
     /**
