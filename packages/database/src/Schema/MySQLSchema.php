@@ -94,7 +94,7 @@ class MySQLSchema extends AbstractSchema
         // Query 1: TABLE_CONSTRAINTS
         $constraintItems = $this->loadConstraintsStatement($table, $schema)
             ->loadAll()
-            ->group('CONSTRAINT_NAME');
+            ->keyBy('CONSTRAINT_NAME');
 
         // Query 2: KEY_COLUMN_USAGE
         $query = $this->db->getQuery(true)
