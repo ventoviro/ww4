@@ -19,20 +19,28 @@ use Windwalker\Utilities\Str;
 /**
  * The MysqlPlatform class.
  */
-class MysqlPlatform extends AbstractPlatform
+class MySQLPlatform extends AbstractPlatform
 {
-    protected $name = 'mysql';
+    protected $name = 'MySQL';
 
     /**
      * @inheritDoc
      */
-    public function getSchemas(): array
+    public function getDatabases(): array
     {
         return $this->db->prepare(
             $this->getGrammar()->listDatabases()
         )
             ->loadColumn()
             ->dump();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSchemas(): array
+    {
+        return $this->getDatabases();
     }
 
     /**

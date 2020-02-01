@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test;
 
 use Windwalker\Query\Grammar\Grammar;
-use Windwalker\Query\Grammar\SqliteGrammar;
+use Windwalker\Query\Grammar\SQLiteGrammar;
 
 /**
  * The SqliteQueryTest class.
@@ -23,6 +23,6 @@ class SqliteQueryTest extends QueryTest
 
     public static function createGrammar(): Grammar
     {
-        return new SqliteGrammar();
+        return new SQLiteGrammar();
     }
 }

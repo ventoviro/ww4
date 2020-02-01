@@ -16,12 +16,12 @@ use Windwalker\Query\Query;
 /**
  * The MySQLGrammar class.
  */
-class MysqlGrammar extends Grammar
+class MySQLGrammar extends Grammar
 {
     /**
      * @var string
      */
-    protected static $name = 'Mysql';
+    protected static $name = 'MySQL';
 
     /**
      * @var array

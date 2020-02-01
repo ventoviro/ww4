@@ -14,9 +14,16 @@ namespace Windwalker\Database\Platform;
 /**
  * The SqlitePlatform class.
  */
-class SqlitePlatform extends AbstractPlatform
+class SQLitePlatform extends AbstractPlatform
 {
-    protected $name = 'sqlite';
+    protected $name = 'Sqlite';
+
+    /**
+     * @inheritDoc
+     */
+    public function getDatabases(): array
+    {
+    }
 
     /**
      * @inheritDoc

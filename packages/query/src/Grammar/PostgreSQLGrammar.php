@@ -19,12 +19,12 @@ use function Windwalker\raw;
 /**
  * The PostgresqlGrammar class.
  */
-class PgsqlGrammar extends Grammar
+class PostgreSQLGrammar extends Grammar
 {
     /**
      * @var string
      */
-    protected static $name = 'Postgresql';
+    protected static $name = 'PostgreSQL';
 
     /**
      * @var string

@@ -19,8 +19,23 @@ use function Windwalker\raw;
 /**
  * The PostgresqlPlatform class.
  */
-class PgsqlPlatform extends AbstractPlatform
+class PostgreSQLPlatform extends AbstractPlatform
 {
+    protected $name = 'PostgreSQL';
+
+    /**
+     * @inheritDoc
+     */
+    public function getDatabases(): array
+    {
+        $query = $this->db->getQuery(true)
+            ->select('datname')
+            ->from('pg_database')
+            ->where('datistemplate', '=', raw('false'));
+
+        return $this->db->prepare($query)->loadColumn()->dump();
+    }
+
     /**
      * @inheritDoc
      */

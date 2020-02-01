@@ -12,11 +12,18 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 /**
- * The SqlsrvPlatform class.
+ * The SqlserverPlatform class.
  */
-class SqlsrvPlatform extends AbstractPlatform
+class SQLServerPlatform extends AbstractPlatform
 {
-    protected $name = 'sqlsrv';
+    protected $name = 'SQLServer';
+
+    /**
+     * @inheritDoc
+     */
+    public function getDatabases(): array
+    {
+    }
 
     /**
      * @inheritDoc

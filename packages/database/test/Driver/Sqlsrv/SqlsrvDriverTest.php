@@ -18,7 +18,7 @@ use Windwalker\Database\Test\Driver\AbstractDriverTest;
  */
 class SqlsrvDriverTest extends AbstractDriverTest
 {
-    protected static $platform = 'sqlsrv';
+    protected static $platform = 'SQLServer';
 
     protected static $driverName = 'sqlsrv';
 }

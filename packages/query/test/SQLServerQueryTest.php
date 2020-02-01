@@ -12,14 +12,14 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test;
 
 use Windwalker\Query\Grammar\Grammar;
-use Windwalker\Query\Grammar\SqlsrvGrammar;
+use Windwalker\Query\Grammar\SQLServerGrammar;
 
 use function Windwalker\raw;
 
 /**
  * The SqlsrvQueryTest class.
  */
-class SqlsrvQueryTest extends QueryTest
+class SQLServerQueryTest extends QueryTest
 {
     protected static $nameQuote = ['[', ']'];
 
@@ -30,7 +30,7 @@ class SqlsrvQueryTest extends QueryTest
 
     public static function createGrammar(): Grammar
     {
-        return new SqlsrvGrammar();
+        return new SQLServerGrammar();
     }
 
     public function testInsert(): void

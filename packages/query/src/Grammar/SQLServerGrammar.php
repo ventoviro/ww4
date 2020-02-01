@@ -16,12 +16,12 @@ use Windwalker\Query\Query;
 /**
  * The SqlsrvGrammar class.
  */
-class SqlsrvGrammar extends Grammar
+class SQLServerGrammar extends Grammar
 {
     /**
      * @var string
      */
-    protected static $name = 'Sqlsrv';
+    protected static $name = 'SQLServer';
 
     /**
      * @var array

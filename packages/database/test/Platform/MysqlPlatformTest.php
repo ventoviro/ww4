@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Test\Platform;
 
-use Windwalker\Database\Platform\MysqlPlatform;
+use Windwalker\Database\Platform\MySQLPlatform;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
 /**
@@ -20,12 +20,12 @@ use Windwalker\Database\Test\AbstractDatabaseTestCase;
 class MysqlPlatformTest extends AbstractDatabaseTestCase
 {
     /**
-     * @var MysqlPlatform
+     * @var MySQLPlatform
      */
     protected $instance;
 
     /**
-     * @see  MysqlPlatform::getSchemas
+     * @see  MySQLPlatform::getSchemas
      */
     public function testGetSchemas(): void
     {
@@ -38,7 +38,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  MysqlPlatform::getTables
+     * @see  MySQLPlatform::getTables
      */
     public function testGetTables(): void
     {
@@ -51,7 +51,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  MysqlPlatform::getViews
+     * @see  MySQLPlatform::getViews
      */
     public function testGetViews(): void
     {
@@ -59,7 +59,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  MysqlPlatform::getColumns
+     * @see  MySQLPlatform::getColumns
      */
     public function testGetColumns(): void
     {
@@ -287,7 +287,7 @@ class MysqlPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  MysqlPlatform::getConstraints
+     * @see  MySQLPlatform::getConstraints
      */
     public function testGetConstraints(): void
     {

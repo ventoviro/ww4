@@ -16,12 +16,12 @@ use Windwalker\Query\Query;
 /**
  * The MySQLGrammar class.
  */
-class SqliteGrammar extends Grammar
+class SQLiteGrammar extends Grammar
 {
     /**
      * @var string
      */
-    protected static $name = 'Sqlite';
+    protected static $name = 'SQLite';
 
     /**
      * @var array

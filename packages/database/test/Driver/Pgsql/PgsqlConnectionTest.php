@@ -20,7 +20,7 @@ use Windwalker\Database\Test\Driver\AbstractConnectionTest;
  */
 class PgsqlConnectionTest extends AbstractConnectionTest
 {
-    protected static $platform = 'pgsql';
+    protected static $platform = 'PostgreSQL';
 
     protected static $className = PgsqlConnection::class;
 

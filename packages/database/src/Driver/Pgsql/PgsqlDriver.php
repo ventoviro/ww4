@@ -13,7 +13,7 @@ namespace Windwalker\Database\Driver\Pgsql;
 
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\StatementInterface;
-use Windwalker\Database\Platform\PgsqlPlatform;
+use Windwalker\Database\Platform\PostgreSQLPlatform;
 
 /**
  * The PgsqlDriver class.
@@ -45,7 +45,7 @@ class PgsqlDriver extends AbstractDriver
      */
     public function lastInsertId(?string $sequence = null): ?string
     {
-        /** @var PgsqlPlatform $platform */
+        /** @var PostgreSQLPlatform $platform */
         $platform = $this->getPlatform();
 
         return $platform->lastInsertId($this->lastQuery, $sequence);

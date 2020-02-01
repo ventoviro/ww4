@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Database\DatabaseAdapter;
-use Windwalker\Database\Metadata\AbstractMetadata;
-use Windwalker\Database\Metadata\MetadataInterface;
 use Windwalker\Query\Grammar\Grammar;
 use Windwalker\Query\Query;
 
@@ -44,6 +42,26 @@ abstract class AbstractPlatform implements PlatformInterface
 
     public static function create(string $platform, DatabaseAdapter $db)
     {
+        switch (strtolower($platform)) {
+            case 'pgsql':
+            case 'postgresql':
+                $platform = 'PostgreSQL';
+                break;
+
+            case 'sqlsrv':
+            case 'sqlserver':
+                $platform = 'SQLServer';
+                break;
+
+            case 'mysql':
+                $platform = 'MySQL';
+                break;
+
+            case 'sqlite':
+                $platform = 'SQLite';
+                break;
+        }
+
         $class = __NAMESPACE__ . '\\' . ucfirst($platform) . 'Platform';
 
         return new $class($db);

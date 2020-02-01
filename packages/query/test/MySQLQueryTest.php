@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Query\Test;
 
 use Windwalker\Query\Grammar\Grammar;
-use Windwalker\Query\Grammar\MysqlGrammar;
+use Windwalker\Query\Grammar\MySQLGrammar;
 
 /**
  * The MySQLQueryTest class.
@@ -28,6 +28,6 @@ class MySQLQueryTest extends QueryTest
 
     public static function createGrammar(): Grammar
     {
-        return new MysqlGrammar();
+        return new MySQLGrammar();
     }
 }

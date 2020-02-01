@@ -34,6 +34,13 @@ interface PlatformInterface
     public function createQuery(): Query;
 
     /**
+     * Get databases.
+     *
+     * @return string[]
+     */
+    public function getDatabases(): array;
+
+    /**
      * Get schemas.
      *
      * @return string[]

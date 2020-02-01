@@ -48,8 +48,20 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
             self::markTestSkipped('DSN of ' . static::$platform . ' not available for test case: ' . static::class);
         }
 
+        $platform = static::$platform;
+
+        switch (strtolower($platform)) {
+            case 'postgresql':
+                $platform = 'pgsql';
+                break;
+
+            case 'sqlserver':
+                $platform = 'sqlsrv';
+                break;
+        }
+
         /** @var AbstractPdoConnection|string $connClass */
-        $connClass = 'Windwalker\Database\Driver\Pdo\Pdo' . ucfirst(static::$platform) . 'Connection';
+        $connClass = 'Windwalker\Database\Driver\Pdo\Pdo' . ucfirst($platform) . 'Connection';
 
         if (!class_exists($connClass) || !is_subclass_of($connClass, AbstractPdoConnection::class)) {
             throw new \LogicException(

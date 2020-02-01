@@ -32,11 +32,23 @@ class PdoDriver extends AbstractDriver
 
     protected function getConnectionClass(): string
     {
+        $platform = $this->platformName;
+
+        switch (strtolower($platform)) {
+            case 'postgresql':
+                $platform = 'pgsql';
+                break;
+
+            case 'sqlserver':
+                $platform = 'sqlsrv';
+                break;
+        }
+
         $class = __NAMESPACE__ . '\Pdo%sConnection';
 
         return sprintf(
             $class,
-            ucfirst($this->platformName)
+            ucfirst($platform)
         );
     }
 
