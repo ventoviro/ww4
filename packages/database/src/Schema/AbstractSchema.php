@@ -11,21 +11,14 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Schema;
 
-use Windwalker\Data\Collection;
 use Windwalker\Database\DatabaseAdapter;
-use Windwalker\Database\Driver\AbstractStatement;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
-use Windwalker\Query\Escaper;
-use Windwalker\Query\Query;
-use Windwalker\Utilities\Str;
-
-use function Windwalker\raw;
 
 /**
  * The AbstractSchemaManager class.
  */
-class AbstractSchema
+abstract class AbstractSchema
 {
     protected $platform = '';
 
@@ -35,9 +28,26 @@ class AbstractSchema
     protected $db;
 
     /**
+     * AbstractSchema constructor.
+     *
+     * @param  DatabaseAdapter  $db
+     */
+    public function __construct(DatabaseAdapter $db)
+    {
+        $this->db = $db;
+    }
+
+    public static function create(string $platform, DatabaseAdapter $db)
+    {
+        $class = __NAMESPACE__ . '\\' . AbstractPlatform::getPlatformName($platform) . 'Schema';
+
+        return new $class($db);
+    }
+
+    /**
      * @inheritDoc
      */
-    public function getDatabases(): array
+    public function listDatabases(): array
     {
         return $this->db->prepare(
             $this->getPlatform()->listDatabasesQuery()
@@ -49,7 +59,7 @@ class AbstractSchema
     /**
      * @inheritDoc
      */
-    public function getSchemas(): array
+    public function listSchemas(): array
     {
         return $this->db->prepare(
             $this->getPlatform()->listSchemaQuery()
@@ -61,7 +71,7 @@ class AbstractSchema
     /**
      * @inheritDoc
      */
-    public function getTables(?string $schema = null, bool $includeViews = false): array
+    public function listTables(?string $schema = null, bool $includeViews = false): array
     {
         $tables = $this->db->prepare(
             $this->getPlatform()->listTablesQuery($schema)
@@ -72,7 +82,7 @@ class AbstractSchema
         if ($includeViews) {
             $tables = array_merge(
                 $tables,
-                $this->getViews($schema)
+                $this->listViews($schema)
             );
         }
 
@@ -82,7 +92,7 @@ class AbstractSchema
     /**
      * @inheritDoc
      */
-    public function getViews(?string $schema = null): array
+    public function listViews(?string $schema = null): array
     {
         return $this->db->prepare(
             $this->getPlatform()->listViewsQuery($schema)
@@ -90,6 +100,11 @@ class AbstractSchema
             ->loadColumn()
             ->dump();
     }
+
+    /**
+     * @inheritDoc
+     */
+    abstract public function listColumns(string $table, ?string $schema = null): array;
 
     /**
      * @inheritDoc
@@ -105,7 +120,7 @@ class AbstractSchema
     /**
      * @inheritDoc
      */
-    abstract public function listColumns(string $table, ?string $schema = null): array;
+    abstract public function listConstraints(string $table, ?string $schema = null): array;
 
     /**
      * @inheritDoc
@@ -121,7 +136,7 @@ class AbstractSchema
     /**
      * @inheritDoc
      */
-    abstract public function listConstraints(string $table, ?string $schema = null): array;
+    abstract public function listIndexes(string $table, ?string $schema = null): array;
 
     /**
      * @inheritDoc
@@ -133,11 +148,6 @@ class AbstractSchema
                 ->listIndexesQuery($table, $schema)
         );
     }
-
-    /**
-     * @inheritDoc
-     */
-    abstract public function listIndexes(string $table, ?string $schema = null): array;
 
     /**
      * @return string

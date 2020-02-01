@@ -18,7 +18,7 @@ use Windwalker\Database\DatabaseAdapter;
  */
 abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
 {
-    protected static $platform = 'mysql';
+    protected static $platform = 'MySQL';
 
     protected static $driver = 'pdo_mysql';
 

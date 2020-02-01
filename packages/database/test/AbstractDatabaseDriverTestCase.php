@@ -15,8 +15,10 @@ use Asika\SqlSplitter\SqlSplitter;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Driver\Pdo\AbstractPdoConnection;
 use Windwalker\Database\Driver\Pdo\DsnHelper;
+use Windwalker\Database\Test\Reseter\AbstractReseter;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Grammar\AbstractGrammar;
+use Windwalker\Query\Query;
 use Windwalker\Query\Test\QueryTestTrait;
 
 /**
@@ -73,24 +75,15 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
             );
         }
 
+        $reseter = AbstractReseter::create(static::$platform);
+
         if (static::$platform !== 'sqlite') {
             static::$dbname = $params['database'];
             unset($params['database']);
 
             $pdo = static::createBaseConnect($params, $connClass);
 
-            $grammar = static::getGrammar(\WeakReference::create($pdo));
-
-            $dbs = $pdo->query(
-                $grammar->listDatabases()->render(true)
-            )
-                ->fetchAll(\PDO::FETCH_COLUMN) ?: [];
-
-            if (!in_array(static::$dbname, $dbs, true)) {
-                $pdo->exec('CREATE DATABASE ' . static::qn(static::$dbname));
-            }
-
-            // $pdo->exec('DROP DATABASE ' . static::qn(static::$dbname));
+            $reseter->createDatabase($pdo, static::$dbname);
 
             // Disconnect.
             $pdo = null;
@@ -105,33 +98,7 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
         static::$baseConn = static::createBaseConnect($params, $connClass);
 
         if (static::$platform !== 'sqlite') {
-            $grammar = static::getGrammar(\WeakReference::create(static::$baseConn));
-
-            // Drop Tables
-            $tables = static::$baseConn->query(
-                $grammar
-                    ->listTables()
-                    ->render(true)
-            )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
-
-            if ($tables) {
-                foreach ($tables as $table) {
-                    static::$baseConn->exec($grammar->dropTable($table, true));
-                }
-            }
-
-            // Drop Views
-            $views = static::$baseConn->query(
-                $grammar
-                    ->listViews()
-                    ->render(true)
-            )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
-
-            if ($views) {
-                foreach ($views as $view) {
-                    static::$baseConn->exec($grammar->dropView($view, true));
-                }
-            }
+            $reseter->clearAllTables(static::$baseConn, static::$dbname);
         }
 
         static::setupDatabase();
@@ -245,6 +212,11 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
         }
 
         return $grammar;
+    }
+
+    public static function createQuery($escaper = null): Query
+    {
+        return new Query($escaper ?: static::$baseConn, static::getGrammar());
     }
 
     /**

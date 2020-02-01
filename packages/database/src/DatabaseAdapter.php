@@ -35,11 +35,6 @@ class DatabaseAdapter implements EventAttachableInterface
     protected $driver;
 
     /**
-     * @var MetadataInterface
-     */
-    protected $metadata;
-
-    /**
      * @var Query|string
      */
     protected $query;

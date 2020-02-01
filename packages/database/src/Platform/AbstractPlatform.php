@@ -42,27 +42,7 @@ abstract class AbstractPlatform
 
     public static function create(string $platform, DatabaseAdapter $db)
     {
-        switch (strtolower($platform)) {
-            case 'pgsql':
-            case 'postgresql':
-                $platform = 'PostgreSQL';
-                break;
-
-            case 'sqlsrv':
-            case 'sqlserver':
-                $platform = 'SQLServer';
-                break;
-
-            case 'mysql':
-                $platform = 'MySQL';
-                break;
-
-            case 'sqlite':
-                $platform = 'SQLite';
-                break;
-        }
-
-        $class = __NAMESPACE__ . '\\' . ucfirst($platform) . 'Platform';
+        $class = __NAMESPACE__ . '\\' . static::getPlatformName($platform) . 'Platform';
 
         return new $class($db);
     }
