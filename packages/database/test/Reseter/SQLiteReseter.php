@@ -14,7 +14,7 @@ namespace Windwalker\Database\Test\Reseter;
 /**
  * The SQLIteReseter class.
  */
-class SQLIteReseter extends AbstractReseter
+class SQLiteReseter extends AbstractReseter
 {
     protected static $platform = 'SQLite';
 
