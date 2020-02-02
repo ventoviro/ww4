@@ -18,7 +18,7 @@ use Windwalker\Database\Platform\AbstractPlatform;
 /**
  * The AbstractSchemaManager class.
  */
-abstract class AbstractSchema
+abstract class AbstractSchemaManager
 {
     protected $platform = '';
 
@@ -39,7 +39,7 @@ abstract class AbstractSchema
 
     public static function create(string $platform, DatabaseAdapter $db)
     {
-        $class = __NAMESPACE__ . '\\' . AbstractPlatform::getPlatformName($platform) . 'Schema';
+        $class = __NAMESPACE__ . '\\' . AbstractPlatform::getPlatformName($platform) . 'SchemaManager';
 
         return new $class($db);
     }

@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Platform;
 
+use Windwalker\Query\Query;
+
 /**
  * The SqlserverPlatform class.
  */
@@ -18,59 +20,34 @@ class SQLServerPlatform extends AbstractPlatform
 {
     protected $name = 'SQLServer';
 
-    /**
-     * @inheritDoc
-     */
-    public function getDatabases(): array
+    public function listDatabasesQuery(): Query
     {
-        return $this->db->prepare(
-            $this->db->getQuery(true)
-                ->select('name')
-                ->from('master.dbo.sysdatabases')
-        )
-            ->loadColumn()
-            ->dump();
+        return $this->db->getQuery(true)
+            ->select('name')
+            ->from('master.dbo.sysdatabases');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSchemas(): array
+    public function listSchemaQuery(): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getTables(?string $schema = null, bool $includeViews = false): array
+    public function listTablesQuery(?string $schema): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getViews(?string $schema = null): array
+    public function listViewsQuery(?string $schema): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getColumns(string $table, ?string $schema = null): array
+    public function listColumnsQuery(string $table, ?string $schema): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getConstraints(string $table, ?string $schema = null): array
+    public function listConstraintsQuery(string $table, ?string $schema): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getIndexes(string $table, ?string $schema = null): array
+    public function listIndexesQuery(string $table, ?string $schema): Query
     {
     }
 }

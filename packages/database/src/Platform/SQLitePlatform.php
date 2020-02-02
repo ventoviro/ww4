@@ -11,80 +11,40 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Platform;
 
+use Windwalker\Query\Query;
+
 /**
  * The SqlitePlatform class.
  */
 class SQLitePlatform extends AbstractPlatform
 {
-    protected $name = 'Sqlite';
+    protected $name = 'SQLite';
 
-    /**
-     * @inheritDoc
-     */
-    public function getDatabases(): array
+    public function listDatabasesQuery(): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSchemas(): array
+    public function listSchemaQuery(): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getTables(?string $schema = null, bool $includeViews = false): array
+    public function listTablesQuery(?string $schema): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getViews(?string $schema = null): array
+    public function listViewsQuery(?string $schema): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getColumns(string $table, ?string $schema = null): array
+    public function listColumnsQuery(string $table, ?string $schema): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getConstraints(string $table, ?string $schema = null): array
+    public function listConstraintsQuery(string $table, ?string $schema): Query
     {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getConstraintKeys(string $constraint, string $table, ?string $schema = null): array
-    {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getTriggerNames(?string $schema = null): array
-    {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getTriggers(?string $schema = null): array
-    {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getIndexes(string $table, ?string $schema = null): array
+    public function listIndexesQuery(string $table, ?string $schema): Query
     {
     }
 }

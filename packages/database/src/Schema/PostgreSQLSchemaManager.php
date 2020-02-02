@@ -14,12 +14,10 @@ namespace Windwalker\Database\Schema;
 use Windwalker\Query\Escaper;
 use Windwalker\Scalars\ArrayObject;
 
-use function Windwalker\raw;
-
 /**
  * The PostgreSQLSchema class.
  */
-class PostgreSQLSchema extends AbstractSchema
+class PostgreSQLSchemaManager extends AbstractSchemaManager
 {
     /**
      * @inheritDoc
@@ -28,7 +26,7 @@ class PostgreSQLSchema extends AbstractSchema
     {
         $columns = [];
 
-        foreach ($this->getPlatform()->listColumnsQuery($table, $schema) as $row) {
+        foreach ($this->loadColumnsStatement($table, $schema) as $row) {
             $columns[$row['column_name']] = [
                 'ordinal_position' => $row['ordinal_position'],
                 'column_default' => $row['column_default'],
@@ -72,10 +70,7 @@ class PostgreSQLSchema extends AbstractSchema
      */
     public function listConstraints(string $table, ?string $schema = null): array
     {
-        $constraintGroup = $this->db->prepare(
-            $this->getPlatform()
-                ->listConstraintsQuery($table, $schema)
-        )
+        $constraintGroup = $this->loadConstraintsStatement($table, $schema)
             ->loadAll()
             ->group('constraint_name');
 
@@ -130,7 +125,7 @@ class PostgreSQLSchema extends AbstractSchema
     {
         $indexes = [];
 
-        foreach ($this->db->prepare($this->getPlatform()->listIndexesQuery($table, $schema)) as $row) {
+        foreach ($this->loadIndexesStatement($table, $schema) as $row) {
             preg_match(
                 '/CREATE (UNIQUE )?INDEX [\w]+ ON [\w.]+ USING [\w]+ \(([\w, ]+)\)/',
                 $row['indexdef'],

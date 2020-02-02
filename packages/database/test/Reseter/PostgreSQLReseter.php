@@ -23,10 +23,11 @@ class PostgreSQLReseter extends AbstractReseter
     public function createDatabase(\PDO $pdo, string $dbname): void
     {
         $dbs = $pdo->query(
-            static::createQuery()
+            $this->createQuery()
                 ->select('datname')
                 ->from('pg_database')
                 ->where('datistemplate', raw('false'))
+                ->render(true)
         )
             ->fetchAll(\PDO::FETCH_COLUMN) ?: [];
 
@@ -39,19 +40,20 @@ class PostgreSQLReseter extends AbstractReseter
     {
         // Drop Tables
         $tables = $pdo->query(
-            static::createQuery()
+            $this->createQuery()
                 ->select('table_name AS Name')
                 ->from('information_schema.tables')
                 ->where('table_type', 'BASE TABLE')
                 ->order('table_name', 'ASC')
                 ->whereNotIn('table_schema', ['pg_catalog', 'information_schema'])
+                ->render(true)
         )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
 
         if ($tables) {
             foreach ($tables as $table) {
                 $pdo->exec(
-                    static::createQuery()->format(
-                        'DROP TABLE %n CASCADE',
+                    $this->createQuery()->format(
+                        'DROP TABLE IF EXISTS %n CASCADE',
                         $table
                     )
                 );
@@ -60,19 +62,20 @@ class PostgreSQLReseter extends AbstractReseter
 
         // Drop Views
         $tables = $pdo->query(
-            static::createQuery()
+            $this->createQuery()
                 ->select('table_name AS Name')
                 ->from('information_schema.tables')
                 ->where('table_type', 'VIEW')
                 ->order('table_name', 'ASC')
                 ->whereNotIn('table_schema', ['pg_catalog', 'information_schema'])
+                ->render(true)
         )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
 
         if ($tables) {
             foreach ($tables as $table) {
                 $pdo->exec(
-                    static::createQuery()->format(
-                        'DROP TABLE %n CASCADE',
+                    $this->createQuery()->format(
+                        'DROP VIEW %n CASCADE',
                         $table
                     )
                 );

@@ -16,7 +16,7 @@ use Windwalker\Database\Event\QueryEndEvent;
 use Windwalker\Database\Event\QueryFailedEvent;
 use Windwalker\Database\Exception\DatabaseQueryException;
 use Windwalker\Database\Platform\AbstractPlatform;
-use Windwalker\Database\Schema\AbstractSchema;
+use Windwalker\Database\Schema\AbstractSchemaManager;
 use Windwalker\Query\Query;
 
 /**
@@ -40,7 +40,7 @@ abstract class AbstractDriver implements DriverInterface
     protected $platform;
 
     /**
-     * @var AbstractSchema
+     * @var AbstractSchemaManager
      */
     protected $schema;
 
@@ -206,10 +206,10 @@ abstract class AbstractDriver implements DriverInterface
         return $this->platform;
     }
 
-    public function getSchema(): AbstractSchema
+    public function getSchemaManager(): AbstractSchemaManager
     {
         if (!$this->schema) {
-            $this->schema = AbstractSchema::create($this->platformName, $this->db);
+            $this->schema = AbstractSchemaManager::create($this->platformName, $this->db);
         }
 
         return $this->schema;

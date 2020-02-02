@@ -14,8 +14,8 @@ namespace Windwalker\Database;
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\DriverFactory;
 use Windwalker\Database\Driver\StatementInterface;
-use Windwalker\Database\Metadata\MetadataInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
+use Windwalker\Database\Schema\AbstractSchemaManager;
 use Windwalker\Event\EventAttachableInterface;
 use Windwalker\Event\ListenableTrait;
 use Windwalker\Query\Query;
@@ -110,6 +110,14 @@ class DatabaseAdapter implements EventAttachableInterface
     public function getPlatform(): AbstractPlatform
     {
         return $this->getDriver()->getPlatform();
+    }
+
+    /**
+     * @return  AbstractSchemaManager
+     */
+    public function getSchemaManager(): AbstractSchemaManager
+    {
+        return $this->getDriver()->getSchemaManager();
     }
 
     public function replacePrefix(string $query): string

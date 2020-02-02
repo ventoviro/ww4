@@ -529,5 +529,7 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
     protected static function setupDatabase(): void
     {
         self::importFromFile(__DIR__ . '/../stub/metadata/' . static::$platform . '.sql');
+
+        static::markTestSkipped('No test platform');
     }
 }

@@ -142,7 +142,7 @@ class Escaper
             $conn = $this->connection;
         }
 
-        return $conn ?: [$this->query->getGrammar(), 'unsafeEscape'];
+        return $conn ?: [$this->query->getGrammar(), 'localEscape'];
     }
 
     /**

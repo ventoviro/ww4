@@ -21,7 +21,7 @@ use function Windwalker\raw;
 /**
  * The MySQLSchema class.
  */
-class MySQLSchema extends AbstractSchema
+class MySQLSchemaManager extends AbstractSchemaManager
 {
     /**
      * @inheritDoc

@@ -15,6 +15,7 @@ use Asika\SqlSplitter\SqlSplitter;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Driver\Pdo\AbstractPdoConnection;
 use Windwalker\Database\Driver\Pdo\DsnHelper;
+use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Test\Reseter\AbstractReseter;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Grammar\AbstractGrammar;
@@ -52,15 +53,7 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
 
         $platform = static::$platform;
 
-        switch (strtolower($platform)) {
-            case 'postgresql':
-                $platform = 'pgsql';
-                break;
-
-            case 'sqlserver':
-                $platform = 'sqlsrv';
-                break;
-        }
+        $platform = AbstractPlatform::getShortName($platform);
 
         /** @var AbstractPdoConnection|string $connClass */
         $connClass = 'Windwalker\Database\Driver\Pdo\Pdo' . ucfirst($platform) . 'Connection';
@@ -77,29 +70,21 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
 
         $reseter = AbstractReseter::create(static::$platform);
 
-        if (static::$platform !== 'sqlite') {
-            static::$dbname = $params['database'];
-            unset($params['database']);
+        static::$dbname = $params['database'];
+        unset($params['database']);
 
-            $pdo = static::createBaseConnect($params, $connClass);
+        $pdo = static::createBaseConnect($params, $connClass);
 
-            $reseter->createDatabase($pdo, static::$dbname);
+        $reseter->createDatabase($pdo, static::$dbname);
 
-            // Disconnect.
-            $pdo = null;
+        // Disconnect.
+        $pdo = null;
 
-            $params['database'] = static::$dbname;
-        } else {
-            static::$dbname = $params['database'];
-
-            @unlink(static::$dbname);
-        }
+        $params['database'] = static::$dbname;
 
         static::$baseConn = static::createBaseConnect($params, $connClass);
 
-        if (static::$platform !== 'sqlite') {
-            $reseter->clearAllTables(static::$baseConn, static::$dbname);
-        }
+        $reseter->clearAllTables(static::$baseConn, static::$dbname);
 
         static::setupDatabase();
     }

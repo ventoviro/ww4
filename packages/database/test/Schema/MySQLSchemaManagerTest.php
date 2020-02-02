@@ -9,70 +9,61 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Test\Platform;
+namespace Windwalker\Database\Test\Schema;
 
-use Windwalker\Database\Platform\PostgreSQLPlatform;
+use PHPUnit\Framework\TestCase;
+use Windwalker\Database\Schema\MySQLSchemaManager;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
 /**
- * The PostgreSQLPlatformTest class.
+ * The MySQLSchemaTest class.
  */
-class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
+class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
 {
-    protected static $platform = 'PostgreSQL';
-
-    protected static $driver = 'pdo_pgsql';
-
-    protected static $schema = 'public';
-
     /**
-     * @var PostgreSQLPlatform
+     * @var MySQLSchemaManager
      */
     protected $instance;
 
     /**
-     * @see  PostgreSQLPlatform::getDatabases()
+     * Will be set at setUp()
+     *
+     * @var string
      */
-    public function testGetDatabases(): void
+    protected static $schema = '';
+
+    /**
+     * @see  AbstractSchemaManager::listDatabases
+     */
+    public function testListDatabases(): void
     {
-        $databases = $this->instance->getDatabases();
+        $schemas = $this->instance->listDatabases();
 
         self::assertContains(
             self::getTestParams()['database'],
-            $databases
+            $schemas
         );
     }
 
     /**
-     * @see  PostgreSQLPlatform::getSchemas
+     * @see  AbstractSchemaManager::listSchemas
      */
-    public function testGetSchemas(): void
+    public function testListSchemas(): void
     {
-        $schemas = $this->instance->getSchemas();
+        $schemas = $this->instance->listSchemas();
 
-        $defaults = [
-            'pg_catalog',
-            'public',
-            'information_schema',
-        ];
-
-        self::assertEquals(
-            $defaults,
-            array_values(
-                array_intersect(
-                    $schemas,
-                    $defaults
-                )
-            )
+        self::assertContains(
+            self::getTestParams()['database'],
+            $schemas
         );
     }
 
     /**
-     * @see  PostgreSQLPlatform::getTables
+     * @see  AbstractSchemaManager::listTables
      */
-    public function testGetTables(): void
+    public function testListTables(): void
     {
-        $tables = $this->instance->getTables(static::$schema);
+        $tables = $this->instance->listTables(static::$schema);
 
         self::assertEquals(
             ['articles', 'categories'],
@@ -81,11 +72,11 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  PostgreSQLPlatform::getViews
+     * @see  AbstractSchemaManager::listViews
      */
-    public function testGetViews(): void
+    public function testListViews(): void
     {
-        $views = $this->instance->getViews(static::$schema);
+        $views = $this->instance->listViews(static::$schema);
 
         self::assertEquals(
             ['articles_view'],
@@ -94,26 +85,26 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  PostgreSQLPlatform::getColumns
+     * @see  AbstractSchemaManager::listColumns
      */
-    public function testGetColumns(): void
+    public function testListColumns(): void
     {
-        $columns = $this->instance->getColumns('articles', static::$schema);
+        $columns = $this->instance->listColumns('articles', static::$schema);
 
         self::assertEquals(
             [
                 'id' => [
                     'ordinal_position' => 1,
-                    'column_default' => 0,
+                    'column_default' => null,
                     'is_nullable' => false,
-                    'data_type' => 'integer',
+                    'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => false,
+                    'numeric_unsigned' => true,
+                    'comment' => 'Primary Key',
                     'auto_increment' => true,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -122,14 +113,14 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 2,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
+                    'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => false,
+                    'numeric_unsigned' => true,
+                    'comment' => 'Category ID',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -138,14 +129,14 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 3,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
+                    'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => false,
+                    'numeric_unsigned' => true,
+                    'comment' => 'Page ID',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -154,30 +145,34 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 4,
                     'column_default' => 'bar',
                     'is_nullable' => false,
-                    'data_type' => 'character',
-                    'character_maximum_length' => 15,
-                    'character_octet_length' => 60,
+                    'data_type' => 'enum',
+                    'character_maximum_length' => 3,
+                    'character_octet_length' => 12,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
-
+                        'permitted_values' => [
+                            'foo',
+                            'bar',
+                            'yoo'
+                        ]
                     ]
                 ],
                 'price' => [
                     'ordinal_position' => 5,
-                    'column_default' => '0.0',
+                    'column_default' => '0.000000',
                     'is_nullable' => true,
-                    'data_type' => 'numeric',
+                    'data_type' => 'decimal',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
                     'numeric_precision' => 20,
                     'numeric_scale' => 6,
-                    'numeric_unsigned' => false,
-                    'auto_increment' => false,
+                    'numeric_unsigned' => true,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -192,8 +187,8 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
+                    'comment' => 'Title',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -208,8 +203,8 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
+                    'comment' => 'Alias',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -218,14 +213,14 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 8,
                     'column_default' => null,
                     'is_nullable' => false,
-                    'data_type' => 'text',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => 1073741824,
+                    'data_type' => 'longtext',
+                    'character_maximum_length' => 4294967295,
+                    'character_octet_length' => 4294967295,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
+                    'comment' => 'Intro Text',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -234,14 +229,14 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 9,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
+                    'data_type' => 'tinyint',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'numeric_precision' => 3,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
+                    'comment' => '0: unpublished, 1:published',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -250,14 +245,14 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 10,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
+                    'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => false,
+                    'numeric_unsigned' => true,
+                    'comment' => 'Ordering',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -266,14 +261,14 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 11,
                     'column_default' => '1000-01-01 00:00:00',
                     'is_nullable' => false,
-                    'data_type' => 'timestamp without time zone',
+                    'data_type' => 'datetime',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
+                    'comment' => 'Created Date',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -282,14 +277,14 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 12,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
+                    'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
-                    'numeric_unsigned' => false,
+                    'numeric_unsigned' => true,
+                    'comment' => 'Author',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -298,14 +293,14 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 13,
                     'column_default' => '',
                     'is_nullable' => false,
-                    'data_type' => 'character',
+                    'data_type' => 'char',
                     'character_maximum_length' => 7,
                     'character_octet_length' => 28,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
+                    'comment' => 'Language',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -315,13 +310,13 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'column_default' => null,
                     'is_nullable' => false,
                     'data_type' => 'text',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => 1073741824,
+                    'character_maximum_length' => 65535,
+                    'character_octet_length' => 65535,
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
+                    'comment' => 'Params',
                     'auto_increment' => false,
-                    'comment' => '',
                     'erratas' => [
 
                     ]
@@ -332,24 +327,28 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  PostgreSQLPlatform::getConstraints
+     * @see  AbstractSchemaManager::listConstraints
      */
-    public function testGetConstraints(): void
+    public function testListConstraints(): void
     {
-        $constraints = $this->instance->getConstraints('articles', static::$schema);
-
-        $constraints = array_filter($constraints, function (array $constraint) {
-            return $constraint['constraint_type'] !== 'CHECK';
-        });
+        $constraints = $this->instance->listConstraints('articles', static::$schema);
 
         self::assertEquals(
             [
-                'articles_pkey' => [
-                    'constraint_name' => 'articles_pkey',
+                'PRIMARY' => [
+                    'constraint_name' => 'PRIMARY',
                     'constraint_type' => 'PRIMARY KEY',
                     'table_name' => 'articles',
                     'columns' => [
                         'id'
+                    ]
+                ],
+                'idx_articles_alias' => [
+                    'constraint_name' => 'idx_articles_alias',
+                    'constraint_type' => 'UNIQUE',
+                    'table_name' => 'articles',
+                    'columns' => [
+                        'alias'
                     ]
                 ],
                 'fk_articles_category_id' => [
@@ -359,7 +358,7 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     'columns' => [
                         'category_id'
                     ],
-                    'referenced_table_schema' => 'public',
+                    'referenced_table_schema' => 'windwalker_test',
                     'referenced_table_name' => 'categories',
                     'referenced_columns' => [
                         'id'
@@ -376,11 +375,11 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                         'page_id',
                         'created_by'
                     ],
-                    'referenced_table_schema' => null,
-                    'referenced_table_name' => null,
+                    'referenced_table_schema' => 'windwalker_test',
+                    'referenced_table_name' => 'categories',
                     'referenced_columns' => [
-                        null,
-                        null
+                        'parent_id',
+                        'level'
                     ],
                     'match_option' => 'NONE',
                     'update_rule' => 'RESTRICT',
@@ -391,18 +390,21 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
         );
     }
 
-    public function testGetIndexes(): void
+    /**
+     * @see  AbstractSchemaManager::listIndexes
+     */
+    public function testListIndexes(): void
     {
-        $indexes = $this->instance->getIndexes('articles', static::$schema);
+        $indexes = $this->instance->listIndexes('articles', static::$schema);
 
         self::assertEquals(
             [
-                'articles_pkey' => [
-                    'table_schema' => 'public',
+                'PRIMARY' => [
+                    'table_schema' => 'windwalker_test',
                     'table_name' => 'articles',
                     'is_unique' => true,
                     'is_primary' => true,
-                    'index_name' => 'articles_pkey',
+                    'index_name' => 'PRIMARY',
                     'index_comment' => '',
                     'columns' => [
                         'id' => [
@@ -412,25 +414,39 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_alias' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'windwalker_test',
                     'table_name' => 'articles',
                     'is_unique' => true,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_alias',
                     'index_comment' => '',
                     'columns' => [
-                        'type' => [
-                            'column_name' => 'type',
-                            'sub_part' => null
-                        ],
                         'alias' => [
                             'column_name' => 'alias',
+                            'sub_part' => 150
+                        ]
+                    ]
+                ],
+                'fk_articles_category_more' => [
+                    'table_schema' => 'windwalker_test',
+                    'table_name' => 'articles',
+                    'is_unique' => false,
+                    'is_primary' => false,
+                    'index_name' => 'fk_articles_category_more',
+                    'index_comment' => '',
+                    'columns' => [
+                        'page_id' => [
+                            'column_name' => 'page_id',
+                            'sub_part' => null
+                        ],
+                        'created_by' => [
+                            'column_name' => 'created_by',
                             'sub_part' => null
                         ]
                     ]
                 ],
                 'idx_articles_category_id' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'windwalker_test',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -444,7 +460,7 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_created_by' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'windwalker_test',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -458,7 +474,7 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_language' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'windwalker_test',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -472,7 +488,7 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_page_id' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'windwalker_test',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -490,33 +506,11 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
         );
     }
 
-    // /**
-    //  * @see  PostgreSQLPlatform::getConstraintKeys
-    //  */
-    // public function testGetConstraintKeys(): void
-    // {
-    //     self::markTestIncomplete(); // TODO: Complete this test
-    // }
-
-    // /**
-    //  * @see  PostgreSQLPlatform::getTriggerNames
-    //  */
-    // public function testGetTriggerNames(): void
-    // {
-    //     self::markTestIncomplete(); // TODO: Complete this test
-    // }
-    //
-    // /**
-    //  * @see  PostgreSQLPlatform::getTriggers
-    //  */
-    // public function testGetTriggers(): void
-    // {
-    //     self::markTestIncomplete(); // TODO: Complete this test
-    // }
-
     protected function setUp(): void
     {
-        $this->instance = static::$db->getPlatform();
+        $this->instance = static::$db->getDriver()->getSchemaManager();
+
+        static::$schema = static::$dbname;
     }
 
     protected function tearDown(): void
@@ -529,7 +523,5 @@ class PostgreSQLPlatformTest extends AbstractDatabaseTestCase
     protected static function setupDatabase(): void
     {
         self::importFromFile(__DIR__ . '/../stub/metadata/' . static::$platform . '.sql');
-
-        static::markTestSkipped('No test platform');
     }
 }
