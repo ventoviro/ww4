@@ -9,15 +9,15 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Test\Platform;
+namespace Windwalker\Database\Test\Schema;
 
-use Windwalker\Database\Platform\SQLServerPlatform;
+use Windwalker\Database\Schema\SQLServerSchemaManager;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
 /**
- * The SQLServerPlatformTest class.
+ * The SQLServerSchemaManagerTest class.
  */
-class SQLServerPlatformTest extends AbstractDatabaseTestCase
+class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
 {
     protected static $platform = 'SQLServer';
 
@@ -26,16 +26,16 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
     protected static $schema = 'dbo';
 
     /**
-     * @var SQLServerPlatform
+     * @var SQLServerSchemaManager
      */
     protected $instance;
 
     /**
-     * @see  SQLServerPlatform::getDatabases()
+     * @see  SQLServerSchemaManager::getDatabases()
      */
     public function testGetDatabases(): void
     {
-        $databases = $this->instance->getDatabases();
+        $databases = $this->instance->listDatabases();
 
         self::assertContains(
             self::getTestParams()['database'],
@@ -44,16 +44,16 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  SQLServerPlatform::getSchemas
+     * @see  SQLServerSchemaManager::getSchemas
      */
     public function testGetSchemas(): void
     {
-        $schemas = $this->instance->getSchemas();
+        $schemas = $this->instance->listSchemas();
 
         $defaults = [
-            'pg_catalog',
-            'public',
-            'information_schema',
+            'dbo',
+            'guest',
+            'sys',
         ];
 
         self::assertEquals(
@@ -68,11 +68,11 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  SQLServerPlatform::getTables
+     * @see  SQLServerSchemaManager::getTables
      */
     public function testGetTables(): void
     {
-        $tables = $this->instance->getTables(static::$schema);
+        $tables = $this->instance->listTables(static::$schema);
 
         self::assertEquals(
             ['articles', 'categories'],
@@ -81,11 +81,11 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  SQLServerPlatform::getViews
+     * @see  SQLServerSchemaManager::getViews
      */
     public function testGetViews(): void
     {
-        $views = $this->instance->getViews(static::$schema);
+        $views = $this->instance->listViews(static::$schema);
 
         self::assertEquals(
             ['articles_view'],
@@ -94,26 +94,26 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  SQLServerPlatform::getColumns
+     * @see  SQLServerSchemaManager::getColumns
      */
     public function testGetColumns(): void
     {
-        $columns = $this->instance->getColumns('articles', static::$schema);
+        $columns = $this->instance->listColumns('articles', static::$schema);
 
         self::assertEquals(
             [
                 'id' => [
                     'ordinal_position' => 1,
-                    'column_default' => 0,
+                    'column_default' => '',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'data_type' => 'int',
+                    'character_maximum_length' => 0,
+                    'character_octet_length' => 0,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => true,
                     'comment' => '',
+                    'auto_increment' => true,
                     'erratas' => [
 
                     ]
@@ -121,15 +121,15 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                 'category_id' => [
                     'ordinal_position' => 2,
                     'column_default' => '0',
-                    'is_nullable' => false,
-                    'data_type' => 'integer',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'is_nullable' => true,
+                    'data_type' => 'int',
+                    'character_maximum_length' => 0,
+                    'character_octet_length' => 0,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -138,14 +138,14 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 3,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'data_type' => 'int',
+                    'character_maximum_length' => 0,
+                    'character_octet_length' => 0,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -154,14 +154,14 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 4,
                     'column_default' => 'bar',
                     'is_nullable' => false,
-                    'data_type' => 'character',
+                    'data_type' => 'char',
                     'character_maximum_length' => 15,
-                    'character_octet_length' => 60,
-                    'numeric_precision' => null,
-                    'numeric_scale' => null,
+                    'character_octet_length' => 15,
+                    'numeric_precision' => 0,
+                    'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -170,14 +170,14 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 5,
                     'column_default' => '0.0',
                     'is_nullable' => true,
-                    'data_type' => 'numeric',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => null,
+                    'data_type' => 'decimal',
+                    'character_maximum_length' => 0,
+                    'character_octet_length' => 0,
                     'numeric_precision' => 20,
                     'numeric_scale' => 6,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -188,12 +188,12 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'is_nullable' => false,
                     'data_type' => 'varchar',
                     'character_maximum_length' => 255,
-                    'character_octet_length' => 1020,
-                    'numeric_precision' => null,
-                    'numeric_scale' => null,
+                    'character_octet_length' => 255,
+                    'numeric_precision' => 0,
+                    'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -204,28 +204,28 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'is_nullable' => false,
                     'data_type' => 'varchar',
                     'character_maximum_length' => 255,
-                    'character_octet_length' => 1020,
-                    'numeric_precision' => null,
-                    'numeric_scale' => null,
+                    'character_octet_length' => 255,
+                    'numeric_precision' => 0,
+                    'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'introtext' => [
                     'ordinal_position' => 8,
-                    'column_default' => null,
+                    'column_default' => '',
                     'is_nullable' => false,
-                    'data_type' => 'text',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => 1073741824,
-                    'numeric_precision' => null,
-                    'numeric_scale' => null,
+                    'data_type' => 'varchar',
+                    'character_maximum_length' => -1,
+                    'character_octet_length' => -1,
+                    'numeric_precision' => 0,
+                    'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -234,14 +234,14 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 9,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'data_type' => 'tinyint',
+                    'character_maximum_length' => 0,
+                    'character_octet_length' => 0,
+                    'numeric_precision' => 3,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -250,14 +250,14 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 10,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'data_type' => 'int',
+                    'character_maximum_length' => 0,
+                    'character_octet_length' => 0,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -266,14 +266,14 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 11,
                     'column_default' => '1000-01-01 00:00:00',
                     'is_nullable' => false,
-                    'data_type' => 'timestamp without time zone',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => null,
-                    'numeric_precision' => null,
-                    'numeric_scale' => null,
+                    'data_type' => 'datetime',
+                    'character_maximum_length' => 0,
+                    'character_octet_length' => 0,
+                    'numeric_precision' => 0,
+                    'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -282,14 +282,14 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 12,
                     'column_default' => '0',
                     'is_nullable' => false,
-                    'data_type' => 'integer',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => null,
-                    'numeric_precision' => 32,
+                    'data_type' => 'int',
+                    'character_maximum_length' => 0,
+                    'character_octet_length' => 0,
+                    'numeric_precision' => 10,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -298,30 +298,30 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
                     'ordinal_position' => 13,
                     'column_default' => '',
                     'is_nullable' => false,
-                    'data_type' => 'character',
+                    'data_type' => 'char',
                     'character_maximum_length' => 7,
-                    'character_octet_length' => 28,
-                    'numeric_precision' => null,
-                    'numeric_scale' => null,
+                    'character_octet_length' => 7,
+                    'numeric_precision' => 0,
+                    'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'params' => [
                     'ordinal_position' => 14,
-                    'column_default' => null,
+                    'column_default' => '',
                     'is_nullable' => false,
                     'data_type' => 'text',
-                    'character_maximum_length' => null,
-                    'character_octet_length' => 1073741824,
-                    'numeric_precision' => null,
-                    'numeric_scale' => null,
+                    'character_maximum_length' => 2147483647,
+                    'character_octet_length' => 2147483647,
+                    'numeric_precision' => 0,
+                    'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
@@ -332,11 +332,11 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  SQLServerPlatform::getConstraints
+     * @see  SQLServerSchemaManager::getConstraints
      */
     public function testGetConstraints(): void
     {
-        $constraints = $this->instance->getConstraints('articles', static::$schema);
+        $constraints = $this->instance->listConstraints('articles', static::$schema);
 
         $constraints = array_filter($constraints, function (array $constraint) {
             return $constraint['constraint_type'] !== 'CHECK';
@@ -393,7 +393,7 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
 
     public function testGetIndexes(): void
     {
-        $indexes = $this->instance->getIndexes('articles', static::$schema);
+        $indexes = $this->instance->listIndexes('articles', static::$schema);
 
         self::assertEquals(
             [
@@ -490,33 +490,9 @@ class SQLServerPlatformTest extends AbstractDatabaseTestCase
         );
     }
 
-    // /**
-    //  * @see  SQLServerPlatform::getConstraintKeys
-    //  */
-    // public function testGetConstraintKeys(): void
-    // {
-    //     self::markTestIncomplete(); // TODO: Complete this test
-    // }
-
-    // /**
-    //  * @see  SQLServerPlatform::getTriggerNames
-    //  */
-    // public function testGetTriggerNames(): void
-    // {
-    //     self::markTestIncomplete(); // TODO: Complete this test
-    // }
-    //
-    // /**
-    //  * @see  SQLServerPlatform::getTriggers
-    //  */
-    // public function testGetTriggers(): void
-    // {
-    //     self::markTestIncomplete(); // TODO: Complete this test
-    // }
-
     protected function setUp(): void
     {
-        $this->instance = static::$db->getPlatform();
+        $this->instance = static::$db->getDriver()->getSchemaManager();
     }
 
     protected function tearDown(): void

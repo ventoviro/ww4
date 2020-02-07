@@ -17,6 +17,15 @@ use Windwalker\Utilities\Wrapper\RawWrapper;
 
 /**
  * The JoinClause class.
+ *
+ * @method string raw($value, ...$args)
+ * @method string format(string $text, ...$args)
+ * @method Clause clause(string $name, $elements = [], string $glue = ' ')
+ * @method string dateFormat()
+ * @method string nullDate()
+ * @method mixed  escape($values)
+ * @method mixed  quote($values)
+ * @method mixed  quoteName($values)
  */
 class JoinClause implements ClauseInterface
 {
@@ -296,5 +305,29 @@ class JoinClause implements ClauseInterface
         $this->table = $table;
 
         return $this;
+    }
+
+    public function __call(string $name, array $args)
+    {
+        // Proxy to query
+        $methods = [
+            'raw',
+            'format',
+            'expr',
+            'clause',
+            'dateFormat',
+            'nullDate',
+            'escape',
+            'quote',
+            'quoteName'
+        ];
+
+        $method = $methods[strtolower($name)] ?? null;
+
+        if ($method) {
+            return $this->query->$method(...$args);
+        }
+
+        throw new \BadMethodCallException('Call to undefined method: ' . $name . '()');
     }
 }

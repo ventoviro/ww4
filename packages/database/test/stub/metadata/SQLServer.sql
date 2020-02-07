@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS categories;
 CREATE TABLE categories
 (
-    id          int                                         NOT NULL PRIMARY KEY,
+    id          int                                         NOT NULL identity PRIMARY KEY,
     parent_id   int           DEFAULT 0                     NOT NULL,
     lft         int           DEFAULT 0                     NOT NULL,
     rgt         int           DEFAULT 0                     NOT NULL,
@@ -43,7 +43,7 @@ CREATE INDEX idx_categories_path
 DROP TABLE IF EXISTS articles;
 CREATE TABLE articles
 (
-    id          int                                          NOT NULL PRIMARY KEY,
+    id          int                                          NOT NULL identity PRIMARY KEY,
     category_id int            DEFAULT 0                     ,
     page_id     int            DEFAULT 0                     NOT NULL,
     type        char(15)       DEFAULT 'bar'                 NOT NULL,

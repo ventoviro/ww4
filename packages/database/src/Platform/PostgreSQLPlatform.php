@@ -19,6 +19,7 @@ use Windwalker\Query\Query;
 use Windwalker\Scalars\ArrayObject;
 use Windwalker\Utilities\Str;
 
+use function Windwalker\Query\raw_format;
 use function Windwalker\raw;
 
 /**
@@ -40,7 +41,8 @@ class PostgreSQLPlatform extends AbstractPlatform
     {
         return $this->db->getQuery(true)
             ->select('schema_name')
-            ->from('information_schema.schemata');
+            ->from('information_schema.schemata')
+            ->whereNotIn('schema_name', ['pg_catalog', 'information_schema']);
     }
 
     public function listTablesQuery(?string $schema): Query
@@ -107,7 +109,7 @@ class PostgreSQLPlatform extends AbstractPlatform
 
     public function listConstraintsQuery(string $table, ?string $schema): Query
     {
-        $query = $this->createQuery()->select(
+        return $this->createQuery()->select(
             [
                 't.table_name',
                 'tc.constraint_name',
@@ -166,26 +168,32 @@ class PostgreSQLPlatform extends AbstractPlatform
                 ]
             )
             ->where('t.table_name', $table)
-            ->where('t.table_type', 'in', ['BASE TABLE', 'VIEW']);
+            ->where('t.table_type', 'in', ['BASE TABLE', 'VIEW'])
+            ->tap(function (Query $query) use ($schema) {
+                if ($schema !== null) {
+                    $query->where('t.table_schema', $schema);
+                } else {
+                    $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
+                }
 
-        if ($schema !== null) {
-            $query->where('t.table_schema', $schema);
-        } else {
-            $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
-        }
+                $order = 'CASE %n'
+                    . " WHEN 'PRIMARY KEY' THEN 1"
+                    . " WHEN 'UNIQUE' THEN 2"
+                    . " WHEN 'FOREIGN KEY' THEN 3"
+                    . " WHEN 'CHECK' THEN 4"
+                    . ' ELSE 5 END'
+                    . ', %n'
+                    . ', %n';
 
-        $order = 'CASE tc.constraint_type'
-            . " WHEN 'PRIMARY KEY' THEN 1"
-            . " WHEN 'UNIQUE' THEN 2"
-            . " WHEN 'FOREIGN KEY' THEN 3"
-            . " WHEN 'CHECK' THEN 4"
-            . ' ELSE 5 END'
-            . ', tc.constraint_name'
-            . ', kcu.ordinal_position';
-
-        $query->order(raw($order));
-
-        return $query;
+                $query->order(
+                    $query->raw(
+                        $order,
+                        'tc.constraint_type',
+                        'tc.constraint_name',
+                        'kcu.ordinal_position'
+                    )
+                );
+            });
     }
 
     public function listIndexesQuery(string $table, ?string $schema): Query

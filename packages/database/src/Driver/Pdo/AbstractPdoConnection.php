@@ -27,7 +27,8 @@ abstract class AbstractPdoConnection extends AbstractConnection
 
     protected static $defaultAttributes = [
         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-        \PDO::ATTR_EMULATE_PREPARES => false
+        \PDO::ATTR_EMULATE_PREPARES => true,
+        \PDO::ATTR_STRINGIFY_FETCHES => false
     ];
 
     /**

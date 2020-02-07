@@ -19,7 +19,9 @@ class PdoSqlsrvConnection extends AbstractPdoConnection
     protected static $dbtype = 'sqlsrv';
 
     protected static $defaultAttributes = [
-        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        \PDO::ATTR_STRINGIFY_FETCHES => false,
+        \PDO::SQLSRV_ATTR_FETCHES_NUMERIC_TYPE => true
     ];
 
     public static function getParameters(array $options): array
