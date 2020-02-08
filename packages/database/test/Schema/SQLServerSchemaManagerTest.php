@@ -338,14 +338,10 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
     {
         $constraints = $this->instance->listConstraints('articles', static::$schema);
 
-        $constraints = array_filter($constraints, function (array $constraint) {
-            return $constraint['constraint_type'] !== 'CHECK';
-        });
-
         self::assertEquals(
             [
-                'articles_pkey' => [
-                    'constraint_name' => 'articles_pkey',
+                'PK__articles' => [
+                    'constraint_name' => 'PK__articles',
                     'constraint_type' => 'PRIMARY KEY',
                     'table_name' => 'articles',
                     'columns' => [
@@ -359,14 +355,14 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                     'columns' => [
                         'category_id'
                     ],
-                    'referenced_table_schema' => 'public',
+                    'referenced_table_schema' => 'dbo',
                     'referenced_table_name' => 'categories',
                     'referenced_columns' => [
                         'id'
                     ],
-                    'match_option' => 'NONE',
-                    'update_rule' => 'RESTRICT',
-                    'delete_rule' => 'RESTRICT'
+                    'match_option' => 'SIMPLE',
+                    'update_rule' => 'SET NULL',
+                    'delete_rule' => 'SET NULL'
                 ],
                 'fk_articles_category_more' => [
                     'constraint_name' => 'fk_articles_category_more',
@@ -376,15 +372,15 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                         'page_id',
                         'created_by'
                     ],
-                    'referenced_table_schema' => null,
-                    'referenced_table_name' => null,
+                    'referenced_table_schema' => 'dbo',
+                    'referenced_table_name' => 'categories',
                     'referenced_columns' => [
-                        null,
-                        null
+                        'parent_id',
+                        'level'
                     ],
-                    'match_option' => 'NONE',
-                    'update_rule' => 'RESTRICT',
-                    'delete_rule' => 'RESTRICT'
+                    'match_option' => 'SIMPLE',
+                    'update_rule' => 'NO ACTION',
+                    'delete_rule' => 'NO ACTION'
                 ]
             ],
             $constraints
@@ -397,12 +393,12 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             [
-                'articles_pkey' => [
-                    'table_schema' => 'public',
+                'PK__articles' => [
+                    'table_schema' => 'dbo',
                     'table_name' => 'articles',
                     'is_unique' => true,
                     'is_primary' => true,
-                    'index_name' => 'articles_pkey',
+                    'index_name' => $indexes['PK__articles']['index_name'],
                     'index_comment' => '',
                     'columns' => [
                         'id' => [
@@ -412,7 +408,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_alias' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'dbo',
                     'table_name' => 'articles',
                     'is_unique' => true,
                     'is_primary' => false,
@@ -430,7 +426,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_category_id' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'dbo',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -444,7 +440,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_created_by' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'dbo',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -458,7 +454,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_language' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'dbo',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,
@@ -472,7 +468,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                     ]
                 ],
                 'idx_articles_page_id' => [
-                    'table_schema' => 'public',
+                    'table_schema' => 'dbo',
                     'table_name' => 'articles',
                     'is_unique' => false,
                     'is_primary' => false,

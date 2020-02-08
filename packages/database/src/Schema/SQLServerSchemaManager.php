@@ -62,10 +62,13 @@ class SQLServerSchemaManager extends AbstractSchemaManager
             })
             ->group('constraint_name');
 
-        $name        = null;
         $constraints = [];
 
         foreach ($constraintGroup as $name => $rows) {
+            if ($rows[0]['constraint_type'] === 'PRIMARY KEY') {
+                $name = 'PK__' . $rows[0]['table_name'];
+            }
+
             $constraints[$name] = [
                 'constraint_name' => $name,
                 'constraint_type' => $rows[0]['constraint_type'],
@@ -111,5 +114,43 @@ class SQLServerSchemaManager extends AbstractSchemaManager
      */
     public function listIndexes(string $table, ?string $schema = null): array
     {
+        $indexGroup = $this->loadIndexesStatement($table, $schema)
+            ->loadAll()
+            ->group('index_name');
+
+        $indexes = [];
+
+        foreach ($indexGroup as $keys) {
+            $index = [];
+            $name  = $keys[0]['index_name'];
+
+            if ($keys[0]['is_primary_key']) {
+                $name = 'PK__' . $keys[0]['table_name'];
+            }
+
+            if ($schema === null) {
+                $name = $keys[0]['table_name'] . '_' . $name;
+            }
+
+            $index['table_schema']  = $keys[0]['schema_name'];
+            $index['table_name']    = $keys[0]['table_name'];
+            $index['is_unique']     = (bool) $keys[0]['is_unique'];
+            $index['is_primary']    = (bool) ($keys[0]['is_primary_key'] ?: $keys[0]['is_identity']);
+            $index['index_name']    = $keys[0]['index_name'];
+            $index['index_comment'] = '';
+
+            $index['columns'] = [];
+
+            foreach ($keys as $key) {
+                $index['columns'][$key['column_name']] = [
+                    'column_name' => $key['column_name'],
+                    'sub_part' => null,
+                ];
+            }
+
+            $indexes[$name] = $index;
+        }
+
+        return $indexes;
     }
 }

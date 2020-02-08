@@ -24,8 +24,12 @@ CREATE TABLE categories
 CREATE UNIQUE INDEX idx_categories_alias
     ON categories (alias);
 
-CREATE UNIQUE INDEX idx_categories_parent_id_level
-    ON categories (parent_id, level);
+-- CREATE UNIQUE INDEX idx_categories_parent_id_level
+--     ON categories (parent_id, level);
+
+ALTER TABLE categories
+    ADD CONSTRAINT idx_categories_parent_id_level
+    UNIQUE (parent_id, level);
 
 CREATE INDEX idx_categories_created_by
     ON categories (created_by);
@@ -69,7 +73,7 @@ ALTER TABLE articles
 DELETE NO ACTION ON UPDATE NO ACTION;
 
 CREATE UNIQUE INDEX idx_articles_alias
-    ON articles (alias);
+    ON articles (type, alias);
 
 CREATE INDEX idx_articles_category_id
     ON articles (category_id);
