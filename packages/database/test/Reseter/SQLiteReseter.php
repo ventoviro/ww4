@@ -27,6 +27,46 @@ class SQLiteReseter extends AbstractReseter
 
     public function clearAllTables(\PDO $pdo, string $dbname): void
     {
-        //
+        // Drop Tables
+        $tables = $pdo->query(
+            $this->createQuery()
+                ->select('name')
+                ->from('sqlite_master')
+                ->where('type', 'table')
+                ->where('name', 'not like', 'sqlite_%')
+                ->render(true)
+        )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+
+        if ($tables) {
+            foreach ($tables as $table) {
+                $pdo->exec(
+                    $this->createQuery()->format(
+                        'DROP TABLE IF EXISTS %n',
+                        $table
+                    )
+                );
+            }
+        }
+
+        // Drop Views
+        $tables = $pdo->query(
+            $this->createQuery()
+                ->select('name')
+                ->from('sqlite_master')
+                ->where('type', 'view')
+                ->where('name', 'not like', 'sqlite_%')
+                ->render(true)
+        )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+
+        if ($tables) {
+            foreach ($tables as $table) {
+                $pdo->exec(
+                    $this->createQuery()->format(
+                        'DROP VIEW %n',
+                        $table
+                    )
+                );
+            }
+        }
     }
 }

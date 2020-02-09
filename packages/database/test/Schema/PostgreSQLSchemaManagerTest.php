@@ -50,21 +50,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
     {
         $schemas = $this->instance->listSchemas();
 
-        $defaults = [
-            'pg_catalog',
-            'public',
-            'information_schema',
-        ];
-
-        self::assertEquals(
-            $defaults,
-            array_values(
-                array_intersect(
-                    $schemas,
-                    $defaults
-                )
-            )
-        );
+        self::assertContains('public', $schemas);
     }
 
     /**
