@@ -37,8 +37,8 @@ class PostgreSQLSchemaManager extends AbstractSchemaManager
                 'numeric_precision' => $row['numeric_precision'],
                 'numeric_scale' => $row['numeric_scale'],
                 'numeric_unsigned' => false,
-                'auto_increment' => false,
                 'comment' => '',
+                'auto_increment' => false,
                 'erratas' => [],
             ];
         }
