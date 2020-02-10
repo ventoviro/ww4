@@ -43,7 +43,7 @@ CREATE INDEX idx_categories_path
 DROP TABLE IF EXISTS articles;
 CREATE TABLE articles
 (
-    id          integer  NOT NULL PRIMARY KEY AUTOINCREMENT,
+    id          integer  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     category_id integer        DEFAULT 0 NOT NULL,
     page_id     integer        DEFAULT 0 NOT NULL,
     type        CHAR(15)       DEFAULT 'bar' NOT NULL,

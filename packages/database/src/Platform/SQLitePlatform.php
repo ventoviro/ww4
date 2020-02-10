@@ -64,14 +64,17 @@ class SQLitePlatform extends AbstractPlatform
 
     public function listColumnsQuery(string $table, ?string $schema): Query
     {
+        return $this->pragma('table_info', $table, $schema);
     }
 
     public function listConstraintsQuery(string $table, ?string $schema): Query
     {
+        return $this->listIndexesQuery($table, $schema);
     }
 
     public function listIndexesQuery(string $table, ?string $schema): Query
     {
+        return $this->pragma('index_list', $table, $schema);
     }
 
     public function pragma(string $name, ?string $value = null, ?string $schema = null): Query
@@ -87,7 +90,7 @@ class SQLitePlatform extends AbstractPlatform
         $sql .= $name;
 
         if (null !== $value) {
-            $sql .= '(\'' . $query->quote($value) . '\')';
+            $sql .= '(' . $query->quote($value) . ')';
         }
 
         return $query->sql($sql);

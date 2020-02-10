@@ -102,6 +102,24 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             [
+                'ordinal_position',
+                'column_default',
+                'is_nullable',
+                'data_type',
+                'character_maximum_length',
+                'character_octet_length',
+                'numeric_precision',
+                'numeric_scale',
+                'numeric_unsigned',
+                'comment',
+                'auto_increment',
+                'erratas'
+            ],
+            array_keys($columns[array_key_first($columns)])
+        );
+
+        self::assertEquals(
+            [
                 'id' => [
                     'ordinal_position' => 1,
                     'column_default' => '',
