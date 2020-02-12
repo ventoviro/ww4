@@ -22,7 +22,7 @@ use Windwalker\Utilities\TypeCast;
  * @method string toJson(array $options = [])
  * @method string toXml(array $options = [])
  * @method string toIni(array $options = [])
- * @method string toPhoString(array $options = [])
+ * @method string toPhpString(array $options = [])
  * @method string toYaml(array $options = [])
  * @method string toHjson(array $options = [])
  * @method string toToml(array $options = [])
