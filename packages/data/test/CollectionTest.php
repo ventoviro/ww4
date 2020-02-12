@@ -63,8 +63,8 @@ class CollectionTest extends TestCase
         // Extract to non-array
         $this->expectExceptionMessage(
             sprintf(
-                'Method: %s::extract() extract to sub element should should be array or object or NULL,' .
-                ' got string(4) "Hola"',
+                'Method: %s::extract() extract to sub element should be array, object or NULL,' .
+                ' got string(4) "Hola".',
                 Collection::class
             )
         );

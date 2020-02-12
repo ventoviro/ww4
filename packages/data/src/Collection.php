@@ -67,12 +67,10 @@ class Collection extends ArrayObject
             } else {
                 $new->storage = $this->storage;
             }
+        } elseif ($reference) {
+            $new->storage = &Arr::get($this->storage, $path);
         } else {
-            if ($reference) {
-                $new->storage = &Arr::get($this->storage, $path);
-            } else {
-                $new->storage = Arr::get($this->storage, $path);
-            }
+            $new->storage = Arr::get($this->storage, $path);
         }
 
         TypeAssert::assert(

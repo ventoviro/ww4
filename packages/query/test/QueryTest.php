@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Grammar\AbstractGrammar;
+use Windwalker\Query\Grammar\BaseGrammar;
 use Windwalker\Query\Query;
 use Windwalker\Query\Test\Mock\MockEscaper;
 use Windwalker\Test\TestHelper;
@@ -1644,7 +1645,7 @@ SQL
 
     public static function createGrammar(): AbstractGrammar
     {
-        return new AbstractGrammar();
+        return new BaseGrammar();
     }
 
     protected function setUp(): void
