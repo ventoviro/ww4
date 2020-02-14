@@ -75,7 +75,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
         $tables = $this->instance->listTables(static::$schema);
 
         self::assertEquals(
-            ['articles', 'categories'],
+            ['ww_articles', 'ww_categories'],
             $tables
         );
     }
@@ -88,7 +88,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
         $views = $this->instance->listViews(static::$schema);
 
         self::assertEquals(
-            ['articles_view'],
+            ['ww_articles_view'],
             $views
         );
     }
@@ -98,7 +98,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testGetColumns(): void
     {
-        $columns = $this->instance->listColumns('articles', static::$schema);
+        $columns = $this->instance->listColumns('#__articles', static::$schema);
 
         self::assertEquals(
             [
@@ -354,14 +354,14 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testGetConstraints(): void
     {
-        $constraints = $this->instance->listConstraints('articles', static::$schema);
+        $constraints = $this->instance->listConstraints('#__articles', static::$schema);
 
         self::assertEquals(
             [
-                'PK__articles' => [
-                    'constraint_name' => 'PK__articles',
+                'PK__ww_articles' => [
+                    'constraint_name' => 'PK__ww_articles',
                     'constraint_type' => 'PRIMARY KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'id'
                     ]
@@ -369,12 +369,12 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                 'fk_articles_category_id' => [
                     'constraint_name' => 'fk_articles_category_id',
                     'constraint_type' => 'FOREIGN KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'category_id'
                     ],
                     'referenced_table_schema' => 'dbo',
-                    'referenced_table_name' => 'categories',
+                    'referenced_table_name' => 'ww_categories',
                     'referenced_columns' => [
                         'id'
                     ],
@@ -385,13 +385,13 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                 'fk_articles_category_more' => [
                     'constraint_name' => 'fk_articles_category_more',
                     'constraint_type' => 'FOREIGN KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'page_id',
                         'created_by'
                     ],
                     'referenced_table_schema' => 'dbo',
-                    'referenced_table_name' => 'categories',
+                    'referenced_table_name' => 'ww_categories',
                     'referenced_columns' => [
                         'parent_id',
                         'level'
@@ -407,16 +407,16 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
 
     public function testGetIndexes(): void
     {
-        $indexes = $this->instance->listIndexes('articles', static::$schema);
+        $indexes = $this->instance->listIndexes('#__articles', static::$schema);
 
         self::assertEquals(
             [
-                'PK__articles' => [
+                'PK__ww_articles' => [
                     'table_schema' => 'dbo',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => true,
                     'is_primary' => true,
-                    'index_name' => $indexes['PK__articles']['index_name'],
+                    'index_name' => $indexes['PK__ww_articles']['index_name'],
                     'index_comment' => '',
                     'columns' => [
                         'id' => [
@@ -427,7 +427,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_alias' => [
                     'table_schema' => 'dbo',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => true,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_alias',
@@ -445,7 +445,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_category_id' => [
                     'table_schema' => 'dbo',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_category_id',
@@ -459,7 +459,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_created_by' => [
                     'table_schema' => 'dbo',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_created_by',
@@ -473,7 +473,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_language' => [
                     'table_schema' => 'dbo',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_language',
@@ -487,7 +487,7 @@ class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_page_id' => [
                     'table_schema' => 'dbo',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_page_id',

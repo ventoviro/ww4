@@ -61,7 +61,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
         $tables = $this->instance->listTables(static::$schema);
 
         self::assertEquals(
-            ['articles', 'categories'],
+            ['ww_articles', 'ww_categories'],
             $tables
         );
     }
@@ -74,7 +74,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
         $views = $this->instance->listViews(static::$schema);
 
         self::assertEquals(
-            ['articles_view'],
+            ['ww_articles_view'],
             $views
         );
     }
@@ -84,7 +84,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testGetColumns(): void
     {
-        $columns = $this->instance->listColumns('articles', static::$schema);
+        $columns = $this->instance->listColumns('#__articles', static::$schema);
 
         self::assertEquals(
             [
@@ -340,7 +340,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testGetConstraints(): void
     {
-        $constraints = $this->instance->listConstraints('articles', static::$schema);
+        $constraints = $this->instance->listConstraints('#__articles', static::$schema);
 
         $constraints = array_filter($constraints, function (array $constraint) {
             return $constraint['constraint_type'] !== 'CHECK';
@@ -348,10 +348,10 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             [
-                'articles_pkey' => [
-                    'constraint_name' => 'articles_pkey',
+                'ww_articles_pkey' => [
+                    'constraint_name' => 'ww_articles_pkey',
                     'constraint_type' => 'PRIMARY KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'id'
                     ]
@@ -359,12 +359,12 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
                 'fk_articles_category_id' => [
                     'constraint_name' => 'fk_articles_category_id',
                     'constraint_type' => 'FOREIGN KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'category_id'
                     ],
                     'referenced_table_schema' => 'public',
-                    'referenced_table_name' => 'categories',
+                    'referenced_table_name' => 'ww_categories',
                     'referenced_columns' => [
                         'id'
                     ],
@@ -375,7 +375,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
                 'fk_articles_category_more' => [
                     'constraint_name' => 'fk_articles_category_more',
                     'constraint_type' => 'FOREIGN KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'page_id',
                         'created_by'
@@ -397,16 +397,16 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
 
     public function testGetIndexes(): void
     {
-        $indexes = $this->instance->listIndexes('articles', static::$schema);
+        $indexes = $this->instance->listIndexes('#__articles', static::$schema);
 
         self::assertEquals(
             [
-                'articles_pkey' => [
+                'ww_articles_pkey' => [
                     'table_schema' => 'public',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => true,
                     'is_primary' => true,
-                    'index_name' => 'articles_pkey',
+                    'index_name' => 'ww_articles_pkey',
                     'index_comment' => '',
                     'columns' => [
                         'id' => [
@@ -417,7 +417,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_alias' => [
                     'table_schema' => 'public',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => true,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_alias',
@@ -435,7 +435,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_category_id' => [
                     'table_schema' => 'public',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_category_id',
@@ -449,7 +449,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_created_by' => [
                     'table_schema' => 'public',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_created_by',
@@ -463,7 +463,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_language' => [
                     'table_schema' => 'public',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_language',
@@ -477,7 +477,7 @@ class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_page_id' => [
                     'table_schema' => 'public',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_page_id',

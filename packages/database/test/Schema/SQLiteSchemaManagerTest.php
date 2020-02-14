@@ -65,7 +65,7 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
         $tables = $this->instance->listTables(static::$schema);
 
         self::assertEquals(
-            ['articles', 'categories'],
+            ['ww_articles', 'ww_categories'],
             $tables
         );
     }
@@ -78,7 +78,7 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
         $views = $this->instance->listViews(static::$schema);
 
         self::assertEquals(
-            ['articles_view'],
+            ['ww_articles_view'],
             $views
         );
     }
@@ -88,7 +88,7 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testListColumns(): void
     {
-        $columns = $this->instance->listColumns('articles', static::$schema);
+        $columns = $this->instance->listColumns('#__articles', static::$schema);
 
         self::assertEquals(
             [
@@ -344,22 +344,22 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testListConstraints(): void
     {
-        $constraints = $this->instance->listConstraints('articles', static::$schema);
+        $constraints = $this->instance->listConstraints('#__articles', static::$schema);
 
         self::assertEquals(
             [
                 'idx_articles_alias' => [
                     'constraint_name' => 'idx_articles_alias',
                     'constraint_type' => 'UNIQUE',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'alias'
                     ]
                 ],
-                'sqlite_autoindex_articles_1' => [
-                    'constraint_name' => 'sqlite_autoindex_articles_1',
+                'sqlite_autoindex_ww_articles_1' => [
+                    'constraint_name' => 'sqlite_autoindex_ww_articles_1',
                     'constraint_type' => 'PRIMARY KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'id'
                     ]
@@ -374,13 +374,13 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testListIndexes(): void
     {
-        $indexes = $this->instance->listIndexes('articles', static::$schema);
+        $indexes = $this->instance->listIndexes('#__articles', static::$schema);
 
         self::assertEquals(
             [
                 'idx_articles_page_id' => [
                     'table_schema' => 'main',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'index_name' => 'idx_articles_page_id',
                     'index_comment' => '',
@@ -393,7 +393,7 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_language' => [
                     'table_schema' => 'main',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'index_name' => 'idx_articles_language',
                     'index_comment' => '',
@@ -406,7 +406,7 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_created_by' => [
                     'table_schema' => 'main',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'index_name' => 'idx_articles_created_by',
                     'index_comment' => '',
@@ -419,7 +419,7 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_category_id' => [
                     'table_schema' => 'main',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'index_name' => 'idx_articles_category_id',
                     'index_comment' => '',
@@ -432,7 +432,7 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_alias' => [
                     'table_schema' => 'main',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => true,
                     'index_name' => 'idx_articles_alias',
                     'index_comment' => '',
@@ -443,11 +443,11 @@ class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
                         ]
                     ]
                 ],
-                'sqlite_autoindex_articles_1' => [
+                'sqlite_autoindex_ww_articles_1' => [
                     'table_schema' => 'main',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => true,
-                    'index_name' => 'sqlite_autoindex_articles_1',
+                    'index_name' => 'sqlite_autoindex_ww_articles_1',
                     'index_comment' => '',
                     'columns' => [
                         'id' => [

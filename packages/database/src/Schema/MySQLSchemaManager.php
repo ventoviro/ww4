@@ -108,7 +108,7 @@ class MySQLSchemaManager extends AbstractSchemaManager
                 ]
             )
             ->from('INFORMATION_SCHEMA.KEY_COLUMN_USAGE')
-            ->where('TABLE_NAME', $table)
+            ->where('TABLE_NAME', $this->db->replacePrefix($table))
             ->tap(
                 static function (Query $query) use ($schema) {
                     if ($schema !== null) {
@@ -132,7 +132,7 @@ class MySQLSchemaManager extends AbstractSchemaManager
                 ]
             )
             ->from('INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS')
-            ->where('TABLE_NAME', $table)
+            ->where('TABLE_NAME', $this->db->replacePrefix($table))
             ->tap(
                 static function (Query $query) use ($schema) {
                     if ($schema !== null) {

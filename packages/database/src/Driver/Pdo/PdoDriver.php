@@ -13,13 +13,14 @@ namespace Windwalker\Database\Driver\Pdo;
 
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\StatementInterface;
+use Windwalker\Database\Driver\TransactionDriverInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Query\Escaper;
 
 /**
  * The PdoDriver class.
  */
-class PdoDriver extends AbstractDriver
+class PdoDriver extends AbstractDriver implements TransactionDriverInterface
 {
     /**
      * @var string
@@ -47,8 +48,12 @@ class PdoDriver extends AbstractDriver
         /** @var \PDO $pdo */
         $pdo = $this->connect()->get();
 
+        $exec = $options['exec'] ?? null;
+
+        unset($options['exec']);
+
         return new PdoStatement(
-            static function () use ($pdo, $query, $options, $bounded) {
+            static function () use ($pdo, $query, $options, $bounded, $exec) {
                 return [
                     $pdo->prepare($query, $options),
                     static function (PdoStatement $stmt) use ($bounded) {
@@ -67,6 +72,14 @@ class PdoDriver extends AbstractDriver
                 ];
             }
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function execute($query, ?array $params = null): StatementInterface
+    {
+        return $this->prepare($query, ['exec' => true])->execute($params);
     }
 
     /**
@@ -97,5 +110,38 @@ class PdoDriver extends AbstractDriver
     public function escape(string $value): string
     {
         return Escaper::stripQuote($this->quote($value));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function transactionStart(): bool
+    {
+        /** @var \PDO $pdo */
+        $pdo = $this->connect()->get();
+
+        return $pdo->beginTransaction();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function transactionCommit(): bool
+    {
+        /** @var \PDO $pdo */
+        $pdo = $this->connect()->get();
+
+        return $pdo->commit();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function transactionRollback(): bool
+    {
+        /** @var \PDO $pdo */
+        $pdo = $this->connect()->get();
+
+        return $pdo->rollBack();
     }
 }

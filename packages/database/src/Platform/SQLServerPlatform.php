@@ -13,7 +13,6 @@ namespace Windwalker\Database\Platform;
 
 use Windwalker\Query\Query;
 
-use function Windwalker\Query\raw_format;
 use function Windwalker\raw;
 
 /**
@@ -100,7 +99,7 @@ class SQLServerPlatform extends AbstractPlatform
                     ['sc.name', '=', 'c.COLUMN_NAME'],
                 ]
             )
-            ->where('TABLE_NAME', $table)
+            ->where('TABLE_NAME', $this->db->replacePrefix($table))
             ->tap(
                 static function (Query $query) use ($schema) {
                     if ($schema !== null) {
@@ -173,7 +172,7 @@ class SQLServerPlatform extends AbstractPlatform
                     ['KCU.ORDINAL_POSITION', '=', 'KCU2.ORDINAL_POSITION'],
                 ]
             )
-            ->where('T.TABLE_NAME', $table)
+            ->where('T.TABLE_NAME', $this->db->replacePrefix($table))
             ->where('T.TABLE_TYPE', 'IN', ['BASE table', 'VIEW'])
             ->tap(
                 static function (Query $query) use ($schema) {
@@ -241,11 +240,63 @@ class SQLServerPlatform extends AbstractPlatform
                     ['idx.index_id', '=', 'ic.index_id']
                 ]
             )
-            ->where('tbl.name', $table)
+            ->where('tbl.name', $this->db->replacePrefix($table))
             ->orWhere(function (Query $query) {
                 $query->where('idx.name', '!=', null);
                 $query->where('col.is_identity', 1);
                 $query->where('idx.is_primary_key', 1);
             });
+    }
+
+    /**
+     * start
+     *
+     * @return  static
+     */
+    public function transactionStart()
+    {
+        if (!$this->depth) {
+            parent::transactionStart();
+        } else {
+            $savepoint = 'SP_' . $this->depth;
+            $this->db->execute('SAVE TRANSACTION ' . $this->db->quoteName($savepoint));
+
+            $this->depth++;
+        }
+
+        return $this;
+    }
+
+    /**
+     * commit
+     *
+     * @return  static
+     */
+    public function transactionCommit()
+    {
+        if ($this->depth <= 1) {
+            parent::transactionCommit();
+        }
+
+        return $this;
+    }
+
+    /**
+     * rollback
+     *
+     * @return  static
+     */
+    public function transactionRollback()
+    {
+        if ($this->depth <= 1) {
+            parent::transactionRollback();
+        } else {
+            $savepoint = 'SP_' . ($this->depth - 1);
+            $this->db->execute('ROLLBACK TRANSACTION ' . $this->db->quoteName($savepoint));
+
+            $this->depth--;
+        }
+
+        return $this;
     }
 }

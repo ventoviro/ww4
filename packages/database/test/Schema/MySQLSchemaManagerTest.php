@@ -66,7 +66,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
         $tables = $this->instance->listTables(static::$schema);
 
         self::assertEquals(
-            ['articles', 'categories'],
+            ['ww_articles', 'ww_categories'],
             $tables
         );
     }
@@ -79,7 +79,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
         $views = $this->instance->listViews(static::$schema);
 
         self::assertEquals(
-            ['articles_view'],
+            ['ww_articles_view'],
             $views
         );
     }
@@ -89,7 +89,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testListColumns(): void
     {
-        $columns = $this->instance->listColumns('articles', static::$schema);
+        $columns = $this->instance->listColumns('#__articles', static::$schema);
 
         self::assertEquals(
             [
@@ -349,14 +349,14 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testListConstraints(): void
     {
-        $constraints = $this->instance->listConstraints('articles', static::$schema);
+        $constraints = $this->instance->listConstraints('#__articles', static::$schema);
 
         self::assertEquals(
             [
                 'PRIMARY' => [
                     'constraint_name' => 'PRIMARY',
                     'constraint_type' => 'PRIMARY KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'id'
                     ]
@@ -364,7 +364,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 'idx_articles_alias' => [
                     'constraint_name' => 'idx_articles_alias',
                     'constraint_type' => 'UNIQUE',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'alias'
                     ]
@@ -372,12 +372,12 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 'fk_articles_category_id' => [
                     'constraint_name' => 'fk_articles_category_id',
                     'constraint_type' => 'FOREIGN KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'category_id'
                     ],
                     'referenced_table_schema' => 'windwalker_test',
-                    'referenced_table_name' => 'categories',
+                    'referenced_table_name' => 'ww_categories',
                     'referenced_columns' => [
                         'id'
                     ],
@@ -388,13 +388,13 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 'fk_articles_category_more' => [
                     'constraint_name' => 'fk_articles_category_more',
                     'constraint_type' => 'FOREIGN KEY',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'columns' => [
                         'page_id',
                         'created_by'
                     ],
                     'referenced_table_schema' => 'windwalker_test',
-                    'referenced_table_name' => 'categories',
+                    'referenced_table_name' => 'ww_categories',
                     'referenced_columns' => [
                         'parent_id',
                         'level'
@@ -413,13 +413,13 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
      */
     public function testListIndexes(): void
     {
-        $indexes = $this->instance->listIndexes('articles', static::$schema);
+        $indexes = $this->instance->listIndexes('#__articles', static::$schema);
 
         self::assertEquals(
             [
                 'PRIMARY' => [
                     'table_schema' => 'windwalker_test',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => true,
                     'is_primary' => true,
                     'index_name' => 'PRIMARY',
@@ -433,7 +433,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_alias' => [
                     'table_schema' => 'windwalker_test',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => true,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_alias',
@@ -447,7 +447,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'fk_articles_category_more' => [
                     'table_schema' => 'windwalker_test',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'fk_articles_category_more',
@@ -465,7 +465,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_category_id' => [
                     'table_schema' => 'windwalker_test',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_category_id',
@@ -479,7 +479,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_created_by' => [
                     'table_schema' => 'windwalker_test',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_created_by',
@@ -493,7 +493,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_language' => [
                     'table_schema' => 'windwalker_test',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_language',
@@ -507,7 +507,7 @@ class MySQLSchemaManagerTest extends AbstractDatabaseTestCase
                 ],
                 'idx_articles_page_id' => [
                     'table_schema' => 'windwalker_test',
-                    'table_name' => 'articles',
+                    'table_name' => 'ww_articles',
                     'is_unique' => false,
                     'is_primary' => false,
                     'index_name' => 'idx_articles_page_id',

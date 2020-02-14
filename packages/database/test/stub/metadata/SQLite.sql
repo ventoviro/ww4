@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS categories;
-CREATE TABLE categories
+DROP TABLE IF EXISTS ww_categories;
+CREATE TABLE ww_categories
 (
     id          integer NOT NULL PRIMARY KEY AUTOINCREMENT,
     parent_id   integer       DEFAULT 0 NOT NULL,
@@ -22,26 +22,26 @@ CREATE TABLE categories
 );
 
 CREATE UNIQUE INDEX idx_categories_alias
-    ON categories (alias);
+    ON ww_categories (alias);
 
 CREATE INDEX idx_categories_parent_id_level
-    ON categories (parent_id, level);
+    ON ww_categories (parent_id, level);
 
 CREATE INDEX idx_categories_created_by
-    ON categories (created_by);
+    ON ww_categories (created_by);
 
 CREATE INDEX idx_categories_language
-    ON categories (language);
+    ON ww_categories (language);
 
 CREATE INDEX idx_categories_lft_rgt
-    ON categories (lft, rgt);
+    ON ww_categories (lft, rgt);
 
 CREATE INDEX idx_categories_path
-    ON categories (path);
+    ON ww_categories (path);
 
 
-DROP TABLE IF EXISTS articles;
-CREATE TABLE articles
+DROP TABLE IF EXISTS ww_articles;
+CREATE TABLE ww_articles
 (
     id          integer  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     category_id integer        DEFAULT 0 NOT NULL,
@@ -59,29 +59,29 @@ CREATE TABLE articles
     params      text     NOT NULL,
 
     CONSTRAINT fk_articles_category_id
-        FOREIGN KEY (category_id) REFERENCES categories (id)
+        FOREIGN KEY (category_id) REFERENCES ww_categories (id)
             ON UPDATE RESTRICT ON DELETE CASCADE,
 
-    CONSTRAINT articles_categories_parent_id_level_fk
-        FOREIGN KEY (page_id, category_id) REFERENCES categories (parent_id, level)
+    CONSTRAINT ww_articles_categories_parent_id_level_fk
+        FOREIGN KEY (page_id, category_id) REFERENCES ww_categories (parent_id, level)
             ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
 CREATE UNIQUE INDEX idx_articles_alias
-    ON articles (alias);
+    ON ww_articles (alias);
 
 CREATE INDEX idx_articles_category_id
-    ON articles (category_id);
+    ON ww_articles (category_id);
 
 CREATE INDEX idx_articles_created_by
-    ON articles (created_by);
+    ON ww_articles (created_by);
 
 CREATE INDEX idx_articles_language
-    ON articles (language);
+    ON ww_articles (language);
 
 CREATE INDEX idx_articles_page_id
-    ON articles (page_id);
+    ON ww_articles (page_id);
 
-CREATE VIEW `articles_view` AS
+CREATE VIEW `ww_articles_view` AS
 SELECT *
-FROM `articles`;
+FROM `ww_articles`;

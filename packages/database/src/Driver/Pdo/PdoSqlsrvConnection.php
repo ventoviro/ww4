@@ -34,6 +34,7 @@ class PdoSqlsrvConnection extends AbstractPdoConnection
 
         $params['Database']     = $options['database'] ?? null;
         $params['CharacterSet'] = $options['charset'] ?? null;
+        $params['MultipleActiveResultSets'] = 'False';
 
         $options['dsn'] = static::getDsn($params);
 

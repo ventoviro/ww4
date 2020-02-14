@@ -93,6 +93,18 @@ class DatabaseAdapter implements EventAttachableInterface
     }
 
     /**
+     * quoteName
+     *
+     * @param array|string $value
+     *
+     * @return  array|string
+     */
+    public function quoteName($value)
+    {
+        return $this->getQuery(true)->quoteName($value);
+    }
+
+    /**
      * @return AbstractDriver
      */
     public function getDriver(): AbstractDriver
@@ -120,8 +132,26 @@ class DatabaseAdapter implements EventAttachableInterface
         return $this->getDriver()->getSchemaManager();
     }
 
-    public function replacePrefix(string $query): string
+    public function replacePrefix(string $query, string $prefix = '#__'): string
     {
-        return $query;
+        return $this->getDriver()->replacePrefix($query, $prefix);
+    }
+
+    /**
+     * transaction
+     *
+     * @param  callable  $callback
+     * @param  bool      $autoCommit
+     * @param  bool      $enabled
+     *
+     * @return  static
+     *
+     * @throws \Throwable
+     */
+    public function transaction(callable $callback, bool $autoCommit = true, bool $enabled = true)
+    {
+        $this->getPlatform()->transaction($callback, $autoCommit, $enabled);
+
+        return $this;
     }
 }

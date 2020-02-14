@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Database\DatabaseAdapter;
+use Windwalker\Database\Driver\TransactionDriverInterface;
 use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;
 
@@ -39,6 +40,13 @@ abstract class AbstractPlatform
      * @var DatabaseAdapter
      */
     protected $db;
+
+    /**
+     * The depth of the current transaction.
+     *
+     * @var  int
+     */
+    protected $depth = 0;
 
     public static function create(string $platform, DatabaseAdapter $db)
     {
@@ -132,4 +140,100 @@ abstract class AbstractPlatform
     abstract public function listConstraintsQuery(string $table, ?string $schema): Query;
 
     abstract public function listIndexesQuery(string $table, ?string $schema): Query;
+
+    /**
+     * start
+     *
+     * @return  static
+     */
+    public function transactionStart()
+    {
+        $driver = $this->db->getDriver();
+
+        if ($driver instanceof TransactionDriverInterface) {
+            $driver->transactionStart();
+        } else {
+            $this->db->execute('BEGIN;');
+        }
+
+        $this->depth++;
+
+        return $this;
+    }
+
+    /**
+     * commit
+     *
+     * @return  static
+     */
+    public function transactionCommit()
+    {
+        $driver = $this->db->getDriver();
+
+        if ($driver instanceof TransactionDriverInterface) {
+            $driver->transactionCommit();
+        } else {
+            $this->db->execute('COMMIT;');
+        }
+
+        $this->depth--;
+
+        return $this;
+    }
+
+    /**
+     * rollback
+     *
+     * @return  static
+     */
+    public function transactionRollback()
+    {
+        $driver = $this->db->getDriver();
+
+        if ($driver instanceof TransactionDriverInterface) {
+            $driver->transactionRollback();
+        } else {
+            $this->db->execute('ROLLBACK;');
+        }
+
+        $this->depth--;
+
+        return $this;
+    }
+
+    /**
+     * transaction
+     *
+     * @param  callable  $callback
+     * @param  bool      $autoCommit
+     * @param  bool      $enabled
+     *
+     * @return  static
+     *
+     * @throws \Throwable
+     */
+    public function transaction(callable $callback, bool $autoCommit = true, bool $enabled = true)
+    {
+        if (!$enabled) {
+            $callback($this->db, $this);
+
+            return $this;
+        }
+
+        $this->transactionStart();
+
+        try {
+            $callback($this->db, $this);
+
+            if ($autoCommit) {
+                $this->transactionCommit();
+            }
+        } catch (\Throwable $e) {
+            $this->transactionRollback();
+
+            throw $e;
+        }
+
+        return $this;
+    }
 }

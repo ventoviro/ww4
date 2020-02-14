@@ -64,7 +64,7 @@ class SQLitePlatform extends AbstractPlatform
 
     public function listColumnsQuery(string $table, ?string $schema): Query
     {
-        return $this->pragma('table_info', $table, $schema);
+        return $this->pragma('table_info', $this->db->replacePrefix($table), $schema);
     }
 
     public function listConstraintsQuery(string $table, ?string $schema): Query
@@ -74,7 +74,7 @@ class SQLitePlatform extends AbstractPlatform
 
     public function listIndexesQuery(string $table, ?string $schema): Query
     {
-        return $this->pragma('index_list', $table, $schema);
+        return $this->pragma('index_list', $this->db->replacePrefix($table), $schema);
     }
 
     public function pragma(string $name, ?string $value = null, ?string $schema = null): Query
@@ -94,5 +94,59 @@ class SQLitePlatform extends AbstractPlatform
         }
 
         return $query->sql($sql);
+    }
+
+    /**
+     * start
+     *
+     * @return  static
+     */
+    public function transactionStart()
+    {
+        if (!$this->depth) {
+            parent::transactionStart();
+        } else {
+            $savepoint = 'SP_' . $this->depth;
+            $this->db->execute('SAVEPOINT ' . $this->db->quoteName($savepoint));
+
+            $this->depth++;
+        }
+
+        return $this;
+    }
+
+    /**
+     * commit
+     *
+     * @return  static
+     */
+    public function transactionCommit()
+    {
+        if ($this->depth <= 1) {
+            parent::transactionCommit();
+        } else {
+            $this->depth--;
+        }
+
+        return $this;
+    }
+
+    /**
+     * rollback
+     *
+     * @return  static
+     */
+    public function transactionRollback()
+    {
+        if ($this->depth <= 1) {
+            parent::transactionRollback();
+        } else {
+            $savepoint = 'SP_' . ($this->depth - 1);
+            $this->db->execute('ROLLBACK TO SAVEPOINT ' . $this->db->quoteName($savepoint));
+
+            $this->depth--;
+        }
+
+        return $this;
     }
 }

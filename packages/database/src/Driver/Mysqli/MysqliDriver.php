@@ -13,11 +13,12 @@ namespace Windwalker\Database\Driver\Mysqli;
 
 use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\StatementInterface;
+use Windwalker\Database\Driver\TransactionDriverInterface;
 
 /**
  * The MysqliDriver class.
  */
-class MysqliDriver extends AbstractDriver
+class MysqliDriver extends AbstractDriver implements TransactionDriverInterface
 {
     protected static $name = 'mysqli';
 
@@ -64,5 +65,38 @@ class MysqliDriver extends AbstractDriver
         $mysqli = $this->connect()->get();
 
         return $mysqli->real_escape_string($value);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function transactionStart(): bool
+    {
+        /** @var \mysqli $mysqli */
+        $mysqli = $this->connect()->get();
+
+        return $mysqli->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function transactionCommit(): bool
+    {
+        /** @var \mysqli $mysqli */
+        $mysqli = $this->connect()->get();
+
+        return $mysqli->commit();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function transactionRollback(): bool
+    {
+        /** @var \mysqli $mysqli */
+        $mysqli = $this->connect()->get();
+
+        return $mysqli->rollback();
     }
 }

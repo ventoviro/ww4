@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Data\Collection;
+use Windwalker\Database\Driver\Mysql\MysqlTransaction;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Str;
@@ -93,7 +94,7 @@ class MySQLPlatform extends AbstractPlatform
                 ]
             )
             ->from('INFORMATION_SCHEMA.COLUMNS')
-            ->where('TABLE_NAME', $table);
+            ->where('TABLE_NAME', $this->db->replacePrefix($table));
 
         if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
@@ -121,7 +122,7 @@ class MySQLPlatform extends AbstractPlatform
                 ]
             )
             ->from('INFORMATION_SCHEMA.STATISTICS')
-            ->where('TABLE_NAME', $table);
+            ->where('TABLE_NAME', $this->db->replacePrefix($table));
 
         if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
@@ -143,7 +144,7 @@ class MySQLPlatform extends AbstractPlatform
                 ]
             )
             ->from('INFORMATION_SCHEMA.TABLE_CONSTRAINTS')
-            ->where('TABLE_NAME', $table)
+            ->where('TABLE_NAME', $this->db->replacePrefix($table))
             ->tap(
                 static function (Query $query) use ($schema) {
                     if ($schema !== null) {
@@ -153,5 +154,59 @@ class MySQLPlatform extends AbstractPlatform
                     }
                 }
             );
+    }
+
+    /**
+     * start
+     *
+     * @return  static
+     */
+    public function transactionStart()
+    {
+        if (!$this->depth) {
+            parent::transactionStart();
+        } else {
+            $savepoint = 'SP_' . $this->depth;
+            $this->db->execute('SAVEPOINT ' . $this->db->quoteName($savepoint));
+
+            $this->depth++;
+        }
+
+        return $this;
+    }
+
+    /**
+     * commit
+     *
+     * @return  static
+     */
+    public function transactionCommit()
+    {
+        if ($this->depth <= 1) {
+            parent::transactionCommit();
+        } else {
+            $this->depth--;
+        }
+
+        return $this;
+    }
+
+    /**
+     * rollback
+     *
+     * @return  static
+     */
+    public function transactionRollback()
+    {
+        if ($this->depth <= 1) {
+            parent::transactionRollback();
+        } else {
+            $savepoint = 'SP_' . ($this->depth - 1);
+            $this->db->execute('ROLLBACK TO SAVEPOINT ' . $this->db->quoteName($savepoint));
+
+            $this->depth--;
+        }
+
+        return $this;
     }
 }

@@ -117,7 +117,7 @@ class SQLiteSchemaManager extends AbstractSchemaManager
             $constraint = [
                 'constraint_name' => $row['name'],
                 'constraint_type' => 'UNIQUE',
-                'table_name'      => $table,
+                'table_name'      => $this->db->replacePrefix($table),
                 'columns'         => [],
             ];
 
@@ -162,7 +162,7 @@ class SQLiteSchemaManager extends AbstractSchemaManager
 
         foreach ($this->loadConstraintsStatement($table, $schema) as $row) {
             $index['table_schema']  = $schema;
-            $index['table_name']    = $table;
+            $index['table_name']    = $this->db->replacePrefix($table);
             $index['is_unique']     = (bool) $row['unique'];
             $index['index_name']    = $row['name'];
             $index['index_comment'] = '';

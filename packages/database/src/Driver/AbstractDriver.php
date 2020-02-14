@@ -95,7 +95,7 @@ abstract class AbstractDriver implements DriverInterface
 
         $bounded = $bounded ?? [];
 
-        return (string) $query;
+        return $this->replacePrefix((string) $query);
     }
 
     /**
@@ -145,7 +145,7 @@ abstract class AbstractDriver implements DriverInterface
         // Register monitor events
         $stmt->on(
             QueryFailedEvent::class,
-            static function (QueryFailedEvent $event) use (
+            function (QueryFailedEvent $event) use (
                 $query,
                 $sql,
                 $bounded
@@ -157,8 +157,10 @@ abstract class AbstractDriver implements DriverInterface
                 /** @var \Throwable|\PDOException $e */
                 $e = $event['exception'];
 
+                $sql = $this->replacePrefix(($query instanceof Query ? $query->render(true) : $query));
+
                 $event['exception'] = new DatabaseQueryException(
-                    $e->getMessage() . ' - SQL: ' . ($query instanceof Query ? $query->render(true) : $query),
+                    $e->getMessage() . ' - SQL: ' . $sql,
                     (int) $e->getCode(),
                     $e
                 );
@@ -187,6 +189,42 @@ abstract class AbstractDriver implements DriverInterface
     public function execute($query, ?array $params = null): StatementInterface
     {
         return $this->prepare($query)->execute($params);
+    }
+
+    /**
+     * Replace the table prefix.
+     *
+     * @see     https://stackoverflow.com/a/31745275
+     *
+     * @param   string $sql    The SQL statement to prepare.
+     * @param   string $prefix The common table prefix.
+     *
+     * @return  string  The processed SQL statement.
+     */
+    public function replacePrefix(string $sql, string $prefix = '#__'): string
+    {
+        if ($prefix === '' || strpos($sql, $prefix) === false) {
+            return $sql;
+        }
+
+        $array = [];
+
+        if ($number = preg_match_all('#((?<![\\\])[\'"])((?:.(?!(?<![\\\])\1))*.?)\1#i', $sql, $matches)) {
+            for ($i = 0; $i < $number; $i++) {
+                if (!empty($matches[0][$i])) {
+                    $array[$i] = trim($matches[0][$i]);
+                    $sql       = str_replace($matches[0][$i], '<#encode:' . $i . ':code#>', $sql);
+                }
+            }
+        }
+
+        $sql = str_replace($prefix, $this->db->getOption('prefix'), $sql);
+
+        foreach ($array as $key => $js) {
+            $sql = str_replace('<#encode:' . $key . ':code#>', $js, $sql);
+        }
+
+        return $sql;
     }
 
     /**

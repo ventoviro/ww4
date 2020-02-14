@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Database\Driver\Pdo\PdoDriver;
+use Windwalker\Database\Driver\Postgresql\PostgresqlTransaction;
 use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
@@ -96,7 +97,7 @@ class PostgreSQLPlatform extends AbstractPlatform
                 ]
             )
             ->from('information_schema.columns')
-            ->where('table_name', $table);
+            ->where('table_name', $this->db->replacePrefix($table));
 
         if ($schema !== null) {
             $query->where('table_schema', $schema);
@@ -167,7 +168,7 @@ class PostgreSQLPlatform extends AbstractPlatform
                     ['kcu.position_in_unique_constraint', '=', 'kcu2.ordinal_position'],
                 ]
             )
-            ->where('t.table_name', $table)
+            ->where('t.table_name', $this->db->replacePrefix($table))
             ->where('t.table_type', 'in', ['BASE TABLE', 'VIEW'])
             ->tap(function (Query $query) use ($schema) {
                 if ($schema !== null) {
@@ -212,7 +213,7 @@ class PostgreSQLPlatform extends AbstractPlatform
                     $join->onRaw('tc.constraint_type = %q', 'PRIMARY KEY');
                 }
             )
-            ->where('tablename', $table);
+            ->where('tablename', $this->db->replacePrefix($table));
 
         $order = 'CASE tc.constraint_type WHEN \'PRIMARY KEY\' THEN 1 ELSE 2 END';
 
@@ -274,5 +275,43 @@ class PostgreSQLPlatform extends AbstractPlatform
         }
 
         return null;
+    }
+
+    /**
+     * start
+     *
+     * @return  static
+     */
+    public function transactionStart()
+    {
+        if (!$this->depth) {
+            parent::transactionStart();
+        } else {
+            $savepoint = 'SP_' . $this->depth;
+            $this->db->execute('SAVEPOINT ' . $this->db->quoteName($savepoint));
+
+            $this->depth++;
+        }
+
+        return $this;
+    }
+
+    /**
+     * rollback
+     *
+     * @return  static
+     */
+    public function transactionRollback()
+    {
+        if ($this->depth <= 1) {
+            parent::transactionRollback();
+        } else {
+            $savepoint = 'SP_' . ($this->depth - 1);
+            $this->db->execute('ROLLBACK TO SAVEPOINT ' . $this->db->quoteName($savepoint));
+
+            $this->depth--;
+        }
+
+        return $this;
     }
 }

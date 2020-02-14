@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test;
 
 use Windwalker\Database\DatabaseAdapter;
+use Windwalker\Database\Event\QueryEndEvent;
 
 /**
  * The AbstractDatabaseTestCase class.
@@ -21,6 +22,8 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
     protected static $platform = 'MySQL';
 
     protected static $driver = 'pdo_mysql';
+
+    protected static $logInited = false;
 
     /**
      * @var DatabaseAdapter
@@ -42,7 +45,25 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
         $params           = $params ?? self::getTestParams();
         $params['driver'] = static::$driver;
 
-        return new DatabaseAdapter($params);
+        $db = new DatabaseAdapter($params);
+
+        $logFile = __DIR__ . '/../tmp/test-sql.sql';
+
+        if (!static::$logInited) {
+            @unlink($logFile);
+
+            static::$logInited = true;
+        }
+
+        $db->on(QueryEndEvent::class, function (QueryEndEvent $event) use ($logFile) {
+            $fp = fopen($logFile, 'ab+');
+
+            fwrite($fp, $event['sql'] . ";\n\n");
+
+            fclose($fp);
+        });
+
+        return $db;
     }
 
     /**
