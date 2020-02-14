@@ -11,11 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Test\Platform;
 
-use PHPUnit\Framework\TestCase;
-use Windwalker\Database\Platform\MySQLPlatform;
-use Windwalker\Database\Schema\MySQLSchemaManager;
-use Windwalker\Database\Test\AbstractDatabaseTestCase;
-
 /**
  * The MySQLSchemaTest class.
  */

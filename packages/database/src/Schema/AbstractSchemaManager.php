@@ -161,4 +161,26 @@ abstract class AbstractSchemaManager
     {
         return $this->db->getPlatform();
     }
+
+    abstract public function createDatabase();
+    abstract public function dropDatabase();
+    abstract public function createSchema();
+    abstract public function dropSchema();
+
+    abstract public function createTable();
+    abstract public function dropTable(string $table);
+    abstract public function renameTable(string $table);
+    abstract public function truncateTable(string $table);
+    abstract public function getTableDetail(string $table);
+
+    abstract public function addColumn();
+    abstract public function dropColumn();
+    abstract public function modifyColumn();
+    abstract public function changeColumn();
+
+    abstract public function addIndex();
+    abstract public function dropIndex();
+
+    abstract public function addConstraint();
+    abstract public function dropConstraint();
 }
