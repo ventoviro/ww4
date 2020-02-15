@@ -163,7 +163,7 @@ abstract class AbstractSchemaManager
         return $this->db->getPlatform();
     }
 
-    abstract public function createDatabase();
+    abstract public function createDatabase(string $name, array $options = []);
     abstract public function dropDatabase();
     abstract public function createSchema();
     abstract public function dropSchema();

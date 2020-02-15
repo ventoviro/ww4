@@ -14,6 +14,12 @@ namespace Windwalker\Database\Schema\Meta;
 /**
  * The SchemaManager class.
  */
-class SchemaManager
+class SchemaManager extends AbstractMetaManager
 {
+    /**
+     * @inheritDoc
+     */
+    public function reset()
+    {
+    }
 }

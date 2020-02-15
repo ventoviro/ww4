@@ -19,6 +19,11 @@ use Windwalker\Database\DatabaseAdapter;
 class AbstractMetaManager
 {
     /**
+     * @var string
+     */
+    protected $name;
+
+    /**
      * @var DatabaseAdapter
      */
     protected $db;
@@ -26,11 +31,13 @@ class AbstractMetaManager
     /**
      * AbstractDbManager constructor.
      *
+     * @param  string           $name
      * @param  DatabaseAdapter  $db
      */
-    public function __construct(DatabaseAdapter $db)
+    public function __construct(string $name, DatabaseAdapter $db)
     {
         $this->db = $db;
+        $this->name = $name;
     }
 
     /**
@@ -40,4 +47,19 @@ class AbstractMetaManager
     {
         return $this->db;
     }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * reset
+     *
+     * @return  static
+     */
+    abstract public function reset();
 }
