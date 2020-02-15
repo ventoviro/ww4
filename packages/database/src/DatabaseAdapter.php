@@ -123,6 +123,26 @@ class DatabaseAdapter implements EventAttachableInterface
     }
 
     /**
+     * listDatabases
+     *
+     * @return  array
+     */
+    public function listDatabases(): array
+    {
+        return $this->getSchemaManager()->listDatabases();
+    }
+
+    /**
+     * listDatabases
+     *
+     * @return  array
+     */
+    public function listSchemas(): array
+    {
+        return $this->getSchemaManager()->listSchemas();
+    }
+
+    /**
      * @return AbstractDriver
      */
     public function getDriver(): AbstractDriver

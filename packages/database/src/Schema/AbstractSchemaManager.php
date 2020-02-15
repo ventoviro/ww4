@@ -164,7 +164,7 @@ abstract class AbstractSchemaManager
     }
 
     abstract public function createDatabase(string $name, array $options = []);
-    abstract public function dropDatabase();
+    abstract public function dropDatabase(string $name);
     abstract public function createSchema();
     abstract public function dropSchema();
 
@@ -172,7 +172,7 @@ abstract class AbstractSchemaManager
     abstract public function dropTable(string $table);
     abstract public function renameTable(string $table);
     abstract public function truncateTable(string $table);
-    abstract public function getTableDetail(string $table);
+    abstract public function getTableDetail(string $table): array;
 
     abstract public function addColumn(Column $column);
     abstract public function dropColumn(string $name);
