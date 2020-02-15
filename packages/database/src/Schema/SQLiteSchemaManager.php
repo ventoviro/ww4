@@ -48,13 +48,7 @@ class SQLiteSchemaManager extends AbstractSchemaManager
         $columns = [];
 
         foreach ($this->loadColumnsStatement($table, $schema) as $row) {
-            preg_match(
-                '/(\w+)\(*(\d*)[,\s]*(\d*)\)*/',
-                $row['type'],
-                $matches
-            );
-
-            [, $type, $precision, $scale] = $matches;
+            [$type, $precision, $scale] = DataType::extract($row['type']);
 
             $isString = in_array(
                 $type = strtolower($type),

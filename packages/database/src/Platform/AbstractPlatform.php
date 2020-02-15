@@ -22,6 +22,11 @@ use Windwalker\Query\Query;
 abstract class AbstractPlatform
 {
     /**
+     * @var string|null
+     */
+    protected static $defaultSchema = null;
+
+    /**
      * @var string
      */
     protected $name = '';
@@ -103,6 +108,14 @@ abstract class AbstractPlatform
     public function __construct(DatabaseAdapter $db)
     {
         $this->db = $db;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getDefaultSchema(): ?string
+    {
+        return self::$defaultSchema;
     }
 
     public function getGrammar(): AbstractGrammar

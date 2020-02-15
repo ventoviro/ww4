@@ -14,6 +14,7 @@ namespace Windwalker\Database\Schema;
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
+use Windwalker\Database\Schema\Meta\Column;
 
 /**
  * The AbstractSchemaManager class.
@@ -173,10 +174,10 @@ abstract class AbstractSchemaManager
     abstract public function truncateTable(string $table);
     abstract public function getTableDetail(string $table);
 
-    abstract public function addColumn();
-    abstract public function dropColumn();
+    abstract public function addColumn(Column $column);
+    abstract public function dropColumn(string $name);
     abstract public function modifyColumn();
-    abstract public function changeColumn();
+    abstract public function renameColumn();
 
     abstract public function addIndex();
     abstract public function dropIndex();

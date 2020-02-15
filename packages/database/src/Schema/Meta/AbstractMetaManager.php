@@ -9,14 +9,14 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Manager;
+namespace Windwalker\Database\Schema\Meta;
 
 use Windwalker\Database\DatabaseAdapter;
 
 /**
  * The AbstractDbManager class.
  */
-class AbstractDbManager
+class AbstractMetaManager
 {
     /**
      * @var DatabaseAdapter

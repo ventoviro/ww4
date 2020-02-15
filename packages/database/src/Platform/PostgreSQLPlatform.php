@@ -30,6 +30,8 @@ class PostgreSQLPlatform extends AbstractPlatform
 {
     protected $name = 'PostgreSQL';
 
+    protected static $defaultSchema = 'public';
+
     public function listDatabasesQuery(): Query
     {
         return $this->createQuery()

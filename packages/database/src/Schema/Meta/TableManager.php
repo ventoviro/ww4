@@ -9,15 +9,20 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Manager;
+namespace Windwalker\Database\Schema\Meta;
 
 use Windwalker\Database\Schema\Schema;
 
 /**
  * The TableManager class.
  */
-class TableManager extends AbstractDbManager
+class TableManager extends AbstractMetaManager
 {
+    /**
+     * @var Column[]
+     */
+    protected $columns = null;
+
     /**
      * create
      *
@@ -139,9 +144,9 @@ class TableManager extends AbstractDbManager
      *
      * @return array Table columns with type.
      */
-    public function getColumns($refresh = false)
+    public function getColumnNames($refresh = false)
     {
-        return array_keys($this->getColumnDetails($refresh));
+        return array_keys($this->getColumns($refresh));
     }
 
     /**
@@ -149,58 +154,71 @@ class TableManager extends AbstractDbManager
      *
      * @param bool $refresh
      *
-     * @return mixed
+     * @return Column[]
      */
-    abstract public function getColumnDetails($refresh = false);
+    public function getColumns($refresh = false)
+    {
+        if ($this->columns === null || $refresh) {
+            $this->columns = Column::wrapList(
+                $this->db->getSchemaManager()
+                    ->listColumns(
+                        $this->getName(),
+                        $this->db->getPlatform()::getDefaultSchema()
+                    )
+            );
+        }
+
+        return $this->columns;
+    }
 
     /**
-     * getColumnDetail
+     * getColumn
      *
-     * @param   string $column
+     * @param   string $name
      *
-     * @return \stdClass
+     * @return Column|null
      */
-    public function getColumnDetail($column)
+    public function getColumn(string $name): ?Column
     {
-        $columns = $this->getColumnDetails();
-
-        return isset($columns[$column]) ? $columns[$column] : null;
+        return $this->getColumns()[$name] ?? null;
     }
 
     /**
      * hasColumn
      *
-     * @param   string $column
+     * @param   string  $name
      *
-     * @return  boolean
+     * @return  bool
      */
-    public function hasColumn($column)
+    public function hasColumn(string $name)
     {
-        return (bool) $this->getColumnDetail($column);
+        return $this->getColumn($name) !== null;
     }
 
     /**
      * addColumn
      *
-     * @param string $name
-     * @param string $type
-     * @param bool   $signed
-     * @param bool   $allowNull
-     * @param string $default
-     * @param string $comment
-     * @param array  $options
+     * @param  string|Column  $column
+     * @param  string  $dataType
+     * @param  bool    $isNullable
+     * @param  null    $columnDefault
+     * @param  array   $options
      *
-     * @return  static
+     * @return void
      */
-    abstract public function addColumn(
-        $name,
-        $type = 'text',
-        $signed = true,
-        $allowNull = true,
-        $default = '',
-        $comment = '',
-        $options = []
-    );
+    public function addColumn(
+        $column = '',
+        string $dataType = 'char',
+        bool $isNullable = false,
+        $columnDefault = null,
+        array $options = []
+    ) {
+        if (!$column instanceof Column) {
+            $column = new Column($column, $dataType, $isNullable, $columnDefault, $options);
+        }
+
+        $this->db->getSchemaManager()->addColumn($column);
+    }
 
     /**
      * dropColumn
@@ -381,6 +399,16 @@ class TableManager extends AbstractDbManager
      */
     public function getSchema()
     {
+        return '';
+    }
+
+    /**
+     * getSchema
+     *
+     * @return  Schema
+     */
+    public function getSchemaObject()
+    {
         return new Schema($this);
     }
 
@@ -487,7 +515,7 @@ class TableManager extends AbstractDbManager
 
         $default = $column->getDefault();
 
-        if (!$column->getAllowNull() && $default === null && !$column->isPrimary()) {
+        if (!$column->getNullable() && $default === null && !$column->isPrimary()) {
             $default = $typeMapper::getDefaultValue($column->getType());
 
             $column->defaultValue($default);

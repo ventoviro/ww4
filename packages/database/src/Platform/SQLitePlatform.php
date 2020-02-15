@@ -20,6 +20,8 @@ class SQLitePlatform extends AbstractPlatform
 {
     protected $name = 'SQLite';
 
+    protected static $defaultSchema = 'main';
+
     public function listDatabasesQuery(): Query
     {
         return $this->pragma('database_list');

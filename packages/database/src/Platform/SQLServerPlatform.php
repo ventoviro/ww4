@@ -22,6 +22,8 @@ class SQLServerPlatform extends AbstractPlatform
 {
     protected $name = 'SQLServer';
 
+    protected static $defaultSchema = 'dbo';
+
     public function listDatabasesQuery(): Query
     {
         return $this->db->getQuery(true)
