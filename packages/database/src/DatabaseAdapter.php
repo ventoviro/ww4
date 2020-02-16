@@ -16,6 +16,9 @@ use Windwalker\Database\Driver\DriverFactory;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Schema\AbstractSchemaManager;
+use Windwalker\Database\Schema\Meta\DatabaseManager;
+use Windwalker\Database\Schema\Meta\SchemaManager;
+use Windwalker\Database\Schema\Meta\TableManager;
 use Windwalker\Event\EventAttachableInterface;
 use Windwalker\Event\ListenableTrait;
 use Windwalker\Query\Query;
@@ -38,6 +41,21 @@ class DatabaseAdapter implements EventAttachableInterface
      * @var Query|string
      */
     protected $query;
+
+    /**
+     * @var SchemaManager[]
+     */
+    protected $schemas = [];
+
+    /**
+     * @var DatabaseManager[]
+     */
+    protected $databases = [];
+
+    /**
+     * @var TableManager[]
+     */
+    protected $tables = [];
 
     /**
      * DatabaseAdapter constructor.
@@ -105,6 +123,26 @@ class DatabaseAdapter implements EventAttachableInterface
     }
 
     /**
+     * listDatabases
+     *
+     * @return  array
+     */
+    public function listDatabases(): array
+    {
+        return $this->getSchemaManager()->listDatabases();
+    }
+
+    /**
+     * listDatabases
+     *
+     * @return  array
+     */
+    public function listSchemas(): array
+    {
+        return $this->getSchemaManager()->listSchemas();
+    }
+
+    /**
      * @return AbstractDriver
      */
     public function getDriver(): AbstractDriver
@@ -130,6 +168,37 @@ class DatabaseAdapter implements EventAttachableInterface
     public function getSchemaManager(): AbstractSchemaManager
     {
         return $this->getDriver()->getSchemaManager();
+    }
+
+    public function getDatabase(string $name = null, $new = false): DatabaseManager
+    {
+        $name = $name ?? $this->getOption('database');
+
+        if (!isset($this->databases[$name]) || $new) {
+            $this->databases[$name] = new DatabaseManager($name, $this);
+        }
+
+        return $this->databases[$name];
+    }
+
+    public function getSchema(?string $name = null, $new = false): SchemaManager
+    {
+        $name = $name ?? $this->getPlatform()::getDefaultSchema();
+
+        if (!isset($this->schemas[$name]) || $new) {
+            $this->schemas[$name] = new SchemaManager($name, $this);
+        }
+
+        return $this->schemas[$name];
+    }
+
+    public function getTable(string $name, $new = false): TableManager
+    {
+        if (!isset($this->tables[$name]) || $new) {
+            $this->tables[$name] = new TableManager($name, $this);
+        }
+
+        return $this->tables[$name];
     }
 
     public function replacePrefix(string $query, string $prefix = '#__'): string
