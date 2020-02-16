@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database;
 
 use Windwalker\Database\Driver\AbstractDriver;
+use Windwalker\Database\Driver\ConnectionInterface;
 use Windwalker\Database\Driver\DriverFactory;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
@@ -78,6 +79,16 @@ class DatabaseAdapter implements EventAttachableInterface
             ],
             $options
         );
+    }
+
+    public function connect(): ConnectionInterface
+    {
+        return $this->getDriver()->connect();
+    }
+
+    public function disconnect()
+    {
+        return $this->getDriver()->disconnect();
     }
 
     public function prepare($query, array $options = []): StatementInterface

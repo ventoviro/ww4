@@ -16,7 +16,7 @@ use Windwalker\Database\DatabaseAdapter;
 /**
  * The AbstractDbManager class.
  */
-class AbstractMetaManager
+abstract class AbstractMetaManager
 {
     /**
      * @var string

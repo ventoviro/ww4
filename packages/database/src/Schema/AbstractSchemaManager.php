@@ -15,6 +15,7 @@ use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Schema\Meta\Column;
+use Windwalker\Query\Grammar\AbstractGrammar;
 
 /**
  * The AbstractSchemaManager class.
@@ -43,6 +44,16 @@ abstract class AbstractSchemaManager
         $class = __NAMESPACE__ . '\\' . AbstractPlatform::getPlatformName($platform) . 'SchemaManager';
 
         return new $class($db);
+    }
+
+    /**
+     * getGrammar
+     *
+     * @return  AbstractGrammar
+     */
+    public function getGrammar(): AbstractGrammar
+    {
+        return $this->getPlatform()->getGrammar();
     }
 
     /**
@@ -163,25 +174,47 @@ abstract class AbstractSchemaManager
         return $this->db->getPlatform();
     }
 
-    abstract public function createDatabase(string $name, array $options = []);
-    abstract public function dropDatabase(string $name);
-    abstract public function createSchema();
-    abstract public function dropSchema();
+    abstract public function getCurrentDatabase(): ?string;
 
-    abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []);
-    abstract public function dropTable(string $table, bool $ifExists = false);
-    abstract public function renameTable(string $table);
-    abstract public function truncateTable(string $table);
+    public function selectDatabase(string $name): bool
+    {
+        $this->db->execute('USE ' . $this->db->quoteName($name));
+
+        return true;
+    }
+
+    public function createDatabase(string $name, array $options = []): bool
+    {
+        $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'CREATE DATABASE',
+                    !empty($options['if_not_exists']) ? 'IF NOT EXISTS' : null,
+                    $this->db->quoteName($name)
+                )
+        );
+
+        return true;
+    }
+
+    abstract public function dropDatabase(string $name): bool;
+    abstract public function createSchema(): bool;
+    abstract public function dropSchema(): bool;
+
+    abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool;
+    abstract public function dropTable(string $table, bool $ifExists = false): bool;
+    abstract public function renameTable(string $table): bool;
+    abstract public function truncateTable(string $table): bool;
     abstract public function getTableDetail(string $table): array;
 
-    abstract public function addColumn(Column $column);
-    abstract public function dropColumn(string $name);
-    abstract public function modifyColumn();
-    abstract public function renameColumn();
+    abstract public function addColumn(Column $column): bool;
+    abstract public function dropColumn(string $name): bool;
+    abstract public function modifyColumn(): bool;
+    abstract public function renameColumn(): bool;
 
-    abstract public function addIndex();
-    abstract public function dropIndex();
+    abstract public function addIndex(): bool;
+    abstract public function dropIndex(): bool;
 
-    abstract public function addConstraint();
-    abstract public function dropConstraint();
+    abstract public function addConstraint(): bool;
+    abstract public function dropConstraint(): bool;
 }

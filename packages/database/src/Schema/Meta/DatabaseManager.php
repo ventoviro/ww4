@@ -17,21 +17,31 @@ namespace Windwalker\Database\Schema\Meta;
 class DatabaseManager extends AbstractMetaManager
 {
     /**
-     * Property tablesCache.
+     * select
      *
-     * @var  array
+     * @return  static
      */
-    protected $schemas = [];
+    public function select()
+    {
+        $this->db->getSchemaManager()->selectDatabase($this->getName());
+
+        return $this;
+    }
 
     /**
      * createDatabase
      *
+     * @param  bool   $ifNotExists
      * @param  array  $options
      *
      * @return static
      */
-    public function create(array $options = [])
+    public function create(bool $ifNotExists = false, array $options = [])
     {
+        if ($ifNotExists && in_array($this->getName(), $this->db->listDatabases(), true)) {
+            return $this;
+        }
+
         $this->db->getSchemaManager()->createDatabase($this->getName(), $options);
 
         return $this;
@@ -40,11 +50,25 @@ class DatabaseManager extends AbstractMetaManager
     /**
      * dropDatabase
      *
+     * @param  bool  $ifExists
+     *
      * @return  static
      */
-    public function drop()
+    public function drop(bool $ifExists = false)
     {
-        $this->db->getSchemaManager()->dropDatabase($this->getName());
+        $name = $this->getName();
+
+        if ($ifExists && !in_array($name, $this->db->listDatabases(), true)) {
+            return $this;
+        }
+
+        if ($name === $this->db->getSchemaManager()->getCurrentDatabase()) {
+            $this->db->disconnect();
+
+            $this->db->setOption('database', null);
+        }
+
+        $this->db->getSchemaManager()->dropDatabase($name);
 
         return $this;
     }
@@ -52,9 +76,9 @@ class DatabaseManager extends AbstractMetaManager
     /**
      * exists
      *
-     * @return  boolean
+     * @return  bool
      */
-    public function exists()
+    public function exists(): bool
     {
         return in_array(
             $this->getName(),
@@ -70,8 +94,6 @@ class DatabaseManager extends AbstractMetaManager
      */
     public function reset()
     {
-        $this->tableCache = [];
-
         return $this;
     }
 }

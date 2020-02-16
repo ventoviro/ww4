@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Schema;
 
 use Windwalker\Data\Collection;
+use Windwalker\Database\Schema\Meta\Column;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Str;
@@ -228,5 +229,84 @@ class MySQLSchemaManager extends AbstractSchemaManager
         }
 
         return $indexes;
+    }
+
+    public function getCurrentDatabase(): ?string
+    {
+        return $this->db->prepare('SELECT DATABASE()')->loadResult();
+    }
+
+    public function dropDatabase(string $name, array $options = []): bool
+    {
+        $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'DROP DATABASE',
+                    !empty($options['if_exists']) ? 'IF EXISTS' : null,
+                    $this->db->quoteName($name)
+                )
+        );
+
+        return true;
+    }
+
+    public function createSchema(): bool
+    {
+    }
+
+    public function dropSchema(): bool
+    {
+    }
+
+    public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool
+    {
+    }
+
+    public function dropTable(string $table, bool $ifExists = false): bool
+    {
+    }
+
+    public function renameTable(string $table): bool
+    {
+    }
+
+    public function truncateTable(string $table): bool
+    {
+    }
+
+    public function getTableDetail(string $table): array
+    {
+    }
+
+    public function addColumn(Column $column): bool
+    {
+    }
+
+    public function dropColumn(string $name): bool
+    {
+    }
+
+    public function modifyColumn(): bool
+    {
+    }
+
+    public function renameColumn(): bool
+    {
+    }
+
+    public function addIndex(): bool
+    {
+    }
+
+    public function dropIndex(): bool
+    {
+    }
+
+    public function addConstraint(): bool
+    {
+    }
+
+    public function dropConstraint(): bool
+    {
     }
 }
