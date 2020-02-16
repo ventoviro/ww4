@@ -168,8 +168,8 @@ abstract class AbstractSchemaManager
     abstract public function createSchema();
     abstract public function dropSchema();
 
-    abstract public function createTable();
-    abstract public function dropTable(string $table);
+    abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []);
+    abstract public function dropTable(string $table, bool $ifExists = false);
     abstract public function renameTable(string $table);
     abstract public function truncateTable(string $table);
     abstract public function getTableDetail(string $table);

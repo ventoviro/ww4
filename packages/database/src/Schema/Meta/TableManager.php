@@ -34,7 +34,13 @@ class TableManager extends AbstractMetaManager
      */
     public function create($callback, $ifNotExists = true, $options = [])
     {
+        $this->db->getSchemaManager()->createTable(
+            $this->callSchema($callback),
+            $ifNotExists,
+            $options
+        );
 
+        return $this;
     }
 
     /**
@@ -46,7 +52,21 @@ class TableManager extends AbstractMetaManager
      */
     public function update($schema)
     {
+        $schema = $this->callSchema($schema);
 
+        foreach ($schema->getColumns() as $column) {
+            if ($this->hasColumn($column->getName())) {
+                $this->modifyColumn($column);
+            } else {
+                $this->addColumn($column);
+            }
+        }
+
+        foreach ($schema->getIndexes() as $index) {
+            $this->addIndex($index);
+        }
+
+        return $this->reset();
     }
 
     /**
@@ -68,7 +88,7 @@ class TableManager extends AbstractMetaManager
             $this->create($schema, $ifNotExists, $options);
         }
 
-        $database = $this->db->getDatabase();
+        $database = $this->getSchema();
         $database->reset();
 
         return $this->reset();
@@ -77,14 +97,16 @@ class TableManager extends AbstractMetaManager
     /**
      * drop
      *
-     * @param bool   $ifExists
-     * @param string $option
+     * @param bool    $ifExists
      *
      * @return  static
      */
-    public function drop($ifExists = true, $option = '')
+    public function drop(bool $ifExists = true)
     {
-
+        $this->db->getSchemaManager()->dropTable(
+            $this->getName(),
+            $ifExists
+        );
 
         return $this->reset();
     }
@@ -92,11 +114,11 @@ class TableManager extends AbstractMetaManager
     /**
      * exists
      *
-     * @return  boolean
+     * @return  bool
      */
-    public function exists()
+    public function exists(): bool
     {
-        return $database->tableExists($this->getName());
+        return isset($this->db->getSchemaManager()->listTables()[$this->getName()]);
     }
 
     /**
@@ -415,18 +437,16 @@ class TableManager extends AbstractMetaManager
     /**
      * callSchema
      *
-     * @param   callable|Schema $schema
+     * @param   callable|Schema $callback
      *
      * @return  Schema
      */
-    protected function callSchema($schema)
+    protected function callSchema($callback)
     {
-        if (!$schema instanceof Schema && is_callable($schema)) {
-            $s = $this->getSchema();
-
-            $schema($s);
-
-            $schema = $s;
+        if (is_callable($callback)) {
+            $callback($schema = $this->getSchemaObject());
+        } else {
+            $schema = $callback;
         }
 
         if (!$schema instanceof Schema) {
