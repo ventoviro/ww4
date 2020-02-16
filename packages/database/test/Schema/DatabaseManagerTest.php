@@ -9,10 +9,9 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Test\Schema\Meta;
+namespace Windwalker\Database\Test\Schema;
 
-use PHPUnit\Framework\TestCase;
-use Windwalker\Database\Schema\Meta\DatabaseManager;
+use Windwalker\Database\Schema\DatabaseManager;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
 /**

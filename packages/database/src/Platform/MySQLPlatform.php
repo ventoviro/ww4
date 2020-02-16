@@ -399,7 +399,7 @@ class MySQLPlatform extends AbstractPlatform
     {
     }
 
-    public function renameTable(string $table): bool
+    public function renameTable(string $from, string $to): bool
     {
     }
 
@@ -419,11 +419,11 @@ class MySQLPlatform extends AbstractPlatform
     {
     }
 
-    public function modifyColumn(): bool
+    public function modifyColumn(Column $column): bool
     {
     }
 
-    public function renameColumn(): bool
+    public function renameColumn(string $from, string $to): bool
     {
     }
 

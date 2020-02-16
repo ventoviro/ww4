@@ -225,14 +225,14 @@ abstract class AbstractPlatform
 
     abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool;
     abstract public function dropTable(string $table, bool $ifExists = false): bool;
-    abstract public function renameTable(string $table): bool;
+    abstract public function renameTable(string $from, string $to): bool;
     abstract public function truncateTable(string $table): bool;
     abstract public function getTableDetail(string $table): array;
 
     abstract public function addColumn(Column $column): bool;
     abstract public function dropColumn(string $name): bool;
-    abstract public function modifyColumn(): bool;
-    abstract public function renameColumn(): bool;
+    abstract public function modifyColumn(Column $column): bool;
+    abstract public function renameColumn(string $from, string $to): bool;
 
     abstract public function addIndex(): bool;
     abstract public function dropIndex(): bool;

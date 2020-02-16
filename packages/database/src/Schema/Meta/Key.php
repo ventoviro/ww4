@@ -11,39 +11,38 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Schema\Meta;
 
+use Windwalker\Utilities\Classes\OptionAccessTrait;
+
 /**
  * The Index class.
  */
 class Key
 {
-    /**
-     * @var string
-     */
-    const TYPE_UNIQUE = 'unique index';
+    use OptionAccessTrait;
 
     /**
      * @var string
      */
-    const TYPE_INDEX = 'index';
+    public const TYPE_INDEX = 'index';
 
     /**
      * @var string
      */
-    const TYPE_PRIMARY = 'primary key';
+    public const TYPE_PRIMARY = 'primary key';
 
     /**
      * Property name.
      *
      * @var  string
      */
-    protected $name = null;
+    protected $name;
 
     /**
      * Property type.
      *
-     * @var  integer
+     * @var  string
      */
-    protected $type = null;
+    protected $type;
 
     /**
      * Property columns.
@@ -53,26 +52,20 @@ class Key
     protected $columns = [];
 
     /**
-     * Property comment.
-     *
-     * @var  string
-     */
-    protected $comment = '';
-
-    /**
      * Key constructor.
      *
-     * @param int    $type
-     * @param array  $columns
-     * @param string $name
-     * @param string $comment
+     * @param  string  $type
+     * @param  array   $columns
+     * @param  string  $name
+     * @param  array   $options
      */
-    public function __construct($type = null, $columns = [], $name = null, $comment = null)
+    public function __construct(?string $type = null, array $columns = [], ?string $name = null, array $options = [])
     {
-        $this->name = $name;
-        $this->type = $type;
-        $this->columns = (array) $columns;
-        $this->comment = $comment;
+        $this->columns($columns)
+            ->name($name)
+            ->type($type);
+
+        $this->prepareOptions([], $options);
     }
 
     /**
@@ -80,7 +73,7 @@ class Key
      *
      * @return  string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -92,7 +85,7 @@ class Key
      *
      * @return  static  Return self to support chaining.
      */
-    public function name($name)
+    public function name(?string $name)
     {
         $this->name = $name;
 
@@ -102,9 +95,9 @@ class Key
     /**
      * Method to get property Type
      *
-     * @return  int
+     * @return  string
      */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
@@ -112,11 +105,11 @@ class Key
     /**
      * Method to set property type
      *
-     * @param   int $type
+     * @param   string $type
      *
      * @return  static  Return self to support chaining.
      */
-    public function type($type)
+    public function type(string $type)
     {
         $this->type = $type;
 
@@ -128,7 +121,7 @@ class Key
      *
      * @return  array
      */
-    public function getColumns()
+    public function getColumns(): array
     {
         return $this->columns;
     }
@@ -136,37 +129,13 @@ class Key
     /**
      * Method to set property columns
      *
-     * @param   array $columns
+     * @param   array|string $columns
      *
      * @return  static  Return self to support chaining.
      */
     public function columns($columns)
     {
-        $this->columns = $columns;
-
-        return $this;
-    }
-
-    /**
-     * Method to get property Comment
-     *
-     * @return  string
-     */
-    public function getComment()
-    {
-        return $this->comment;
-    }
-
-    /**
-     * Method to set property comment
-     *
-     * @param   string $comment
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function comment($comment)
-    {
-        $this->comment = $comment;
+        $this->columns = (array) $columns;
 
         return $this;
     }

@@ -13,7 +13,6 @@ namespace Windwalker\Database\Schema;
 
 use Windwalker\Database\Schema\Meta\Column;
 use Windwalker\Database\Schema\Meta\Key;
-use Windwalker\Database\Schema\Meta\TableManager;
 
 /**
  * The Schema class.

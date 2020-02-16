@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema\Meta;
+namespace Windwalker\Database\Schema;
 
 /**
  * The SchemaManager class.

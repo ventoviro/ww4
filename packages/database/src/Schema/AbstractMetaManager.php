@@ -9,9 +9,10 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema\Meta;
+namespace Windwalker\Database\Schema;
 
 use Windwalker\Database\DatabaseAdapter;
+use Windwalker\Database\Platform\AbstractPlatform;
 
 /**
  * The AbstractDbManager class.
@@ -54,6 +55,11 @@ abstract class AbstractMetaManager
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getPlatform(): AbstractPlatform
+    {
+        return $this->db->getPlatform();
     }
 
     /**
