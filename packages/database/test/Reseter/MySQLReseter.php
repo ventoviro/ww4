@@ -33,6 +33,36 @@ class MySQLReseter extends AbstractReseter
 
     public function clearAllTables(\PDO $pdo, string $dbname): void
     {
-        //
+        // Drop Tables
+        $tables = $pdo->query(
+            $this->createQuery()
+                ->select('TABLE_NAME')
+                ->from('INFORMATION_SCHEMA.TABLES')
+                ->where('TABLE_TYPE', 'BASE TABLE')
+                ->where('TABLE_SCHEMA', '=', $dbname)
+                ->render(true)
+        )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+
+        if ($tables) {
+            foreach ($tables as $table) {
+                $pdo->exec('DROP TABLE IF EXISTS ' . $table);
+            }
+        }
+
+        // Drop Views
+        $tables = $pdo->query(
+            $this->createQuery()
+                ->select('TABLE_NAME')
+                ->from('INFORMATION_SCHEMA.TABLES')
+                ->where('TABLE_TYPE', 'VIEW')
+                ->where('TABLE_SCHEMA', '=', $dbname)
+                ->render(true)
+        )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+
+        if ($tables) {
+            foreach ($tables as $table) {
+                $pdo->exec('DROP VIEW IF EXISTS ' . $table);
+            }
+        }
     }
 }

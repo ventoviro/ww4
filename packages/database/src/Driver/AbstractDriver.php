@@ -244,7 +244,7 @@ abstract class AbstractDriver implements DriverInterface
         return $this->platform;
     }
 
-    public function getSchemaManager(): AbstractSchemaManager
+    public function getPlatform(): AbstractSchemaManager
     {
         if (!$this->schema) {
             $this->schema = AbstractSchemaManager::create($this->platformName, $this->db);

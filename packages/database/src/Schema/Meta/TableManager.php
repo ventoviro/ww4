@@ -34,7 +34,7 @@ class TableManager extends AbstractMetaManager
      */
     public function create($callback, $ifNotExists = true, $options = [])
     {
-        $this->db->getSchemaManager()->createTable(
+        $this->db->getPlatform()->createTable(
             $this->callSchema($callback),
             $ifNotExists,
             $options
@@ -103,7 +103,7 @@ class TableManager extends AbstractMetaManager
      */
     public function drop(bool $ifExists = true)
     {
-        $this->db->getSchemaManager()->dropTable(
+        $this->db->getPlatform()->dropTable(
             $this->getName(),
             $ifExists
         );
@@ -118,7 +118,7 @@ class TableManager extends AbstractMetaManager
      */
     public function exists(): bool
     {
-        return isset($this->db->getSchemaManager()->listTables()[$this->getName()]);
+        return isset($this->db->getPlatform()->listTables()[$this->getName()]);
     }
 
     /**
@@ -182,7 +182,7 @@ class TableManager extends AbstractMetaManager
     {
         if ($this->columns === null || $refresh) {
             $this->columns = Column::wrapList(
-                $this->db->getSchemaManager()
+                $this->db->getPlatform()
                     ->listColumns(
                         $this->getName(),
                         $this->db->getPlatform()::getDefaultSchema()
@@ -239,7 +239,7 @@ class TableManager extends AbstractMetaManager
             $column = new Column($column, $dataType, $isNullable, $columnDefault, $options);
         }
 
-        $this->db->getSchemaManager()->addColumn($column);
+        $this->db->getPlatform()->addColumn($column);
     }
 
     /**
@@ -277,7 +277,7 @@ class TableManager extends AbstractMetaManager
      *
      * @return  static
      */
-    abstract public function modifyColumn(
+    public function modifyColumn(
         $name,
         $type = 'text',
         $signed = true,
@@ -285,32 +285,9 @@ class TableManager extends AbstractMetaManager
         $default = '',
         $comment = '',
         $options = []
-    );
+    ) {
 
-    /**
-     * changeColumn
-     *
-     * @param string        $oldName
-     * @param string|Column $newName
-     * @param string        $type
-     * @param bool          $signed
-     * @param bool          $allowNull
-     * @param string        $default
-     * @param string        $comment
-     * @param array         $options
-     *
-     * @return  static
-     */
-    abstract public function changeColumn(
-        $oldName,
-        $newName,
-        $type = 'text',
-        $signed = true,
-        $allowNull = true,
-        $default = '',
-        $comment = '',
-        $options = []
-    );
+    }
 
     /**
      * addIndex

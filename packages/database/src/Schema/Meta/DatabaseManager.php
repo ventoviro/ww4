@@ -23,7 +23,7 @@ class DatabaseManager extends AbstractMetaManager
      */
     public function select()
     {
-        $this->db->getSchemaManager()->selectDatabase($this->getName());
+        $this->db->getPlatform()->selectDatabase($this->getName());
 
         return $this;
     }
@@ -42,7 +42,7 @@ class DatabaseManager extends AbstractMetaManager
             return $this;
         }
 
-        $this->db->getSchemaManager()->createDatabase($this->getName(), $options);
+        $this->db->getPlatform()->createDatabase($this->getName(), $options);
 
         return $this;
     }
@@ -62,13 +62,13 @@ class DatabaseManager extends AbstractMetaManager
             return $this;
         }
 
-        if ($name === $this->db->getSchemaManager()->getCurrentDatabase()) {
+        if ($name === $this->db->getPlatform()->getCurrentDatabase()) {
             $this->db->disconnect();
 
             $this->db->setOption('database', null);
         }
 
-        $this->db->getSchemaManager()->dropDatabase($name);
+        $this->db->getPlatform()->dropDatabase($name);
 
         return $this;
     }

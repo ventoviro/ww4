@@ -140,7 +140,7 @@ class DatabaseAdapter implements EventAttachableInterface
      */
     public function listDatabases(): array
     {
-        return $this->getSchemaManager()->listDatabases();
+        return $this->getPlatform()->listDatabases();
     }
 
     /**
@@ -150,7 +150,7 @@ class DatabaseAdapter implements EventAttachableInterface
      */
     public function listSchemas(): array
     {
-        return $this->getSchemaManager()->listSchemas();
+        return $this->getPlatform()->listSchemas();
     }
 
     /**
@@ -171,14 +171,6 @@ class DatabaseAdapter implements EventAttachableInterface
     public function getPlatform(): AbstractPlatform
     {
         return $this->getDriver()->getPlatform();
-    }
-
-    /**
-     * @return  AbstractSchemaManager
-     */
-    public function getSchemaManager(): AbstractSchemaManager
-    {
-        return $this->getDriver()->getSchemaManager();
     }
 
     public function getDatabase(string $name = null, $new = false): DatabaseManager

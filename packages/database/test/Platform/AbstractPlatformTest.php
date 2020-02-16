@@ -13,6 +13,7 @@ namespace Windwalker\Database\Test\Platform;
 
 use Windwalker\Database\Platform\MySQLPlatform;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
+use Windwalker\Database\Test\Reseter\AbstractReseter;
 
 /**
  * The AbstractPlatformTest class.
@@ -58,6 +59,11 @@ abstract class AbstractPlatformTest extends AbstractDatabaseTestCase
      */
     public function testTransactionCommit()
     {
+        $reseter = AbstractReseter::create(static::$platform);
+        $reseter->clearAllTables(static::$baseConn, static::$dbname);
+
+        self::importFromFile(__DIR__ . '/../stub/' . static::$platform . '.sql');
+
         $table = '#__flower';
 
         $sql = "INSERT INTO {$table} (title, meaning, params) VALUES ('A', '', ''), ('B', '', ''), ('C', '', '')";
@@ -115,6 +121,6 @@ abstract class AbstractPlatformTest extends AbstractDatabaseTestCase
      */
     protected static function setupDatabase(): void
     {
-        self::importFromFile(__DIR__ . '/../stub/' . static::$platform . '.sql');
+        self::importFromFile(__DIR__ . '/../stub/metadata/' . static::$platform . '.sql');
     }
 }

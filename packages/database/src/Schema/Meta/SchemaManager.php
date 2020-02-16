@@ -51,7 +51,7 @@ class SchemaManager extends AbstractMetaManager
      */
     public function getTables(bool $includeViews = false, bool $refresh = false): array
     {
-        $schemaManager = $this->db->getSchemaManager();
+        $schemaManager = $this->db->getPlatform();
 
         if ($this->tables === null || $refresh) {
             $this->tables = $schemaManager->listTables($this->getName());
@@ -79,7 +79,7 @@ class SchemaManager extends AbstractMetaManager
      */
     public function getTableDetail(string $table): array
     {
-        return $this->db->getSchemaManager()->getTableDetail($table);
+        return $this->db->getPlatform()->getTableDetail($table);
     }
 
     /**

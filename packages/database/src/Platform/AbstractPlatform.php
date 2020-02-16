@@ -12,7 +12,11 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Database\DatabaseAdapter;
+use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Driver\TransactionDriverInterface;
+use Windwalker\Database\Platform\Concern\PlatformMetaTrait;
+use Windwalker\Database\Schema\Meta\Column;
+use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;
 
@@ -21,15 +25,7 @@ use Windwalker\Query\Query;
  */
 abstract class AbstractPlatform
 {
-    /**
-     * @var string|null
-     */
-    protected static $defaultSchema = null;
-
-    /**
-     * @var string
-     */
-    protected $name = '';
+    use PlatformMetaTrait;
 
     /**
      * @var Query
@@ -60,46 +56,6 @@ abstract class AbstractPlatform
         return new $class($db);
     }
 
-    public static function getPlatformName(string $platform): string
-    {
-        switch (strtolower($platform)) {
-            case 'pgsql':
-            case 'postgresql':
-                $platform = 'PostgreSQL';
-                break;
-
-            case 'sqlsrv':
-            case 'sqlserver':
-                $platform = 'SQLServer';
-                break;
-
-            case 'mysql':
-                $platform = 'MySQL';
-                break;
-
-            case 'sqlite':
-                $platform = 'SQLite';
-                break;
-        }
-
-        return $platform;
-    }
-
-    public static function getShortName(string $platform): string
-    {
-        switch (strtolower($platform)) {
-            case 'postgresql':
-                $platform = 'pgsql';
-                break;
-
-            case 'sqlserver':
-                $platform = 'sqlsrv';
-                break;
-        }
-
-        return strtolower($platform);
-    }
-
     /**
      * AbstractPlatform constructor.
      *
@@ -108,14 +64,6 @@ abstract class AbstractPlatform
     public function __construct(DatabaseAdapter $db)
     {
         $this->db = $db;
-    }
-
-    /**
-     * @return string
-     */
-    public static function getDefaultSchema(): ?string
-    {
-        return self::$defaultSchema;
     }
 
     public function getGrammar(): AbstractGrammar
@@ -132,14 +80,6 @@ abstract class AbstractPlatform
         return new Query($this->db->getDriver(), $this->name);
     }
 
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
     abstract public function listDatabasesQuery(): Query;
 
     abstract public function listSchemaQuery(): Query;
@@ -153,6 +93,152 @@ abstract class AbstractPlatform
     abstract public function listConstraintsQuery(string $table, ?string $schema): Query;
 
     abstract public function listIndexesQuery(string $table, ?string $schema): Query;
+
+    /**
+     * @inheritDoc
+     */
+    public function listDatabases(): array
+    {
+        return $this->db->prepare(
+            $this->listDatabasesQuery()
+        )
+            ->loadColumn()
+            ->dump();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listSchemas(): array
+    {
+        return $this->db->prepare(
+            $this->listSchemaQuery()
+        )
+            ->loadColumn()
+            ->dump();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listTables(?string $schema = null, bool $includeViews = false): array
+    {
+        $tables = $this->db->prepare(
+            $this->listTablesQuery($schema)
+        )
+            ->loadColumn()
+            ->dump();
+
+        if ($includeViews) {
+            $tables = array_merge(
+                $tables,
+                $this->listViews($schema)
+            );
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listViews(?string $schema = null): array
+    {
+        return $this->db->prepare(
+            $this->listViewsQuery($schema)
+        )
+            ->loadColumn()
+            ->dump();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    abstract public function listColumns(string $table, ?string $schema = null): array;
+
+    /**
+     * @inheritDoc
+     */
+    public function loadColumnsStatement(string $table, ?string $schema = null): StatementInterface
+    {
+        return $this->db->prepare(
+            $this->listColumnsQuery($table, $schema)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    abstract public function listConstraints(string $table, ?string $schema = null): array;
+
+    /**
+     * @inheritDoc
+     */
+    public function loadConstraintsStatement(string $table, ?string $schema = null): StatementInterface
+    {
+        return $this->db->prepare(
+            $this->listConstraintsQuery($table, $schema)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    abstract public function listIndexes(string $table, ?string $schema = null): array;
+
+    /**
+     * @inheritDoc
+     */
+    public function loadIndexesStatement(string $table, ?string $schema = null): StatementInterface
+    {
+        return $this->db->prepare(
+            $this->listIndexesQuery($table, $schema)
+        );
+    }
+
+    abstract public function getCurrentDatabase(): ?string;
+
+    public function selectDatabase(string $name): bool
+    {
+        $this->db->execute('USE ' . $this->db->quoteName($name));
+
+        return true;
+    }
+
+    public function createDatabase(string $name, array $options = []): bool
+    {
+        $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'CREATE DATABASE',
+                    !empty($options['if_not_exists']) ? 'IF NOT EXISTS' : null,
+                    $this->db->quoteName($name)
+                )
+        );
+
+        return true;
+    }
+
+    abstract public function dropDatabase(string $name): bool;
+    abstract public function createSchema(): bool;
+    abstract public function dropSchema(): bool;
+
+    abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool;
+    abstract public function dropTable(string $table, bool $ifExists = false): bool;
+    abstract public function renameTable(string $table): bool;
+    abstract public function truncateTable(string $table): bool;
+    abstract public function getTableDetail(string $table): array;
+
+    abstract public function addColumn(Column $column): bool;
+    abstract public function dropColumn(string $name): bool;
+    abstract public function modifyColumn(): bool;
+    abstract public function renameColumn(): bool;
+
+    abstract public function addIndex(): bool;
+    abstract public function dropIndex(): bool;
+
+    abstract public function addConstraint(): bool;
+    abstract public function dropConstraint(): bool;
 
     /**
      * start
