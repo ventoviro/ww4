@@ -18,7 +18,7 @@ services:
   - redis-server
 
 before_install:
-  - composer global require phpunit/phpunit
+  - composer global require phpunit/phpunit ^8||^9
 #  - sh -e build/travis/scripts/apt-get.sh
 #  - sh -e build/travis/scripts/apache2-vhost.sh
 #  - sh -e build/travis/scripts/apache2-configure.sh
