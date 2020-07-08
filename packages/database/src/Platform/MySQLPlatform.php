@@ -172,12 +172,12 @@ class MySQLPlatform extends AbstractPlatform
                 $permittedValues = $matches[1];
 
                 if (
-                preg_match_all(
-                    "/\\s*'((?:[^']++|'')*+)'\\s*(?:,|\$)/",
-                    $permittedValues,
-                    $matches,
-                    PREG_PATTERN_ORDER
-                )
+                    preg_match_all(
+                        "/\\s*'((?:[^']++|'')*+)'\\s*(?:,|\$)/",
+                        $permittedValues,
+                        $matches,
+                        PREG_PATTERN_ORDER
+                    )
                 ) {
                     $permittedValues = str_replace("''", "'", $matches[1]);
                 } else {
@@ -299,7 +299,7 @@ class MySQLPlatform extends AbstractPlatform
                 'constraint_name' => $name,
                 'constraint_type' => $row['CONSTRAINT_TYPE'],
                 'table_name' => $row['TABLE_NAME'],
-                'columns' => []
+                'columns' => [],
             ];
 
             if ($isFK) {

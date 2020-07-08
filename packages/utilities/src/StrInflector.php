@@ -11,7 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Utilities;
 
-use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Inflector\Inflector;
+use Doctrine\Inflector\InflectorFactory;
 use DomainException;
 
 /**
@@ -21,6 +22,11 @@ use DomainException;
  */
 class StrInflector
 {
+    /**
+     * @var Inflector
+     */
+    protected static $inflector;
+
     /**
      * Checks if a word is in a plural form.
      *
@@ -64,7 +70,7 @@ class StrInflector
     {
         static::checkDependency();
 
-        return Inflector::pluralize($word);
+        return static::getInflector()->pluralize($word);
     }
 
     /**
@@ -80,7 +86,7 @@ class StrInflector
     {
         static::checkDependency();
 
-        return Inflector::singularize($word);
+        return static::getInflector()->singularize($word);
     }
 
     protected static function checkDependency(): void
@@ -88,5 +94,14 @@ class StrInflector
         if (!class_exists(Inflector::class)) {
             throw new DomainException('Please install doctrine/inflector first');
         }
+    }
+
+    protected static function getInflector(): Inflector
+    {
+        if (!static::$inflector) {
+            static::$inflector = InflectorFactory::create()->build();
+        }
+
+        return static::$inflector;
     }
 }

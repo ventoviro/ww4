@@ -45,7 +45,7 @@ namespace {
                 return false;
             }
 
-            if (is_object($var) && !method_exists($var, '__toString')) {
+            if (is_object($var) && !$var instanceof Stringable && !method_exists($var, '__toString')) {
                 return false;
             }
 
