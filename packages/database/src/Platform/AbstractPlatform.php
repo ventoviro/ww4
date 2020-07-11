@@ -220,8 +220,8 @@ abstract class AbstractPlatform
     }
 
     abstract public function dropDatabase(string $name): bool;
-    abstract public function createSchema(): bool;
-    abstract public function dropSchema(): bool;
+    abstract public function createSchema(string $name, array $options = []): bool;
+    abstract public function dropSchema(string $name): bool;
 
     abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool;
     abstract public function dropTable(string $table, bool $ifExists = false): bool;

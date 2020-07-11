@@ -58,7 +58,7 @@ class DatabaseManagerTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             $newDbname,
-            static::$db->getSchemaManager()->getCurrentDatabase()
+            static::$db->getPlatform()->getCurrentDatabase()
         );
     }
 

@@ -383,12 +383,14 @@ class MySQLPlatform extends AbstractPlatform
         return true;
     }
 
-    public function createSchema(): bool
+    public function createSchema(string $name, array $options = []): bool
     {
+        return $this->createDatabase($name, $options);
     }
 
-    public function dropSchema(): bool
+    public function dropSchema(string $name): bool
     {
+        return $this->dropDatabase($name);
     }
 
     public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool

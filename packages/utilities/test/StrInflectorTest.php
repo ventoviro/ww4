@@ -47,7 +47,7 @@ class StrInflectorTest extends TestCase
     {
         return [
             // Regular plurals
-            ['bus', 'buses'],
+            ['fish', 'fish'],
             ['notify', 'notifies'],
             ['click', 'clicks'],
 
@@ -106,13 +106,19 @@ class StrInflectorTest extends TestCase
     {
         $this->assertTrue(
             StrInflector::isPlural($plural),
-            'Checks the plural is a plural.'
+            sprintf(
+                'Checks the plural (%s) is a plural.',
+                $plural
+            )
         );
 
         if ($singular != $plural) {
             $this->assertFalse(
                 StrInflector::isPlural($singular),
-                'Checks the singular is not plural.'
+                sprintf(
+                    'Checks the singular (%s) is not plural.',
+                    $singular
+                )
             );
         }
     }
@@ -131,7 +137,10 @@ class StrInflectorTest extends TestCase
     {
         $this->assertTrue(
             StrInflector::isSingular($singular),
-            'Checks the singular is a singular.'
+            sprintf(
+                'Checks the singular (%s) is a singular.',
+                $singular
+            )
         );
 
         if ($singular != $plural) {
@@ -203,7 +212,7 @@ class StrInflectorTest extends TestCase
     public function testToSingularRetFalse()
     {
         // Assertion for already singular
-        $this->assertEquals('bus', StrInflector::toSingular('bus'));
+        $this->assertEquals('fish', StrInflector::toSingular('fish'));
 
         $this->assertEquals('foo', StrInflector::toSingular('foo'));
     }
