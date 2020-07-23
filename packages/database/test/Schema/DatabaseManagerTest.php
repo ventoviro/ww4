@@ -19,9 +19,9 @@ use Windwalker\Database\Test\AbstractDatabaseTestCase;
  */
 class DatabaseManagerTest extends AbstractDatabaseTestCase
 {
-    protected static $platform = 'MySQL';
+    protected static string $platform = 'MySQL';
 
-    protected static $driver = 'pdo_mysql';
+    protected static string $driver = 'pdo_mysql';
 
     /**
      * @var DatabaseManager

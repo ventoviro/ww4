@@ -16,16 +16,16 @@ namespace Windwalker\Database\Test\Platform;
  */
 class MySQLPlatformTest extends AbstractPlatformTest
 {
-    protected static $platform = 'MySQL';
+    protected static string $platform = 'MySQL';
 
-    protected static $driver = 'pdo_mysql';
+    protected static string $driver = 'pdo_mysql';
 
     /**
      * Will be set at setUp()
      *
      * @var string
      */
-    protected static $schema = '';
+    protected static string $schema = '';
 
     /**
      * @see  AbstractSchemaManager::listDatabases

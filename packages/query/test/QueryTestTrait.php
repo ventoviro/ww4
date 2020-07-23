@@ -31,15 +31,8 @@ trait QueryTestTrait
      *
      * @var  array
      */
-    protected static $nameQuote = ['"', '"'];
+    protected static array $nameQuote = ['"', '"'];
 
-    /**
-     * quote
-     *
-     * @param string $text
-     *
-     * @return  string
-     */
     protected static function qn(string $text): string
     {
         return TestStringHelper::quote($text, static::$nameQuote);

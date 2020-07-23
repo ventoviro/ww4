@@ -19,9 +19,9 @@ use Windwalker\Database\Test\AbstractDatabaseTestCase;
  */
 class SQLServerSchemaManagerTest extends AbstractDatabaseTestCase
 {
-    protected static $platform = 'SQLServer';
+    protected static string $platform = 'SQLServer';
 
-    protected static $driver = 'pdo_sqlsrv';
+    protected static string $driver = 'pdo_sqlsrv';
 
     protected static $schema = 'dbo';
 

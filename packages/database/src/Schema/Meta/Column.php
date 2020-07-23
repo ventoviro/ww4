@@ -23,72 +23,72 @@ class Column
     /**
      * @var string
      */
-    protected $name = '';
+    protected string $name = '';
 
     /**
      * @var int
      */
-    protected $ordinalPosition = 1;
+    protected int $ordinalPosition = 1;
 
     /**
      * @var mixed
      */
-    protected $columnDefault = null;
+    protected mixed $columnDefault = null;
 
     /**
      * @var bool
      */
-    protected $isNullable = false;
+    protected bool $isNullable = false;
 
     /**
      * @var string
      */
-    protected $dataType = 'text';
+    protected string $dataType = 'text';
 
     /**
      * @var int
      */
-    protected $characterMaximumLength;
+    protected ?int $characterMaximumLength = null;
 
     /**
      * @var int
      */
-    protected $characterOctetLength;
+    protected ?int $characterOctetLength = null;
 
     /**
      * @var int
      */
-    protected $numericPrecision;
+    protected ?int $numericPrecision = null;
 
     /**
      * @var int
      */
-    protected $numericScale;
+    protected ?int $numericScale = null;
 
     /**
      * @var bool
      */
-    protected $numericUnsigned;
+    protected bool $numericUnsigned;
 
     /**
      * @var null|string
      */
-    protected $comment = null;
+    protected ?string $comment = null;
 
     /**
      * @var bool
      */
-    protected $autoIncrement = false;
+    protected bool $autoIncrement = false;
 
     /**
      * @var array
      */
-    protected $erratas = [];
+    protected array $erratas = [];
 
     /**
      * @var string|null
      */
-    protected $after;
+    protected ?string $after;
 
     /**
      * Column constructor.
@@ -103,7 +103,7 @@ class Column
         string $name = '',
         string $dataType = 'char',
         bool $isNullable = false,
-        $columnDefault = null,
+        mixed $columnDefault = null,
         array $options = []
     ) {
         $this->name          = $name;
@@ -127,7 +127,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function name(string $name)
+    public function name(string $name): static
     {
         $this->name = $name;
 
@@ -143,11 +143,11 @@ class Column
     }
 
     /**
-     * @param  int  $ordinalPosition
+     * @param  int|null  $ordinalPosition
      *
      * @return  static  Return self to support chaining.
      */
-    public function ordinalPosition(?int $ordinalPosition)
+    public function ordinalPosition(?int $ordinalPosition): static
     {
         $this->ordinalPosition = $ordinalPosition;
 
@@ -157,7 +157,7 @@ class Column
     /**
      * @return mixed
      */
-    public function getColumnDefault()
+    public function getColumnDefault(): mixed
     {
         return $this->columnDefault;
     }
@@ -167,7 +167,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function columnDefault($value)
+    public function columnDefault($value): static
     {
         $this->columnDefault = $value;
 
@@ -181,7 +181,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function defaultValue($value)
+    public function defaultValue($value): static
     {
         return $this->columnDefault($value);
     }
@@ -199,7 +199,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function isNullable(bool $isNullable)
+    public function isNullable(bool $isNullable): static
     {
         $this->isNullable = $isNullable;
 
@@ -219,7 +219,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function dataType(string $dataType)
+    public function dataType(string $dataType): static
     {
         [$dataType, $precision, $scale] = DataType::extract($dataType);
 
@@ -240,7 +240,7 @@ class Column
      *
      * @return  static
      */
-    public function length($value)
+    public function length(string|int $value): static
     {
         [$dataType, $precision, $scale] = DataType::extract("{$this->dataType}($value)");
 
@@ -310,7 +310,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function characterMaximumLength(?int $characterMaximumLength)
+    public function characterMaximumLength(?int $characterMaximumLength): static
     {
         $this->characterMaximumLength = $characterMaximumLength;
 
@@ -330,7 +330,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function characterOctetLength(?int $characterOctetLength)
+    public function characterOctetLength(?int $characterOctetLength): static
     {
         $this->characterOctetLength = $characterOctetLength;
 
@@ -350,7 +350,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function precision(?int $precision)
+    public function precision(?int $precision): static
     {
         $this->numericPrecision = $precision;
 
@@ -370,7 +370,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function scale(?int $scale)
+    public function scale(?int $scale): static
     {
         $this->numericScale = $scale;
 
@@ -390,7 +390,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function unsigned(bool $unsigned = true)
+    public function unsigned(bool $unsigned = true): static
     {
         $this->numericUnsigned = $unsigned;
 
@@ -410,7 +410,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function comment(?string $comment = null)
+    public function comment(?string $comment = null): static
     {
         $this->comment = $comment;
 
@@ -430,7 +430,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function autoIncrement(bool $autoIncrement = true)
+    public function autoIncrement(bool $autoIncrement = true): static
     {
         $this->autoIncrement = $autoIncrement;
 
@@ -450,7 +450,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function erratas(array $erratas)
+    public function erratas(array $erratas): static
     {
         $this->erratas = $erratas;
 
@@ -469,7 +469,7 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function after(?string $after)
+    public function after(?string $after): static
     {
         $this->after = $after;
 
@@ -483,7 +483,7 @@ class Column
      *
      * @return  static
      */
-    public function bind(array $data)
+    public function bind(array $data): static
     {
         foreach ($data as $key => $datum) {
             $prop = StrNormalise::toCamelCase($key);
@@ -505,7 +505,7 @@ class Column
      *
      * @return  static
      */
-    public static function wrap($data)
+    public static function wrap($data): static
     {
         if ($data instanceof static) {
             return $data;

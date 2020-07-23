@@ -18,7 +18,7 @@ use Windwalker\Database\Test\Driver\AbstractDriverTest;
  */
 class PdoSqliteDriverTest extends AbstractDriverTest
 {
-    protected static $platform = 'sqlite';
+    protected static string $platform = 'sqlite';
 
-    protected static $driverName = 'pdo_sqlite';
+    protected static string $driverName = 'pdo_sqlite';
 }

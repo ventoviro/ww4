@@ -18,7 +18,7 @@ use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Schema\DatabaseManager;
 use Windwalker\Database\Schema\SchemaManager;
-use Windwalker\Database\Schema\TableManager;
+use Windwalker\Database\Manager\TableManager;
 use Windwalker\Event\EventAttachableInterface;
 use Windwalker\Event\ListenableTrait;
 use Windwalker\Query\Query;

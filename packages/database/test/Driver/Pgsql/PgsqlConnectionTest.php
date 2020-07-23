@@ -21,9 +21,9 @@ use Windwalker\Database\Test\Reseter\PostgreSQLReseter;
  */
 class PgsqlConnectionTest extends AbstractConnectionTest
 {
-    protected static $platform = 'PostgreSQL';
+    protected static string $platform = 'PostgreSQL';
 
-    protected static $className = PgsqlConnection::class;
+    protected static string $className = PgsqlConnection::class;
 
     /**
      * @inheritDoc

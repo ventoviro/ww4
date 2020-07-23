@@ -20,9 +20,9 @@ use Windwalker\Database\Test\Driver\AbstractConnectionTest;
  */
 class SqlsrvConnectionTest extends AbstractConnectionTest
 {
-    protected static $platform = 'SQLServer';
+    protected static string $platform = 'SQLServer';
 
-    protected static $className = SqlsrvConnection::class;
+    protected static string $className = SqlsrvConnection::class;
 
     public function testConnect(): void
     {

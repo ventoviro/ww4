@@ -18,9 +18,9 @@ use Windwalker\Database\Test\Driver\AbstractDriverTest;
  */
 class PdoMysqlDriverTest extends AbstractDriverTest
 {
-    protected static $platform = 'mysql';
+    protected static string $platform = 'mysql';
 
-    protected static $driverName = 'pdo_mysql';
+    protected static string $driverName = 'pdo_mysql';
 
     /**
      * @see  AbstractDriver::quote

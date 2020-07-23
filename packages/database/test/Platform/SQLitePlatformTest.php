@@ -16,7 +16,7 @@ namespace Windwalker\Database\Test\Platform;
  */
 class SQLitePlatformTest extends AbstractPlatformTest
 {
-    protected static $platform = 'SQLite';
+    protected static string $platform = 'SQLite';
 
-    protected static $driver = 'pdo_sqlite';
+    protected static string $driver = 'pdo_sqlite';
 }

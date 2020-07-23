@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Schema;
 
+use Windwalker\Database\Manager\AbstractMetaManager;
+
 /**
  * The DatabaseManager class.
  */

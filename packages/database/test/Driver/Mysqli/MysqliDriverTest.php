@@ -20,9 +20,9 @@ use Windwalker\Database\Test\Driver\AbstractDriverTest;
  */
 class MysqliDriverTest extends AbstractDriverTest
 {
-    protected static $platform = 'mysql';
+    protected static string $platform = 'mysql';
 
-    protected static $driverName = 'mysqli';
+    protected static string $driverName = 'mysqli';
 
     /**
      * @see  AbstractDriver::quote

@@ -19,12 +19,12 @@ use Windwalker\Database\Test\AbstractDatabaseDriverTestCase;
  */
 abstract class AbstractConnectionTest extends AbstractDatabaseDriverTestCase
 {
-    protected static $platform = '';
+    protected static string $platform = '';
 
     /**
      * @var AbstractConnection
      */
-    protected static $className = AbstractConnection::class;
+    protected static string $className = AbstractConnection::class;
 
     /**
      * @var AbstractConnection

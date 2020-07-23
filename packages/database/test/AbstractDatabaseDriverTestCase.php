@@ -29,14 +29,14 @@ abstract class AbstractDatabaseDriverTestCase extends TestCase
 {
     use QueryTestTrait;
 
-    protected static $platform = '';
+    protected static string $platform = '';
 
-    protected static $dbname = '';
+    protected static string $dbname = '';
 
     /**
      * @var \PDO
      */
-    protected static $baseConn;
+    protected static ?\PDO $baseConn;
 
     /**
      * @inheritDoc

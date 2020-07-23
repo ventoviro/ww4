@@ -18,7 +18,7 @@ use Windwalker\Database\Test\Driver\AbstractDriverTest;
  */
 class PdoPgsqlDriverTest extends AbstractDriverTest
 {
-    protected static $platform = 'PostgreSQL';
+    protected static string $platform = 'PostgreSQL';
 
-    protected static $driverName = 'pdo_pgsql';
+    protected static string $driverName = 'pdo_pgsql';
 }

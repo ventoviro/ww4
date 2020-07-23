@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema;
+namespace Windwalker\Database\Manager;
 
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Platform\AbstractPlatform;

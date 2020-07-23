@@ -20,9 +20,9 @@ use Windwalker\Database\Test\AbstractDatabaseTestCase;
  */
 class SQLiteSchemaManagerTest extends AbstractDatabaseTestCase
 {
-    protected static $platform = 'SQLite';
+    protected static string $platform = 'SQLite';
 
-    protected static $driver = 'pdo_sqlite';
+    protected static string $driver = 'pdo_sqlite';
 
     protected static $schema = 'main';
 

@@ -19,9 +19,9 @@ use Windwalker\Database\Test\AbstractDatabaseTestCase;
  */
 class PostgreSQLSchemaManagerTest extends AbstractDatabaseTestCase
 {
-    protected static $platform = 'PostgreSQL';
+    protected static string $platform = 'PostgreSQL';
 
-    protected static $driver = 'pdo_pgsql';
+    protected static string $driver = 'pdo_pgsql';
 
     protected static $schema = 'public';
 

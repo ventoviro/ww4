@@ -21,17 +21,10 @@ use Windwalker\Database\Test\Reseter\MySQLTestTrait;
  */
 class MysqliConnectionTest extends AbstractConnectionTest
 {
-    protected static $platform = 'MySQL';
+    protected static string $platform = 'MySQL';
 
-    protected static $className = MysqliConnection::class;
+    protected static string $className = MysqliConnection::class;
 
-    /**
-     * assertConnected
-     *
-     * @param  MysqliConnection  $conn
-     *
-     * @return  void
-     */
     public function assertConnected(AbstractConnection $conn): void
     {
         $mysqli = $conn->get();

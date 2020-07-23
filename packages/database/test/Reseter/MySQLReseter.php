@@ -19,7 +19,7 @@ use Windwalker\Query\Grammar\AbstractGrammar;
  */
 class MySQLReseter extends AbstractReseter
 {
-    protected static $platform = 'mysql';
+    protected static string $platform = 'mysql';
 
     public function createDatabase(\PDO $pdo, string $dbname): void
     {

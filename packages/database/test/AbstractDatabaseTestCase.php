@@ -19,16 +19,13 @@ use Windwalker\Database\Event\QueryEndEvent;
  */
 abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
 {
-    protected static $platform = 'MySQL';
+    protected static string $platform = 'MySQL';
 
-    protected static $driver = 'pdo_mysql';
+    protected static string $driver = 'pdo_mysql';
 
-    protected static $logInited = false;
+    protected static bool $logInited = false;
 
-    /**
-     * @var DatabaseAdapter
-     */
-    protected static $db;
+    protected static ?DatabaseAdapter $db;
 
     /**
      * @inheritDoc

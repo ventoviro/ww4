@@ -395,10 +395,12 @@ class MySQLPlatform extends AbstractPlatform
 
     public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool
     {
+
     }
 
     public function dropTable(string $table, bool $ifExists = false): bool
     {
+
     }
 
     public function renameTable(string $from, string $to): bool

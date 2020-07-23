@@ -20,9 +20,9 @@ use Windwalker\Database\Test\Driver\AbstractConnectionTest;
  */
 class MysqlConnectionTest extends AbstractConnectionTest
 {
-    protected static $platform = 'mysql';
+    protected static string $platform = 'mysql';
 
-    protected static $className = PdoMysqlConnection::class;
+    protected static string $className = PdoMysqlConnection::class;
 
     public function assertConnected(AbstractConnection $conn): void
     {

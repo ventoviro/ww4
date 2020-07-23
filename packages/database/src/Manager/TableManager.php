@@ -9,10 +9,13 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema;
+namespace Windwalker\Database\Manager;
 
+use Windwalker\Database\Schema\DataType;
 use Windwalker\Database\Schema\Meta\Column;
 use Windwalker\Database\Schema\Meta\Key;
+use Windwalker\Database\Schema\Schema;
+use Windwalker\Database\Schema\SchemaManager;
 
 /**
  * The TableManager class.
@@ -22,12 +25,12 @@ class TableManager extends AbstractMetaManager
     /**
      * @var Column[]
      */
-    protected $columns = null;
+    protected array $columns = [];
 
     /**
      * @var string|null
      */
-    protected $schema;
+    protected string $schema;
 
     /**
      * create
@@ -38,7 +41,7 @@ class TableManager extends AbstractMetaManager
      *
      * @return  static
      */
-    public function create($callback, bool $ifNotExists = true, array $options = [])
+    public function create($callback, bool $ifNotExists = true, array $options = []): static
     {
         $this->getPlatform()->createTable(
             $this->callSchema($callback),
@@ -58,7 +61,7 @@ class TableManager extends AbstractMetaManager
      *
      * @return  static
      */
-    public function update($schema)
+    public function update($schema): static
     {
         $schema = $this->callSchema($schema);
 

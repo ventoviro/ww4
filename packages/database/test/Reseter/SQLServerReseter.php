@@ -20,7 +20,7 @@ use function Windwalker\raw;
  */
 class SQLServerReseter extends AbstractReseter
 {
-    protected static $platform = 'SQLServer';
+    protected static string $platform = 'SQLServer';
 
     public function createDatabase(\PDO $pdo, string $dbname): void
     {

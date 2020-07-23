@@ -11,27 +11,30 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Schema;
 
+use Windwalker\Database\Manager\TableManager;
+use Windwalker\Database\Schema\Concern\DataTypeTrait;
 use Windwalker\Database\Schema\Meta\Column;
+use Windwalker\Database\Schema\Meta\Constraint;
 use Windwalker\Database\Schema\Meta\Key;
 
 /**
  * The Schema class.
  *
- * @method  Column\Bigint     bigint($name)
- * @method  Column\Bit        bit($name)
- * @method  Column\Char       char($name)
- * @method  Column\Datetime   datetime($name)
- * @method  Column\Date       date($name)
- * @method  Column\Decimal    decimal($name)
- * @method  Column\Double     double($name)
- * @method  Column\FloatType  float($name)
- * @method  Column\Integer    integer($name)
- * @method  Column\Longtext   longtext($name)
- * @method  Column\Primary    primary($name)
- * @method  Column\Text       text($name)
- * @method  Column\Timestamp  timestamp($name)
- * @method  Column\Tinyint    tinyint($name)
- * @method  Column\Varchar    varchar($name)
+ * @method  Column  bigint(string $name)
+ * @method  Column  bit(string $name)
+ * @method  Column  char(string $name)
+ * @method  Column  datetime(string $name)
+ * @method  Column  date(string $name)
+ * @method  Column  decimal(string $name)
+ * @method  Column  double(string $name)
+ * @method  Column  float(string $name)
+ * @method  Column  integer(string $name)
+ * @method  Column  longtext(string $name)
+ * @method  Column  primary(string $name)
+ * @method  Column  text(string $name)
+ * @method  Column  timestamp(string $name)
+ * @method  Column  tinyint(string $name)
+ * @method  Column  varchar(string $name)
  *
  * @since  2.1.8
  */
@@ -42,55 +45,40 @@ class Schema
      *
      * @var  Column[]
      */
-    protected $columns = [];
+    protected array $columns = [];
 
     /**
      * Property indexes.
      *
      * @var  Key[]
      */
-    protected $indexes = [];
+    protected array $indexes = [];
 
     /**
      * Property table.
      *
      * @var  TableManager
      */
-    protected $table;
+    protected TableManager $table;
 
     /**
      * Schema constructor.
      *
-     * @param TableManager $table
+     * @param  TableManager  $table
      */
     public function __construct(TableManager $table)
     {
         $this->table = $table;
     }
 
-    /**
-     * addColumn
-     *
-     * @param string        $name
-     * @param Column|string $column
-     *
-     * @return  Column
-     */
-    public function add($name, $column)
+    public function add(string $name, Column|string $column): Column
     {
         $column->name($name);
 
         return $this->addColumn($column);
     }
 
-    /**
-     * addColumn
-     *
-     * @param   Column|string $column
-     *
-     * @return  Column
-     */
-    public function addColumn($column)
+    public function addColumn(Column|string $column): Column
     {
         if (is_string($column) && class_exists($column)) {
             $column = new $column();
@@ -108,21 +96,19 @@ class Schema
     /**
      * addKey
      *
-     * @param Key $key
+     * @param  Key  $key
      *
      * @return  Key
      */
-    public function addKey(Key $key)
+    public function addKey(Key $key): Key
     {
         $name = $key->getName();
 
         if (!$name) {
-            $columns = (array) $key->getColumns();
+            $columns = $key->getColumns();
 
             $columns = array_map(
-                function ($col) {
-                    return explode('(', $col)[0];
-                },
+                static fn($col) => explode('(', $col)[0],
                 $columns
             );
 
@@ -136,87 +122,34 @@ class Schema
         return $key;
     }
 
-    /**
-     * addIndex
-     *
-     * @param array|string $columns
-     * @param string       $name
-     *
-     * @return Key
-     */
-    public function addIndex($columns, $name = null)
+    public function addIndex(array|string $columns, ?string $name = null): Key
     {
         return $this->addKey(new Key(Key::TYPE_INDEX, (array) $columns, $name));
     }
 
-    /**
-     * addUniqueKey
-     *
-     * @param array|string $columns
-     * @param string       $name
-     *
-     * @return Key
-     */
-    public function addUniqueKey($columns, $name = null)
+    public function addUniqueKey(array|string $columns, ?string $name = null): Constraint
     {
-        return $this->addKey(new Key(Key::TYPE_UNIQUE, (array) $columns, $name));
+        // return $this->addKey(new Key(Key::TYPE_UNIQUE, (array) $columns, $name));
     }
 
     /**
      * addPrimaryKey
      *
-     * @param array|string $columns
+     * @param  array|string  $columns
      *
      * @return Key
      */
-    public function addPrimaryKey($columns)
+    public function addPrimaryKey(array|string $columns)
     {
         return $this->addKey(new Key(Key::TYPE_PRIMARY, (array) $columns, null));
     }
 
-    /**
-     * is triggered when invoking inaccessible methods in an object context.
-     *
-     * @param $name      string
-     * @param $arguments array
-     *
-     * @return mixed
-     */
-    public function __call($name, $arguments)
-    {
-        $class = 'Windwalker\Database\Schema\Column\\' . ucfirst($name);
-
-        if (!class_exists($class)) {
-            $class = 'Windwalker\Database\Schema\Column\\' . ucfirst($name) . 'Type';
-        }
-
-        if (!class_exists($class)) {
-            throw new \BadMethodCallException(sprintf('DataType or index: %s not exists.', $name));
-        }
-
-        $column = array_shift($arguments);
-
-        return $this->add($column, new $class());
-    }
-
-    /**
-     * Method to get property Table
-     *
-     * @return  AbstractTable
-     */
-    public function getTable()
+    public function getTable(): TableManager
     {
         return $this->table;
     }
 
-    /**
-     * Method to set property table
-     *
-     * @param   AbstractTable $table
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function setTable($table)
+    public function setTable(TableManager $table): static
     {
         $this->table = $table;
 
@@ -224,11 +157,9 @@ class Schema
     }
 
     /**
-     * Method to get property Columns
-     *
      * @return  Column[]
      */
-    public function getColumns()
+    public function getColumns(): array
     {
         return $this->columns;
     }
@@ -236,11 +167,11 @@ class Schema
     /**
      * Method to set property columns
      *
-     * @param   Column[] $columns
+     * @param  Column[]  $columns
      *
      * @return  static  Return self to support chaining.
      */
-    public function setColumns($columns)
+    public function setColumns(array $columns): static
     {
         $this->columns = $columns;
 
@@ -252,7 +183,7 @@ class Schema
      *
      * @return  Key[]
      */
-    public function getIndexes()
+    public function getIndexes(): array
     {
         return $this->indexes;
     }
@@ -260,11 +191,11 @@ class Schema
     /**
      * Method to set property indexes
      *
-     * @param   Key[] $indexes
+     * @param  Key[]  $indexes
      *
      * @return  static  Return self to support chaining.
      */
-    public function setIndexes($indexes)
+    public function setIndexes(array $indexes): static
     {
         $this->indexes = $indexes;
 
@@ -278,9 +209,9 @@ class Schema
      *
      * @since   3.0
      */
-    public function getDateFormat()
+    public function getDateFormat(): string
     {
-        return $this->getTable()->getDriver()->getQuery(true)->getDateFormat();
+        // return $this->getTable()->getDriver()->getQuery(true)->getDateFormat();
     }
 
     /**
@@ -292,6 +223,13 @@ class Schema
      */
     public function getNullDate()
     {
-        return $this->getTable()->getDriver()->getQuery(true)->getNullDate();
+        // return $this->getTable()->getDriver()->getQuery(true)->getNullDate();
+    }
+
+    public function __call(string $name, array $args)
+    {
+        $column = array_shift($args);
+
+        return $this->addColumn(new Column($column));
     }
 }

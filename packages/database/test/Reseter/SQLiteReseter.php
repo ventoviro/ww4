@@ -16,7 +16,7 @@ namespace Windwalker\Database\Test\Reseter;
  */
 class SQLiteReseter extends AbstractReseter
 {
-    protected static $platform = 'SQLite';
+    protected static string $platform = 'SQLite';
 
     public function createDatabase(\PDO $pdo, string $dbname): void
     {

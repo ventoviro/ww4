@@ -18,7 +18,7 @@ use function Windwalker\raw;
  */
 class PostgreSQLReseter extends AbstractReseter
 {
-    protected static $platform = 'PostgreSQL';
+    protected static string $platform = 'PostgreSQL';
 
     public function createDatabase(\PDO $pdo, string $dbname): void
     {

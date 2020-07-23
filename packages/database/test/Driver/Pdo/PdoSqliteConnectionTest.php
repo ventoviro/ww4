@@ -18,9 +18,9 @@ use Windwalker\Database\Driver\Pdo\PdoSqliteConnection;
  */
 class PdoSqliteConnectionTest extends AbstractPdoConnectionTest
 {
-    protected static $platform = 'sqlite';
+    protected static string $platform = 'sqlite';
 
-    protected static $className = PdoSqliteConnection::class;
+    protected static string $className = PdoSqliteConnection::class;
 
     public function testConnectWrong()
     {

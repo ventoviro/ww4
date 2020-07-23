@@ -16,7 +16,7 @@ namespace Windwalker\Database\Test\Platform;
  */
 class PostgreSQLPlatform extends AbstractPlatformTest
 {
-    protected static $platform = 'PostgreSQL';
+    protected static string $platform = 'PostgreSQL';
 
-    protected static $driver = 'pdo_pgsql';
+    protected static string $driver = 'pdo_pgsql';
 }

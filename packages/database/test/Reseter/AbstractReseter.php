@@ -19,7 +19,7 @@ use Windwalker\Query\Query;
  */
 abstract class AbstractReseter
 {
-    protected static $platform = '';
+    protected static string $platform = '';
 
     /**
      * create

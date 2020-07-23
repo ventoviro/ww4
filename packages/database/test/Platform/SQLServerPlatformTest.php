@@ -16,7 +16,7 @@ namespace Windwalker\Database\Test\Platform;
  */
 class SQLServerPlatformTest extends AbstractPlatformTest
 {
-    protected static $platform = 'SQLServer';
+    protected static string $platform = 'SQLServer';
 
-    protected static $driver = 'pdo_sqlsrv';
+    protected static string $driver = 'pdo_sqlsrv';
 }

@@ -18,9 +18,9 @@ use Windwalker\Database\Test\Driver\AbstractDriverTest;
  */
 class PdoSqlsrvDriverTest extends AbstractDriverTest
 {
-    protected static $platform = 'SQLServer';
+    protected static string $platform = 'SQLServer';
 
-    protected static $driverName = 'pdo_sqlsrv';
+    protected static string $driverName = 'pdo_sqlsrv';
 
     /**
      * @inheritDoc
