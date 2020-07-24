@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Schema\Column;
 
+use Windwalker\Database\Manager\TableManager;
 use Windwalker\Database\Schema\DataType;
 use Windwalker\Query\Grammar\MySQLGrammar;
 use Windwalker\Query\Query;
@@ -258,7 +259,7 @@ class Column
     /**
      * length
      *
-     * @param string|int $value
+     * @param  string|int  $value
      *
      * @return  static
      */
@@ -279,6 +280,7 @@ class Column
         if ($this->isNumeric()) {
             $this->precision($precision);
             $this->scale($scale);
+
             return;
         }
 
@@ -317,7 +319,7 @@ class Column
                 'double',
                 'real',
                 'decimal',
-                'numeric'
+                'numeric',
             ],
             true
         );
@@ -482,6 +484,7 @@ class Column
 
         return $this;
     }
+
     /**
      * @return string|null
      */
@@ -529,7 +532,7 @@ class Column
     /**
      * wrap
      *
-     * @param array|static $data
+     * @param  array|static  $data
      *
      * @return  static
      */
@@ -558,9 +561,9 @@ class Column
         return $items;
     }
 
-    public function getTypeExpression(Query $query): string
+    public function getTypeExpression(TableManager $table): string
     {
-        $expr = $query->quoteName($this->name);
+        $expr = $table->getDb()->quoteName($this->name);
 
         $length = $this->getLengthExpression();
 
@@ -571,26 +574,28 @@ class Column
         return $expr;
     }
 
-    public function getCreateExpression(Query $query): string
+    public function getCreateExpression(TableManager $table): string
     {
-        $expr = $this->getTypeExpression($query);
+        $expr = $this->getTypeExpression($table);
 
-        if (! $this->isNullable) {
+        if (!$this->isNullable) {
             $expr .= ' NOT NULL';
         }
 
-        if ($this->columnDefault !== null) {
-            $expr .= ' DEFAULT ' . $query->quote($this->columnDefault);
+        $db = $table->getDb();
+
+        if ($this->columnDefault !== null || $this->isNullable) {
+            $expr .= ' DEFAULT ' . $db->quote($this->columnDefault);
         }
 
-        if ($query->getGrammar() instanceof MySQLGrammar) {
+        if ($db->getPlatform()->getGrammar() instanceof MySQLGrammar) {
             if ($this->comment !== null) {
-                $expr .= ' COMMENT ' . $query->quote($this->columnDefault);
+                $expr .= ' COMMENT ' . $db->quote($this->columnDefault);
             }
 
             if ($this->getOption('position') !== null) {
                 [$delta, $pos] = $this->getOption('position');
-                $expr .= ' POSITION ' . $delta . ' ' . $query->quoteName($pos);
+                $expr .= ' POSITION ' . $delta . ' ' . $db->quoteName($pos);
             }
         }
 

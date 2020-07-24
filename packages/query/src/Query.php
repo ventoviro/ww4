@@ -334,7 +334,7 @@ class Query implements QueryInterface, BindableInterface
                 ArgumentsAssert::assert(
                     is_array($table),
                     '%s if use array as argument 1, every element should be a sub-array, '
-                        . ' example: [\'foo\', \'f\'], got: %s.',
+                    . ' example: [\'foo\', \'f\'], got: %s.',
                     $table
                 );
 
@@ -1195,7 +1195,7 @@ class Query implements QueryInterface, BindableInterface
      *
      * @param  mixed|WrapperInterface  $value
      *
-     * @return  string|array
+     * @return \Closure|string
      */
     public function quote($value)
     {
@@ -1227,25 +1227,9 @@ class Query implements QueryInterface, BindableInterface
      *
      * @return  string|array
      */
-    public function quoteName($name)
+    public function quoteName(mixed $name): string|array
     {
-        if ($name instanceof RawWrapper) {
-            return value($name);
-        }
-
-        if ($name instanceof Clause) {
-            return $name->setElements($this->quoteName($name->elements));
-        }
-
-        if (is_iterable($name)) {
-            foreach ($name as &$n) {
-                $n = $this->quoteName($n);
-            }
-
-            return $name;
-        }
-
-        return $this->getGrammar()::quoteName((string) $name);
+        return $this->getGrammar()::quoteNameMultiple($name);
     }
 
     /**

@@ -16,6 +16,10 @@ use Windwalker\Query\DefaultConnection;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Assert\ArgumentsAssert;
+use Windwalker\Utilities\Wrapper\RawWrapper;
+use Windwalker\Utilities\Wrapper\WrapperInterface;
+
+use function Windwalker\value;
 
 /**
  * The AbstractGrammar class.
@@ -223,6 +227,27 @@ abstract class AbstractGrammar
         return (string) $query->getSql();
     }
 
+    public static function quoteNameMultiple(mixed $name): array|string
+    {
+        if ($name instanceof RawWrapper) {
+            return value($name);
+        }
+
+        if ($name instanceof Clause) {
+            return $name->setElements(static::quoteNameMultiple($name->elements));
+        }
+
+        if (is_iterable($name)) {
+            foreach ($name as &$n) {
+                $n = static::quoteName((string) $n);
+            }
+
+            return $name;
+        }
+
+        return static::quoteName((string) $name);
+    }
+
     public static function quoteName(string $name): string
     {
         if ($name === '*') {
@@ -235,7 +260,7 @@ abstract class AbstractGrammar
             return static::quoteName($name) . ' AS ' . static::quoteName($alias);
         }
 
-        if (strpos($name, '.') !== false) {
+        if (str_contains($name, '.')) {
             return implode(
                 '.',
                 array_map(

@@ -15,6 +15,7 @@ use Windwalker\Data\Collection;
 use Windwalker\Database\Schema\Column\Column;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Escaper;
+use Windwalker\Query\Mysql\MysqlGrammar;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Str;
 
@@ -395,7 +396,35 @@ class MySQLPlatform extends AbstractPlatform
 
     public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool
     {
+        $defaultOptions = [
+            'auto_increment' => true,
+            'engine' => 'InnoDB',
+            'charset' => 'utf8mb4',
+            'collate' => 'utf8mb4_unicode_ci'
+        ];
 
+        $options = array_merge($defaultOptions, $options);
+        $columns = [];
+        $primary = [];
+
+        $column = $this->prepareColumn($column);
+
+        $columns[$column->getName()] = MysqlGrammar::build(
+            $column->getType() . $column->getLength(),
+            $column->getSigned() ? '' : 'UNSIGNED',
+            $column->getAllowNull() ? '' : 'NOT NULL',
+            $column->getDefault() !== false
+                ? 'DEFAULT ' . $this->db->getQuery(true)->validValue($column->getDefault())
+                : '',
+            $column->getAutoIncrement() ? 'AUTO_INCREMENT' : '',
+            $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
+            $column->getSuffix()
+        );
+
+        // Primary
+        if ($column->isPrimary()) {
+            $primary[] = $column->getName();
+        }
     }
 
     public function dropTable(string $table, bool $ifExists = false): bool

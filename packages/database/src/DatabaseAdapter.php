@@ -23,6 +23,9 @@ use Windwalker\Event\EventAttachableInterface;
 use Windwalker\Event\ListenableTrait;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
+use Windwalker\Utilities\Wrapper\WrapperInterface;
+
+use function Windwalker\value;
 
 /**
  * The DatabaseAdapter class.
@@ -123,13 +126,18 @@ class DatabaseAdapter implements EventAttachableInterface
     /**
      * quoteName
      *
-     * @param array|string $value
+     * @param  mixed  $value
      *
      * @return  array|string
      */
-    public function quoteName($value)
+    public function quoteName(mixed $value): array|string
     {
-        return $this->getQuery(true)->quoteName($value);
+        return $this->getPlatform()->getGrammar()::quoteName($value);
+    }
+
+    public function quote(mixed $value): array|string
+    {
+        return $this->getQuery(true)->quote((string) $value);
     }
 
     /**
@@ -262,7 +270,7 @@ class DatabaseAdapter implements EventAttachableInterface
                 $this->getNullDate(),
                 '0000-00-00 00:00:00',
                 '',
-                null
+                null,
             ],
             true
         );

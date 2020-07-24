@@ -11,7 +11,11 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Database\DatabaseAdapter;
+use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Utilities\Str;
+
+use function Windwalker\value;
 
 /**
  * The Escaper class.
@@ -50,25 +54,32 @@ class Escaper
         return static::tryQuote($this->getConnection(), $value);
     }
 
+    public function quoteMultiple($value): array|string
+    {
+        return $this->getDriver()->quote((string) $value);
+    }
+
     /**
      * escape
      *
      * @param  \PDO|callable|mixed  $escaper
-     * @param  string               $value
+     * @param  int|string           $value
      *
      * @return  string
      */
-    public static function tryEscape($escaper, string $value): string
+    public static function tryEscape($escaper, string|int $value): string
     {
         if (is_callable($escaper)) {
             return $escaper($value, [static::class, 'stripQuote']);
         }
 
         if ($escaper instanceof \PDO) {
-            return static::stripQuote((string) $escaper->quote($value));
+            return static::stripQuote((string) $escaper->quote((string) $value));
         }
 
-        // TODO: Add Database support if available.
+        if ($escaper instanceof AbstractDriver) {
+            return $escaper->escape((string) $value);
+        }
 
         return $escaper->escape($value);
     }
@@ -77,18 +88,20 @@ class Escaper
      * quote
      *
      * @param  \PDO|callable|mixed  $escaper
-     * @param  string               $value
+     * @param  int|string           $value
      *
      * @return  string
      */
-    public static function tryQuote($escaper, string $value): string
+    public static function tryQuote($escaper, string|int $value): string
     {
         // PDO has quote method, directly use it.
         if ($escaper instanceof \PDO) {
-            return (string) $escaper->quote($value);
+            return (string) $escaper->quote((string) $value);
         }
 
-        // TODO: Add Database support if available.
+        if ($escaper instanceof DatabaseAdapter) {
+            return $escaper->getDriver()->quote((string) $value);
+        }
 
         return "'" . static::tryEscape($escaper, $value) . "'";
     }
