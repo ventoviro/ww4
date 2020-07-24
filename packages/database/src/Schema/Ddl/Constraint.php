@@ -9,14 +9,11 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema\Concern;
-
-use Windwalker\Database\Schema\Column\Column;
+namespace Windwalker\Database\Schema\Ddl;
 
 /**
- * Trait DataTypeTrait
+ * The Constraint class.
  */
-trait DataTypeTrait
+class Constraint
 {
-
 }

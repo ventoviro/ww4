@@ -9,9 +9,12 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema\Meta;
+namespace Windwalker\Database\Schema\Column;
 
 use Windwalker\Database\Schema\DataType;
+use Windwalker\Query\Grammar\MySQLGrammar;
+use Windwalker\Query\Query;
+use Windwalker\Utilities\Classes\OptionAccessTrait;
 use Windwalker\Utilities\StrNormalise;
 use Windwalker\Utilities\TypeCast;
 
@@ -20,6 +23,8 @@ use Windwalker\Utilities\TypeCast;
  */
 class Column
 {
+    use OptionAccessTrait;
+
     /**
      * @var string
      */
@@ -68,7 +73,7 @@ class Column
     /**
      * @var bool
      */
-    protected bool $numericUnsigned;
+    protected bool $numericUnsigned = false;
 
     /**
      * @var null|string
@@ -88,7 +93,7 @@ class Column
     /**
      * @var string|null
      */
-    protected ?string $after;
+    protected ?string $after = null;
 
     /**
      * Column constructor.
@@ -233,6 +238,23 @@ class Column
         return $this;
     }
 
+    public function position(string $delta, string $pos): static
+    {
+        $this->setOption('position', [$delta, $pos]);
+
+        return $this;
+    }
+
+    public function before(string $column): static
+    {
+        return $this->position('BEFORE', $column);
+    }
+
+    public function after(string $column): static
+    {
+        return $this->position('AFTER', $column);
+    }
+
     /**
      * length
      *
@@ -263,13 +285,17 @@ class Column
         $this->characterOctetLength((int) $precision);
     }
 
-    public function getLength(): string
+    public function getLengthExpression(): ?string
     {
         if ($this->characterOctetLength !== null) {
             return (string) $this->characterOctetLength;
         }
 
-        return implode(',', array_filter([$this->numericPrecision, $this->numericScale]));
+        if ($this->numericPrecision !== null || $this->numericScale !== null) {
+            return implode(',', array_filter([$this->numericPrecision, $this->numericScale]));
+        }
+
+        return null;
     }
 
     public function isNumeric(): bool
@@ -492,6 +518,8 @@ class Column
                 $this->$prop($datum);
             } elseif (property_exists($this, $prop)) {
                 $this->$prop = $datum;
+            } else {
+                $this->setOption($prop, $datum);
             }
         }
 
@@ -528,5 +556,44 @@ class Column
         }
 
         return $items;
+    }
+
+    public function getTypeExpression(Query $query): string
+    {
+        $expr = $query->quoteName($this->name);
+
+        $length = $this->getLengthExpression();
+
+        if ($length !== null) {
+            $expr .= '(' . $length . ')';
+        }
+
+        return $expr;
+    }
+
+    public function getCreateExpression(Query $query): string
+    {
+        $expr = $this->getTypeExpression($query);
+
+        if (! $this->isNullable) {
+            $expr .= ' NOT NULL';
+        }
+
+        if ($this->columnDefault !== null) {
+            $expr .= ' DEFAULT ' . $query->quote($this->columnDefault);
+        }
+
+        if ($query->getGrammar() instanceof MySQLGrammar) {
+            if ($this->comment !== null) {
+                $expr .= ' COMMENT ' . $query->quote($this->columnDefault);
+            }
+
+            if ($this->getOption('position') !== null) {
+                [$delta, $pos] = $this->getOption('position');
+                $expr .= ' POSITION ' . $delta . ' ' . $query->quoteName($pos);
+            }
+        }
+
+        return $expr;
     }
 }

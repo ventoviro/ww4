@@ -14,7 +14,7 @@ namespace Windwalker\Database\Schema;
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Platform\AbstractPlatform;
-use Windwalker\Database\Schema\Meta\Column;
+use Windwalker\Database\Schema\Column\Column;
 use Windwalker\Query\Grammar\AbstractGrammar;
 
 /**

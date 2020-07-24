@@ -16,10 +16,7 @@ use ${TESTED_NAMESPACE}\\${TESTED_NAME};
 #parse("PHP Class Doc Comment.php")
 class ${NAME} extends TestCase
 {
-    /**
-     * @var ${TESTED_NAME}
-     */
-    protected $instance;
+    protected ?${TESTED_NAME} $instance;
 
     protected function setUp(): void
     {

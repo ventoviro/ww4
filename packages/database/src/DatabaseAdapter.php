@@ -225,4 +225,46 @@ class DatabaseAdapter implements EventAttachableInterface
 
         return $this;
     }
+
+    /**
+     * getDateFormat
+     *
+     * @return  string
+     */
+    public function getDateFormat(): string
+    {
+        return $this->getPlatform()->getGrammar()::dateFormat();
+    }
+
+    /**
+     * getNullDate
+     *
+     * @return  string
+     */
+    public function getNullDate(): string
+    {
+        return $this->getPlatform()->getGrammar()::nullDate();
+    }
+
+    public function isNullDate(string|int|null|\DateTimeInterface $date): bool
+    {
+        if (is_numeric($date)) {
+            $date = new \DateTime($date);
+        }
+
+        if ($date instanceof \DateTimeInterface) {
+            $date = $date->format($this->getDateFormat());
+        }
+
+        return in_array(
+            $date,
+            [
+                $this->getNullDate(),
+                '0000-00-00 00:00:00',
+                '',
+                null
+            ],
+            true
+        );
+    }
 }

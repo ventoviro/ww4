@@ -94,7 +94,7 @@ class DatabaseManager extends AbstractMetaManager
      *
      * @return  static
      */
-    public function reset()
+    public function reset(): static
     {
         return $this;
     }

@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test\Schema\Meta;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Database\Schema\Meta\Column;
+use Windwalker\Database\Schema\Column\Column;
 
 /**
  * The ColumnTest class.
@@ -55,7 +55,7 @@ class ColumnTest extends TestCase
         );
         self::assertEquals(
             '',
-            $col->getLength()
+            $col->getLengthExpression()
         );
     }
 
@@ -87,7 +87,7 @@ class ColumnTest extends TestCase
         );
         self::assertEquals(
             '255',
-            $col->getLength()
+            $col->getLengthExpression()
         );
     }
 
@@ -115,7 +115,7 @@ class ColumnTest extends TestCase
         );
         self::assertEquals(
             '11',
-            $col->getLength()
+            $col->getLengthExpression()
         );
     }
 
@@ -143,7 +143,7 @@ class ColumnTest extends TestCase
         );
         self::assertEquals(
             '10,6',
-            $col->getLength()
+            $col->getLengthExpression()
         );
     }
 

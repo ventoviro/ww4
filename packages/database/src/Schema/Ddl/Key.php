@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema\Meta;
+namespace Windwalker\Database\Schema\Ddl;
 
 use Windwalker\Utilities\Classes\OptionAccessTrait;
 
@@ -30,35 +30,22 @@ class Key
      */
     public const TYPE_PRIMARY = 'primary key';
 
-    /**
-     * Property name.
-     *
-     * @var  string
-     */
-    protected $name;
+    protected ?string $name = null;
 
     /**
      * Property type.
      *
      * @var  string
      */
-    protected $type;
+    protected string $type = '';
 
     /**
      * Property columns.
      *
      * @var  array
      */
-    protected $columns = [];
+    protected array $columns = [];
 
-    /**
-     * Key constructor.
-     *
-     * @param  string  $type
-     * @param  array   $columns
-     * @param  string  $name
-     * @param  array   $options
-     */
     public function __construct(?string $type = null, array $columns = [], ?string $name = null, array $options = [])
     {
         $this->columns($columns)
@@ -68,24 +55,12 @@ class Key
         $this->prepareOptions([], $options);
     }
 
-    /**
-     * Method to get property Name
-     *
-     * @return  string
-     */
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * Method to set property name
-     *
-     * @param   string $name
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function name(?string $name)
+    public function name(?string $name): static
     {
         $this->name = $name;
 

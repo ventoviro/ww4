@@ -13,9 +13,9 @@ namespace Windwalker\Database\Schema;
 
 use Windwalker\Database\Manager\TableManager;
 use Windwalker\Database\Schema\Concern\DataTypeTrait;
-use Windwalker\Database\Schema\Meta\Column;
-use Windwalker\Database\Schema\Meta\Constraint;
-use Windwalker\Database\Schema\Meta\Key;
+use Windwalker\Database\Schema\Column\Column;
+use Windwalker\Database\Schema\Ddl\Constraint;
+use Windwalker\Database\Schema\Ddl\Key;
 
 /**
  * The Schema class.
@@ -35,37 +35,24 @@ use Windwalker\Database\Schema\Meta\Key;
  * @method  Column  timestamp(string $name)
  * @method  Column  tinyint(string $name)
  * @method  Column  varchar(string $name)
+ * @method  Column  json(string $name)
  *
  * @since  2.1.8
  */
 class Schema
 {
     /**
-     * Property columns.
-     *
      * @var  Column[]
      */
     protected array $columns = [];
 
     /**
-     * Property indexes.
-     *
      * @var  Key[]
      */
-    protected array $indexes = [];
+    protected array $keys = [];
 
-    /**
-     * Property table.
-     *
-     * @var  TableManager
-     */
     protected TableManager $table;
 
-    /**
-     * Schema constructor.
-     *
-     * @param  TableManager  $table
-     */
     public function __construct(TableManager $table)
     {
         $this->table = $table;
@@ -112,12 +99,16 @@ class Schema
                 $columns
             );
 
-            $name = 'idx_' . trim($this->table->getName(), '#_') . '_' . implode('_', $columns);
+            $name = sprintf(
+                'idx_%s_%s',
+                trim($this->table->getName(), '#_'),
+                implode('_', $columns)
+            );
 
             $key->name($name);
         }
 
-        $this->indexes[$key->getName()] = $key;
+        $this->keys[$key->getName()] = $key;
 
         return $key;
     }
@@ -139,7 +130,7 @@ class Schema
      *
      * @return Key
      */
-    public function addPrimaryKey(array|string $columns)
+    public function addPrimaryKey(array|string $columns): Key
     {
         return $this->addKey(new Key(Key::TYPE_PRIMARY, (array) $columns, null));
     }
@@ -183,47 +174,33 @@ class Schema
      *
      * @return  Key[]
      */
-    public function getIndexes(): array
+    public function getKeys(): array
     {
-        return $this->indexes;
+        return $this->keys;
     }
 
     /**
      * Method to set property indexes
      *
-     * @param  Key[]  $indexes
+     * @param  Key[]  $keys
      *
      * @return  static  Return self to support chaining.
      */
-    public function setIndexes(array $indexes): static
+    public function setKeys(array $keys): static
     {
-        $this->indexes = $indexes;
+        $this->keys = $keys;
 
         return $this;
     }
 
-    /**
-     * getDateFormat
-     *
-     * @return  string
-     *
-     * @since   3.0
-     */
     public function getDateFormat(): string
     {
-        // return $this->getTable()->getDriver()->getQuery(true)->getDateFormat();
+        return $this->getTable()->getDb()->getDateFormat();
     }
 
-    /**
-     * getNullDate
-     *
-     * @return  string
-     *
-     * @since   3.0
-     */
-    public function getNullDate()
+    public function getNullDate(): string
     {
-        // return $this->getTable()->getDriver()->getQuery(true)->getNullDate();
+        return $this->getTable()->getDb()->getNullDate();
     }
 
     public function __call(string $name, array $args)

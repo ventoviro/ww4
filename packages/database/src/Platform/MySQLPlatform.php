@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Data\Collection;
-use Windwalker\Database\Schema\Meta\Column;
+use Windwalker\Database\Schema\Column\Column;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;

@@ -100,7 +100,7 @@ class SchemaManager extends AbstractMetaManager
     /**
      * @inheritDoc
      */
-    public function reset()
+    public function reset(): static
     {
         $this->tables = null;
         $this->views = null;

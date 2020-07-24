@@ -120,4 +120,23 @@ class TestHelper
             $property->setValue($object, $value);
         }
     }
+
+    public static function getProperties(
+        object $object,
+        int $filters = ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED
+    ): array {
+        $ref = new ReflectionClass($object);
+
+        $properties = $ref->getProperties($filters);
+
+        $values = [];
+
+        foreach ($properties as $property) {
+            $property->setAccessible(true);
+
+            $values[$property->getName()] = $property->getValue($object);
+        }
+
+        return $values;
+    }
 }

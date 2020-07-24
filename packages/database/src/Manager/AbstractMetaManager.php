@@ -67,5 +67,5 @@ abstract class AbstractMetaManager
      *
      * @return  static
      */
-    abstract public function reset();
+    abstract public function reset(): static;
 }

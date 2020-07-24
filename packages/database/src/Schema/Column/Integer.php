@@ -9,11 +9,11 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema\Meta;
+namespace Windwalker\Database\Schema\Column;
 
 /**
- * The Constraint class.
+ * The Integer class.
  */
-class Constraint
+class Integer extends Column
 {
 }

@@ -15,7 +15,7 @@ use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Driver\TransactionDriverInterface;
 use Windwalker\Database\Platform\Concern\PlatformMetaTrait;
-use Windwalker\Database\Schema\Meta\Column;
+use Windwalker\Database\Schema\Column\Column;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;

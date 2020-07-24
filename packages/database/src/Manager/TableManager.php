@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace Windwalker\Database\Manager;
 
 use Windwalker\Database\Schema\DataType;
-use Windwalker\Database\Schema\Meta\Column;
-use Windwalker\Database\Schema\Meta\Key;
+use Windwalker\Database\Schema\Column\Column;
+use Windwalker\Database\Schema\Ddl\Key;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Schema\SchemaManager;
 
@@ -73,7 +73,7 @@ class TableManager extends AbstractMetaManager
             }
         }
 
-        foreach ($schema->getIndexes() as $index) {
+        foreach ($schema->getKeys() as $index) {
             $this->addIndex($index);
         }
 
@@ -478,7 +478,7 @@ class TableManager extends AbstractMetaManager
         $typeMapper = $this->getDataType();
 
         $type   = $typeMapper::getType($column->getType());
-        $length = $column->getLength() ?: $typeMapper::getLength($type);
+        $length = $column->getLengthExpression() ?: $typeMapper::getLength($type);
 
         $length = $length ? '(' . $length . ')' : null;
 
@@ -517,7 +517,7 @@ class TableManager extends AbstractMetaManager
      *
      * @return  static
      */
-    public function reset()
+    public function reset(): static
     {
         $this->columnCache = [];
         $this->indexCache  = [];
