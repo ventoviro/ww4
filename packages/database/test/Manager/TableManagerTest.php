@@ -13,10 +13,13 @@ namespace Windwalker\Database\Test\Manager;
 
 use Windwalker\Database\Manager\TableManager;
 use PHPUnit\Framework\TestCase;
+use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
 class TableManagerTest extends AbstractDatabaseTestCase
 {
+    protected ?TableManager $instance;
+
     /**
      * @see  TableManager::save
      */
@@ -110,7 +113,18 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     public function testCreate(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::$db->getTable('flower')
+            ->create(
+                function (Schema $schema) {
+                    $schema->primary('id');
+                    $schema->integer('catid')->isNullable(true);
+                    $schema->varchar('title')->defaultValue('H');
+                    $schema->decimal('price')->length('20,6');
+                    $schema->text('intro');
+                }
+            );
+
+        exit(' @Checkpoint');
     }
 
     /**
@@ -230,5 +244,10 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     protected static function setupDatabase(): void
     {
+    }
+
+    protected function setUp(): void
+    {
+        $this->instance = self::$db->getTable('ww_flower');
     }
 }

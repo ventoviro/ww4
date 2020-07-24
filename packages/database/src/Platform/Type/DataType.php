@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Part of Windwalker project.
  *
@@ -6,7 +7,9 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\Database\Schema;
+declare(strict_types=1);
+
+namespace Windwalker\Database\Platform\Type;
 
 /**
  * The ColumnType class.
@@ -82,14 +85,14 @@ class DataType
      *
      * @var  array
      */
-    protected static $typeMapping = [];
+    protected static array $typeMapping = [];
 
     /**
      * "Default Length", "Default Value", "PHP Type"
      *
      * @var  array
      */
-    public static $typeDefinitions = [
+    public static array $typeDefinitions = [
         self::BOOLEAN => [1, 0, 'bool'],
 
         self::CHAR => [255, '', 'string'],
@@ -122,80 +125,52 @@ class DataType
      *
      * @var  array
      */
-    protected static $noLength = [];
+    protected static array $noLength = [];
 
     /**
      * Property instances.
      *
      * @var  static[]
      */
-    protected static $instances = [];
-
-    /**
-     * getInstance
-     *
-     * @param   string $driver
-     *
-     * @return  static
-     */
-    public static function getInstance($driver)
-    {
-        $driver = ucfirst($driver);
-
-        if (!isset(static::$instances[$driver])) {
-            $class = sprintf('Windwalker\Database\Driver\%s\%sType', $driver, $driver);
-
-            static::$instances[$driver] = new $class();
-        }
-
-        return static::$instances[$driver];
-    }
+    protected static array $instances = [];
 
     /**
      * getLength
      *
-     * @param   string $type
+     * @param  string  $type
      *
-     * @return  integer
+     * @return int|string
      */
-    public static function getLength($type)
+    public static function getLength(string $type): int|string|null
     {
-        return static::getProfile($type, 0);
+        return static::getDefinition($type, 0);
     }
 
     /**
      * getDefaultValue
      *
-     * @param   string $type
+     * @param  string  $type
      *
-     * @return  string
+     * @return int|string
      */
-    public static function getDefaultValue($type)
+    public static function getDefaultValue(string $type): int|string
     {
-        return static::getProfile($type, 1);
+        return static::getDefinition($type, 1);
     }
 
     /**
      * getPhpType
      *
-     * @param   string $type
+     * @param  string  $type
      *
      * @return  string
      */
-    public static function getPhpType($type)
+    public static function getPhpType(string $type): string
     {
-        return static::getProfile($type, 2) ?: 'string';
+        return static::getDefinition($type, 2) ?: 'string';
     }
 
-    /**
-     * getProfile
-     *
-     * @param string  $type
-     * @param integer $key
-     *
-     * @return  string
-     */
-    protected static function getProfile($type, $key = null)
+    protected static function getDefinition(string $type, ?int $key = null): string|int|null
     {
         $type = strtolower($type);
 
@@ -210,14 +185,7 @@ class DataType
         return null;
     }
 
-    /**
-     * getType
-     *
-     * @param   string $type
-     *
-     * @return  string
-     */
-    public static function getType($type)
+    public static function getAvailableType(string $type): string
     {
         $type = strtolower($type);
 
@@ -228,14 +196,7 @@ class DataType
         return static::$typeMapping[$type];
     }
 
-    /**
-     * noLength
-     *
-     * @param   string $type
-     *
-     * @return  boolean
-     */
-    public static function noLength($type)
+    public static function isNoLength(string $type): bool
     {
         $type = strtolower($type);
 

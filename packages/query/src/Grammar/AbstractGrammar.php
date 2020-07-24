@@ -227,7 +227,7 @@ abstract class AbstractGrammar
         return (string) $query->getSql();
     }
 
-    public static function quoteNameMultiple(mixed $name): array|string
+    public static function quoteNameMultiple(mixed $name): mixed
     {
         if ($name instanceof RawWrapper) {
             return value($name);
@@ -239,7 +239,7 @@ abstract class AbstractGrammar
 
         if (is_iterable($name)) {
             foreach ($name as &$n) {
-                $n = static::quoteName((string) $n);
+                $n = static::quoteNameMultiple($n);
             }
 
             return $name;

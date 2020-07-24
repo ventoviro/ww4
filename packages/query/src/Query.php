@@ -1227,7 +1227,7 @@ class Query implements QueryInterface, BindableInterface
      *
      * @return  string|array
      */
-    public function quoteName(mixed $name): string|array
+    public function quoteName(mixed $name): mixed
     {
         return $this->getGrammar()::quoteNameMultiple($name);
     }

@@ -19,7 +19,7 @@ use Windwalker\Query\Grammar\MySQLGrammar;
  */
 class MySQLQueryTest extends QueryTest
 {
-    protected static $nameQuote = ['`', '`'];
+    protected static array $nameQuote = ['`', '`'];
 
     protected function setUp(): void
     {

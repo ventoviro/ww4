@@ -207,7 +207,7 @@ class MySQLPlatform extends AbstractPlatform
                 'character_octet_length' => $row['CHARACTER_OCTET_LENGTH'],
                 'numeric_precision' => $row['NUMERIC_PRECISION'],
                 'numeric_scale' => $row['NUMERIC_SCALE'],
-                'numeric_unsigned' => (false !== strpos($row['COLUMN_TYPE'], 'unsigned')),
+                'numeric_unsigned' => str_contains($row['COLUMN_TYPE'], 'unsigned'),
                 'comment' => $row['COLUMN_COMMENT'],
                 'auto_increment' => $row['EXTRA'] === 'auto_increment',
                 'erratas' => $erratas,
@@ -397,7 +397,7 @@ class MySQLPlatform extends AbstractPlatform
     public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool
     {
         $defaultOptions = [
-            'auto_increment' => true,
+            'auto_increment' => 1,
             'engine' => 'InnoDB',
             'charset' => 'utf8mb4',
             'collate' => 'utf8mb4_unicode_ci'
@@ -407,24 +407,42 @@ class MySQLPlatform extends AbstractPlatform
         $columns = [];
         $primary = [];
 
-        $column = $this->prepareColumn($column);
+        $query = $this->db->getQuery(true);
 
-        $columns[$column->getName()] = MysqlGrammar::build(
-            $column->getType() . $column->getLength(),
-            $column->getSigned() ? '' : 'UNSIGNED',
-            $column->getAllowNull() ? '' : 'NOT NULL',
-            $column->getDefault() !== false
-                ? 'DEFAULT ' . $this->db->getQuery(true)->validValue($column->getDefault())
-                : '',
-            $column->getAutoIncrement() ? 'AUTO_INCREMENT' : '',
-            $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
-            $column->getSuffix()
+        foreach ($schema->getColumns() as $column) {
+            $column = $this->prepareColumn(clone $column);
+
+            $columns[$column->getName()] = $this->getGrammar()::build(
+                $query->quoteName($column->getName()),
+                $column->getTypeExpression(),
+                $column->getNumericUnsigned() ? 'UNSIGNED' : '',
+                $column->getIsNullable() ? '' : 'NOT NULL',
+                $column->getColumnDefault() !== false
+                    ? 'DEFAULT ' . $query->quote($column->getColumnDefault())
+                    : '',
+                $column->isAutoIncrement() ? 'AUTO_INCREMENT' : '',
+                $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
+                $column->getOption('suffix')
+            );
+
+            // Primary
+            if ($column->isPrimary()) {
+                $primary[] = $column->getName();
+            }
+        }
+
+        $sql = $this->getGrammar()::build(
+            'CREATE TABLE',
+            $ifNotExists ? 'IF NOT EXISTS' : null,
+            $query->quoteName($schema->getTable()->getName()),
+            "(\n" . implode(",\n", $columns) . "\n)",
+            'ENGINE=' . ($options['engine'] ?? 'InnoDB'),
+            $options['auto_increment'] ? 'AUTO_INCREMENT=' . $options['auto_increment'] : null,
+            $options['charset'] ? 'DEFAULT CHARSET=' . $options['charset'] : null,
+            $options['collate'] ? 'COLLATE=' . $options['collate'] : null
         );
 
-        // Primary
-        if ($column->isPrimary()) {
-            $primary[] = $column->getName();
-        }
+        show($sql);
     }
 
     public function dropTable(string $table, bool $ifExists = false): bool

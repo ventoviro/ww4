@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Schema\Column;
 
-use Windwalker\Database\Manager\TableManager;
-use Windwalker\Database\Schema\DataType;
+use Windwalker\Database\Platform\Type\DataType;
 use Windwalker\Query\Grammar\MySQLGrammar;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
@@ -90,11 +89,6 @@ class Column
      * @var array
      */
     protected array $erratas = [];
-
-    /**
-     * @var string|null
-     */
-    protected ?string $after = null;
 
     /**
      * Column constructor.
@@ -227,14 +221,16 @@ class Column
      */
     public function dataType(string $dataType): static
     {
-        [$dataType, $precision, $scale] = DataType::extract($dataType);
+        if (str_contains($dataType, '(')) {
+            [$dataType, $precision, $scale] = DataType::extract($dataType);
+
+            $this->setLengthByType(
+                TypeCast::tryInteger($precision, true),
+                TypeCast::tryInteger($scale, true)
+            );
+        }
 
         $this->dataType = $dataType;
-
-        $this->setLengthByType(
-            TypeCast::tryInteger($precision, true),
-            TypeCast::tryInteger($scale, true)
-        );
 
         return $this;
     }
@@ -259,12 +255,16 @@ class Column
     /**
      * length
      *
-     * @param  string|int  $value
+     * @param  int|string|null  $value
      *
      * @return  static
      */
-    public function length(string|int $value): static
+    public function length(string|int|null $value): static
     {
+        if ($value === null) {
+            $this->setLengthByType(null, null);
+        }
+
         [$dataType, $precision, $scale] = DataType::extract("{$this->dataType}($value)");
 
         $this->setLengthByType(
@@ -284,7 +284,7 @@ class Column
             return;
         }
 
-        $this->characterOctetLength((int) $precision);
+        $this->characterOctetLength($precision);
     }
 
     public function getLengthExpression(): ?string
@@ -354,7 +354,7 @@ class Column
     }
 
     /**
-     * @param  int  $characterOctetLength
+     * @param  int|null  $characterOctetLength
      *
      * @return  static  Return self to support chaining.
      */
@@ -445,6 +445,18 @@ class Column
         return $this;
     }
 
+    public function primary(bool $primary = true): static
+    {
+        $this->setOption('primary', $primary);
+
+        return $this;
+    }
+
+    public function isPrimary(): bool
+    {
+        return (bool) $this->getOption('primary');
+    }
+
     /**
      * @return bool
      */
@@ -481,26 +493,6 @@ class Column
     public function erratas(array $erratas): static
     {
         $this->erratas = $erratas;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getAfter(): ?string
-    {
-        return $this->after;
-    }
-
-    /**
-     * @param  string|null  $after
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function after(?string $after): static
-    {
-        $this->after = $after;
 
         return $this;
     }
@@ -561,9 +553,9 @@ class Column
         return $items;
     }
 
-    public function getTypeExpression(TableManager $table): string
+    public function getTypeExpression(): string
     {
-        $expr = $table->getDb()->quoteName($this->name);
+        $expr = $this->dataType;
 
         $length = $this->getLengthExpression();
 
@@ -574,28 +566,26 @@ class Column
         return $expr;
     }
 
-    public function getCreateExpression(TableManager $table): string
+    public function getCreateExpression(Query $query): string
     {
-        $expr = $this->getTypeExpression($table);
+        $expr = $this->getTypeExpression();
 
         if (!$this->isNullable) {
             $expr .= ' NOT NULL';
         }
 
-        $db = $table->getDb();
-
         if ($this->columnDefault !== null || $this->isNullable) {
-            $expr .= ' DEFAULT ' . $db->quote($this->columnDefault);
+            $expr .= ' DEFAULT ' . $query->quote($this->columnDefault);
         }
 
-        if ($db->getPlatform()->getGrammar() instanceof MySQLGrammar) {
+        if ($query->getGrammar() instanceof MySQLGrammar) {
             if ($this->comment !== null) {
-                $expr .= ' COMMENT ' . $db->quote($this->columnDefault);
+                $expr .= ' COMMENT ' . $query->quote($this->columnDefault);
             }
 
             if ($this->getOption('position') !== null) {
                 [$delta, $pos] = $this->getOption('position');
-                $expr .= ' POSITION ' . $delta . ' ' . $db->quoteName($pos);
+                $expr .= ' POSITION ' . $delta . ' ' . $query->quoteName($pos);
             }
         }
 

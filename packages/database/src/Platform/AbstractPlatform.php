@@ -15,6 +15,7 @@ use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Driver\TransactionDriverInterface;
 use Windwalker\Database\Platform\Concern\PlatformMetaTrait;
+use Windwalker\Database\Platform\Type\DataType;
 use Windwalker\Database\Schema\Column\Column;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Grammar\AbstractGrammar;
@@ -27,20 +28,13 @@ abstract class AbstractPlatform
 {
     use PlatformMetaTrait;
 
-    /**
-     * @var Query
-     */
-    protected $query;
+    protected ?Query $query = null;
 
-    /**
-     * @var AbstractGrammar
-     */
-    protected $grammar;
+    protected ?AbstractGrammar $grammar = null;
 
-    /**
-     * @var DatabaseAdapter
-     */
-    protected $db;
+    protected ?DatabaseAdapter $db = null;
+
+    protected ?DataType $dataType = null;
 
     /**
      * The depth of the current transaction.
@@ -240,6 +234,46 @@ abstract class AbstractPlatform
     abstract public function addConstraint(): bool;
     abstract public function dropConstraint(): bool;
 
+    protected function prepareColumn(Column $column): Column
+    {
+        $typeMapper = $this->getDataType();
+
+        $type = $typeMapper::getAvailableType($column->getDataType());
+        $length = $column->getLengthExpression() ?: $typeMapper::getLength($type);
+
+        $column->length($length);
+        $column->dataType($type);
+
+        // Prepare default value
+        return $this->prepareDefaultValue($column);
+    }
+
+    /**
+     * prepareDefaultValue
+     *
+     * @param Column $column
+     *
+     * @return  Column
+     */
+    protected function prepareDefaultValue(Column $column): Column
+    {
+        $typeMapper = $this->getDataType();
+
+        $default = $column->getColumnDefault();
+
+        if ($default === null && !$column->getIsNullable()) {
+            $default = $typeMapper::getDefaultValue($column->getDataType());
+
+            $column->defaultValue($default);
+        }
+
+        if ($column->isPrimary() || $column->isAutoIncrement()) {
+            $column->defaultValue(false);
+        }
+
+        return $column;
+    }
+
     /**
      * start
      *
@@ -334,5 +368,20 @@ abstract class AbstractPlatform
         }
 
         return $this;
+    }
+
+    public function getDataType(): DataType
+    {
+        if (!$this->dataType) {
+            $class = 'Windwalker\Database\Platform\Type\\' . $this->getName() . 'DataType';
+
+            if (!class_exists($class)) {
+                $class = DataType::class;
+            }
+
+            $this->dataType = new $class();
+        }
+
+        return $this->dataType;
     }
 }

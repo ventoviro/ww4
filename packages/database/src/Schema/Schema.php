@@ -207,6 +207,20 @@ class Schema
     {
         $column = array_shift($args);
 
-        return $this->addColumn(new Column($column));
+        $column = $this->addColumn(new Column($column, $name));
+
+        if ($name === 'primary') {
+            $column->dataType('integer')
+                ->autoIncrement(true)
+                ->primary(true);
+        }
+
+        if ($name === 'primaryBigint') {
+            $column->dataType('bigint')
+                ->autoIncrement(true)
+                ->primary(true);
+        }
+
+        return $column;
     }
 }

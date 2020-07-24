@@ -21,7 +21,7 @@ use function Windwalker\raw;
  */
 class SQLServerQueryTest extends QueryTest
 {
-    protected static $nameQuote = ['[', ']'];
+    protected static array $nameQuote = ['[', ']'];
 
     protected function setUp(): void
     {

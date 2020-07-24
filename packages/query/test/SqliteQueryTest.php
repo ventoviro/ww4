@@ -19,7 +19,7 @@ use Windwalker\Query\Grammar\SQLiteGrammar;
  */
 class SqliteQueryTest extends QueryTest
 {
-    protected static $nameQuote = ['`', '`'];
+    protected static array $nameQuote = ['`', '`'];
 
     public static function createGrammar(): AbstractGrammar
     {
