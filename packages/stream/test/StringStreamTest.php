@@ -71,13 +71,12 @@ class StringStreamTest extends TestCase
      */
     public function testConstruct()
     {
-        $stringObject = $this->getMockBuilder('stdClass')
-            ->setMethods(['__toString'])
-            ->getMock();
-
-        $stringObject->expects($this->once())
-            ->method('__toString')
-            ->willReturn('FOO');
+        $stringObject = new class implements \Stringable {
+            public function __toString(): string
+            {
+                return 'FOO';
+            }
+        };
 
         $stream = new StringStream($stringObject);
 

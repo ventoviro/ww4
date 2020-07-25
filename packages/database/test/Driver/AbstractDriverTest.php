@@ -190,9 +190,11 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
     public function testExecuteInsert(): void
     {
         $st = static::$driver->execute(
-            'INSERT INTO ww_flower (title) VALUES (?)',
+            'INSERT INTO ww_flower (title, meaning, params) VALUES (?, ?, ?)',
             [
                 'Test',
+                'YO',
+                '{}'
             ]
         );
 

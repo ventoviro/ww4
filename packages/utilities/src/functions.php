@@ -86,6 +86,7 @@ namespace Windwalker {
 
     use Closure;
     use Traversable;
+    use Windwalker\Utilities\Compare\CompareHelper;
     use Windwalker\Utilities\Compare\WhereWrapper;
     use Windwalker\Utilities\Proxy\CachedCallable;
     use Windwalker\Utilities\Proxy\CallableProxy;
@@ -260,5 +261,22 @@ namespace Windwalker {
     function cachable(callable $callable): CachedCallable
     {
         return new CachedCallable($callable);
+    }
+
+    function value_compare(mixed $a, mixed $b, ?string $operator = null): int|bool
+    {
+        if ($operator) {
+            return CompareHelper::compare($a, $operator, $b);
+        }
+
+        if ($a > $b) {
+            return 1;
+        }
+
+        if ($a < $b) {
+            return -1;
+        }
+
+        return 0;
     }
 }

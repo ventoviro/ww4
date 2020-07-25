@@ -25,80 +25,35 @@ class Column
 {
     use OptionAccessTrait;
 
-    /**
-     * @var string
-     */
     protected string $name = '';
 
-    /**
-     * @var int
-     */
-    protected int $ordinalPosition = 1;
+    protected ?int $ordinalPosition = 1;
 
     /**
      * @var mixed
      */
     protected mixed $columnDefault = null;
 
-    /**
-     * @var bool
-     */
     protected bool $isNullable = false;
 
-    /**
-     * @var string
-     */
     protected string $dataType = 'text';
 
-    /**
-     * @var int
-     */
     protected ?int $characterMaximumLength = null;
 
-    /**
-     * @var int
-     */
     protected ?int $characterOctetLength = null;
 
-    /**
-     * @var int
-     */
     protected ?int $numericPrecision = null;
 
-    /**
-     * @var int
-     */
     protected ?int $numericScale = null;
 
-    /**
-     * @var bool
-     */
     protected bool $numericUnsigned = false;
 
-    /**
-     * @var null|string
-     */
     protected ?string $comment = null;
 
-    /**
-     * @var bool
-     */
     protected bool $autoIncrement = false;
 
-    /**
-     * @var array
-     */
     protected array $erratas = [];
 
-    /**
-     * Column constructor.
-     *
-     * @param  string  $name
-     * @param  string  $dataType
-     * @param  bool    $isNullable
-     * @param  mixed   $columnDefault
-     * @param  array   $options
-     */
     public function __construct(
         string $name = '',
         string $dataType = 'char',
@@ -224,13 +179,15 @@ class Column
         if (str_contains($dataType, '(')) {
             [$dataType, $precision, $scale] = DataType::extract($dataType);
 
+            $this->dataType = $dataType;
+
             $this->setLengthByType(
                 TypeCast::tryInteger($precision, true),
                 TypeCast::tryInteger($scale, true)
             );
+        } else {
+            $this->dataType = $dataType;
         }
-
-        $this->dataType = $dataType;
 
         return $this;
     }

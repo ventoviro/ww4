@@ -54,23 +54,24 @@ class SchemaTest extends AbstractDatabaseTestCase
     public function testMagicCall(): void
     {
         $this->instance->primary('id');
-        $this->instance->integer('category_id');
+        $this->instance->integer('category_id')->length(11);
         $this->instance->double('pos')->length('20,4');
         $this->instance->decimal('price')->length('20,4');
-        $this->instance->varchar('price')->length(512);
+        $this->instance->varchar('intro')->length(512);
 
         $cols = [];
 
         foreach ($this->instance->getColumns() as $column) {
-            $cols[] = sprintf('%s(%s)', $column->getName(), $column->getLengthExpression());
+            $cols[] = sprintf('%s %s', $column->getName(), $column->getTypeExpression());
         }
 
         self::assertEquals(
             <<<EOT
-            id(0)
-            category_id(0)
-            pos(20)
-            price(512)
+            id integer
+            category_id integer(11)
+            pos double(20,4)
+            price decimal(20,4)
+            intro varchar(512)
             EOT,
             implode("\n", $cols)
         );

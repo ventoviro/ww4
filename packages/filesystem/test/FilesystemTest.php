@@ -71,8 +71,8 @@ class FilesystemTest extends AbstractVfsTestCase
 
         $fs::delete(static::$baseDir . '');
 
-        $this->assertDirectoryNotExists(static::$baseDir . '');
-        $this->assertFileNotExists(static::$baseDir . '/folder1/level2/file3');
+        $this->assertDirectoryDoesNotExist(static::$baseDir . '');
+        $this->assertFileDoesNotExist(static::$baseDir . '/folder1/level2/file3');
 
         restore_error_handler();
 

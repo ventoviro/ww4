@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Windwalker\Scalars\Concern\ArraySortTrait;
 
 use function Windwalker\arr;
+use function Windwalker\value_compare;
 
 /**
  * The ArraySortTraitTest class.
@@ -195,11 +196,7 @@ class ArraySortTraitTest extends TestCase
             $a->dump()
         );
 
-        $r = $this->instance->sortKeys(
-            function ($a, $b) {
-                return (int) $a > (int) $b;
-            }
-        );
+        $r = $this->instance->sortKeys(static fn($a, $b) => value_compare($a, $b));
 
         self::assertEquals(
             [

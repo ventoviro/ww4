@@ -83,8 +83,8 @@ class FileObjectTest extends AbstractVfsTestCase
         $file = new FileObject(static::$baseDir . '');
         $file->delete();
 
-        $this->assertDirectoryNotExists(static::$baseDir . '');
-        $this->assertFileNotExists(static::$baseDir . '/folder1/level2/file3');
+        self::assertDirectoryDoesNotExist(static::$baseDir . '');
+        self::assertFileDoesNotExist(static::$baseDir . '/folder1/level2/file3');
 
         restore_error_handler();
 

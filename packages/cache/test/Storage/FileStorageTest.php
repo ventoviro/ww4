@@ -125,7 +125,7 @@ class FileStorageTest extends TestCase
 
         $this->instance->remove('hello');
 
-        self::assertFileNotExists($path);
+        self::assertFileDoesNotExist($path);
         self::assertFalse($this->instance->has('hello'));
     }
 
