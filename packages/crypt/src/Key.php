@@ -12,12 +12,12 @@ declare(strict_types=1);
 namespace Windwalker\Crypt;
 
 /**
- * The Key class.
+ * The Index class.
  */
 class Key extends HiddenString
 {
     /**
-     * Key is disallow to print as string.
+     * Index is disallow to print as string.
      *
      * @return string
      */

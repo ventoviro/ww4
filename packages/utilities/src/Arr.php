@@ -85,10 +85,10 @@ abstract class Arr
     }
 
     /**
-     * Set a default value to array or object if not exists. Key can be a path separated by dots.
+     * Set a default value to array or object if not exists. Index can be a path separated by dots.
      *
      * @param  array|object  $array      Object or array to set default value.
-     * @param  string        $key        Key path name.
+     * @param  string        $key        Index path name.
      * @param  mixed         $value      Value to set if not exists.
      * @param  string        $delimiter  Separator to split paths.
      *

@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace Windwalker\Database\Manager;
 
 use Windwalker\Database\Schema\DataType;
-use Windwalker\Database\Schema\Column\Column;
-use Windwalker\Database\Schema\Ddl\Key;
+use Windwalker\Database\Schema\Ddl\Column;
+use Windwalker\Database\Schema\Ddl\Index;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Schema\SchemaManager;
 
@@ -306,21 +306,21 @@ class TableManager extends AbstractMetaManager
     /**
      * addIndex
      *
-     * @param  array|Key  $columns
-     * @param  string     $name
-     * @param  string     $type
-     * @param  array      $options
+     * @param  array|Index  $columns
+     * @param  string       $name
+     * @param  string       $type
+     * @param  array        $options
      *
      * @return void
      */
-    public function addIndex($columns = [], ?string $name = null, string $type = Key::TYPE_INDEX, array $options = [])
+    public function addIndex($columns = [], ?string $name = null, string $type = Index::TYPE_INDEX, array $options = [])
     {
         $columns = (array) $columns;
 
 
 
-        if (!$columns instanceof Key) {
-            $column = new Key($type, $columns, $name, $options);
+        if (!$columns instanceof Index) {
+            $column = new Index($type, $columns, $name, $options);
         }
 
 

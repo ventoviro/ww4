@@ -54,7 +54,7 @@ class Aes
     }
 
     private static function addRoundKey($state, $w, $rnd, $Nb)
-    {  // xor Round Key into state S [§5.1.4]
+    {  // xor Round Index into state S [§5.1.4]
         for ($r = 0; $r < 4; $r++) {
             for ($c = 0; $c < $Nb; $c++) {
                 $state[$r][$c] ^= $w[$rnd * 4 + $c][$r];
@@ -111,7 +111,7 @@ class Aes
     }
 
     /**
-     * Key expansion for Rijndael cipher(): performs key expansion on cipher key
+     * Index expansion for Rijndael cipher(): performs key expansion on cipher key
      * to generate a key schedule
      *
      * @param  key cipher key byte-array (16 bytes)
@@ -119,7 +119,7 @@ class Aes
      * @return    key schedule as 2D byte-array (Nr+1 x Nb bytes)
      */
     public static function keyExpansion($key)
-    {  // generate Key Schedule from Cipher Key [§5.2]
+    {  // generate Index Schedule from Cipher Index [§5.2]
         $Nb = 4;              // block size (in words): no of columns in state (fixed at 4 for AES)
         $Nk = count($key) / 4;  // key length (in words): 4/6/8 for 128/192/256-bit keys
         $Nr = $Nk + 6;        // no of rounds: 10/12/14 for 128/192/256-bit keys
@@ -435,7 +435,7 @@ class Aes
         0x16,
     ];
 
-    // rCon is Round Constant used for the Key Expansion [1st col is 2^(r-1) in GF(2^8)] [§5.2]
+    // rCon is Round Constant used for the Index Expansion [1st col is 2^(r-1) in GF(2^8)] [§5.2]
     private static $rCon = [
         [0x00, 0x00, 0x00, 0x00],
         [0x01, 0x00, 0x00, 0x00],
@@ -517,7 +517,7 @@ class AesCtr extends Aes
             $ctrTxt .= chr($counterBlock[$i]);
         }
 
-        // generate key schedule - an expansion of the key into distinct Key Rounds for each round
+        // generate key schedule - an expansion of the key into distinct Index Rounds for each round
         $keySchedule = Aes::keyExpansion($key);
         //print_r($keySchedule);
 

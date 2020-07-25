@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema\Column;
+namespace Windwalker\Database\Schema\Ddl;
 
 use Windwalker\Database\Platform\Type\DataType;
 use Windwalker\Query\Grammar\MySQLGrammar;
@@ -23,6 +23,7 @@ use Windwalker\Utilities\TypeCast;
  */
 class Column
 {
+    use WrapableTrait;
     use OptionAccessTrait;
 
     protected string $name = '';
@@ -159,6 +160,11 @@ class Column
         $this->isNullable = $isNullable;
 
         return $this;
+    }
+
+    public function nullable(bool $isNullable): static
+    {
+        return $this->isNullable($isNullable);
     }
 
     /**
@@ -452,62 +458,6 @@ class Column
         $this->erratas = $erratas;
 
         return $this;
-    }
-
-    /**
-     * bind
-     *
-     * @param  array  $data
-     *
-     * @return  static
-     */
-    public function bind(array $data): static
-    {
-        foreach ($data as $key => $datum) {
-            $prop = StrNormalise::toCamelCase($key);
-
-            if (method_exists($this, $prop)) {
-                $this->$prop($datum);
-            } elseif (property_exists($this, $prop)) {
-                $this->$prop = $datum;
-            } else {
-                $this->setOption($prop, $datum);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * wrap
-     *
-     * @param  array|static  $data
-     *
-     * @return  static
-     */
-    public static function wrap($data): static
-    {
-        if ($data instanceof static) {
-            return $data;
-        }
-
-        return (new static())->bind($data);
-    }
-
-    /**
-     * wrapList
-     *
-     * @param  array  $items
-     *
-     * @return  static[]
-     */
-    public static function wrapList(array $items): array
-    {
-        foreach ($items as $name => $item) {
-            $items[$name] = static::wrap($item);
-        }
-
-        return $items;
     }
 
     public function getTypeExpression(): string

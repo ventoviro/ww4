@@ -1211,7 +1211,7 @@ SHOW;
         // Test object strict equals
         $this->assertEquals([$data[0]], Arr::query($data, ['data' => $data[0]['data']], true));
 
-        // Test Keep Key
+        // Test Keep Index
         $this->assertEquals(
             [1 => $data[1], 2 => $data[2], 3 => $data[3]],
             Arr::query($data, ['id >=' => 2], false, true)

@@ -16,6 +16,7 @@ use Windwalker\Query\DefaultConnection;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Assert\ArgumentsAssert;
+use Windwalker\Utilities\TypeCast;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\WrapperInterface;
 
@@ -357,6 +358,18 @@ abstract class AbstractGrammar
         }
 
         return implode(' ', $sql);
+    }
+
+    public static function buildFromArray(array $elements): string
+    {
+        $elements = array_filter(TypeCast::mapAs($elements, 'string'), 'strlen');
+        $items = [];
+
+        foreach ($elements as $key => $element) {
+            $items[] = $key . '=' . $element;
+        }
+
+        return implode(' ', $items);
     }
 
     /**

@@ -86,7 +86,7 @@ class Loop
     }
 
     /**
-     * Method to get property Key
+     * Method to get property Index
      *
      * @return  mixed
      *

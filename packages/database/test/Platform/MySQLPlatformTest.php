@@ -116,7 +116,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => 10,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => true,
-                    'comment' => 'Primary Key',
+                    'comment' => 'Primary Index',
                     'auto_increment' => true,
                     'erratas' => [
 

@@ -113,6 +113,11 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     public function testCreate(): void
     {
+        $constraints = self::$db->getPlatform()->listConstraints('articles', 'fk_test');
+        $indexes = self::$db->getPlatform()->listIndexes('articles', 'fk_test');
+
+        show($constraints, $indexes);
+
         self::$db->getTable('flower')
             ->create(
                 function (Schema $schema) {

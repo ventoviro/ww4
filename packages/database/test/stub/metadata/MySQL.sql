@@ -3,7 +3,7 @@ CREATE TABLE ww_categories
 (
     id          int(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
     parent_id   int(11) UNSIGNED DEFAULT 0                     NOT NULL COMMENT 'Parent ID',
-    lft         int              DEFAULT 0                     NOT NULL COMMENT 'Left Key',
+    lft         int              DEFAULT 0                     NOT NULL COMMENT 'Left Index',
     rgt         int              DEFAULT 0                     NOT NULL COMMENT 'Right key',
     level       int(11) UNSIGNED DEFAULT 0                     NOT NULL COMMENT 'Nested Level',
     path        varchar(1024)    DEFAULT ''                    NOT NULL COMMENT 'Alias Path',
@@ -44,7 +44,7 @@ CREATE INDEX idx_categories_path
 DROP TABLE IF EXISTS ww_articles;
 CREATE TABLE ww_articles
 (
-    id          int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Key' PRIMARY KEY,
+    id          int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Index' PRIMARY KEY,
     category_id int(11) UNSIGNED DEFAULT 0                     NOT NULL COMMENT 'Category ID',
     page_id     int(11) UNSIGNED DEFAULT 0                     NOT NULL COMMENT 'Page ID',
     type        enum('foo','bar','yoo') DEFAULT 'bar'          NOT NULL,

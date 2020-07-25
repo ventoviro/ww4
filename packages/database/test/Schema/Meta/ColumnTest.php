@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test\Schema\Meta;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Database\Schema\Column\Column;
+use Windwalker\Database\Schema\Ddl\Column;
 
 /**
  * The ColumnTest class.

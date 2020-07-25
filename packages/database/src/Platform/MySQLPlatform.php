@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Data\Collection;
-use Windwalker\Database\Schema\Column\Column;
+use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Mysql\MysqlGrammar;
@@ -129,7 +129,7 @@ class MySQLPlatform extends AbstractPlatform
         if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);
         } else {
-            $query->where('TABLE_SCHEMA', raw('SELECT DATABASE()'));
+            $query->where('TABLE_SCHEMA', raw('(SELECT DATABASE())'));
         }
 
         return $query;
@@ -152,7 +152,7 @@ class MySQLPlatform extends AbstractPlatform
                     if ($schema !== null) {
                         $query->where('TABLE_SCHEMA', $schema);
                     } else {
-                        $query->where('TABLE_SCHEMA', raw('SELECT DATABASE()'));
+                        $query->where('TABLE_SCHEMA', raw('(SELECT DATABASE())'));
                     }
                 }
             );
@@ -249,7 +249,7 @@ class MySQLPlatform extends AbstractPlatform
                     if ($schema !== null) {
                         $query->where('TABLE_SCHEMA', $schema);
                     } else {
-                        $query->where('TABLE_SCHEMA', raw('SELECT DATABASE()'));
+                        $query->where('TABLE_SCHEMA', raw('(SELECT DATABASE())'));
                     }
                 }
             );
@@ -273,7 +273,7 @@ class MySQLPlatform extends AbstractPlatform
                     if ($schema !== null) {
                         $query->where('CONSTRAINT_SCHEMA', $schema);
                     } else {
-                        $query->where('CONSTRAINT_SCHEMA', raw('SELECT DATABASE()'));
+                        $query->where('CONSTRAINT_SCHEMA', raw('(SELECT DATABASE())'));
                     }
                 }
             );
@@ -436,13 +436,19 @@ class MySQLPlatform extends AbstractPlatform
             $ifNotExists ? 'IF NOT EXISTS' : null,
             $query->quoteName($schema->getTable()->getName()),
             "(\n" . implode(",\n", $columns) . "\n)",
-            'ENGINE=' . ($options['engine'] ?? 'InnoDB'),
-            $options['auto_increment'] ? 'AUTO_INCREMENT=' . $options['auto_increment'] : null,
-            $options['charset'] ? 'DEFAULT CHARSET=' . $options['charset'] : null,
-            $options['collate'] ? 'COLLATE=' . $options['collate'] : null
+            $this->getGrammar()::buildFromArray(
+                [
+                    'ENGINE' => $options['engine'] ?? 'InnoDB',
+                    'AUTO_INCREMENT' => $options['auto_increment'] ?? null,
+                    'DEFAULT CHARSET' => $options['charset'] ?? null,
+                    'COLLATE' => $options['collate'] ?? null,
+                ]
+            )
         );
 
-        show($sql);
+        foreach ($schema->getKeys() as $key) {
+
+        }
     }
 
     public function dropTable(string $table, bool $ifExists = false): bool

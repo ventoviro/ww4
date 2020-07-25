@@ -13,9 +13,9 @@ namespace Windwalker\Database\Schema;
 
 use Windwalker\Database\Manager\TableManager;
 use Windwalker\Database\Schema\Concern\DataTypeTrait;
-use Windwalker\Database\Schema\Column\Column;
+use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Ddl\Constraint;
-use Windwalker\Database\Schema\Ddl\Key;
+use Windwalker\Database\Schema\Ddl\Index;
 
 /**
  * The Schema class.
@@ -47,7 +47,7 @@ class Schema
     protected array $columns = [];
 
     /**
-     * @var  Key[]
+     * @var  Index[]
      */
     protected array $keys = [];
 
@@ -83,16 +83,16 @@ class Schema
     /**
      * addKey
      *
-     * @param  Key  $key
+     * @param  Index  $key
      *
-     * @return  Key
+     * @return  Index
      */
-    public function addKey(Key $key): Key
+    public function addConstraint(Index $key): Index
     {
-        $name = $key->getName();
+        $name = $key->constraintName;
 
         if (!$name) {
-            $columns = $key->getColumns();
+            $columns = $key->columns;
 
             $columns = array_map(
                 static fn($col) => explode('(', $col)[0],
@@ -105,22 +105,22 @@ class Schema
                 implode('_', $columns)
             );
 
-            $key->name($name);
+            $key->constraintName = $name;
         }
 
-        $this->keys[$key->getName()] = $key;
+        $this->keys[$key->constraintName] = $key;
 
         return $key;
     }
 
-    public function addIndex(array|string $columns, ?string $name = null): Key
+    public function addIndex(array|string $columns, ?string $name = null): Index
     {
-        return $this->addKey(new Key(Key::TYPE_INDEX, (array) $columns, $name));
+        return $this->addConstraint(new Index(Index::TYPE_INDEX, (array) $columns, $name));
     }
 
     public function addUniqueKey(array|string $columns, ?string $name = null): Constraint
     {
-        // return $this->addKey(new Key(Key::TYPE_UNIQUE, (array) $columns, $name));
+        // return $this->addKey(new Index(Index::TYPE_UNIQUE, (array) $columns, $name));
     }
 
     /**
@@ -128,11 +128,11 @@ class Schema
      *
      * @param  array|string  $columns
      *
-     * @return Key
+     * @return Index
      */
-    public function addPrimaryKey(array|string $columns): Key
+    public function addPrimaryKey(array|string $columns): Index
     {
-        return $this->addKey(new Key(Key::TYPE_PRIMARY, (array) $columns, null));
+        return $this->addConstraint(new Index(Index::TYPE_PRIMARY, (array) $columns, null));
     }
 
     public function getTable(): TableManager
@@ -172,7 +172,7 @@ class Schema
     /**
      * Method to get property Indexes
      *
-     * @return  Key[]
+     * @return  Index[]
      */
     public function getKeys(): array
     {
@@ -182,7 +182,7 @@ class Schema
     /**
      * Method to set property indexes
      *
-     * @param  Key[]  $keys
+     * @param  Index[]  $keys
      *
      * @return  static  Return self to support chaining.
      */

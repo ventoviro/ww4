@@ -9,14 +9,14 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Schema\Concern;
+namespace Windwalker\Database\Schema\Ddl;
 
-use Windwalker\Database\Schema\Ddl\Column;
+use Windwalker\Utilities\Classes\OptionAccessTrait;
 
 /**
- * Trait DataTypeTrait
+ * The Index class.
  */
-trait DataTypeTrait
+class Index extends Constraint
 {
-
+    //
 }

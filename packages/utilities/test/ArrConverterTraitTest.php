@@ -87,7 +87,7 @@ class ArrConverterTraitTest extends TestCase
                     5 => 'a',
                     6 => 'a',
                 ],
-                // Key
+                // Index
                 null,
                 // Expected
                 [
@@ -107,7 +107,7 @@ class ArrConverterTraitTest extends TestCase
                     5 => 'a',
                     6 => 'a',
                 ],
-                // Key
+                // Index
                 null,
                 // Expected
                 [
@@ -126,7 +126,7 @@ class ArrConverterTraitTest extends TestCase
                     4 => ['id' => 42, 'title' => 'boo'],
                     5 => ['id' => 43, 'title' => 'boo'],
                 ],
-                // Key
+                // Index
                 'id',
                 // Expected
                 [
@@ -148,7 +148,7 @@ class ArrConverterTraitTest extends TestCase
                     4 => ['id' => 42, 'title' => 'boo2'],
                     5 => ['id' => 43, 'title' => 'boo'],
                 ],
-                // Key
+                // Index
                 'id',
                 // Expected
                 [
@@ -167,7 +167,7 @@ class ArrConverterTraitTest extends TestCase
                     4 => ['id' => 42, 'title' => 'boo'],
                     5 => ['id' => 43, 'title' => 'boo'],
                 ],
-                // Key
+                // Index
                 'id',
                 // Expected
                 [
@@ -189,7 +189,7 @@ class ArrConverterTraitTest extends TestCase
                     4 => (object) ['id' => 42, 'title' => 'boo'],
                     5 => (object) ['id' => 43, 'title' => 'boo'],
                 ],
-                // Key
+                // Index
                 'id',
                 // Expected
                 [
