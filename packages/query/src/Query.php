@@ -15,6 +15,7 @@ use Windwalker\Query\Bounded\BindableInterface;
 use Windwalker\Query\Bounded\BindableTrait;
 use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Query\Bounded\BoundedSequence;
+use Windwalker\Query\Clause\AlterClause;
 use Windwalker\Query\Clause\AsClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Clause\ClauseInterface;
@@ -1166,6 +1167,11 @@ class Query implements QueryInterface, BindableInterface
     public function clause(string $name, $elements = [], string $glue = ' '): Clause
     {
         return clause($name, $elements, $glue);
+    }
+
+    public function alter(string $target, string $targetName): AlterClause
+    {
+        return (new AlterClause($this))->target($target, $targetName);
     }
 
     /**

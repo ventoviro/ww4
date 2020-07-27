@@ -92,17 +92,19 @@ class Clause implements \Countable, ClauseInterface
      *
      * @param   mixed $elements String or array.
      *
-     * @return  void
+     * @return  static
      *
      * @since   2.0
      */
-    public function append($elements): void
+    public function append($elements): static
     {
         if (is_array($elements)) {
             $this->elements = array_merge($this->elements, $elements);
         } else {
             $this->elements = array_merge($this->elements, [$elements]);
         }
+
+        return $this;
     }
 
     /**
@@ -110,15 +112,17 @@ class Clause implements \Countable, ClauseInterface
      *
      * @param   mixed $elements String or array.
      *
-     * @return  void
+     * @return  static
      */
-    public function prepend($elements): void
+    public function prepend($elements): static
     {
         if (!is_array($elements)) {
             $elements = [$elements];
         }
 
         array_unshift($this->elements, ...$elements);
+
+        return $this;
     }
 
     /**

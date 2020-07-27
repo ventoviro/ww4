@@ -35,7 +35,7 @@ abstract class AbstractMetaManager
      * @param  string           $name
      * @param  DatabaseAdapter  $db
      */
-    public function __construct(string $name, DatabaseAdapter $db)
+    public function __construct(?string $name, DatabaseAdapter $db)
     {
         $this->db = $db;
         $this->name = $name;

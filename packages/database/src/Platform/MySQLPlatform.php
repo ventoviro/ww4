@@ -13,12 +13,15 @@ namespace Windwalker\Database\Platform;
 
 use Windwalker\Data\Collection;
 use Windwalker\Database\Schema\Ddl\Column;
+use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Schema;
+use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Mysql\MysqlGrammar;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Str;
 
+use function Windwalker\arr;
 use function Windwalker\raw;
 
 /**
@@ -405,7 +408,6 @@ class MySQLPlatform extends AbstractPlatform
 
         $options = array_merge($defaultOptions, $options);
         $columns = [];
-        $primary = [];
 
         $query = $this->db->getQuery(true);
 
@@ -421,14 +423,10 @@ class MySQLPlatform extends AbstractPlatform
                     ? 'DEFAULT ' . $query->quote($column->getColumnDefault())
                     : '',
                 $column->isAutoIncrement() ? 'AUTO_INCREMENT' : '',
+                $column->isPrimary() ? 'PRIMARY KEY' : '',
                 $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
                 $column->getOption('suffix')
             );
-
-            // Primary
-            if ($column->isPrimary()) {
-                $primary[] = $column->getName();
-            }
         }
 
         $sql = $this->getGrammar()::build(
@@ -446,9 +444,57 @@ class MySQLPlatform extends AbstractPlatform
             )
         );
 
-        foreach ($schema->getKeys() as $key) {
+        $alter = $query->alter('TABLE', $schema->getTable()->getName());
 
+        foreach ($schema->getIndexes() as $index) {
+            $alter->addIndex(
+                $index->indexName,
+                array_map(
+                    fn (Column $column): string => $this->getIndexColumnName($column),
+                    $index->getColumns()
+                )
+            );
         }
+
+        foreach ($schema->getConstraints() as $constraint) {
+            if ($constraint->constraintType === Constraint::TYPE_PRIMARY_KEY) {
+                $alter->addPrimaryKey(
+                    null,
+                    $query->quoteName(array_keys($constraint->getColumns()))
+                );
+            } elseif ($constraint->constraintType === Constraint::TYPE_UNIQUE) {
+                $alter->addUniqueKey(
+                    $constraint->constraintName,
+                    $query->quoteName(array_keys($constraint->getColumns()))
+                );
+            } elseif ($constraint->constraintType === Constraint::TYPE_FOREIGN_KEY) {
+                $alter->addForeignKey(
+                    $constraint->constraintName,
+                    $query->quoteName(array_keys($constraint->getColumns())),
+                    $query->quoteName(array_keys($constraint->getReferencedColumns())),
+                    $constraint->updateRule,
+                    $constraint->deleteRule,
+                );
+            }
+        }
+
+        $this->db->execute((string) $sql);
+        $this->db->execute((string) $alter);
+
+        return true;
+    }
+
+    protected function getIndexColumnName(Column $column): string
+    {
+        $name = $column->getName();
+
+        $name = $this->db->quoteName($name);
+
+        if ($column->getErratas()['sub_parts'] ?? null) {
+            $name .= '(' . $column->getErratas()['sub_parts'] . ')';
+        }
+
+        return $name;
     }
 
     public function dropTable(string $table, bool $ifExists = false): bool

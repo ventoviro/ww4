@@ -11,10 +11,12 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Test\Manager;
 
+use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Manager\TableManager;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
+use Windwalker\Test\TestHelper;
 
 class TableManagerTest extends AbstractDatabaseTestCase
 {
@@ -113,23 +115,50 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     public function testCreate(): void
     {
-        $constraints = self::$db->getPlatform()->listConstraints('articles', 'fk_test');
-        $indexes = self::$db->getPlatform()->listIndexes('articles', 'fk_test');
+        $table = self::$db->getTable('hello');
 
-        show($constraints, $indexes);
+        $table->create(
+            static function (Schema $schema) {
+                $schema->primary('id');
+                $schema->char('type')->length(25);
+                $schema->integer('catid')->nullable(true);
+                $schema->varchar('alias');
+                $schema->varchar('title')->defaultValue('H');
+                $schema->decimal('price')->length('20,6');
+                $schema->text('intro');
 
-        self::$db->getTable('flower')
-            ->create(
-                function (Schema $schema) {
-                    $schema->primary('id');
-                    $schema->integer('catid')->isNullable(true);
-                    $schema->varchar('title')->defaultValue('H');
-                    $schema->decimal('price')->length('20,6');
-                    $schema->text('intro');
-                }
-            );
+                $schema->addIndex(['catid', 'type']);
+                $schema->addIndex('title(150)');
+                $schema->addUniqueKey('alias');
+            }
+        );
 
-        exit(' @Checkpoint');
+        $queries = array_slice(static::$lastQueries, -2);
+
+        self::assertSqlFormatEquals(
+            <<<SQL
+            CREATE TABLE IF NOT EXISTS `hello` (
+            `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            `type` char(25) NOT NULL DEFAULT '',
+            `catid` int(11) DEFAULT NULL,
+            `alias` varchar(255) NOT NULL DEFAULT '',
+            `title` varchar(255) NOT NULL DEFAULT 'H',
+            `price` decimal(20,6) NOT NULL DEFAULT 0,
+            `intro` text NOT NULL DEFAULT ''
+            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            SQL,
+            $queries[0]
+        );
+
+        self::assertSqlFormatEquals(
+            <<<SQL
+            ALTER TABLE `hello`
+            ADD INDEX `idx_hello_catid_type` (`catid`,`type`),
+            ADD INDEX `idx_hello_title` (`title`(150)),
+            ADD CONSTRAINT `idx_hello_alias` UNIQUE (`alias`)
+            SQL,
+            $queries[1]
+        );
     }
 
     /**

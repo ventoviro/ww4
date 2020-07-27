@@ -70,10 +70,12 @@ class Index
                 $column = new Column($colName);
 
                 if ($subParts) {
-                    $column->length($subParts);
+                    $column->erratas(
+                        [
+                            'sub_parts' => $subParts
+                        ]
+                    );
                 }
-            } else {
-                $column = clone $column;
             }
 
             $cols[$column->getName()] = $column;

@@ -38,6 +38,7 @@ class Constraint
      * @var Column[]
      */
     public array $columns = [];
+
     /**
      * @var Column[]
      */
@@ -200,8 +201,6 @@ class Constraint
         foreach ($columns as $column) {
             if (!$column instanceof Column) {
                 $column = new Column($column);
-            } else {
-                $column = clone $column;
             }
 
             $cols[$column->getName()] = $column;
@@ -218,5 +217,13 @@ class Constraint
     public function getColumns(): array
     {
         return $this->columns;
+    }
+
+    /**
+     * @return Column[]
+     */
+    public function getReferencedColumns(): array
+    {
+        return $this->referencedColumns;
     }
 }

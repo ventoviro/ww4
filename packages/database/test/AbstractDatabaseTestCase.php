@@ -27,6 +27,8 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
 
     protected static ?DatabaseAdapter $db;
 
+    protected static array $lastQueries = [];
+
     /**
      * @inheritDoc
      */
@@ -41,6 +43,7 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
     {
         $params           = $params ?? self::getTestParams();
         $params['driver'] = static::$driver;
+        static::$lastQueries = [];
 
         $db = new DatabaseAdapter($params);
 
@@ -53,6 +56,8 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
         }
 
         $db->on(QueryEndEvent::class, function (QueryEndEvent $event) use ($logFile) {
+            static::$lastQueries[] = $event['sql'];
+
             $fp = fopen($logFile, 'ab+');
 
             fwrite($fp, $event['sql'] . ";\n\n");

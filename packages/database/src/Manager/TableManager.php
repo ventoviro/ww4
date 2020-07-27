@@ -30,7 +30,7 @@ class TableManager extends AbstractMetaManager
     /**
      * @var string|null
      */
-    protected string $schema;
+    protected ?string $schema = null;
 
     /**
      * create

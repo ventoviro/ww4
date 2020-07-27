@@ -49,11 +49,6 @@ class Schema
     protected array $columns = [];
 
     /**
-     * @var  Index[]
-     */
-    protected array $keys = [];
-
-    /**
      * @var Index[]
      */
     protected array $indexes = [];
@@ -120,8 +115,10 @@ class Schema
         }
 
         if (!$name) {
-            $name = $this->createKeyName(array_keys($index->columns));
+            $name = $this->createKeyName(array_keys($index->getColumns()));
         }
+
+        $index->name($name);
 
         $this->indexes[$name] = $index;
 
@@ -215,30 +212,6 @@ class Schema
         return $this;
     }
 
-    /**
-     * Method to get property Indexes
-     *
-     * @return  Index[]
-     */
-    public function getKeys(): array
-    {
-        return $this->keys;
-    }
-
-    /**
-     * Method to set property indexes
-     *
-     * @param  Index[]  $keys
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function setKeys(array $keys): static
-    {
-        $this->keys = $keys;
-
-        return $this;
-    }
-
     public function getDateFormat(): string
     {
         return $this->getTable()->getDb()->getDateFormat();
@@ -268,5 +241,45 @@ class Schema
         }
 
         return $column;
+    }
+
+    /**
+     * @return Index[]
+     */
+    public function getIndexes(): array
+    {
+        return $this->indexes;
+    }
+
+    /**
+     * @param  Index[]  $indexes
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setIndexes(array $indexes)
+    {
+        $this->indexes = $indexes;
+
+        return $this;
+    }
+
+    /**
+     * @return Constraint[]
+     */
+    public function getConstraints(): array
+    {
+        return $this->constraints;
+    }
+
+    /**
+     * @param  Constraint[]  $constraints
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setConstraints(array $constraints)
+    {
+        $this->constraints = $constraints;
+
+        return $this;
     }
 }
