@@ -136,6 +136,74 @@ class NestedIteratorTest extends TestCase
         self::assertEquals('A', $iter->current());
     }
 
+    public function testChunk()
+    {
+        $items = [
+            'a' => 'A',
+            'b' => 'B',
+            'c' => 'C',
+            'd' => 'D',
+            'e' => 'E',
+            'f' => 'F',
+        ];
+
+        $gen = function () use ($items) {
+            foreach ($items as $key => $item) {
+                yield $key => $item;
+            }
+        };
+
+        $iter = new NestedIterator($gen);
+        $iter = $iter->chunk(4);
+        $r = [];
+
+        foreach ($iter as $i => $item) {
+            $r2 = [];
+            foreach ($item as $key => $value) {
+                $r2[$key] = $value;
+            }
+
+            $r[$i] = $r2;
+        }
+
+        self::assertEquals(
+            [
+                ['A', 'B', 'C', 'D'],
+                ['E', 'F']
+            ],
+            $r
+        );
+
+        $iter = new NestedIterator($gen);
+        $iter = $iter->chunk(4, true);
+        $r = [];
+
+        foreach ($iter as $i => $item) {
+            $r2 = [];
+            foreach ($item as $key => $value) {
+                $r2[$key] = $value;
+            }
+
+            $r[$i] = $r2;
+        }
+
+        self::assertEquals(
+            [
+                [
+                    'a' => 'A',
+                    'b' => 'B',
+                    'c' => 'C',
+                    'd' => 'D',
+                ],
+                [
+                    'e' => 'E',
+                    'f' => 'F',
+                ]
+            ],
+            $r
+        );
+    }
+
     protected function setUp(): void
     {
         $this->instance = null;

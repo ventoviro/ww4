@@ -16,27 +16,21 @@ namespace Windwalker\Utilities\Iterator;
  */
 class NestedIterator implements \OuterIterator
 {
-    /**
-     * @var \Traversable
-     */
-    protected $innerIterator;
+    protected \Traversable $innerIterator;
 
-    /**
-     * @var \Generator
-     */
-    protected $compiledIterator;
+    protected ?\Iterator $compiledIterator = null;
 
     /**
      * @var callable[]
      */
-    protected $callbacks = [];
+    protected array $callbacks = [];
 
     /**
      * FilesIterator constructor.
      *
      * @param  iterable|callable  $iterator
      */
-    public function __construct($iterator)
+    public function __construct(iterable|callable $iterator)
     {
         if (is_callable($iterator)) {
             $iterator = new RewindableGenerator($iterator);
@@ -54,7 +48,7 @@ class NestedIterator implements \OuterIterator
      *
      * @return  static
      */
-    public function wrap($callback)
+    public function wrap(callable $callback): static
     {
         $this->callbacks[] = $callback;
 
@@ -68,7 +62,7 @@ class NestedIterator implements \OuterIterator
      *
      * @return  static
      */
-    public function with($callback)
+    public function with(callable $callback): static
     {
         $new = $this->cloneNew();
 
@@ -93,7 +87,7 @@ class NestedIterator implements \OuterIterator
      *
      * @return  \Traversable
      */
-    protected function compileIterator($refresh = false): \Traversable
+    protected function compileIterator(bool $refresh = false): \Traversable
     {
         if ($this->compiledIterator === null || $refresh) {
             if ($this->checkRewindable($this->innerIterator)) {
@@ -121,7 +115,7 @@ class NestedIterator implements \OuterIterator
      *
      * @return  static
      */
-    public function filter(callable $callback)
+    public function filter(callable $callback): static
     {
         return $this->with(
             function (iterable $files) use ($callback) {
@@ -141,12 +135,37 @@ class NestedIterator implements \OuterIterator
      *
      * @return  static
      */
-    public function map(callable $callback)
+    public function map(callable $callback): static
     {
         return $this->with(
-            function (iterable $files) use ($callback) {
-                foreach ($files as $key => $file) {
-                    yield $key => $callback($file, $key, $this);
+            function (iterable $items) use ($callback) {
+                foreach ($items as $key => $item) {
+                    yield $key => $callback($item, $key, $this);
+                }
+            }
+        );
+    }
+
+    public function chunk(int $size, bool $preserveKeys = false): static
+    {
+        return $this->with(
+            static function (\Iterator $iter) use ($preserveKeys, $size) {
+                // @see https://blog.kevingomez.fr/2016/02/26/efficiently-creating-data-chunks-in-php/
+                $closure = static function() use ($preserveKeys, $iter, $size) {
+                    $count = $size;
+                    while ($count-- && $iter->valid()) {
+                        if ($preserveKeys) {
+                            yield $iter->key() => $iter->current();
+                        } else {
+                            yield $iter->current();
+                        }
+
+                        $iter->next();
+                    }
+                };
+
+                while ($iter->valid()) {
+                    yield $closure();
                 }
             }
         );
@@ -211,7 +230,7 @@ class NestedIterator implements \OuterIterator
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setInnerIterator(\Traversable $innerIterator)
+    public function setInnerIterator(\Traversable $innerIterator): static
     {
         $this->innerIterator = $innerIterator;
 
