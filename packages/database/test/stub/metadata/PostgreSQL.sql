@@ -67,8 +67,9 @@ ALTER TABLE ww_articles
     ADD CONSTRAINT fk_articles_category_more
         FOREIGN KEY (page_id, created_by) REFERENCES ww_categories (parent_id, level) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-CREATE UNIQUE INDEX idx_articles_alias
-    ON ww_articles ("type", alias);
+ALTER TABLE ww_articles
+    ADD CONSTRAINT idx_articles_alias
+        UNIQUE (alias);
 
 CREATE INDEX idx_articles_category_id
     ON ww_articles (category_id);

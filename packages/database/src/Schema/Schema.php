@@ -11,7 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Schema;
 
+use phpDocumentor\Reflection\Types\Array_;
 use Windwalker\Database\Manager\TableManager;
+use Windwalker\Database\Platform\Type\DataType;
 use Windwalker\Database\Schema\Concern\DataTypeTrait;
 use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Ddl\Constraint;
@@ -51,6 +53,16 @@ class Schema
      */
     protected array $keys = [];
 
+    /**
+     * @var Index[]
+     */
+    protected array $indexes = [];
+
+    /**
+     * @var Constraint[]
+     */
+    protected array $constraints = [];
+
     protected TableManager $table;
 
     public function __construct(TableManager $table)
@@ -80,59 +92,93 @@ class Schema
         return $column;
     }
 
-    /**
-     * addKey
-     *
-     * @param  Index  $key
-     *
-     * @return  Index
-     */
-    public function addConstraint(Index $key): Index
+    public function addConstraint(string|Constraint $constraint, string $name): Constraint
     {
-        $name = $key->constraintName;
-
-        if (!$name) {
-            $columns = $key->columns;
-
-            $columns = array_map(
-                static fn($col) => explode('(', $col)[0],
-                $columns
-            );
-
-            $name = sprintf(
-                'idx_%s_%s',
-                trim($this->table->getName(), '#_'),
-                implode('_', $columns)
-            );
-
-            $key->constraintName = $name;
+        if (is_string($constraint)) {
+            $constraint = new Constraint($constraint, $name, $this->table->getName());
         }
 
-        $this->keys[$key->constraintName] = $key;
+        $this->constraints[$constraint->constraintName] = $constraint;
 
-        return $key;
+        return $constraint;
     }
 
-    public function addIndex(array|string $columns, ?string $name = null): Index
+    public function addIndex(array|string|Index $columns, ?string $name = null, ?string $comment = null): Index
     {
-        return $this->addConstraint(new Index(Index::TYPE_INDEX, (array) $columns, $name));
+        if (!$columns instanceof Index) {
+            $index = new Index();
+            $index->tableName = $this->table->getName();
+            $index->indexComment = $comment;
+
+            if (is_string($columns)) {
+                $columns = (array) $columns;
+            }
+
+            $index->columns($columns);
+        } else {
+            $index = $columns;
+        }
+
+        if (!$name) {
+            $name = $this->createKeyName(array_keys($index->columns));
+        }
+
+        $this->indexes[$name] = $index;
+
+        return $index;
     }
 
     public function addUniqueKey(array|string $columns, ?string $name = null): Constraint
     {
-        // return $this->addKey(new Index(Index::TYPE_UNIQUE, (array) $columns, $name));
+        $columns = (array) $columns;
+
+        if (!$name) {
+            $name = $this->createKeyName($columns);
+        }
+
+        return $this->addConstraint(Constraint::TYPE_UNIQUE, $name)
+            ->columns($columns);
     }
 
-    /**
-     * addPrimaryKey
-     *
-     * @param  array|string  $columns
-     *
-     * @return Index
-     */
-    public function addPrimaryKey(array|string $columns): Index
+    public function addPrimaryKey(array|string $columns): Constraint
     {
-        return $this->addConstraint(new Index(Index::TYPE_PRIMARY, (array) $columns, null));
+        $columns = (array) $columns;
+
+        return $this->addConstraint(Constraint::TYPE_PRIMARY_KEY, 'PRIMARY')
+            ->columns($columns);
+    }
+
+    public function addForeignKey(array|string $columns, ?string $refTable = null, array|string|null $refColumns = null): Constraint
+    {
+        $columns = (array) $columns;
+
+        $constraint = $this->addConstraint(Constraint::TYPE_PRIMARY_KEY, 'PRIMARY')
+            ->columns($columns);
+
+        if ($refTable) {
+            $constraint->referencedTableName = $refTable;
+        }
+
+        if ($refColumns) {
+            $constraint->referencedColumns((array) $refColumns);
+        }
+
+        return $constraint;
+    }
+
+    protected function createKeyName(array $columns, string $prefix = 'idx'): string
+    {
+        $columns = array_map(
+            static fn($col) => explode('(', $col)[0],
+            $columns
+        );
+
+        return sprintf(
+            '%s_%s_%s',
+            $prefix,
+            trim($this->table->getName(), '#_'),
+            implode('_', $columns)
+        );
     }
 
     public function getTable(): TableManager

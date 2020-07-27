@@ -37,7 +37,7 @@ class Column
 
     protected bool $isNullable = false;
 
-    protected string $dataType = 'text';
+    protected ?string $dataType = null;
 
     protected ?int $characterMaximumLength = null;
 
@@ -57,7 +57,7 @@ class Column
 
     public function __construct(
         string $name = '',
-        string $dataType = 'char',
+        ?string $dataType = null,
         bool $isNullable = false,
         mixed $columnDefault = null,
         array $options = []

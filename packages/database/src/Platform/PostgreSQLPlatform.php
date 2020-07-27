@@ -13,6 +13,8 @@ namespace Windwalker\Database\Platform;
 
 use Windwalker\Database\Driver\Pdo\PdoDriver;
 use Windwalker\Database\Driver\Postgresql\PostgresqlTransaction;
+use Windwalker\Database\Schema\Ddl\Column;
+use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
@@ -230,6 +232,150 @@ class PostgreSQLPlatform extends AbstractPlatform
         return $query;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function listColumns(string $table, ?string $schema = null): array
+    {
+        $columns = [];
+
+        foreach ($this->loadColumnsStatement($table, $schema) as $row) {
+            $columns[$row['column_name']] = [
+                'ordinal_position' => $row['ordinal_position'],
+                'column_default' => $row['column_default'],
+                'is_nullable' => ('YES' === $row['is_nullable']),
+                'data_type' => $row['data_type'],
+                'character_maximum_length' => $row['character_maximum_length'],
+                'character_octet_length' => $row['character_octet_length'],
+                'numeric_precision' => $row['numeric_precision'],
+                'numeric_scale' => $row['numeric_scale'],
+                'numeric_unsigned' => false,
+                'comment' => '',
+                'auto_increment' => false,
+                'erratas' => [],
+            ];
+        }
+
+        foreach ($columns as &$column) {
+            if (strpos((string) $column['column_default'], 'nextval') !== false) {
+                $column['auto_increment'] = true;
+                $column['column_default'] = 0;
+            }
+
+            if (preg_match('/^NULL::*/', (string) $column['column_default'])) {
+                $column['column_default'] = null;
+            }
+
+            if (preg_match("/'(.*)'::[\w\s]/", (string) $column['column_default'], $matches)) {
+                $column['column_default'] = $matches[1] ?? '';
+            }
+
+            if (strpos((string) $column['data_type'], 'character varying') !== false) {
+                $column['data_type'] = str_replace('character varying', 'varchar', $column['data_type']);
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listConstraints(string $table, ?string $schema = null): array
+    {
+        $constraintGroup = $this->loadConstraintsStatement($table, $schema)
+            ->loadAll()
+            ->group('constraint_name');
+
+        $name        = null;
+        $constraints = [];
+
+        foreach ($constraintGroup as $name => $rows) {
+            $constraints[$name] = [
+                'constraint_name' => $name,
+                'constraint_type' => $rows[0]['constraint_type'],
+                'table_name' => $rows[0]['table_name'],
+                'columns' => [],
+            ];
+
+            if ('CHECK' === $rows[0]['constraint_type']) {
+                $constraints[$name]['check_clause'] = $rows[0]['check_clause'];
+                continue;
+            }
+
+            $isFK = 'FOREIGN KEY' === $rows[0]['constraint_type'];
+
+            if ($isFK) {
+                $constraints[$name]['referenced_table_schema'] = $rows[0]['referenced_table_schema'];
+                $constraints[$name]['referenced_table_name']   = $rows[0]['referenced_table_name'];
+                $constraints[$name]['referenced_columns']      = [];
+                $constraints[$name]['match_option']            = $rows[0]['match_option'];
+                $constraints[$name]['update_rule']             = $rows[0]['update_rule'];
+                $constraints[$name]['delete_rule']             = $rows[0]['delete_rule'];
+            }
+
+            foreach ($rows as $row) {
+                if ('CHECK' === $row['constraint_type']) {
+                    $constraints[$name]['check_clause'] = $row['check_clause'];
+                    continue;
+                }
+
+                $constraints[$name]['columns'][] = $row['column_name'];
+
+                if ($isFK) {
+                    $constraints[$name]['referenced_columns'][] = $row['referenced_column_name'];
+                }
+            }
+        }
+
+        return $constraints;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function listIndexes(string $table, ?string $schema = null): array
+    {
+        $indexes = [];
+
+        foreach ($this->loadIndexesStatement($table, $schema) as $row) {
+            preg_match(
+                '/CREATE (UNIQUE )?INDEX [\w]+ ON [\w.]+ USING [\w]+ \(([\w, ]+)\)/',
+                $row['indexdef'],
+                $matches
+            );
+
+            $index['table_schema']  = $row['schemaname'];
+            $index['table_name']    = $row['tablename'];
+            $index['is_unique']     = trim($matches[1]) === 'UNIQUE';
+            $index['is_primary']    = (bool) $row['is_primary'];
+            $index['index_name']    = $row['indexname'];
+            $index['index_comment'] = '';
+
+            $index['columns'] = [];
+
+            $columns = ArrayObject::explode(',', $matches[2])
+                ->map('trim')
+                ->map(
+                    static function (string $index) {
+                        return Escaper::stripQuoteIfExists($index, '"');
+                    }
+                )
+                ->dump();
+
+            foreach ($columns as $column) {
+                $index['columns'][$column] = [
+                    'column_name' => $column,
+                    'sub_part' => null,
+                ];
+            }
+
+            $indexes[$row['indexname']] = $index;
+        }
+
+        return $indexes;
+    }
+
     public function lastInsertId($insertQuery, ?string $sequence = null): ?string
     {
         if ($sequence && $this->db->getDriver() instanceof PdoDriver) {
@@ -315,5 +461,188 @@ class PostgreSQLPlatform extends AbstractPlatform
         }
 
         return $this;
+    }
+
+    /**
+     * getCurrentDatabase
+     *
+     * @return  string|null
+     */
+    public function getCurrentDatabase(): ?string
+    {
+    }
+
+    /**
+     * dropDatabase
+     *
+     * @param  string  $name
+     *
+     * @return  bool
+     */
+    public function dropDatabase(string $name): bool
+    {
+    }
+
+    /**
+     * createSchema
+     *
+     * @param  string  $name
+     * @param  array   $options
+     *
+     * @return  bool
+     */
+    public function createSchema(string $name, array $options = []): bool
+    {
+    }
+
+    /**
+     * dropSchema
+     *
+     * @param  string  $name
+     *
+     * @return  bool
+     */
+    public function dropSchema(string $name): bool
+    {
+    }
+
+    /**
+     * createTable
+     *
+     * @param  Schema  $schema
+     * @param  bool    $ifNotExists
+     * @param  array   $options
+     *
+     * @return  bool
+     */
+    public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool
+    {
+    }
+
+    /**
+     * dropTable
+     *
+     * @param  string  $table
+     * @param  bool    $ifExists
+     *
+     * @return  bool
+     */
+    public function dropTable(string $table, bool $ifExists = false): bool
+    {
+    }
+
+    /**
+     * renameTable
+     *
+     * @param  string  $from
+     * @param  string  $to
+     *
+     * @return  bool
+     */
+    public function renameTable(string $from, string $to): bool
+    {
+    }
+
+    /**
+     * truncateTable
+     *
+     * @param  string  $table
+     *
+     * @return  bool
+     */
+    public function truncateTable(string $table): bool
+    {
+    }
+
+    /**
+     * getTableDetail
+     *
+     * @param  string  $table
+     *
+     * @return  array
+     */
+    public function getTableDetail(string $table): array
+    {
+    }
+
+    /**
+     * addColumn
+     *
+     * @param  Column  $column
+     *
+     * @return  bool
+     */
+    public function addColumn(Column $column): bool
+    {
+    }
+
+    /**
+     * dropColumn
+     *
+     * @param  string  $name
+     *
+     * @return  bool
+     */
+    public function dropColumn(string $name): bool
+    {
+    }
+
+    /**
+     * modifyColumn
+     *
+     * @param  Column  $column
+     *
+     * @return  bool
+     */
+    public function modifyColumn(Column $column): bool
+    {
+    }
+
+    /**
+     * renameColumn
+     *
+     * @param  string  $from
+     * @param  string  $to
+     *
+     * @return  bool
+     */
+    public function renameColumn(string $from, string $to): bool
+    {
+    }
+
+    /**
+     * addIndex
+     *
+     * @return  bool
+     */
+    public function addIndex(): bool
+    {
+    }
+
+    /**
+     * dropIndex
+     *
+     * @return  bool
+     */
+    public function dropIndex(): bool
+    {
+    }
+
+    /**
+     * addConstraint
+     *
+     * @return  bool
+     */
+    public function addConstraint(): bool
+    {
+    }
+
+    /**
+     * dropConstraint
+     *
+     * @return  bool
+     */
+    public function dropConstraint(): bool
+    {
     }
 }
