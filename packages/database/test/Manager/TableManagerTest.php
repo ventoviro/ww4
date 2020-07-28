@@ -252,7 +252,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  TableManager::getSchema
+     * @see  TableManager::getSchemaName
      */
     public function testGetSchema(): void
     {

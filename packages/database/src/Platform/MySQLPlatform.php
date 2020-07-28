@@ -503,35 +503,25 @@ class MySQLPlatform extends AbstractPlatform
         return $name;
     }
 
-    public function truncateTable(string $table): StatementInterface
-    {
-        return $this->db->execute(
-            $this->getGrammar()::build(
-                'TRUNCATE TABLE',
-                $this->db->quoteName($table)
-            )
-        );
-    }
-
-    public function getTableDetail(string $table, ?string $schema): ?array
+    public function getTableDetail(string $table, ?string $schema = null): ?array
     {
         return $this->listTables($schema, true)[$table] ?? null;
     }
 
-    public function addColumn(Column $column): StatementInterface
+    public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface
     {
-    }
+        $toColumn = Column::wrap($this->listColumns($table)[$to]);
 
-    public function dropColumn(string $name): StatementInterface
-    {
-    }
-
-    public function modifyColumn(Column $column): StatementInterface
-    {
-    }
-
-    public function renameColumn(string $from, string $to): StatementInterface
-    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'ALTER TABLE',
+                $this->getGrammar()->tableName($schema, $table),
+                'CHANGE COLUMN',
+                $this->db->quoteName($from),
+                $this->db->quoteName($to),
+                (string) $this->getColumnExpression($toColumn)
+            )
+        );
     }
 
     public function addIndex(): StatementInterface

@@ -520,64 +520,23 @@ class PostgreSQLPlatform extends AbstractPlatform
     {
     }
 
-    /**
-     * truncateTable
-     *
-     * @param  string  $table
-     *
-     * @return  bool
-     */
-    public function truncateTable(string $table): StatementInterface
-    {
-    }
 
-
-    public function getTableDetail(string $table, ?string $schema): ?array
-    {
-    }
-
-    /**
-     * addColumn
-     *
-     * @param  Column  $column
-     *
-     * @return  bool
-     */
-    public function addColumn(Column $column): StatementInterface
-    {
-    }
-
-    /**
-     * dropColumn
-     *
-     * @param  string  $name
-     *
-     * @return  bool
-     */
-    public function dropColumn(string $name): StatementInterface
-    {
-    }
-
-    /**
-     * modifyColumn
-     *
-     * @param  Column  $column
-     *
-     * @return  bool
-     */
-    public function modifyColumn(Column $column): StatementInterface
+    public function getTableDetail(string $table, ?string $schema = null): ?array
     {
     }
 
     /**
      * renameColumn
      *
-     * @param  string  $from
-     * @param  string  $to
+     * @param  string       $table
+     * @param  string       $from
+     * @param  string       $to
      *
-     * @return  bool
+     * @param  string|null  $schema
+     *
+     * @return StatementInterface
      */
-    public function renameColumn(string $from, string $to): StatementInterface
+    public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface
     {
     }
 

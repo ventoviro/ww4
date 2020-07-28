@@ -229,37 +229,81 @@ abstract class AbstractPlatform
         );
     }
 
-    public function dropTable(string $table, bool $ifExists = false, $suffix = null): StatementInterface
+    public function dropTable(string $table, ?string $schema = null, $suffix = null): StatementInterface
     {
         return $this->db->execute(
             $this->getGrammar()::build(
                 'DROP TABLE',
-                $ifExists ? 'IF EXISTS' : null,
-                $this->db->quoteName($table),
+                'IF EXISTS',
+                $this->getGrammar()->tableName($schema, $table),
                 $suffix
             )
         );
     }
 
-    public function renameTable(string $from, string $to): StatementInterface
+    public function renameTable(string $from, string $to, ?string $schema = null): StatementInterface
     {
         return $this->db->execute(
             $this->getGrammar()::build(
                 'DROP TABLE',
-                $this->db->quoteName($from),
+                $this->getGrammar()->tableName($schema, $from),
                 'RENAME TO',
-                $this->db->quoteName($to),
+                $this->getGrammar()->tableName($schema, $to),
             )
         );
     }
 
-    abstract public function truncateTable(string $table): StatementInterface;
-    abstract public function getTableDetail(string $table, ?string $schema): ?array;
+    public function truncateTable(string $table, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'TRUNCATE TABLE',
+                $this->getGrammar()->tableName($schema, $table)
+            )
+        );
+    }
 
-    abstract public function addColumn(Column $column): StatementInterface;
-    abstract public function dropColumn(string $name): StatementInterface;
-    abstract public function modifyColumn(Column $column): StatementInterface;
-    abstract public function renameColumn(string $from, string $to): StatementInterface;
+    abstract public function getTableDetail(string $table, ?string $schema = null): ?array;
+
+    public function addColumn(string $table, Column $column, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'ALTER TABLE',
+                $this->getGrammar()->tableName($schema, $table),
+                'ADD COLUMN',
+                $this->db->quoteName($column->getName()),
+                (string) $this->getColumnExpression($column)
+            )
+        );
+    }
+
+    public function dropColumn(string $table, string $name, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'ALTER TABLE',
+                $this->getGrammar()->tableName($schema, $table),
+                'DROP COLUMN',
+                $this->db->quoteName($name),
+            )
+        );
+    }
+
+    public function modifyColumn(string $table, Column $column, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'ALTER TABLE',
+                $this->getGrammar()->tableName($schema, $table),
+                'MODIFY COLUMN',
+                $this->db->quoteName($column->getName()),
+                (string) $this->getColumnExpression($column)
+            )
+        );
+    }
+
+    abstract public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface;
 
     abstract public function addIndex(): StatementInterface;
     abstract public function dropIndex(): StatementInterface;

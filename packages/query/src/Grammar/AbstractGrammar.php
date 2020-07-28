@@ -385,6 +385,11 @@ abstract class AbstractGrammar
         return new Query($this->escaper, $this);
     }
 
+    public function tableName(?string $schema, string $table): string
+    {
+        return $this->createQuery()->quoteName(ltrim($schema . '.' . $table));
+    }
+
     // /**
     //  * dropTable
     //  *

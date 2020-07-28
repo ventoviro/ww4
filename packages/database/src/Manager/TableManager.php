@@ -30,7 +30,7 @@ class TableManager extends AbstractMetaManager
     /**
      * @var string|null
      */
-    protected ?string $schema = null;
+    protected ?string $schemaName = null;
 
     /**
      * create
@@ -49,7 +49,7 @@ class TableManager extends AbstractMetaManager
             $options
         );
 
-        $this->getSchema()->reset();
+        $this->getSchemaName()->reset();
 
         return $this;
     }
@@ -102,18 +102,11 @@ class TableManager extends AbstractMetaManager
         return $this->reset();
     }
 
-    /**
-     * drop
-     *
-     * @param  bool  $ifExists
-     *
-     * @return  static
-     */
-    public function drop(bool $ifExists = true)
+    public function drop(): static
     {
         $this->getPlatform()->dropTable(
             $this->getName(),
-            $ifExists
+            $this->schemaName
         );
 
         return $this->reset();
@@ -160,7 +153,7 @@ class TableManager extends AbstractMetaManager
      */
     public function truncate()
     {
-        $this->db->execute('TRUNCATE TABLE ' . $this->db->quoteName($this->getName()));
+        $this->getPlatform()->truncateTable($this->getName(), $this->schemaName);
 
         return $this;
     }
@@ -255,7 +248,7 @@ class TableManager extends AbstractMetaManager
             $column = new Column($column, $dataType, $isNullable, $columnDefault, $options);
         }
 
-        $this->getPlatform()->addColumn($column);
+        $this->getPlatform()->addColumn($this->getName(), $column, $this->schemaName);
 
         return $this;
     }
@@ -273,7 +266,7 @@ class TableManager extends AbstractMetaManager
             return $this;
         }
 
-        $this->getPlatform()->dropColumn($name);
+        $this->getPlatform()->dropColumn($this->getName(), $name, $this->schemaName);
 
         return $this->reset();
     }
@@ -300,7 +293,7 @@ class TableManager extends AbstractMetaManager
             $column = new Column($column, $dataType, $isNullable, $columnDefault, $options);
         }
 
-        $this->getPlatform()->modifyColumn($column);
+        $this->getPlatform()->modifyColumn($this->getName(), $column);
     }
 
     /**
@@ -387,9 +380,9 @@ class TableManager extends AbstractMetaManager
      *
      * @return  SchemaManager
      */
-    public function getSchema(bool $new = false): SchemaManager
+    public function getSchemaName(bool $new = false): SchemaManager
     {
-        return $this->db->getSchema($this->schema, $new);
+        return $this->db->getSchema($this->schemaName, $new);
     }
 
     /**

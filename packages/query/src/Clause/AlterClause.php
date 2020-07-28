@@ -159,6 +159,13 @@ class AlterClause implements ClauseInterface
         return $clause;
     }
 
+    public function append($elements): static
+    {
+        $this->clause->append($elements);
+
+        return $this;
+    }
+
     /**
      * __toString
      *
