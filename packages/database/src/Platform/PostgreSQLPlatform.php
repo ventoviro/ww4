@@ -13,6 +13,7 @@ namespace Windwalker\Database\Platform;
 
 use Windwalker\Database\Driver\Pdo\PdoDriver;
 use Windwalker\Database\Driver\Postgresql\PostgresqlTransaction;
+use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Clause\JoinClause;
@@ -479,7 +480,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function dropDatabase(string $name): bool
+    public function dropDatabase(string $name): StatementInterface
     {
     }
 
@@ -491,7 +492,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function createSchema(string $name, array $options = []): bool
+    public function createSchema(string $name, array $options = []): StatementInterface
     {
     }
 
@@ -502,7 +503,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function dropSchema(string $name): bool
+    public function dropSchema(string $name): StatementInterface
     {
     }
 
@@ -515,31 +516,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool
-    {
-    }
-
-    /**
-     * dropTable
-     *
-     * @param  string  $table
-     * @param  bool    $ifExists
-     *
-     * @return  bool
-     */
-    public function dropTable(string $table, bool $ifExists = false): bool
-    {
-    }
-
-    /**
-     * renameTable
-     *
-     * @param  string  $from
-     * @param  string  $to
-     *
-     * @return  bool
-     */
-    public function renameTable(string $from, string $to): bool
+    public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): StatementInterface
     {
     }
 
@@ -550,18 +527,12 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function truncateTable(string $table): bool
+    public function truncateTable(string $table): StatementInterface
     {
     }
 
-    /**
-     * getTableDetail
-     *
-     * @param  string  $table
-     *
-     * @return  array
-     */
-    public function getTableDetail(string $table): array
+
+    public function getTableDetail(string $table, ?string $schema): ?array
     {
     }
 
@@ -572,7 +543,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function addColumn(Column $column): bool
+    public function addColumn(Column $column): StatementInterface
     {
     }
 
@@ -583,7 +554,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function dropColumn(string $name): bool
+    public function dropColumn(string $name): StatementInterface
     {
     }
 
@@ -594,7 +565,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function modifyColumn(Column $column): bool
+    public function modifyColumn(Column $column): StatementInterface
     {
     }
 
@@ -606,7 +577,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function renameColumn(string $from, string $to): bool
+    public function renameColumn(string $from, string $to): StatementInterface
     {
     }
 
@@ -615,7 +586,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function addIndex(): bool
+    public function addIndex(): StatementInterface
     {
     }
 
@@ -624,7 +595,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function dropIndex(): bool
+    public function dropIndex(): StatementInterface
     {
     }
 
@@ -633,7 +604,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function addConstraint(): bool
+    public function addConstraint(): StatementInterface
     {
     }
 
@@ -642,7 +613,7 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @return  bool
      */
-    public function dropConstraint(): bool
+    public function dropConstraint(): StatementInterface
     {
     }
 }

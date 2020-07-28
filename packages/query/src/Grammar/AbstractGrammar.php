@@ -343,24 +343,20 @@ abstract class AbstractGrammar
      *
      * @param  string|null  ...$args
      *
-     * @return  string
+     * @return  Clause
      */
-    public static function build(?string ...$args): string
+    public static function build(?string ...$args): Clause
     {
-        $sql = [];
+        $clause = static::clause('', [], ' ');
 
         foreach ($args as $arg) {
-            if ($arg === '' || $arg === null || $arg === false) {
-                continue;
-            }
-
-            $sql[] = $arg;
+            $clause->append($arg);
         }
 
-        return implode(' ', $sql);
+        return $clause;
     }
 
-    public static function buildFromArray(array $elements): string
+    public static function buildConfig(array $elements): string
     {
         $elements = array_filter(TypeCast::mapAs($elements, 'string'), 'strlen');
         $items = [];
@@ -389,41 +385,41 @@ abstract class AbstractGrammar
         return new Query($this->escaper, $this);
     }
 
-    /**
-     * dropTable
-     *
-     * @param  string  $table
-     * @param  bool    $ifExists
-     * @param  mixed   ...$options
-     *
-     * @return  string
-     */
-    public function dropTable(string $table, bool $ifExists = false, ...$options): string
-    {
-        return static::build(
-            'DROP TABLE',
-            $ifExists ? 'IF EXISTS' : null,
-            self::quoteName($table),
-            ...$options
-        );
-    }
-
-    /**
-     * dropTable
-     *
-     * @param  string  $table
-     * @param  bool    $ifExists
-     * @param  mixed   ...$options
-     *
-     * @return  string
-     */
-    public function dropView(string $table, bool $ifExists = false, ...$options): string
-    {
-        return static::build(
-            'DROP VIEW',
-            $ifExists ? 'IF EXISTS' : null,
-            self::quoteName($table),
-            ...$options
-        );
-    }
+    // /**
+    //  * dropTable
+    //  *
+    //  * @param  string  $table
+    //  * @param  bool    $ifExists
+    //  * @param  mixed   ...$options
+    //  *
+    //  * @return  Clause
+    //  */
+    // public function dropTable(string $table, bool $ifExists = false, ...$options): Clause
+    // {
+    //     return static::build(
+    //         'DROP TABLE',
+    //         $ifExists ? 'IF EXISTS' : null,
+    //         self::quoteName($table),
+    //         ...$options
+    //     );
+    // }
+    //
+    // /**
+    //  * dropTable
+    //  *
+    //  * @param  string  $table
+    //  * @param  bool    $ifExists
+    //  * @param  mixed   ...$options
+    //  *
+    //  * @return  Clause
+    //  */
+    // public function dropView(string $table, bool $ifExists = false, ...$options): Clause
+    // {
+    //     return static::build(
+    //         'DROP VIEW',
+    //         $ifExists ? 'IF EXISTS' : null,
+    //         self::quoteName($table),
+    //         ...$options
+    //     );
+    // }
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Platform;
 
 use Windwalker\Data\Collection;
+use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Schema;
@@ -373,9 +374,9 @@ class MySQLPlatform extends AbstractPlatform
         return $this->db->prepare('SELECT DATABASE()')->loadResult();
     }
 
-    public function dropDatabase(string $name, array $options = []): bool
+    public function dropDatabase(string $name, array $options = []): StatementInterface
     {
-        $this->db->execute(
+        return $this->db->execute(
             $this->getGrammar()
                 ::build(
                     'DROP DATABASE',
@@ -383,21 +384,19 @@ class MySQLPlatform extends AbstractPlatform
                     $this->db->quoteName($name)
                 )
         );
-
-        return true;
     }
 
-    public function createSchema(string $name, array $options = []): bool
+    public function createSchema(string $name, array $options = []): StatementInterface
     {
         return $this->createDatabase($name, $options);
     }
 
-    public function dropSchema(string $name): bool
+    public function dropSchema(string $name): StatementInterface
     {
         return $this->dropDatabase($name);
     }
 
-    public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool
+    public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): StatementInterface
     {
         $defaultOptions = [
             'auto_increment' => 1,
@@ -408,25 +407,23 @@ class MySQLPlatform extends AbstractPlatform
 
         $options = array_merge($defaultOptions, $options);
         $columns = [];
-
-        $query = $this->db->getQuery(true);
+        $query   = $this->db->getQuery(true);
+        $alter   = $query->alter('TABLE', $schema->getTable()->getName());
 
         foreach ($schema->getColumns() as $column) {
             $column = $this->prepareColumn(clone $column);
 
-            $columns[$column->getName()] = $this->getGrammar()::build(
-                $query->quoteName($column->getName()),
-                $column->getTypeExpression(),
-                $column->getNumericUnsigned() ? 'UNSIGNED' : '',
-                $column->getIsNullable() ? '' : 'NOT NULL',
-                $column->getColumnDefault() !== false
-                    ? 'DEFAULT ' . $query->quote($column->getColumnDefault())
-                    : '',
-                $column->isAutoIncrement() ? 'AUTO_INCREMENT' : '',
-                $column->isPrimary() ? 'PRIMARY KEY' : '',
-                $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
-                $column->getOption('suffix')
-            );
+            $columns[$column->getName()] = $this->getColumnExpression($column)
+                    ->setName($this->db->quoteName($column->getName()));
+
+            if ($column->isPrimary()) {
+                $alter->addPrimaryKey(null, $this->db->quoteName([$column->getName()]));
+
+                if ($column->isAutoIncrement()) {
+                    $alter->modifyColumn($column->getName(), (string) $this->getColumnExpression($column))
+                        ->append('AUTO_INCREMENT');
+                }
+            }
         }
 
         $sql = $this->getGrammar()::build(
@@ -434,7 +431,7 @@ class MySQLPlatform extends AbstractPlatform
             $ifNotExists ? 'IF NOT EXISTS' : null,
             $query->quoteName($schema->getTable()->getName()),
             "(\n" . implode(",\n", $columns) . "\n)",
-            $this->getGrammar()::buildFromArray(
+            $this->getGrammar()::buildConfig(
                 [
                     'ENGINE' => $options['engine'] ?? 'InnoDB',
                     'AUTO_INCREMENT' => $options['auto_increment'] ?? null,
@@ -443,8 +440,6 @@ class MySQLPlatform extends AbstractPlatform
                 ]
             )
         );
-
-        $alter = $query->alter('TABLE', $schema->getTable()->getName());
 
         foreach ($schema->getIndexes() as $index) {
             $alter->addIndex(
@@ -478,10 +473,21 @@ class MySQLPlatform extends AbstractPlatform
             }
         }
 
-        $this->db->execute((string) $sql);
-        $this->db->execute((string) $alter);
+        return $this->db->execute($sql . ';' . $alter);
+    }
 
-        return true;
+    public function getColumnExpression(Column $column): Clause
+    {
+        return $this->getGrammar()::build(
+            $column->getTypeExpression(),
+            $column->getNumericUnsigned() ? 'UNSIGNED' : '',
+            $column->getIsNullable() ? '' : 'NOT NULL',
+            $column->getColumnDefault() !== false
+                ? 'DEFAULT ' . $this->db->quote($column->getColumnDefault())
+                : '',
+            $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
+            $column->getOption('suffix')
+        );
     }
 
     protected function getIndexColumnName(Column $column): string
@@ -497,52 +503,50 @@ class MySQLPlatform extends AbstractPlatform
         return $name;
     }
 
-    public function dropTable(string $table, bool $ifExists = false): bool
+    public function truncateTable(string $table): StatementInterface
     {
-
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'TRUNCATE TABLE',
+                $this->db->quoteName($table)
+            )
+        );
     }
 
-    public function renameTable(string $from, string $to): bool
+    public function getTableDetail(string $table, ?string $schema): ?array
     {
+        return $this->listTables($schema, true)[$table] ?? null;
     }
 
-    public function truncateTable(string $table): bool
-    {
-    }
-
-    public function getTableDetail(string $table): array
-    {
-    }
-
-    public function addColumn(Column $column): bool
+    public function addColumn(Column $column): StatementInterface
     {
     }
 
-    public function dropColumn(string $name): bool
+    public function dropColumn(string $name): StatementInterface
     {
     }
 
-    public function modifyColumn(Column $column): bool
+    public function modifyColumn(Column $column): StatementInterface
     {
     }
 
-    public function renameColumn(string $from, string $to): bool
+    public function renameColumn(string $from, string $to): StatementInterface
     {
     }
 
-    public function addIndex(): bool
+    public function addIndex(): StatementInterface
     {
     }
 
-    public function dropIndex(): bool
+    public function dropIndex(): StatementInterface
     {
     }
 
-    public function addConstraint(): bool
+    public function addConstraint(): StatementInterface
     {
     }
 
-    public function dropConstraint(): bool
+    public function dropConstraint(): StatementInterface
     {
     }
 

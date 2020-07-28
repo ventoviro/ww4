@@ -18,6 +18,7 @@ use Windwalker\Database\Platform\Concern\PlatformMetaTrait;
 use Windwalker\Database\Platform\Type\DataType;
 use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Schema;
+use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;
 
@@ -192,16 +193,14 @@ abstract class AbstractPlatform
 
     abstract public function getCurrentDatabase(): ?string;
 
-    public function selectDatabase(string $name): bool
+    public function selectDatabase(string $name): StatementInterface
     {
-        $this->db->execute('USE ' . $this->db->quoteName($name));
-
-        return true;
+        return $this->db->execute('USE ' . $this->db->quoteName($name));
     }
 
-    public function createDatabase(string $name, array $options = []): bool
+    public function createDatabase(string $name, array $options = []): StatementInterface
     {
-        $this->db->execute(
+        return $this->db->execute(
             $this->getGrammar()
                 ::build(
                     'CREATE DATABASE',
@@ -209,30 +208,64 @@ abstract class AbstractPlatform
                     $this->db->quoteName($name)
                 )
         );
-
-        return true;
     }
 
-    abstract public function dropDatabase(string $name): bool;
-    abstract public function createSchema(string $name, array $options = []): bool;
-    abstract public function dropSchema(string $name): bool;
+    abstract public function dropDatabase(string $name): StatementInterface;
+    abstract public function createSchema(string $name, array $options = []): StatementInterface;
+    abstract public function dropSchema(string $name): StatementInterface;
 
-    abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): bool;
-    abstract public function dropTable(string $table, bool $ifExists = false): bool;
-    abstract public function renameTable(string $from, string $to): bool;
-    abstract public function truncateTable(string $table): bool;
-    abstract public function getTableDetail(string $table): array;
+    abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): StatementInterface;
 
-    abstract public function addColumn(Column $column): bool;
-    abstract public function dropColumn(string $name): bool;
-    abstract public function modifyColumn(Column $column): bool;
-    abstract public function renameColumn(string $from, string $to): bool;
+    public function getColumnExpression(Column $column): Clause
+    {
+        return $this->getGrammar()::build(
+            $this->db->quoteName($column->getName()),
+            $column->getTypeExpression(),
+            $column->getIsNullable() ? '' : 'NOT NULL',
+            $column->getColumnDefault() !== false
+                ? 'DEFAULT ' . $this->db->quote($column->getColumnDefault())
+                : '',
+            $column->getOption('suffix')
+        );
+    }
 
-    abstract public function addIndex(): bool;
-    abstract public function dropIndex(): bool;
+    public function dropTable(string $table, bool $ifExists = false, $suffix = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'DROP TABLE',
+                $ifExists ? 'IF EXISTS' : null,
+                $this->db->quoteName($table),
+                $suffix
+            )
+        );
+    }
 
-    abstract public function addConstraint(): bool;
-    abstract public function dropConstraint(): bool;
+    public function renameTable(string $from, string $to): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'DROP TABLE',
+                $this->db->quoteName($from),
+                'RENAME TO',
+                $this->db->quoteName($to),
+            )
+        );
+    }
+
+    abstract public function truncateTable(string $table): StatementInterface;
+    abstract public function getTableDetail(string $table, ?string $schema): ?array;
+
+    abstract public function addColumn(Column $column): StatementInterface;
+    abstract public function dropColumn(string $name): StatementInterface;
+    abstract public function modifyColumn(Column $column): StatementInterface;
+    abstract public function renameColumn(string $from, string $to): StatementInterface;
+
+    abstract public function addIndex(): StatementInterface;
+    abstract public function dropIndex(): StatementInterface;
+
+    abstract public function addConstraint(): StatementInterface;
+    abstract public function dropConstraint(): StatementInterface;
 
     protected function prepareColumn(Column $column): Column
     {

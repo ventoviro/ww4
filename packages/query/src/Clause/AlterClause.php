@@ -11,15 +11,17 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Clause;
 
-use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Query\Query;
+use Windwalker\Utilities\Classes\FlowControlTrait;
 
 /**
  * The Alter class.
  */
-class AlterClause implements \Stringable
+class AlterClause implements ClauseInterface
 {
+    use FlowControlTrait;
+
     protected Clause $clause;
 
     /**
@@ -45,6 +47,21 @@ class AlterClause implements \Stringable
         );
 
         return $this;
+    }
+
+    public function table(string $table): static
+    {
+        return $this->target('TABLE', $this->query->quoteName($table));
+    }
+
+    public function database(string $database): static
+    {
+        return $this->target('DATABASE', $this->query->quoteName($database));
+    }
+
+    public function schema(string $database): static
+    {
+        return $this->target('SCHEMA', $this->query->quoteName($database));
     }
 
     /**
@@ -122,6 +139,22 @@ class AlterClause implements \Stringable
         if ($onDelete) {
             $clause->append(['ON DELETE', $onDelete]);
         }
+
+        return $clause;
+    }
+
+    public function modifyColumn(string $columnName, string $expression): Clause
+    {
+        $this->clause->append(
+            $clause = $this->query->clause(
+                '',
+                [
+                    'MODIFY COLUMN',
+                    $this->query->quoteName($columnName),
+                    $expression
+                ]
+            )
+        );
 
         return $clause;
     }

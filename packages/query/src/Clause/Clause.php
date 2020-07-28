@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Clause;
 
-use org\bovigo\vfs\vfsStream;
+use Windwalker\Utilities\Classes\FlowControlTrait;
 
 /**
  * Query Clause Class.
@@ -24,23 +24,25 @@ use org\bovigo\vfs\vfsStream;
  */
 class Clause implements \Countable, ClauseInterface
 {
+    use FlowControlTrait;
+
     /**
      * @var    string  The name of the element.
      * @since  2.0
      */
-    protected $name;
+    public string $name = '';
 
     /**
      * @var    array  An array of elements.
      * @since  2.0
      */
-    protected $elements = [];
+    public array $elements = [];
 
     /**
      * @var    string  Glue piece.
      * @since  2.0
      */
-    protected $glue;
+    public string $glue = ' ';
 
     /**
      * Constructor.
@@ -78,13 +80,18 @@ class Clause implements \Countable, ClauseInterface
      *
      * @return  string
      */
-    public function render()
+    public function render(): string
     {
-        if (substr($this->name, -2) === '()') {
-            return substr($this->name, 0, -2) . '(' . implode($this->glue, $this->elements) . ')';
+        $elements = array_filter(
+            $this->elements,
+            fn ($arg) => $arg !== '' && $arg !== null && $arg !== false,
+        );
+
+        if (str_ends_with($this->name, '()')) {
+            return substr($this->name, 0, -2) . '(' . implode($this->glue, $elements) . ')';
         }
 
-        return ltrim($this->name . ' ', ' ') . implode($this->glue, $this->elements);
+        return ltrim($this->name . ' ' . implode($this->glue, $elements));
     }
 
     /**
@@ -171,7 +178,7 @@ class Clause implements \Countable, ClauseInterface
      *
      * @return  static  Return self to support chaining.
      */
-    public function setGlue($glue)
+    public function setGlue(string $glue): static
     {
         $this->glue = $glue;
 
@@ -195,7 +202,7 @@ class Clause implements \Countable, ClauseInterface
      *
      * @return  static  Return self to support chaining.
      */
-    public function setName(string $name)
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -205,7 +212,7 @@ class Clause implements \Countable, ClauseInterface
     /**
      * @inheritDoc
      */
-    public function count()
+    public function count(): int
     {
         return count($this->elements);
     }
@@ -219,22 +226,12 @@ class Clause implements \Countable, ClauseInterface
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setElements($elements)
+    public function setElements($elements): static
     {
         $this->elements = [];
 
         $this->append($elements);
 
         return $this;
-    }
-
-    public function __isset(string $name): bool
-    {
-        return isset($this->$name);
-    }
-
-    public function __get(string $name)
-    {
-        return $this->$name;
     }
 }

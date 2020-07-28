@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Query\Grammar;
 
+use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Query;
 
 /**
@@ -186,7 +187,7 @@ class SQLServerGrammar extends AbstractGrammar
      *
      * @return  string
      */
-    public function dropTable(string $table, bool $ifExists = false, ...$options): string
+    public function dropTable(string $table, bool $ifExists = false, ...$options): Clause
     {
         // Drop all foreign key reference to this table
         // @see https://social.msdn.microsoft.com/Forums/sqlserver/en-US/219f8a19-0026-49a1-a086-11c5d57d9c97/tsql-to-drop-all-constraints?forum=transactsql

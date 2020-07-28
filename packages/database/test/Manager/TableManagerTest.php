@@ -133,31 +133,25 @@ class TableManagerTest extends AbstractDatabaseTestCase
             }
         );
 
-        $queries = array_slice(static::$lastQueries, -2);
-
         self::assertSqlFormatEquals(
             <<<SQL
             CREATE TABLE IF NOT EXISTS `hello` (
-            `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            `id` int(11) NOT NULL,
             `type` char(25) NOT NULL DEFAULT '',
             `catid` int(11) DEFAULT NULL,
             `alias` varchar(255) NOT NULL DEFAULT '',
             `title` varchar(255) NOT NULL DEFAULT 'H',
             `price` decimal(20,6) NOT NULL DEFAULT 0,
             `intro` text NOT NULL DEFAULT ''
-            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-            SQL,
-            $queries[0]
-        );
-
-        self::assertSqlFormatEquals(
-            <<<SQL
+            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             ALTER TABLE `hello`
+            ADD CONSTRAINT PRIMARY KEY (`id`),
+            MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT,
             ADD INDEX `idx_hello_catid_type` (`catid`,`type`),
             ADD INDEX `idx_hello_title` (`title`(150)),
             ADD CONSTRAINT `idx_hello_alias` UNIQUE (`alias`)
             SQL,
-            $queries[1]
+            static::$lastQueries[array_key_last(static::$lastQueries)]
         );
     }
 

@@ -14,14 +14,7 @@ namespace Windwalker\Query\Clause;
 /**
  * Interface ClauseInterface
  */
-interface ClauseInterface
+interface ClauseInterface extends \Stringable
 {
-    /**
-     * Magic function to convert the query element to a string.
-     *
-     * @return  string
-     *
-     * @since   2.0
-     */
-    public function __toString(): string;
+    //
 }

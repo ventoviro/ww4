@@ -50,53 +50,53 @@ class PostgreSQLGrammar extends AbstractGrammar
         return $sql;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function listTables(?string $schema = null): Query
-    {
-        $query = $this->createQuery()
-            ->select('table_name AS Name')
-            ->from('information_schema.tables')
-            ->where('table_type', 'BASE TABLE')
-            ->order('table_name', 'ASC');
-
-        if ($schema) {
-            $query->where('table_schema', $schema);
-        } else {
-            $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
-        }
-
-        return $query;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function listViews(?string $schema = null): Query
-    {
-        $query = $this->createQuery()
-            ->select('table_name AS Name')
-            ->from('information_schema.tables')
-            ->where('table_type', 'VIEW')
-            ->order('table_name', 'ASC');
-
-        if ($schema) {
-            $query->where('table_schema', $schema);
-        } else {
-            $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
-        }
-
-        return $query;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function dropTable(string $table, bool $ifExists = false, ...$options): string
-    {
-        $options[] = 'CASCADE';
-
-        return parent::dropTable($table, $ifExists, ...$options);
-    }
+    // /**
+    //  * @inheritDoc
+    //  */
+    // public function listTables(?string $schema = null): Query
+    // {
+    //     $query = $this->createQuery()
+    //         ->select('table_name AS Name')
+    //         ->from('information_schema.tables')
+    //         ->where('table_type', 'BASE TABLE')
+    //         ->order('table_name', 'ASC');
+    //
+    //     if ($schema) {
+    //         $query->where('table_schema', $schema);
+    //     } else {
+    //         $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
+    //     }
+    //
+    //     return $query;
+    // }
+    //
+    // /**
+    //  * @inheritDoc
+    //  */
+    // public function listViews(?string $schema = null): Query
+    // {
+    //     $query = $this->createQuery()
+    //         ->select('table_name AS Name')
+    //         ->from('information_schema.tables')
+    //         ->where('table_type', 'VIEW')
+    //         ->order('table_name', 'ASC');
+    //
+    //     if ($schema) {
+    //         $query->where('table_schema', $schema);
+    //     } else {
+    //         $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
+    //     }
+    //
+    //     return $query;
+    // }
+    //
+    // /**
+    //  * @inheritDoc
+    //  */
+    // public function dropTable(string $table, bool $ifExists = false, ...$options): Clause
+    // {
+    //     $options[] = 'CASCADE';
+    //
+    //     return parent::dropTable($table, $ifExists, ...$options);
+    // }
 }

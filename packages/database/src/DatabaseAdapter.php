@@ -132,12 +132,12 @@ class DatabaseAdapter implements EventAttachableInterface
      */
     public function quoteName(mixed $value): array|string
     {
-        return $this->getPlatform()->getGrammar()::quoteName($value);
+        return $this->getPlatform()->getGrammar()::quoteNameMultiple($value);
     }
 
     public function quote(mixed $value): array|string
     {
-        return $this->getQuery(true)->quote((string) $value);
+        return $this->getQuery(true)->quote($value);
     }
 
     /**

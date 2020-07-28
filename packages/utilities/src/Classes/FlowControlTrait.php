@@ -24,7 +24,7 @@ trait FlowControlTrait
      *
      * @return  static
      */
-    public function pipe(callable $callback, ...$args)
+    public function pipe(callable $callback, ...$args): static
     {
         return $callback($this, ...$args);
     }
@@ -37,7 +37,7 @@ trait FlowControlTrait
      *
      * @return  static
      */
-    public function tap(callable $callback, ...$args)
+    public function tap(callable $callback, ...$args): static
     {
         $callback($this, ...$args);
 
@@ -54,8 +54,12 @@ trait FlowControlTrait
      *
      * @return  static
      */
-    public function pipeIf(bool $allow, ?callable $trueCallback = null, ?callable $falseCallback = null, ...$args)
-    {
+    public function pipeIf(
+        bool $allow,
+        ?callable $trueCallback = null,
+        ?callable $falseCallback = null,
+        ...$args
+    ): static {
         if ($allow) {
             return $trueCallback ? $trueCallback($this, ...$args) : $this;
         }
@@ -73,8 +77,12 @@ trait FlowControlTrait
      *
      * @return  static
      */
-    public function tapIf(bool $allow, ?callable $trueCallback = null, ?callable $falseCallback = null, ...$args)
-    {
+    public function tapIf(
+        bool $allow,
+        ?callable $trueCallback = null,
+        ?callable $falseCallback = null,
+        ...$args
+    ): static {
         if ($allow) {
             $trueCallback ? $trueCallback($this, ...$args) : null;
         } else {
