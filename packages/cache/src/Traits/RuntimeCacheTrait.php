@@ -11,62 +11,39 @@ declare(strict_types=1);
 
 namespace Windwalker\Cache\Traits;
 
-use Windwalker\Cache\CachePool;
-use Windwalker\Cache\Serializer\RawSerializer;
-use Windwalker\Cache\Storage\ArrayStorage;
-
 /**
  * The RuntimeCacheTrait class.
  */
 trait RuntimeCacheTrait
 {
-    protected static ?CachePool $cache = null;
+    protected static array $cacheStorage = [];
 
-    public static function getCacheId(?string $id = null): string
+    protected static function cacheGet(string $id)
     {
-        return sha1((string) $id);
+        return static::$cacheStorage[$id] ?? null;
     }
 
-    public static function getCacheInstance(): CachePool
+    protected static function cacheSet(string $id, $value = null): void
     {
-        if (static::$cache === null) {
-            static::cacheReset();
-        }
-
-        return static::$cache;
+        static::$cacheStorage[$id] = $value;
     }
 
-    protected static function cacheGet(?string $id = null)
+    protected static function cacheHas(string $id): bool
     {
-        return static::getCacheInstance()->get(static::getCacheId($id));
-    }
-
-    protected static function cacheSet(?string $id = null, $value = null)
-    {
-        static::getCacheInstance()->set(static::getCacheId($id), $value);
-
-        return $value;
-    }
-
-    protected static function cacheHas(?string $id = null): bool
-    {
-        return static::getCacheInstance()->has(static::getCacheId($id));
+        return isset(static::$cacheStorage[$id]);
     }
 
     public static function cacheReset(): void
     {
-        static::$cache = new CachePool(new ArrayStorage(), new RawSerializer());
+        static::$cacheStorage = [];
     }
 
     protected static function once(?string $id, callable $closure, bool $refresh = false)
     {
-        $key = static::getCacheId($id);
-        $cache = static::getCacheInstance();
-
         if ($refresh) {
-            $cache->delete($key);
+            unset(static::$cacheStorage[$id]);
         }
 
-        return $cache->call($key, $closure);
+        return static::$cacheStorage[$id] ??= $closure();
     }
 }

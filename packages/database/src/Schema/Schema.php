@@ -101,7 +101,7 @@ class Schema
     public function addIndex(array|string|Index $columns, ?string $name = null, ?string $comment = null): Index
     {
         if (!$columns instanceof Index) {
-            $index = new Index();
+            $index = new Index('');
             $index->tableName = $this->table->getName();
             $index->indexComment = $comment;
 

@@ -23,5 +23,5 @@ class ArgumentsAssert extends TypeAssert
     /**
      * @var  string
      */
-    protected static $exceptionClass = InvalidArgumentException::class;
+    protected static string $exceptionClass = InvalidArgumentException::class;
 }

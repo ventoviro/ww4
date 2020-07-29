@@ -23,7 +23,7 @@ class TypeAssert
     /**
      * @var  string
      */
-    protected static $exceptionClass = TypeError::class;
+    protected static string $exceptionClass = TypeError::class;
 
     /**
      * assert
@@ -39,7 +39,7 @@ class TypeAssert
      *
      * @since  __DEPLOY_VERSION__
      */
-    public static function assert($assertion, string $message, $value = null, ?string $caller = null): void
+    public static function assert(bool|callable $assertion, string $message, $value = null, ?string $caller = null): void
     {
         if (is_callable($assertion)) {
             $result = $assertion();
@@ -72,9 +72,7 @@ class TypeAssert
     {
         $caller = $caller ?? static::getCaller();
 
-        $class = static::$exceptionClass;
-
-        return new $class(sprintf($message, $caller, static::describeValue($value)));
+        return new (static::$exceptionClass)(sprintf($message, $caller, static::describeValue($value)));
     }
 
     public static function getCaller(int $backSteps = 2): string

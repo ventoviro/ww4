@@ -20,55 +20,31 @@ use Windwalker\Cache\Storage\ArrayStorage;
  */
 trait InstanceCacheTrait
 {
-    protected ?CachePool $cache = null;
+    protected array $cacheStorage = [];
 
-    public function getCacheId(?string $id = null): string
+    protected function cacheGet(string $id = null)
     {
-        return sha1((string) $id);
+        return $this->cacheStorage[$id] ?? null;
     }
 
-    public function getCacheInstance(): CachePool
+    protected function cacheSet(string $id = null, $value = null)
     {
-        if ($this->cache === null) {
-            $this->cacheReset();
-        }
-
-        return $this->cache;
-    }
-
-    protected function cacheGet(?string $id = null)
-    {
-        return $this->getCacheInstance()->get($this->getCacheId($id));
-    }
-
-    protected function cacheSet(?string $id = null, $value = null)
-    {
-        $this->getCacheInstance()->set($this->getCacheId($id), $value);
+        $this->cacheStorage[$id] = $value;
 
         return $value;
     }
 
-    protected function cacheHas(?string $id = null): bool
+    protected function cacheHas(string $id = null): bool
     {
-        return $this->getCacheInstance()->has($this->getCacheId($id));
+        return isset($this->cacheStorage[$id]);
     }
 
-    public function cacheReset(): static
+    protected function once(string $id, callable $closure, bool $refresh = false)
     {
-        $this->cache = new CachePool(new ArrayStorage(), new RawSerializer());
-
-        return $this;
-    }
-
-    protected function once(?string $id, callable $closure, bool $refresh = false)
-    {
-        $key = $this->getCacheId($id);
-        $cache = $this->getCacheInstance();
-
         if ($refresh) {
-            $cache->delete($key);
+            unset($this->cacheStorage[$id]);
         }
 
-        return $cache->call($key, $closure);
+        return $this->cacheStorage[$id] ??= $closure();
     }
 }
