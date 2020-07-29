@@ -10,7 +10,7 @@
     "homepage": "https://github.com/ventoviro/windwalker-queue",
     "license": "MIT",
     "require": {
-        "php": ">=7.2.5",
+        "php": ">=8.0.0",
         "windwalker/event": "~3.0",
         "ext-json": "*"
     },
@@ -40,7 +40,7 @@
     },
     "config": {
         "platform": {
-            "php": "7.2.5"
+            "php": "8.0.0"
         }
     }
 }

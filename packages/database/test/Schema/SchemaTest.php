@@ -42,7 +42,7 @@ class SchemaTest extends AbstractDatabaseTestCase
         $this->instance->addPrimaryKey('id');
         $this->instance->addPrimaryKey(['foo', 'bar']);
 
-        $keys = $this->instance->getKeys();
+        $keys = $this->instance->getIndexes();
 
         self::assertEquals(['id'], $keys['idx_ww_flower_id']->getColumns());
         self::assertEquals(['foo', 'bar'], $keys['idx_ww_flower_foo_bar']->getColumns());

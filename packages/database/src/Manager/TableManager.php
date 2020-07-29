@@ -11,8 +11,10 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Manager;
 
-use Windwalker\Database\Schema\DataType;
+use Windwalker\Cache\Traits\InstanceCacheTrait;
+use Windwalker\Database\Schema\DatabaseManager;
 use Windwalker\Database\Schema\Ddl\Column;
+use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Ddl\Index;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Schema\SchemaManager;
@@ -22,15 +24,11 @@ use Windwalker\Database\Schema\SchemaManager;
  */
 class TableManager extends AbstractMetaManager
 {
-    /**
-     * @var Column[]
-     */
-    protected array $columns = [];
+    use InstanceCacheTrait;
 
-    /**
-     * @var string|null
-     */
-    protected ?string $schemaName = null;
+    public ?string $schemaName = null;
+
+    public ?string $databaseName = null;
 
     /**
      * create
@@ -41,7 +39,7 @@ class TableManager extends AbstractMetaManager
      *
      * @return  static
      */
-    public function create($callback, bool $ifNotExists = true, array $options = []): static
+    public function create(callable|Schema $callback, bool $ifNotExists = true, array $options = []): static
     {
         $this->getPlatform()->createTable(
             $this->callSchema($callback),
@@ -49,7 +47,7 @@ class TableManager extends AbstractMetaManager
             $options
         );
 
-        $this->getSchemaName()->reset();
+        $this->getSchema()->reset();
 
         return $this;
     }
@@ -73,8 +71,20 @@ class TableManager extends AbstractMetaManager
             }
         }
 
-        foreach ($schema->getKeys() as $index) {
+        foreach ($schema->getIndexes() as $index) {
+            if ($this->hasIndex($index->indexName)) {
+                $this->dropIndex($index->indexName);
+            }
+
             $this->addIndex($index);
+        }
+
+        foreach ($schema->getConstraints() as $constraint) {
+            if ($this->hasConstraint($constraint->constraintName)) {
+                $this->dropConstraint($constraint->constraintName);
+            }
+
+            $this->addConstraint($constraint);
         }
 
         return $this->reset();
@@ -119,18 +129,10 @@ class TableManager extends AbstractMetaManager
      */
     public function exists(): bool
     {
-        return isset($this->getPlatform()->listTables()[$this->getName()]);
+        return isset($this->getPlatform()->listTables($this->schemaName, true)[$this->getName()]);
     }
 
-    /**
-     * rename
-     *
-     * @param  string   $newName
-     * @param  boolean  $returnNew
-     *
-     * @return  static
-     */
-    public function rename($newName, $returnNew = true)
+    public function rename(string $newName, bool $returnNew = true): static
     {
         $this->getPlatform()->renameTable($this->getName(), $newName);
 
@@ -151,7 +153,7 @@ class TableManager extends AbstractMetaManager
      * @throws  \RuntimeException
      * @since   2.0
      */
-    public function truncate()
+    public function truncate(): static
     {
         $this->getPlatform()->truncateTable($this->getName(), $this->schemaName);
 
@@ -189,17 +191,17 @@ class TableManager extends AbstractMetaManager
      */
     public function getColumns(bool $refresh = false): array
     {
-        if ($this->columns === null || $refresh) {
-            $this->columns = Column::wrapList(
+        return $this->once(
+            'columns',
+            fn() => Column::wrapList(
                 $this->getPlatform()
                     ->listColumns(
                         $this->getName(),
-                        $this->getPlatform()::getDefaultSchema()
+                        $this->schemaName
                     )
-            );
-        }
-
-        return $this->columns;
+            ),
+            $refresh
+        );
     }
 
     /**
@@ -223,7 +225,7 @@ class TableManager extends AbstractMetaManager
      */
     public function hasColumn(string $name): bool
     {
-        return $this->getColumn($name) !== null;
+        return isset($this->getColumns()[$name]);
     }
 
     /**
@@ -238,17 +240,19 @@ class TableManager extends AbstractMetaManager
      * @return static
      */
     public function addColumn(
-        $column = '',
+        string|Column $column = '',
         string $dataType = 'char',
         bool $isNullable = false,
         $columnDefault = null,
         array $options = []
-    ) {
+    ): static {
         if (!$column instanceof Column) {
             $column = new Column($column, $dataType, $isNullable, $columnDefault, $options);
         }
 
-        $this->getPlatform()->addColumn($this->getName(), $column, $this->schemaName);
+        if (!$this->hasColumn($column->getName())) {
+            $this->getPlatform()->addColumn($this->getName(), $column, $this->schemaName);
+        }
 
         return $this;
     }
@@ -260,7 +264,7 @@ class TableManager extends AbstractMetaManager
      *
      * @return  static
      */
-    public function dropColumn(string $name)
+    public function dropColumn(string $name): static
     {
         if (!$this->hasColumn($name)) {
             return $this;
@@ -271,102 +275,123 @@ class TableManager extends AbstractMetaManager
         return $this->reset();
     }
 
-    /**
-     * modifyColumn
-     *
-     * @param  string|Column  $column
-     * @param  string         $dataType
-     * @param  bool           $isNullable
-     * @param  null           $columnDefault
-     * @param  array          $options
-     *
-     * @return void
-     */
     public function modifyColumn(
-        $column = '',
+        string|array|Column $column = '',
         string $dataType = 'char',
         bool $isNullable = false,
         $columnDefault = null,
         array $options = []
-    ) {
+    ): static {
         if (!$column instanceof Column) {
             $column = new Column($column, $dataType, $isNullable, $columnDefault, $options);
         }
 
-        $this->getPlatform()->modifyColumn($this->getName(), $column);
+        $this->getPlatform()->modifyColumn($this->getName(), $column, $this->schemaName);
+
+        return $this;
     }
 
-    /**
-     * addIndex
-     *
-     * @param  array|Index  $columns
-     * @param  string       $name
-     * @param  string       $type
-     * @param  array        $options
-     *
-     * @return void
-     */
-    public function addIndex($columns = [], ?string $name = null, string $type = Index::TYPE_INDEX, array $options = [])
+    public function addIndex($columns = [], ?string $name = null, array $options = []): static
     {
-        $columns = (array) $columns;
-
-
-
         if (!$columns instanceof Index) {
-            $column = new Index($type, $columns, $name, $options);
+            $constraint = new Index($name, $this->getName());
+            $constraint->columns((array) $columns)
+                ->bind($options);
+        } else {
+            $constraint = $columns;
         }
 
-
-    }
-
-    /**
-     * dropIndex
-     *
-     * @param  string  $name
-     *
-     * @return  static
-     */
-    public function dropIndex($name)
-    {
-    }
-
-    /**
-     * getIndexes
-     *
-     * @return  array
-     */
-    public function getIndexes()
-    {
-    }
-
-    /**
-     * hasIndex
-     *
-     * @param  string  $name
-     *
-     * @return  boolean
-     */
-    public function hasIndex($name)
-    {
-        $indexes = $this->getIndexes();
-
-        foreach ($indexes as $index) {
-            if ($index->Key_name == $name) {
-                return true;
-            }
+        if ($this->hasIndex($name)) {
+            return $this;
         }
 
-        return false;
+        $this->getPlatform()->addIndex($constraint);
+
+        return $this;
     }
 
-    /**
-     * Method to set property table
-     *
-     * @param  string  $name
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function setName($name)
+    public function dropIndex($name): static
+    {
+        if (!$this->hasIndex($name)) {
+            $this->getPlatform()->dropIndex($name);
+        }
+
+        return $this;
+    }
+
+    public function getIndexes(): array
+    {
+        return $this->once(
+            'indexes',
+            fn () => Index::wrapList(
+                $this->getPlatform()->listIndexes($this->getName(), $this->schemaName)
+            )
+        );
+    }
+
+    public function getIndex(string $name): ?Index
+    {
+        return $this->getIndexes()[$name] ?? null;
+    }
+
+    public function hasIndex($name): bool
+    {
+        return isset($this->getIndexes()[$name]);
+    }
+
+    public function addConstraint(
+        array|string|Constraint $columns = [],
+        ?string $name = null,
+        string $type = Constraint::TYPE_UNIQUE,
+        array $options = []
+    ): static {
+        if (!$columns instanceof Constraint) {
+            $constraint = new Constraint($type, $name, $this->getName());
+            $constraint->columns((array) $columns)
+                ->bind($options);
+        } else {
+            $constraint = $columns;
+        }
+
+        if ($this->hasConstraint($name)) {
+            return $this;
+        }
+
+        $this->getPlatform()->addConstraint($constraint);
+
+        return $this;
+    }
+
+    public function hasConstraint(string $name): bool
+    {
+        return isset($this->getConstraints()[$name]);
+    }
+
+    public function getConstraints(): array
+    {
+        return $this->once(
+            'constraints',
+            fn () => Constraint::wrapList(
+                $this->getPlatform()->listConstraints($this->getName(), $this->schemaName)
+            )
+        );
+    }
+
+    public function getConstraint(string $name): ?Constraint
+    {
+        return $this->getConstraints()[$name] ?? null;
+    }
+
+    public function dropConstraint(string $name): static
+    {
+        if (!$this->hasConstraint($name)) {
+            $this->getPlatform()->dropConstraint($this->getName(), $name, $this->schemaName);
+        }
+
+        return $this;
+    }
+
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -380,29 +405,17 @@ class TableManager extends AbstractMetaManager
      *
      * @return  SchemaManager
      */
-    public function getSchemaName(bool $new = false): SchemaManager
+    public function getSchema(bool $new = false): SchemaManager
     {
         return $this->db->getSchema($this->schemaName, $new);
     }
 
-    /**
-     * getSchema
-     *
-     * @return  Schema
-     */
-    public function getSchemaObject()
+    public function getSchemaObject(): Schema
     {
         return new Schema($this);
     }
 
-    /**
-     * callSchema
-     *
-     * @param  callable|Schema  $callback
-     *
-     * @return  Schema
-     */
-    protected function callSchema($callback)
+    protected function callSchema(callable|Schema $callback): Schema
     {
         if (is_callable($callback)) {
             $callback($schema = $this->getSchemaObject());
@@ -417,92 +430,9 @@ class TableManager extends AbstractMetaManager
         return $schema;
     }
 
-    /**
-     * Method to get property Database
-     *
-     * @return  AbstractDatabase
-     */
-    public function getDatabase()
+    public function getDatabase(bool $new = false): DatabaseManager
     {
-        return $this->database;
-    }
-
-    /**
-     * Method to set property database
-     *
-     * @param  AbstractDatabase|string  $database
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function setDatabase($database)
-    {
-        if (is_string($database)) {
-            $database = $this->db->getDatabase($database);
-        }
-
-        $this->database = $database;
-
-        return $this;
-    }
-
-    /**
-     * getTypeMapper
-     *
-     * @return  DataType
-     */
-    public function getDataType()
-    {
-        $driver = ucfirst($this->db->getName());
-
-        $class = sprintf('Windwalker\Database\Driver\%s\%sType', $driver, $driver);
-
-        return new $class();
-    }
-
-    /**
-     * prepareColumn
-     *
-     * @param  Column  $column
-     *
-     * @return  Column
-     */
-    protected function prepareColumn(Column $column)
-    {
-        $typeMapper = $this->getDataType();
-
-        $type   = $typeMapper::getType($column->getType());
-        $length = $column->getLengthExpression() ?: $typeMapper::getLength($type);
-
-        $length = $length ? '(' . $length . ')' : null;
-
-        $column->type($type);
-
-        // Prepare default value
-        $this->prepareDefaultValue($column);
-
-        return $column->length($length);
-    }
-
-    /**
-     * prepareDefaultValue
-     *
-     * @param  Column  $column
-     *
-     * @return  Column
-     */
-    protected function prepareDefaultValue(Column $column)
-    {
-        $typeMapper = $this->getDataType();
-
-        $default = $column->getDefault();
-
-        if (!$column->getNullable() && $default === null && !$column->isPrimary()) {
-            $default = $typeMapper::getDefaultValue($column->getType());
-
-            $column->defaultValue($default);
-        }
-
-        return $column;
+        return $this->db->getDatabase($this->databaseName, $new);
     }
 
     /**
@@ -512,9 +442,9 @@ class TableManager extends AbstractMetaManager
      */
     public function reset(): static
     {
-        $this->columnCache = [];
-        $this->indexCache  = [];
-        $this->database    = null;
+        $this->cacheReset();
+        $this->databaseName = null;
+        $this->schemaName = null;
 
         return $this;
     }

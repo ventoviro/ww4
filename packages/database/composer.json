@@ -1,34 +1,36 @@
 {
-    "name": "windwalker/crypt",
+    "name": "windwalker/database",
     "type": "windwalker-package",
-    "description": "Windwalker Crypt package",
+    "description": "Windwalker Database package",
     "keywords": [
         "windwalker",
         "framework",
-        "crypt",
-        "symmetric",
-        "sodium",
-        "libsodium",
-        "openssl"
+        "database",
+        "db",
+        "mysql",
+        "postgresql",
+        "sqlsrv",
+        "pdo"
     ],
-    "homepage": "https://github.com/ventoviro/windwalker-crypt",
+    "homepage": "https://github.com/ventoviro/windwalker-database",
     "license": "MIT",
     "require": {
         "php": ">=8.0.0",
-        "paragonie/constant_time_encoding": "^2.3"
+        "windwalker/query": "~4.0",
+        "windwalker/event": "~4.0",
+        "windwalker/data": "~4.0",
+        "windwalker/cache": "~4.0",
+        "windwalker/utilities": "~4.0"
     },
     "require-dev": {
-        "windwalker/test": "~4.0",
-        "ext-openssl": "*",
-        "ext-sodium": "*"
+        "windwalker/test": "~4.0"
     },
     "suggest": {
-        "ext-openssl": "Install openssl to support legacy openssl cipher."
     },
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\Crypt\\": "src/"
+            "Windwalker\\Database\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
@@ -36,7 +38,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Crypt\\Test\\": "test/"
+            "Windwalker\\Database\\Test\\": "test/"
         }
     },
     "extra": {

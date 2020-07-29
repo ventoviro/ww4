@@ -27,7 +27,7 @@ class Constraint
 
     public string $constraintName = '';
     public string $constraintType = '';
-    public string $tableName = '';
+    public ?string $tableName = null;
     public ?string $referencedTableSchema = null;
     public ?string $referencedTableName = null;
     public ?string $matchOption = null;
@@ -44,14 +44,7 @@ class Constraint
      */
     public array $referencedColumns = [];
 
-    /**
-     * Constraint constructor.
-     *
-     * @param  string  $constraintType
-     * @param  string  $constraintName
-     * @param  string  $tableName
-     */
-    public function __construct(string $constraintType, string $constraintName, string $tableName)
+    public function __construct(string $constraintType, string $constraintName, ?string $tableName = null)
     {
         $this->constraintName = $constraintName;
         $this->tableName      = $tableName;

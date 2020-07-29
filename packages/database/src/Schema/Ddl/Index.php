@@ -20,7 +20,7 @@ class Index
 {
     use WrapableTrait;
 
-    public string $tableName = '';
+    public ?string $tableName = null;
     public string $indexName = '';
     public ?string $indexComment = null;
     public bool $isUnique;
@@ -30,6 +30,18 @@ class Index
      * @var Column[]
      */
     protected array $columns = [];
+
+    /**
+     * Index constructor.
+     *
+     * @param  string|null  $tableName
+     * @param  string       $indexName
+     */
+    public function __construct(string $indexName, ?string $tableName = null)
+    {
+        $this->tableName = $tableName;
+        $this->indexName = $indexName;
+    }
 
     public function tableName(string $tableName)
     {
