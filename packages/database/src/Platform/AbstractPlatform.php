@@ -313,16 +313,10 @@ abstract class AbstractPlatform
         return $this->db->execute(
             $this->db->getQuery(true)
                 ->alter('TABLE', $schema . '.' . $table)
-                ->pipe(
-                    function (AlterClause $alter) use ($index) {
-                        $alter->addIndex(
-                            $index->indexName,
-                            $this->db->quoteName(array_keys($index->getColumns()))
-                        );
-
-                        return $alter;
-                    }
-                )
+                ->tap(fn(AlterClause $alter) => $alter->addIndex(
+                    $index->indexName,
+                    $this->db->quoteName(array_keys($index->getColumns()))
+                ))
         );
     }
 
