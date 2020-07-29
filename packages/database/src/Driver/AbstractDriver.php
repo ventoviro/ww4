@@ -157,7 +157,7 @@ abstract class AbstractDriver implements DriverInterface
                 /** @var \Throwable|\PDOException $e */
                 $e = $event['exception'];
 
-                $sql = $this->replacePrefix(($query instanceof Query ? $query->render(true) : $query));
+                $sql = $this->replacePrefix(($query instanceof Query ? $query->render(true) : (string) $query));
 
                 $event['exception'] = new DatabaseQueryException(
                     $e->getMessage() . ' - SQL: ' . $sql,

@@ -14,6 +14,8 @@ namespace Windwalker\Database\Test;
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Event\QueryEndEvent;
 
+use function Windwalker\disposable;
+
 /**
  * The AbstractDatabaseTestCase class.
  */
@@ -77,5 +79,21 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
 
         static::$db->getDriver()->disconnect();
         static::$db = null;
+    }
+
+    public function logQueries(callable $callback): array
+    {
+        $logs = [];
+        $fp = function (QueryEndEvent $event) use (&$logs) {
+            return $logs[] = $event['sql'];
+        };
+
+        static::$db->on(QueryEndEvent::class, $fp);
+
+        $callback();
+
+        static::$db->getDispatcher()->remove($fp);
+
+        return $logs;
     }
 }

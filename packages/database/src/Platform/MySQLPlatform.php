@@ -15,6 +15,7 @@ use Windwalker\Data\Collection;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Ddl\Constraint;
+use Windwalker\Database\Schema\Ddl\Index;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Escaper;
@@ -407,29 +408,29 @@ class MySQLPlatform extends AbstractPlatform
 
         $options = array_merge($defaultOptions, $options);
         $columns = [];
-        $query   = $this->db->getQuery(true);
-        $alter   = $query->alter('TABLE', $schema->getTable()->getName());
+        $table   = $schema->getTable();
+        $tableName = $this->db->quoteName($table->schemaName . '.' . $table->getName());
+        $primaries = [];
 
         foreach ($schema->getColumns() as $column) {
             $column = $this->prepareColumn(clone $column);
 
-            $columns[$column->getName()] = $this->getColumnExpression($column)
-                    ->setName($this->db->quoteName($column->getName()));
-
             if ($column->isPrimary()) {
-                $alter->addPrimaryKey(null, $this->db->quoteName([$column->getName()]));
+                $primaries[] = $column;
 
-                if ($column->isAutoIncrement()) {
-                    $alter->modifyColumn($column->getName(), (string) $this->getColumnExpression($column))
-                        ->append('AUTO_INCREMENT');
-                }
+                // Add AI later after table created.
+                $column = clone $column;
+                $column->autoIncrement(false);
             }
+
+            $columns[$column->getName()] = $this->getColumnExpression($column)
+                ->setName($this->db->quoteName($column->getName()));
         }
 
         $sql = $this->getGrammar()::build(
             'CREATE TABLE',
             $ifNotExists ? 'IF NOT EXISTS' : null,
-            $query->quoteName($schema->getTable()->getName()),
+            $tableName,
             "(\n" . implode(",\n", $columns) . "\n)",
             $this->getGrammar()::buildConfig(
                 [
@@ -441,39 +442,32 @@ class MySQLPlatform extends AbstractPlatform
             )
         );
 
-        foreach ($schema->getIndexes() as $index) {
-            $alter->addIndex(
-                $index->indexName,
-                array_map(
-                    fn (Column $column): string => $this->getIndexColumnName($column),
-                    $index->getColumns()
-                )
-            );
-        }
+        $statement = $this->db->execute($sql);
 
-        foreach ($schema->getConstraints() as $constraint) {
-            if ($constraint->constraintType === Constraint::TYPE_PRIMARY_KEY) {
-                $alter->addPrimaryKey(
-                    null,
-                    $query->quoteName(array_keys($constraint->getColumns()))
-                );
-            } elseif ($constraint->constraintType === Constraint::TYPE_UNIQUE) {
-                $alter->addUniqueKey(
-                    $constraint->constraintName,
-                    $query->quoteName(array_keys($constraint->getColumns()))
-                );
-            } elseif ($constraint->constraintType === Constraint::TYPE_FOREIGN_KEY) {
-                $alter->addForeignKey(
-                    $constraint->constraintName,
-                    $query->quoteName(array_keys($constraint->getColumns())),
-                    $query->quoteName(array_keys($constraint->getReferencedColumns())),
-                    $constraint->updateRule,
-                    $constraint->deleteRule,
-                );
+        if ($primaries) {
+            $this->addConstraint(
+                $table->getName(),
+                (new Constraint(Constraint::TYPE_PRIMARY_KEY, 'PRIMARY', $table->getName()))
+                    ->columns($primaries),
+                $table->schemaName
+            );
+
+            foreach ($primaries as $column) {
+                if ($column->isAutoIncrement()) {
+                    $this->modifyColumn($table->getName(), $column, $table->schemaName);
+                }
             }
         }
 
-        return $this->db->execute($sql . ';' . $alter);
+        foreach ($schema->getIndexes() as $index) {
+            $this->addIndex($table->getName(), $index, $table->schemaName);
+        }
+
+        foreach ($schema->getConstraints() as $constraint) {
+            $this->addConstraint($table->getName(), $constraint, $table->schemaName);
+        }
+
+        return $statement;
     }
 
     public function getColumnExpression(Column $column): Clause
@@ -485,6 +479,7 @@ class MySQLPlatform extends AbstractPlatform
             $column->getColumnDefault() !== false
                 ? 'DEFAULT ' . $this->db->quote($column->getColumnDefault())
                 : '',
+            $column->isAutoIncrement() ? 'AUTO_INCREMENT' : null,
             $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
             $column->getOption('suffix')
         );
@@ -515,29 +510,13 @@ class MySQLPlatform extends AbstractPlatform
         return $this->db->execute(
             $this->getGrammar()::build(
                 'ALTER TABLE',
-                $this->getGrammar()->tableName($schema, $table),
+                $this->db->quoteName($schema . '.' . $table),
                 'CHANGE COLUMN',
                 $this->db->quoteName($from),
                 $this->db->quoteName($to),
                 (string) $this->getColumnExpression($toColumn)
             )
         );
-    }
-
-    public function addIndex(): StatementInterface
-    {
-    }
-
-    public function dropIndex(): StatementInterface
-    {
-    }
-
-    public function addConstraint(): StatementInterface
-    {
-    }
-
-    public function dropConstraint(): StatementInterface
-    {
     }
 
     /**

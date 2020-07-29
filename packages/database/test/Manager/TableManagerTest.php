@@ -11,12 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Test\Manager;
 
-use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Manager\TableManager;
-use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
-use Windwalker\Test\TestHelper;
 
 class TableManagerTest extends AbstractDatabaseTestCase
 {
@@ -117,20 +114,22 @@ class TableManagerTest extends AbstractDatabaseTestCase
     {
         $table = self::$db->getTable('hello');
 
-        $table->create(
-            static function (Schema $schema) {
-                $schema->primary('id');
-                $schema->char('type')->length(25);
-                $schema->integer('catid')->nullable(true);
-                $schema->varchar('alias');
-                $schema->varchar('title')->defaultValue('H');
-                $schema->decimal('price')->length('20,6');
-                $schema->text('intro');
+        $logs = $this->logQueries(
+            fn () => $table->create(
+                static function (Schema $schema) {
+                    $schema->primary('id');
+                    $schema->char('type')->length(25);
+                    $schema->integer('catid')->nullable(true);
+                    $schema->varchar('alias');
+                    $schema->varchar('title')->defaultValue('H');
+                    $schema->decimal('price')->length('20,6');
+                    $schema->text('intro');
 
-                $schema->addIndex(['catid', 'type']);
-                $schema->addIndex('title(150)');
-                $schema->addUniqueKey('alias');
-            }
+                    $schema->addIndex(['catid', 'type']);
+                    $schema->addIndex('title(150)');
+                    $schema->addUniqueKey('alias');
+                }
+            )
         );
 
         self::assertSqlFormatEquals(
@@ -144,14 +143,13 @@ class TableManagerTest extends AbstractDatabaseTestCase
             `price` decimal(20,6) NOT NULL DEFAULT 0,
             `intro` text NOT NULL DEFAULT ''
             ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-            ALTER TABLE `hello`
-            ADD CONSTRAINT PRIMARY KEY (`id`),
-            MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT,
-            ADD INDEX `idx_hello_catid_type` (`catid`,`type`),
-            ADD INDEX `idx_hello_title` (`title`(150)),
-            ADD CONSTRAINT `idx_hello_alias` UNIQUE (`alias`)
+            ALTER TABLE `hello` ADD CONSTRAINT PRIMARY KEY (`id`);
+            ALTER TABLE `hello` MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT;
+            ALTER TABLE `hello` ADD INDEX `idx_hello_catid_type` (`catid`,`type`);
+            ALTER TABLE `hello` ADD INDEX `idx_hello_title` (`title`);
+            ALTER TABLE `hello` ADD CONSTRAINT `idx_hello_alias` UNIQUE (`alias`)
             SQL,
-            static::$lastQueries[array_key_last(static::$lastQueries)]
+            implode(";\n", $logs)
         );
     }
 

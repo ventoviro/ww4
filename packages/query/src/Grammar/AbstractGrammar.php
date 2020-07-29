@@ -262,6 +262,8 @@ abstract class AbstractGrammar
         }
 
         if (str_contains($name, '.')) {
+            $name = trim($name, '.');
+
             return implode(
                 '.',
                 array_map(
@@ -383,11 +385,6 @@ abstract class AbstractGrammar
     public function createQuery(): Query
     {
         return new Query($this->escaper, $this);
-    }
-
-    public function tableName(?string $schema, string $table): string
-    {
-        return $this->createQuery()->quoteName(ltrim($schema . '.' . $table));
     }
 
     // /**

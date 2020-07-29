@@ -539,40 +539,4 @@ class PostgreSQLPlatform extends AbstractPlatform
     public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface
     {
     }
-
-    /**
-     * addIndex
-     *
-     * @return  bool
-     */
-    public function addIndex(): StatementInterface
-    {
-    }
-
-    /**
-     * dropIndex
-     *
-     * @return  bool
-     */
-    public function dropIndex(): StatementInterface
-    {
-    }
-
-    /**
-     * addConstraint
-     *
-     * @return  bool
-     */
-    public function addConstraint(): StatementInterface
-    {
-    }
-
-    /**
-     * dropConstraint
-     *
-     * @return  bool
-     */
-    public function dropConstraint(): StatementInterface
-    {
-    }
 }

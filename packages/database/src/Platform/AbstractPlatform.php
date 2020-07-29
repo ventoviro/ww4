@@ -17,7 +17,10 @@ use Windwalker\Database\Driver\TransactionDriverInterface;
 use Windwalker\Database\Platform\Concern\PlatformMetaTrait;
 use Windwalker\Database\Platform\Type\DataType;
 use Windwalker\Database\Schema\Ddl\Column;
+use Windwalker\Database\Schema\Ddl\Constraint;
+use Windwalker\Database\Schema\Ddl\Index;
 use Windwalker\Database\Schema\Schema;
+use Windwalker\Query\Clause\AlterClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;
@@ -235,7 +238,7 @@ abstract class AbstractPlatform
             $this->getGrammar()::build(
                 'DROP TABLE',
                 'IF EXISTS',
-                $this->getGrammar()->tableName($schema, $table),
+                $this->db->quoteName($schema . '.' . $table),
                 $suffix
             )
         );
@@ -246,9 +249,9 @@ abstract class AbstractPlatform
         return $this->db->execute(
             $this->getGrammar()::build(
                 'DROP TABLE',
-                $this->getGrammar()->tableName($schema, $from),
+                $this->db->quoteName($schema . '.' . $from),
                 'RENAME TO',
-                $this->getGrammar()->tableName($schema, $to),
+                $this->db->quoteName($schema . '.' . $to),
             )
         );
     }
@@ -258,7 +261,7 @@ abstract class AbstractPlatform
         return $this->db->execute(
             $this->getGrammar()::build(
                 'TRUNCATE TABLE',
-                $this->getGrammar()->tableName($schema, $table)
+                $this->db->quoteName($schema . '.' . $table)
             )
         );
     }
@@ -270,7 +273,7 @@ abstract class AbstractPlatform
         return $this->db->execute(
             $this->getGrammar()::build(
                 'ALTER TABLE',
-                $this->getGrammar()->tableName($schema, $table),
+                $this->db->quoteName($schema . '.' . $table),
                 'ADD COLUMN',
                 $this->db->quoteName($column->getName()),
                 (string) $this->getColumnExpression($column)
@@ -283,7 +286,7 @@ abstract class AbstractPlatform
         return $this->db->execute(
             $this->getGrammar()::build(
                 'ALTER TABLE',
-                $this->getGrammar()->tableName($schema, $table),
+                $this->db->quoteName($schema . '.' . $table),
                 'DROP COLUMN',
                 $this->db->quoteName($name),
             )
@@ -295,7 +298,7 @@ abstract class AbstractPlatform
         return $this->db->execute(
             $this->getGrammar()::build(
                 'ALTER TABLE',
-                $this->getGrammar()->tableName($schema, $table),
+                $this->db->quoteName($schema . '.' . $table),
                 'MODIFY COLUMN',
                 $this->db->quoteName($column->getName()),
                 (string) $this->getColumnExpression($column)
@@ -305,11 +308,75 @@ abstract class AbstractPlatform
 
     abstract public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface;
 
-    abstract public function addIndex(): StatementInterface;
-    abstract public function dropIndex(): StatementInterface;
+    public function addIndex(string $table, Index $index, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->db->getQuery(true)
+                ->alter('TABLE', $schema . '.' . $table)
+                ->pipe(
+                    function (AlterClause $alter) use ($index) {
+                        $alter->addIndex(
+                            $index->indexName,
+                            $this->db->quoteName(array_keys($index->getColumns()))
+                        );
 
-    abstract public function addConstraint(): StatementInterface;
-    abstract public function dropConstraint(): StatementInterface;
+                        return $alter;
+                    }
+                )
+        );
+    }
+
+    public function dropIndex(string $table, string $name, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'ALTER TABLE',
+                $this->db->quoteName($schema . '.' . $table),
+                'DROP INDEX',
+                $this->db->quoteName($name),
+            )
+        );
+    }
+
+    public function addConstraint(string $table, Constraint $constraint, ?string $schema = null): StatementInterface
+    {
+        $alter = $this->db->getQuery(true)
+            ->alter('TABLE', $schema . '.' . $table);
+
+        if ($constraint->constraintType === Constraint::TYPE_PRIMARY_KEY) {
+            $alter->addPrimaryKey(
+                null,
+                $this->db->quoteName(array_keys($constraint->getColumns()))
+            );
+        } elseif ($constraint->constraintType === Constraint::TYPE_UNIQUE) {
+            $alter->addUniqueKey(
+                $constraint->constraintName,
+                $this->db->quoteName(array_keys($constraint->getColumns()))
+            );
+        } elseif ($constraint->constraintType === Constraint::TYPE_FOREIGN_KEY) {
+            $alter->addForeignKey(
+                $constraint->constraintName,
+                $this->db->quoteName(array_keys($constraint->getColumns())),
+                $this->db->quoteName(array_keys($constraint->getReferencedColumns())),
+                $constraint->updateRule,
+                $constraint->deleteRule,
+            );
+        }
+
+        return $this->db->execute((string) $alter);
+    }
+
+    public function dropConstraint(string $table, string $name, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'ALTER TABLE',
+                $this->db->quoteName($schema . '.' . $table),
+                'DROP CONSTRAINT',
+                $this->db->quoteName($name),
+            )
+        );
+    }
 
     protected function prepareColumn(Column $column): Column
     {

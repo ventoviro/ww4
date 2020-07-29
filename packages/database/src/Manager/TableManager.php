@@ -294,18 +294,18 @@ class TableManager extends AbstractMetaManager
     public function addIndex($columns = [], ?string $name = null, array $options = []): static
     {
         if (!$columns instanceof Index) {
-            $constraint = new Index($name, $this->getName());
-            $constraint->columns((array) $columns)
+            $index = new Index($name, $this->getName());
+            $index->columns((array) $columns)
                 ->bind($options);
         } else {
-            $constraint = $columns;
+            $index = $columns;
         }
 
         if ($this->hasIndex($name)) {
             return $this;
         }
 
-        $this->getPlatform()->addIndex($constraint);
+        $this->getPlatform()->addIndex($this->getName(), $index, $this->schemaName);
 
         return $this;
     }
@@ -313,7 +313,7 @@ class TableManager extends AbstractMetaManager
     public function dropIndex($name): static
     {
         if (!$this->hasIndex($name)) {
-            $this->getPlatform()->dropIndex($name);
+            $this->getPlatform()->dropIndex($this->getName(), $name, $this->schemaName);
         }
 
         return $this;
@@ -357,7 +357,7 @@ class TableManager extends AbstractMetaManager
             return $this;
         }
 
-        $this->getPlatform()->addConstraint($constraint);
+        $this->getPlatform()->addConstraint($this->getName(), $constraint, $this->schemaName);
 
         return $this;
     }
