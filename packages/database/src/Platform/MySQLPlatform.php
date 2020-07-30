@@ -52,7 +52,16 @@ class MySQLPlatform extends AbstractPlatform
     public function listTablesQuery(?string $schema): Query
     {
         $query = $this->createQuery()
-            ->select('TABLE_NAME')
+            ->select(
+                [
+                    'TABLE_NAME',
+                    'TABLE_SCHEMA',
+                    'TABLE_TYPE',
+                    raw('NULL AS VIEW_DEFINITION'),
+                    raw('NULL AS CHECK_OPTION'),
+                    raw('NULL AS IS_UPDATABLE')
+                ]
+            )
             ->from('INFORMATION_SCHEMA.TABLES')
             ->where('TABLE_TYPE', 'BASE TABLE');
 
@@ -68,9 +77,17 @@ class MySQLPlatform extends AbstractPlatform
     public function listViewsQuery(?string $schema): Query
     {
         $query = $this->createQuery()
-            ->select('TABLE_NAME')
-            ->from('INFORMATION_SCHEMA.TABLES')
-            ->where('TABLE_TYPE', 'VIEW');
+            ->select(
+                [
+                    'TABLE_NAME',
+                    'TABLE_SCHEMA',
+                    raw('\'VIEW\' AS TABLE_TYPE'),
+                    'VIEW_DEFINITION',
+                    'CHECK_OPTION',
+                    'IS_UPDATABLE'
+                ]
+            )
+            ->from('INFORMATION_SCHEMA.VIEWS');
 
         if ($schema !== null) {
             $query->where('TABLE_SCHEMA', $schema);

@@ -61,7 +61,24 @@ class MySQLPlatformTest extends AbstractPlatformTest
         $tables = $this->instance->listTables(static::$schema);
 
         self::assertEquals(
-            ['ww_articles', 'ww_categories'],
+            [
+                'ww_articles' => [
+                    'TABLE_NAME' => 'ww_articles',
+                    'TABLE_SCHEMA' => 'windwalker_test',
+                    'TABLE_TYPE' => 'BASE TABLE',
+                    'VIEW_DEFINITION' => null,
+                    'CHECK_OPTION' => null,
+                    'IS_UPDATABLE' => null,
+                ],
+                'ww_categories' => [
+                    'TABLE_NAME' => 'ww_categories',
+                    'TABLE_SCHEMA' => 'windwalker_test',
+                    'TABLE_TYPE' => 'BASE TABLE',
+                    'VIEW_DEFINITION' => null,
+                    'CHECK_OPTION' => null,
+                    'IS_UPDATABLE' => null,
+                ],
+            ],
             $tables
         );
     }
@@ -74,7 +91,16 @@ class MySQLPlatformTest extends AbstractPlatformTest
         $views = $this->instance->listViews(static::$schema);
 
         self::assertEquals(
-            ['ww_articles_view'],
+            [
+                'ww_articles_view' => [
+                    'TABLE_NAME' => 'ww_articles_view',
+                    'TABLE_SCHEMA' => 'windwalker_test',
+                    'TABLE_TYPE' => 'VIEW',
+                    'VIEW_DEFINITION' => 'SELECT `windwalker_test`.`ww_articles`.`id` AS `id`,`windwalker_test`.`ww_articles`.`category_id` AS `category_id`,`windwalker_test`.`ww_articles`.`page_id` AS `page_id`,`windwalker_test`.`ww_articles`.`type` AS `type`,`windwalker_test`.`ww_articles`.`price` AS `price`,`windwalker_test`.`ww_articles`.`title` AS `title`,`windwalker_test`.`ww_articles`.`alias` AS `alias`,`windwalker_test`.`ww_articles`.`introtext` AS `introtext`,`windwalker_test`.`ww_articles`.`state` AS `state`,`windwalker_test`.`ww_articles`.`ordering` AS `ordering`,`windwalker_test`.`ww_articles`.`created` AS `created`,`windwalker_test`.`ww_articles`.`created_by` AS `created_by`,`windwalker_test`.`ww_articles`.`language` AS `language`,`windwalker_test`.`ww_articles`.`params` AS `params` FROM `windwalker_test`.`ww_articles`',
+                    'CHECK_OPTION' => 'NONE',
+                    'IS_UPDATABLE' => 'YES',
+                ],
+            ],
             $views
         );
     }
@@ -99,7 +125,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                 'numeric_unsigned',
                 'comment',
                 'auto_increment',
-                'erratas'
+                'erratas',
             ],
             array_keys($columns[array_key_first($columns)])
         );
@@ -120,7 +146,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => true,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'category_id' => [
                     'ordinal_position' => 2,
@@ -136,7 +162,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'page_id' => [
                     'ordinal_position' => 3,
@@ -152,7 +178,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'type' => [
                     'ordinal_position' => 4,
@@ -170,9 +196,9 @@ class MySQLPlatformTest extends AbstractPlatformTest
                         'permitted_values' => [
                             'foo',
                             'bar',
-                            'yoo'
-                        ]
-                    ]
+                            'yoo',
+                        ],
+                    ],
                 ],
                 'price' => [
                     'ordinal_position' => 5,
@@ -188,7 +214,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'title' => [
                     'ordinal_position' => 6,
@@ -204,7 +230,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'alias' => [
                     'ordinal_position' => 7,
@@ -220,7 +246,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'introtext' => [
                     'ordinal_position' => 8,
@@ -236,7 +262,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'state' => [
                     'ordinal_position' => 9,
@@ -252,7 +278,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'ordering' => [
                     'ordinal_position' => 10,
@@ -268,7 +294,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'created' => [
                     'ordinal_position' => 11,
@@ -284,7 +310,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'created_by' => [
                     'ordinal_position' => 12,
@@ -300,7 +326,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'language' => [
                     'ordinal_position' => 13,
@@ -316,7 +342,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'params' => [
                     'ordinal_position' => 14,
@@ -332,8 +358,8 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
-                ]
+                    ],
+                ],
             ],
             $columns
         );
@@ -353,32 +379,32 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'constraint_type' => 'PRIMARY KEY',
                     'table_name' => 'ww_articles',
                     'columns' => [
-                        'id'
-                    ]
+                        'id',
+                    ],
                 ],
                 'idx_articles_alias' => [
                     'constraint_name' => 'idx_articles_alias',
                     'constraint_type' => 'UNIQUE',
                     'table_name' => 'ww_articles',
                     'columns' => [
-                        'alias'
-                    ]
+                        'alias',
+                    ],
                 ],
                 'fk_articles_category_id' => [
                     'constraint_name' => 'fk_articles_category_id',
                     'constraint_type' => 'FOREIGN KEY',
                     'table_name' => 'ww_articles',
                     'columns' => [
-                        'category_id'
+                        'category_id',
                     ],
                     'referenced_table_schema' => 'windwalker_test',
                     'referenced_table_name' => 'ww_categories',
                     'referenced_columns' => [
-                        'id'
+                        'id',
                     ],
                     'match_option' => 'NONE',
                     'update_rule' => 'RESTRICT',
-                    'delete_rule' => 'RESTRICT'
+                    'delete_rule' => 'RESTRICT',
                 ],
                 'fk_articles_category_more' => [
                     'constraint_name' => 'fk_articles_category_more',
@@ -386,18 +412,18 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'table_name' => 'ww_articles',
                     'columns' => [
                         'page_id',
-                        'created_by'
+                        'created_by',
                     ],
                     'referenced_table_schema' => 'windwalker_test',
                     'referenced_table_name' => 'ww_categories',
                     'referenced_columns' => [
                         'parent_id',
-                        'level'
+                        'level',
                     ],
                     'match_option' => 'NONE',
                     'update_rule' => 'RESTRICT',
-                    'delete_rule' => 'RESTRICT'
-                ]
+                    'delete_rule' => 'RESTRICT',
+                ],
             ],
             $constraints
         );
@@ -422,9 +448,9 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'id' => [
                             'column_name' => 'id',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_alias' => [
                     'table_schema' => 'windwalker_test',
@@ -436,9 +462,9 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'alias' => [
                             'column_name' => 'alias',
-                            'sub_part' => 150
-                        ]
-                    ]
+                            'sub_part' => 150,
+                        ],
+                    ],
                 ],
                 'fk_articles_category_more' => [
                     'table_schema' => 'windwalker_test',
@@ -450,13 +476,13 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'page_id' => [
                             'column_name' => 'page_id',
-                            'sub_part' => null
+                            'sub_part' => null,
                         ],
                         'created_by' => [
                             'column_name' => 'created_by',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_category_id' => [
                     'table_schema' => 'windwalker_test',
@@ -468,9 +494,9 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'category_id' => [
                             'column_name' => 'category_id',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_created_by' => [
                     'table_schema' => 'windwalker_test',
@@ -482,9 +508,9 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'created_by' => [
                             'column_name' => 'created_by',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_language' => [
                     'table_schema' => 'windwalker_test',
@@ -496,9 +522,9 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'language' => [
                             'column_name' => 'language',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_page_id' => [
                     'table_schema' => 'windwalker_test',
@@ -510,10 +536,10 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'page_id' => [
                             'column_name' => 'page_id',
-                            'sub_part' => null
-                        ]
-                    ]
-                ]
+                            'sub_part' => null,
+                        ],
+                    ],
+                ],
             ],
             $indexes
         );

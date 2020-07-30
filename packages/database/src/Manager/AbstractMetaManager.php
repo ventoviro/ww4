@@ -22,17 +22,17 @@ abstract class AbstractMetaManager
     /**
      * @var string
      */
-    protected $name;
+    protected ?string $name = null;
 
     /**
      * @var DatabaseAdapter
      */
-    protected $db;
+    protected DatabaseAdapter $db;
 
     /**
      * AbstractDbManager constructor.
      *
-     * @param  string           $name
+     * @param  string|null      $name
      * @param  DatabaseAdapter  $db
      */
     public function __construct(?string $name, DatabaseAdapter $db)

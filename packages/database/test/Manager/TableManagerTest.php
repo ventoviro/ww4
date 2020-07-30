@@ -20,99 +20,11 @@ class TableManagerTest extends AbstractDatabaseTestCase
     protected ?TableManager $instance;
 
     /**
-     * @see  TableManager::save
-     */
-    public function testSave(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::getColumns
-     */
-    public function testGetColumns(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::getColumnNames
-     */
-    public function testGetColumnNames(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::dropColumn
-     */
-    public function testDropColumn(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::dropIndex
-     */
-    public function testDropIndex(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::setName
-     */
-    public function testSetName(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::addIndex
-     */
-    public function testAddIndex(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::getDetail
-     */
-    public function testGetDetail(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::update
-     */
-    public function testUpdate(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::modifyColumn
-     */
-    public function testModifyColumn(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::getSchemaObject
-     */
-    public function testGetSchemaObject(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  TableManager::create
      */
     public function testCreate(): void
     {
-        $table = self::$db->getTable('hello');
+        $table = self::$db->getTable('enterprise');
 
         $logs = $this->logQueries(
             fn () => $table->create(
@@ -134,7 +46,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
 
         self::assertSqlFormatEquals(
             <<<SQL
-            CREATE TABLE IF NOT EXISTS `hello` (
+            CREATE TABLE IF NOT EXISTS `enterprise` (
             `id` int(11) NOT NULL,
             `type` char(25) NOT NULL DEFAULT '',
             `catid` int(11) DEFAULT NULL,
@@ -143,60 +55,87 @@ class TableManagerTest extends AbstractDatabaseTestCase
             `price` decimal(20,6) NOT NULL DEFAULT 0,
             `intro` text NOT NULL DEFAULT ''
             ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-            ALTER TABLE `hello` ADD CONSTRAINT PRIMARY KEY (`id`);
-            ALTER TABLE `hello` MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT;
-            ALTER TABLE `hello` ADD INDEX `idx_hello_catid_type` (`catid`,`type`);
-            ALTER TABLE `hello` ADD INDEX `idx_hello_title` (`title`);
-            ALTER TABLE `hello` ADD CONSTRAINT `idx_hello_alias` UNIQUE (`alias`)
+            ALTER TABLE `enterprise` ADD CONSTRAINT PRIMARY KEY (`id`);
+            ALTER TABLE `enterprise` MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT;
+            ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_catid_type` (`catid`,`type`);
+            ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_title` (`title`);
+            ALTER TABLE `enterprise` ADD CONSTRAINT `idx_enterprise_alias` UNIQUE (`alias`)
             SQL,
             implode(";\n", $logs)
+        );
+
+        self::assertArrayHasKey('enterprise', $table->getPlatform()->listTables());
+    }
+
+    /**
+     * @see  TableManager::getSchema
+     */
+    public function testGetSchema(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::getConstraints
+     */
+    public function testGetConstraints(): void
+    {
+        $constraints = $this->instance->getConstraints();
+
+        self::assertEquals(
+            ['enterprise_PRIMARY', 'enterprise_idx_enterprise_alias'],
+            array_keys($constraints)
         );
     }
 
     /**
-     * @see  TableManager::getIndexes
+     * @see  TableManager::getDetail
      */
-    public function testGetIndexes(): void
+    public function testGetDetail(): void
+    {
+        $detail = $this->instance->getDetail();
+
+        self::assertEquals(
+            [
+                'TABLE_NAME' => 'enterprise',
+                'TABLE_SCHEMA' => 'windwalker_test',
+                'TABLE_TYPE' => 'BASE TABLE',
+                'VIEW_DEFINITION' => null,
+                'CHECK_OPTION' => null,
+                'IS_UPDATABLE' => null
+            ],
+            $detail
+        );
+    }
+
+    /**
+     * @see  TableManager::update
+     */
+    public function testUpdate(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
 
     /**
-     * @see  TableManager::exists
+     * @see  TableManager::addIndex
      */
-    public function testExists(): void
+    public function testAddIndex(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
 
     /**
-     * @see  TableManager::getDatabase
+     * @see  TableManager::hasConstraint
      */
-    public function testGetDatabase(): void
+    public function testHasConstraint(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
 
     /**
-     * @see  TableManager::truncate
+     * @see  TableManager::getSchemaObject
      */
-    public function testTruncate(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::getColumn
-     */
-    public function testGetColumn(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::hasColumn
-     */
-    public function testHasColumn(): void
+    public function testGetSchemaObject(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
@@ -210,25 +149,57 @@ class TableManagerTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  TableManager::getDataType
-     */
-    public function testGetDataType(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  TableManager::drop
-     */
-    public function testDrop(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  TableManager::rename
      */
     public function testRename(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::dropIndex
+     */
+    public function testDropIndex(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::addConstraint
+     */
+    public function testAddConstraint(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::dropColumn
+     */
+    public function testDropColumn(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::modifyColumn
+     */
+    public function testModifyColumn(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::dropConstraint
+     */
+    public function testDropConstraint(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::save
+     */
+    public function testSave(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
@@ -242,17 +213,49 @@ class TableManagerTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  TableManager::setDatabase
+     * @see  TableManager::truncate
      */
-    public function testSetDatabase(): void
+    public function testTruncate(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
 
     /**
-     * @see  TableManager::getSchemaName
+     * @see  TableManager::getColumns
      */
-    public function testGetSchema(): void
+    public function testGetColumns(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::setName
+     */
+    public function testSetName(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::hasColumn
+     */
+    public function testHasColumn(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::getColumnNames
+     */
+    public function testGetColumnNames(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::getIndex
+     */
+    public function testGetIndex(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
@@ -266,6 +269,54 @@ class TableManagerTest extends AbstractDatabaseTestCase
     }
 
     /**
+     * @see  TableManager::exists
+     */
+    public function testExists(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::getColumn
+     */
+    public function testGetColumn(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::getConstraint
+     */
+    public function testGetConstraint(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::getIndexes
+     */
+    public function testGetIndexes(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::getDatabase
+     */
+    public function testGetDatabase(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::drop
+     */
+    public function testDrop(): void
+    {
+        self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
      * @inheritDoc
      */
     protected static function setupDatabase(): void
@@ -274,6 +325,6 @@ class TableManagerTest extends AbstractDatabaseTestCase
 
     protected function setUp(): void
     {
-        $this->instance = self::$db->getTable('ww_flower');
+        $this->instance = self::$db->getTable('enterprise');
     }
 }

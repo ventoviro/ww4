@@ -124,8 +124,9 @@ abstract class AbstractPlatform
         $tables = $this->db->prepare(
             $this->listTablesQuery($schema)
         )
-            ->loadColumn()
-            ->dump();
+            ->loadAll()
+            ->keyBy('TABLE_NAME')
+            ->dump(true);
 
         if ($includeViews) {
             $tables = array_merge(
@@ -142,11 +143,14 @@ abstract class AbstractPlatform
      */
     public function listViews(?string $schema = null): array
     {
+        $this->listViewsQuery($schema)->render(true);
+
         return $this->db->prepare(
             $this->listViewsQuery($schema)
         )
-            ->loadColumn()
-            ->dump();
+            ->loadAll()
+            ->keyBy('TABLE_NAME')
+            ->dump(true);
     }
 
     /**

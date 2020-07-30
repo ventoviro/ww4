@@ -25,8 +25,8 @@ class Constraint
     public const TYPE_FOREIGN_KEY = 'FOREIGN KEY';
     public const TYPE_CHECK = 'CHECK';
 
-    public string $constraintName = '';
-    public string $constraintType = '';
+    public ?string $constraintName = null;
+    public ?string $constraintType = null;
     public ?string $tableName = null;
     public ?string $referencedTableSchema = null;
     public ?string $referencedTableName = null;
@@ -44,7 +44,7 @@ class Constraint
      */
     public array $referencedColumns = [];
 
-    public function __construct(string $constraintType, string $constraintName, ?string $tableName = null)
+    public function __construct(?string $constraintType = null, ?string $constraintName = null, ?string $tableName = null)
     {
         $this->constraintName = $constraintName;
         $this->tableName      = $tableName;
