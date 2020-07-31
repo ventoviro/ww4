@@ -36,6 +36,14 @@ class TableManagerTest extends AbstractDatabaseTestCase
                     $schema->varchar('title')->defaultValue('H');
                     $schema->decimal('price')->length('20,6');
                     $schema->text('intro');
+                    $schema->text('fulltext');
+                    $schema->datetime('start_date');
+                    $schema->datetime('created');
+                    $schema->timestamp('updated')
+                        ->onUpdateCurrent()
+                        ->defaultCurrent();
+                    $schema->timestamp('deleted');
+                    $schema->json('params');
 
                     $schema->addIndex(['catid', 'type']);
                     $schema->addIndex('title(150)');
@@ -115,7 +123,15 @@ class TableManagerTest extends AbstractDatabaseTestCase
     {
         $logs = $this->logQueries(
             fn () => $this->instance->update(function (Schema $schema) {
+                // New column
                 $schema->varchar('captain')->length(512)->after('catid');
+
+                // Update column
+                $schema->char('alias')->length(25)
+                    ->nullable(true)
+                    ->defaultValue('');
+
+                // New index
                 $schema->addIndex('captain');
             })
         );
@@ -139,6 +155,8 @@ class TableManagerTest extends AbstractDatabaseTestCase
               AND `TABLE_SCHEMA` = (SELECT DATABASE());
             ALTER TABLE `enterprise`
                 ADD COLUMN `captain` varchar(512) NOT NULL;
+            ALTER TABLE
+              `enterprise` MODIFY COLUMN `alias` char(25) DEFAULT NULL;
             SELECT `TABLE_SCHEMA`,
                    `TABLE_NAME`,
                    `NON_UNIQUE`,
@@ -163,7 +181,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     public function testAddIndex(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+
     }
 
     /**

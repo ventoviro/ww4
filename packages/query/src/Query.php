@@ -1205,6 +1205,10 @@ class Query implements QueryInterface, BindableInterface
      */
     public function quote($value)
     {
+        if ($value instanceof RawWrapper) {
+            return value($value);
+        }
+
         $value = value($value);
 
         if (is_iterable($value)) {

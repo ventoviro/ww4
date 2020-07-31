@@ -232,6 +232,7 @@ abstract class AbstractPlatform
             $column->canHasDefaultValue()
                 ? 'DEFAULT ' . $this->db->quote($column->getColumnDefault())
                 : '',
+            $column->getOption('on_update') ? 'ON UPDATE CURRENT_TIMESTAMP' : null,
             $column->getOption('suffix')
         );
     }

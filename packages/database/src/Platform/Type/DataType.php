@@ -116,7 +116,7 @@ class DataType
 
         self::DATE => [null, '0000-00-00', 'string'],
         self::TIME => [null, '00:00:00', 'string'],
-        self::TIMESTAMP => [null, '0', 'string'],
+        self::TIMESTAMP => [null, 0, 'string'],
         self::DATETIME => [null, '0000-00-00 00:00:00', 'string'],
     ];
 

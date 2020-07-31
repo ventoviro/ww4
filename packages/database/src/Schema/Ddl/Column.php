@@ -18,6 +18,8 @@ use Windwalker\Utilities\Classes\OptionAccessTrait;
 use Windwalker\Utilities\StrNormalise;
 use Windwalker\Utilities\TypeCast;
 
+use function Windwalker\raw;
+
 /**
  * The Column class.
  */
@@ -145,6 +147,16 @@ class Column
     public function defaultValue($value): static
     {
         return $this->columnDefault($value);
+    }
+
+    public function defaultCurrent(): static
+    {
+        return $this->defaultValue(raw('CURRENT_TIMESTAMP'));
+    }
+
+    public function onUpdateCurrent(bool $bool = true): static
+    {
+        return $this->setOption('on_update', $bool);
     }
 
     /**

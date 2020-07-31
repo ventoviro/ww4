@@ -498,6 +498,7 @@ class MySQLPlatform extends AbstractPlatform
                 ? 'DEFAULT ' . $this->db->quote($column->getColumnDefault())
                 : '',
             $column->isAutoIncrement() ? 'AUTO_INCREMENT' : null,
+            $column->getOption('on_update') ? 'ON UPDATE CURRENT_TIMESTAMP' : null,
             $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
             $column->getOption('suffix')
         );
