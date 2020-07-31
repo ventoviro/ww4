@@ -61,7 +61,13 @@ class TableManagerTest extends AbstractDatabaseTestCase
             `alias` varchar(255) NOT NULL DEFAULT '',
             `title` varchar(255) NOT NULL DEFAULT 'H',
             `price` decimal(20,6) NOT NULL DEFAULT 0,
-            `intro` text NOT NULL
+            `intro` text NOT NULL,
+            `fulltext` text NOT NULL,
+            `start_date` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
+            `created` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
+            `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            `deleted` timestamp NOT NULL DEFAULT '1970-01-01 12:00:01',
+            `params` json NOT NULL
             ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             ALTER TABLE `enterprise` ADD CONSTRAINT PRIMARY KEY (`id`);
             ALTER TABLE `enterprise` MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT;
@@ -91,7 +97,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
         $constraints = $this->instance->getConstraints();
 
         self::assertEquals(
-            ['enterprise_PRIMARY', 'enterprise_idx_enterprise_alias'],
+            ['enterprise_PRIMARY', 'enterprise_idx_enterprise_alias', 'enterprise_params'],
             array_keys($constraints)
         );
     }
@@ -156,7 +162,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
             ALTER TABLE `enterprise`
                 ADD COLUMN `captain` varchar(512) NOT NULL;
             ALTER TABLE
-              `enterprise` MODIFY COLUMN `alias` char(25) DEFAULT NULL;
+              `enterprise` MODIFY COLUMN `alias` char(25) DEFAULT '';
             SELECT `TABLE_SCHEMA`,
                    `TABLE_NAME`,
                    `NON_UNIQUE`,
