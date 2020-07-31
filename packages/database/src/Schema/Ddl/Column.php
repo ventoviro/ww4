@@ -103,9 +103,9 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function ordinalPosition(?int $ordinalPosition): static
+    public function ordinalPosition(int|string|null $ordinalPosition): static
     {
-        $this->ordinalPosition = $ordinalPosition;
+        $this->ordinalPosition = TypeCast::tryInteger($ordinalPosition, true);
 
         return $this;
     }
@@ -128,6 +128,11 @@ class Column
         $this->columnDefault = $value;
 
         return $this;
+    }
+
+    public function canHasDefaultValue(): bool
+    {
+        return $this->getColumnDefault() !== false && !($this->getColumnDefault() === null && !$this->getIsNullable());
     }
 
     /**
@@ -241,8 +246,8 @@ class Column
     private function setLengthByType(?int $precision, ?int $scale): void
     {
         if ($this->isNumeric()) {
-            $this->precision($precision);
-            $this->scale($scale);
+            $this->numericPrecision($precision);
+            $this->numericScale($scale);
 
             return;
         }
@@ -301,9 +306,9 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function characterMaximumLength(?int $characterMaximumLength): static
+    public function characterMaximumLength(int|string|null $characterMaximumLength): static
     {
-        $this->characterMaximumLength = $characterMaximumLength;
+        $this->characterMaximumLength = TypeCast::tryInteger($characterMaximumLength, true);
 
         return $this;
     }
@@ -321,9 +326,9 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function characterOctetLength(?int $characterOctetLength): static
+    public function characterOctetLength(int|string|null $characterOctetLength): static
     {
-        $this->characterOctetLength = $characterOctetLength;
+        $this->characterOctetLength = TypeCast::tryInteger($characterOctetLength, true);
 
         return $this;
     }
@@ -336,14 +341,9 @@ class Column
         return $this->numericPrecision;
     }
 
-    /**
-     * @param  int  $precision
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function precision(?int $precision): static
+    public function numericPrecision(int|string|null $precision): static
     {
-        $this->numericPrecision = $precision;
+        $this->numericPrecision = TypeCast::tryInteger($precision, true);
 
         return $this;
     }
@@ -361,9 +361,9 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function scale(?int $scale): static
+    public function numericScale(int|string|null $scale): static
     {
-        $this->numericScale = $scale;
+        $this->numericScale = TypeCast::tryInteger($scale, true);
 
         return $this;
     }

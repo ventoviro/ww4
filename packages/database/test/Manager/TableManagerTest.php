@@ -53,12 +53,12 @@ class TableManagerTest extends AbstractDatabaseTestCase
             `alias` varchar(255) NOT NULL DEFAULT '',
             `title` varchar(255) NOT NULL DEFAULT 'H',
             `price` decimal(20,6) NOT NULL DEFAULT 0,
-            `intro` text NOT NULL DEFAULT ''
+            `intro` text NOT NULL
             ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             ALTER TABLE `enterprise` ADD CONSTRAINT PRIMARY KEY (`id`);
             ALTER TABLE `enterprise` MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT;
             ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_catid_type` (`catid`,`type`);
-            ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_title` (`title`);
+            ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_title` (`title`(150));
             ALTER TABLE `enterprise` ADD CONSTRAINT `idx_enterprise_alias` UNIQUE (`alias`)
             SQL,
             implode(";\n", $logs)
@@ -113,7 +113,49 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     public function testUpdate(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $logs = $this->logQueries(
+            fn () => $this->instance->update(function (Schema $schema) {
+                $schema->varchar('captain')->length(512)->after('catid');
+                $schema->addIndex('captain');
+            })
+        );
+
+        self::assertSqlFormatEquals(
+            <<<SQL
+            SELECT `ORDINAL_POSITION`,
+                   `COLUMN_DEFAULT`,
+                   `IS_NULLABLE`,
+                   `DATA_TYPE`,
+                   `CHARACTER_MAXIMUM_LENGTH`,
+                   `CHARACTER_OCTET_LENGTH`,
+                   `NUMERIC_PRECISION`,
+                   `NUMERIC_SCALE`,
+                   `COLUMN_NAME`,
+                   `COLUMN_TYPE`,
+                   `COLUMN_COMMENT`,
+                   `EXTRA`
+            FROM `INFORMATION_SCHEMA`.`COLUMNS`
+            WHERE `TABLE_NAME` = 'enterprise'
+              AND `TABLE_SCHEMA` = (SELECT DATABASE());
+            ALTER TABLE `enterprise`
+                ADD COLUMN `captain` varchar(512) NOT NULL;
+            SELECT `TABLE_SCHEMA`,
+                   `TABLE_NAME`,
+                   `NON_UNIQUE`,
+                   `INDEX_NAME`,
+                   `COLUMN_NAME`,
+                   `COLLATION`,
+                   `CARDINALITY`,
+                   `SUB_PART`,
+                   `INDEX_COMMENT`
+            FROM `INFORMATION_SCHEMA`.`STATISTICS`
+            WHERE `TABLE_NAME` = 'enterprise'
+              AND `TABLE_SCHEMA` = (SELECT DATABASE());
+            ALTER TABLE `enterprise`
+                ADD INDEX `idx_enterprise_captain` (`captain`)
+            SQL,
+            implode("\n;", $logs)
+        );
     }
 
     /**

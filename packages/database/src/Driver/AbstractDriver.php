@@ -77,20 +77,12 @@ abstract class AbstractDriver implements DriverInterface
         return $this->db;
     }
 
-    /**
-     * handleQuery
-     *
-     * @param  string|Query  $query
-     * @param  array         $bounded
-     *
-     * @return  string
-     */
-    protected function handleQuery($query, ?array &$bounded = []): string
+    protected function handleQuery($query, ?array &$bounded = [], $emulated = false): string
     {
         $this->lastQuery = $query;
 
         if ($query instanceof Query) {
-            return $query->render(false, $bounded);
+            return $query->render($emulated, $bounded);
         }
 
         $bounded = $bounded ?? [];
@@ -151,7 +143,7 @@ abstract class AbstractDriver implements DriverInterface
                 $bounded
             ) {
                 $event['query']   = $query;
-                $event['sql']     = $sql;
+                $event['sql']     = $this->handleQuery($query, $bounded, true);
                 $event['bounded'] = $bounded;
 
                 /** @var \Throwable|\PDOException $e */
@@ -169,13 +161,12 @@ abstract class AbstractDriver implements DriverInterface
 
         $stmt->on(
             QueryEndEvent::class,
-            static function (QueryEndEvent $event) use (
+            function (QueryEndEvent $event) use (
                 $query,
-                $sql,
                 $bounded
             ) {
                 $event['query']   = $query;
-                $event['sql']     = $sql;
+                $event['sql']     = $this->handleQuery($query, $bounded, true);
                 $event['bounded'] = $bounded;
             }
         );

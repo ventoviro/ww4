@@ -151,9 +151,9 @@ class DataType
      *
      * @param  string  $type
      *
-     * @return int|string
+     * @return mixed
      */
-    public static function getDefaultValue(string $type): int|string
+    public static function getDefaultValue(string $type)
     {
         return static::getDefinition($type, 1);
     }
@@ -170,7 +170,7 @@ class DataType
         return static::getDefinition($type, 2) ?: 'string';
     }
 
-    protected static function getDefinition(string $type, ?int $key = null): string|int|null
+    protected static function getDefinition(string $type, ?int $key = null)
     {
         $type = strtolower($type);
 

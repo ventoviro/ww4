@@ -30,6 +30,8 @@ class TableManager extends AbstractMetaManager
 
     public ?string $databaseName = null;
 
+    public array $erratas = [];
+
     /**
      * create
      *
@@ -433,6 +435,26 @@ class TableManager extends AbstractMetaManager
     public function getDatabase(bool $new = false): DatabaseManager
     {
         return $this->db->getDatabase($this->databaseName, $new);
+    }
+
+    /**
+     * @return array
+     */
+    public function getErratas(): array
+    {
+        return $this->erratas;
+    }
+
+    /**
+     * @param  array  $erratas
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setErratas(array $erratas)
+    {
+        $this->erratas = $erratas;
+
+        return $this;
     }
 
     /**

@@ -17,6 +17,7 @@ use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Ddl\Index;
 use Windwalker\Database\Schema\Schema;
+use Windwalker\Query\Clause\AlterClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Mysql\MysqlGrammar;
@@ -493,26 +494,13 @@ class MySQLPlatform extends AbstractPlatform
             $column->getTypeExpression(),
             $column->getNumericUnsigned() ? 'UNSIGNED' : '',
             $column->getIsNullable() ? '' : 'NOT NULL',
-            $column->getColumnDefault() !== false
+            $column->canHasDefaultValue()
                 ? 'DEFAULT ' . $this->db->quote($column->getColumnDefault())
                 : '',
             $column->isAutoIncrement() ? 'AUTO_INCREMENT' : null,
             $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
             $column->getOption('suffix')
         );
-    }
-
-    protected function getIndexColumnName(Column $column): string
-    {
-        $name = $column->getName();
-
-        $name = $this->db->quoteName($name);
-
-        if ($column->getErratas()['sub_parts'] ?? null) {
-            $name .= '(' . $column->getErratas()['sub_parts'] . ')';
-        }
-
-        return $name;
     }
 
     public function getTableDetail(string $table, ?string $schema = null): ?array
@@ -534,6 +522,31 @@ class MySQLPlatform extends AbstractPlatform
                 (string) $this->getColumnExpression($toColumn)
             )
         );
+    }
+
+    public function addIndex(string $table, Index $index, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->db->getQuery(true)
+                ->alter('TABLE', $schema . '.' . $table)
+                ->tap(fn(AlterClause $alter) => $alter->addIndex(
+                    $index->indexName,
+                    array_map([$this, 'getIndexColumnName'], $index->getColumns())
+                ))
+        );
+    }
+
+    protected function getIndexColumnName(Column $column): string
+    {
+        $name = $column->getName();
+
+        $name = $this->db->quoteName($name);
+
+        if ($column->getErratas()['sub_parts'] ?? null) {
+            $name .= '(' . $column->getErratas()['sub_parts'] . ')';
+        }
+
+        return $name;
     }
 
     /**

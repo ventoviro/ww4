@@ -229,7 +229,7 @@ abstract class AbstractPlatform
             $this->db->quoteName($column->getName()),
             $column->getTypeExpression(),
             $column->getIsNullable() ? '' : 'NOT NULL',
-            $column->getColumnDefault() !== false
+            $column->canHasDefaultValue()
                 ? 'DEFAULT ' . $this->db->quote($column->getColumnDefault())
                 : '',
             $column->getOption('suffix')
@@ -401,9 +401,10 @@ abstract class AbstractPlatform
     {
         $typeMapper = $this->getDataType();
 
-        $default = $column->getColumnDefault();
-
-        if ($default === null && !$column->getIsNullable()) {
+        if (
+            $column->getColumnDefault() === false
+            || ($column->getColumnDefault() === null && !$column->getIsNullable())
+        ) {
             $default = $typeMapper::getDefaultValue($column->getDataType());
 
             $column->defaultValue($default);

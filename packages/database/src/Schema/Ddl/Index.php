@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Schema\Ddl;
 
 use Windwalker\Database\Platform\Type\DataType;
+use Windwalker\Utilities\Classes\OptionAccessTrait;
 
 /**
  * The Index class.
@@ -19,9 +20,10 @@ use Windwalker\Database\Platform\Type\DataType;
 class Index
 {
     use WrapableTrait;
+    use OptionAccessTrait;
 
     public ?string $tableName = null;
-    public string $indexName = '';
+    public ?string $indexName = null;
     public ?string $indexComment = null;
     public bool $isUnique;
     public bool $isPrimary;
@@ -37,7 +39,7 @@ class Index
      * @param  string|null  $tableName
      * @param  string       $indexName
      */
-    public function __construct(string $indexName, ?string $tableName = null)
+    public function __construct(?string $indexName = null, ?string $tableName = null)
     {
         $this->tableName = $tableName;
         $this->indexName = $indexName;
@@ -71,12 +73,16 @@ class Index
      *
      * @return  $this
      */
-    public function columns(array $columns)
+    public function columns(array $columns): static
     {
         $cols = [];
 
-        foreach ($columns as $column) {
+        foreach ($columns as $key => $column) {
             if (!$column instanceof Column) {
+                if (is_array($column)) {
+                    $column = $key;
+                }
+
                 [$colName, $subParts] = DataType::extract($column);
 
                 $column = new Column($colName);
