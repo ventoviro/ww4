@@ -69,18 +69,18 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'TABLE_CATALOG' => 'windwalker_test',
                     'TABLE_SCHEMA' => 'public',
                     'TABLE_TYPE' => 'BASE TABLE',
-                    'view_definition' => null,
-                    'check_option' => null,
-                    'is_updatable' => null
+                    'VIEW_DEFINITION' => null,
+                    'CHECK_OPTION' => null,
+                    'IS_UPDATABLE' => null
                 ],
                 'ww_categories' => [
                     'TABLE_NAME' => 'ww_categories',
                     'TABLE_CATALOG' => 'windwalker_test',
                     'TABLE_SCHEMA' => 'public',
                     'TABLE_TYPE' => 'BASE TABLE',
-                    'view_definition' => null,
-                    'check_option' => null,
-                    'is_updatable' => null
+                    'VIEW_DEFINITION' => null,
+                    'CHECK_OPTION' => null,
+                    'IS_UPDATABLE' => null
                 ]
             ],
             $tables
@@ -100,7 +100,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'TABLE_NAME' => 'ww_articles_view',
                     'TABLE_CATALOG' => 'windwalker_test',
                     'TABLE_SCHEMA' => 'public',
-                    'table_type' => 'VIEW',
+                    'TABLE_TYPE' => 'VIEW',
                     'VIEW_DEFINITION' => ' SELECT ww_articles.id,
     ww_articles.category_id,
     ww_articles.page_id,
@@ -133,6 +133,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
 
         self::assertEquals(
             [
+                'column_name',
                 'ordinal_position',
                 'column_default',
                 'is_nullable',
@@ -152,6 +153,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
         self::assertEquals(
             [
                 'id' => [
+                    'column_name' => 'id',
                     'ordinal_position' => 1,
                     'column_default' => 0,
                     'is_nullable' => false,
@@ -161,13 +163,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => 32,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => true,
                     'comment' => '',
+                    'auto_increment' => true,
                     'erratas' => [
 
                     ]
                 ],
                 'category_id' => [
+                    'column_name' => 'category_id',
                     'ordinal_position' => 2,
                     'column_default' => '0',
                     'is_nullable' => false,
@@ -177,13 +180,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => 32,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'page_id' => [
+                    'column_name' => 'page_id',
                     'ordinal_position' => 3,
                     'column_default' => '0',
                     'is_nullable' => false,
@@ -193,13 +197,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => 32,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'type' => [
+                    'column_name' => 'type',
                     'ordinal_position' => 4,
                     'column_default' => 'bar',
                     'is_nullable' => false,
@@ -209,13 +214,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'price' => [
+                    'column_name' => 'price',
                     'ordinal_position' => 5,
                     'column_default' => '0.0',
                     'is_nullable' => true,
@@ -225,13 +231,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => 20,
                     'numeric_scale' => 6,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'title' => [
+                    'column_name' => 'title',
                     'ordinal_position' => 6,
                     'column_default' => '',
                     'is_nullable' => false,
@@ -241,13 +248,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'alias' => [
+                    'column_name' => 'alias',
                     'ordinal_position' => 7,
                     'column_default' => '',
                     'is_nullable' => false,
@@ -257,13 +265,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'introtext' => [
+                    'column_name' => 'introtext',
                     'ordinal_position' => 8,
                     'column_default' => null,
                     'is_nullable' => false,
@@ -273,13 +282,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'state' => [
+                    'column_name' => 'state',
                     'ordinal_position' => 9,
                     'column_default' => '0',
                     'is_nullable' => false,
@@ -289,13 +299,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => 32,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'ordering' => [
+                    'column_name' => 'ordering',
                     'ordinal_position' => 10,
                     'column_default' => '0',
                     'is_nullable' => false,
@@ -305,13 +316,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => 32,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'created' => [
+                    'column_name' => 'created',
                     'ordinal_position' => 11,
                     'column_default' => '1000-01-01 00:00:00',
                     'is_nullable' => false,
@@ -321,13 +333,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'created_by' => [
+                    'column_name' => 'created_by',
                     'ordinal_position' => 12,
                     'column_default' => '0',
                     'is_nullable' => false,
@@ -337,13 +350,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => 32,
                     'numeric_scale' => 0,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'language' => [
+                    'column_name' => 'language',
                     'ordinal_position' => 13,
                     'column_default' => '',
                     'is_nullable' => false,
@@ -353,13 +367,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]
                 ],
                 'params' => [
+                    'column_name' => 'params',
                     'ordinal_position' => 14,
                     'column_default' => null,
                     'is_nullable' => false,
@@ -369,8 +384,8 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
-                    'auto_increment' => false,
                     'comment' => '',
+                    'auto_increment' => false,
                     'erratas' => [
 
                     ]

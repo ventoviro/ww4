@@ -66,8 +66,11 @@ class TableManager extends AbstractMetaManager
         $schema = $this->callSchema($schema);
 
         $this->reset();
+        $platform = $this->getPlatform();
 
         foreach ($schema->getColumns() as $column) {
+            $column = $platform->prepareColumn(clone $column);
+
             if ($this->hasColumn($column->getColumnName())) {
                 $this->modifyColumn($column);
             } else {

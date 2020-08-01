@@ -65,13 +65,6 @@ class Schema
         $this->table = $table;
     }
 
-    public function add(string $name, Column|string $column): Column
-    {
-        $column->columnName($name);
-
-        return $this->addColumn($column);
-    }
-
     public function addColumn(Column|string $column): Column
     {
         if (is_string($column) && class_exists($column)) {
@@ -141,7 +134,9 @@ class Schema
     {
         $columns = (array) $columns;
 
-        return $this->addConstraint(Constraint::TYPE_PRIMARY_KEY, 'PRIMARY')
+        $name = 'pk_' . $this->table->getName();
+
+        return $this->addConstraint(Constraint::TYPE_PRIMARY_KEY, $name)
             ->columns($columns);
     }
 

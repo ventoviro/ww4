@@ -269,9 +269,9 @@ class Query implements QueryInterface, BindableInterface
      *
      * @return  static
      */
-    public function selectAs($column, ?string $alias = null)
+    public function selectAs($column, ?string $alias = null, bool $isColumn = true)
     {
-        $this->selectRaw($this->as($column, $alias));
+        $this->selectRaw($this->as($column, $alias, $isColumn));
 
         return $this;
     }
@@ -432,8 +432,7 @@ class Query implements QueryInterface, BindableInterface
             }
         }
 
-        // Only column need alias, ignore it if is value.
-        if ($isColumn && $alias !== false && (string) $alias !== '') {
+        if ($alias !== false && (string) $alias !== '') {
             $clause->alias($this->quoteName($alias));
         }
 

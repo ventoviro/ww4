@@ -14,16 +14,18 @@ namespace Windwalker\Database\Platform;
 use Windwalker\Database\Driver\Pdo\PdoDriver;
 use Windwalker\Database\Driver\Postgresql\PostgresqlTransaction;
 use Windwalker\Database\Driver\StatementInterface;
+use Windwalker\Database\Platform\Type\PostgreSQLDataType;
 use Windwalker\Database\Schema\Ddl\Column;
+use Windwalker\Database\Schema\Ddl\Constraint;
+use Windwalker\Database\Schema\Ddl\Index;
 use Windwalker\Database\Schema\Schema;
+use Windwalker\Query\Clause\AlterClause;
 use Windwalker\Query\Clause\JoinClause;
 use Windwalker\Query\Escaper;
 use Windwalker\Query\Query;
-
 use Windwalker\Scalars\ArrayObject;
-use Windwalker\Utilities\Str;
 
-use function Windwalker\Query\raw_format;
+use function Windwalker\Query\clause;
 use function Windwalker\raw;
 
 /**
@@ -58,13 +60,9 @@ class PostgreSQLPlatform extends AbstractPlatform
             ->select('table_catalog AS TABLE_CATALOG')
             ->select('table_schema AS TABLE_SCHEMA')
             ->select('table_type AS TABLE_TYPE')
-            ->select(
-                [
-                    raw('NULL AS VIEW_DEFINITION'),
-                    raw('NULL AS CHECK_OPTION'),
-                    raw('NULL AS IS_UPDATABLE')
-                ]
-            )
+            ->selectAs(null, 'VIEW_DEFINITION', false)
+            ->selectAs(null, 'CHECK_OPTION', false)
+            ->selectAs(null, 'IS_UPDATABLE', false)
             ->from('information_schema.tables')
             ->where('table_type', 'BASE TABLE')
             ->order('table_name', 'ASC');
@@ -84,14 +82,10 @@ class PostgreSQLPlatform extends AbstractPlatform
             ->select('table_name AS TABLE_NAME')
             ->select('table_catalog AS TABLE_CATALOG')
             ->select('table_schema AS TABLE_SCHEMA')
-            ->select(raw('\'VIEW\' AS TABLE_TYPE'))
-            ->select(
-                [
-                    'view_definition AS VIEW_DEFINITION',
-                    'check_option AS CHECK_OPTION',
-                    'is_updatable AS IS_UPDATABLE'
-                ]
-            )
+            ->selectAs('VIEW', 'TABLE_TYPE', false)
+            ->selectAs('view_definition', 'VIEW_DEFINITION')
+            ->selectAs('check_option', 'CHECK_OPTION')
+            ->selectAs('is_updatable', 'IS_UPDATABLE')
             ->from('information_schema.views')
             ->order('table_name', 'ASC');
 
@@ -117,7 +111,7 @@ class PostgreSQLPlatform extends AbstractPlatform
                     'character_octet_length',
                     'numeric_precision',
                     'numeric_scale',
-                    'column_name'
+                    'column_name',
                 ]
             )
             ->from('information_schema.columns')
@@ -155,7 +149,7 @@ class PostgreSQLPlatform extends AbstractPlatform
                 'tc',
                 [
                     ['t.table_schema', '=', 'tc.table_schema'],
-                    ['t.table_name', '=', 'tc.table_name']
+                    ['t.table_name', '=', 'tc.table_name'],
                 ]
             )
             ->leftJoin(
@@ -194,31 +188,33 @@ class PostgreSQLPlatform extends AbstractPlatform
             )
             ->where('t.table_name', $this->db->replacePrefix($table))
             ->where('t.table_type', 'in', ['BASE TABLE', 'VIEW'])
-            ->tap(function (Query $query) use ($schema) {
-                if ($schema !== null) {
-                    $query->where('t.table_schema', $schema);
-                } else {
-                    $query->whereNotIn('table_schema', ['pg_catalog', 'information_schema']);
+            ->tap(
+                function (Query $query) use ($schema) {
+                    if ($schema !== null) {
+                        $query->where('t.table_schema', $schema);
+                    } else {
+                        $query->whereNotIn('t.table_schema', ['pg_catalog', 'information_schema']);
+                    }
+
+                    $order = 'CASE %n'
+                        . " WHEN 'PRIMARY KEY' THEN 1"
+                        . " WHEN 'UNIQUE' THEN 2"
+                        . " WHEN 'FOREIGN KEY' THEN 3"
+                        . " WHEN 'CHECK' THEN 4"
+                        . ' ELSE 5 END'
+                        . ', %n'
+                        . ', %n';
+
+                    $query->order(
+                        $query->raw(
+                            $order,
+                            'tc.constraint_type',
+                            'tc.constraint_name',
+                            'kcu.ordinal_position'
+                        )
+                    );
                 }
-
-                $order = 'CASE %n'
-                    . " WHEN 'PRIMARY KEY' THEN 1"
-                    . " WHEN 'UNIQUE' THEN 2"
-                    . " WHEN 'FOREIGN KEY' THEN 3"
-                    . " WHEN 'CHECK' THEN 4"
-                    . ' ELSE 5 END'
-                    . ', %n'
-                    . ', %n';
-
-                $query->order(
-                    $query->raw(
-                        $order,
-                        'tc.constraint_type',
-                        'tc.constraint_name',
-                        'kcu.ordinal_position'
-                    )
-                );
-            });
+            );
     }
 
     public function listIndexesQuery(string $table, ?string $schema): Query
@@ -261,6 +257,7 @@ class PostgreSQLPlatform extends AbstractPlatform
 
         foreach ($this->loadColumnsStatement($table, $schema) as $row) {
             $columns[$row['column_name']] = [
+                'column_name' => $row['column_name'],
                 'ordinal_position' => $row['ordinal_position'],
                 'column_default' => $row['column_default'],
                 'is_nullable' => ('YES' === $row['is_nullable']),
@@ -277,7 +274,7 @@ class PostgreSQLPlatform extends AbstractPlatform
         }
 
         foreach ($columns as &$column) {
-            if (strpos((string) $column['column_default'], 'nextval') !== false) {
+            if (str_contains((string) $column['column_default'], 'nextval')) {
                 $column['auto_increment'] = true;
                 $column['column_default'] = 0;
             }
@@ -290,7 +287,7 @@ class PostgreSQLPlatform extends AbstractPlatform
                 $column['column_default'] = $matches[1] ?? '';
             }
 
-            if (strpos((string) $column['data_type'], 'character varying') !== false) {
+            if (str_contains((string) $column['data_type'], 'character varying')) {
                 $column['data_type'] = str_replace('character varying', 'varchar', $column['data_type']);
             }
         }
@@ -401,6 +398,7 @@ class PostgreSQLPlatform extends AbstractPlatform
         if ($sequence && $this->db->getDriver() instanceof PdoDriver) {
             /** @var \PDO $pdo */
             $pdo = $this->db->getDriver()->getConnection()->get();
+
             return $pdo->lastInsertId($sequence);
         }
 
@@ -537,11 +535,139 @@ class PostgreSQLPlatform extends AbstractPlatform
      */
     public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): StatementInterface
     {
+        $defaultOptions = [
+            'auto_increment' => 1,
+            'sequences' => [],
+            'inherits' => [],
+            'tablespace' => null,
+        ];
+
+        $options   = array_merge($defaultOptions, $options);
+        $columns   = [];
+        $table     = $schema->getTable();
+        $tableName = $this->db->quoteName($table->schemaName . '.' . $table->getName());
+        $primaries = [];
+        $comments  = [];
+
+        foreach ($schema->getColumns() as $column) {
+            $column = $this->prepareColumn(clone $column);
+
+            if ($column->isPrimary()) {
+                $column->dataType(PostgreSQLDataType::SERIAL);
+
+                $primaries[] = $column;
+
+                // Add AI later after table created.
+                $column = clone $column;
+                $column->autoIncrement(false);
+            }
+
+            // Comment
+            if ($column->getComment()) {
+                $comments[$column->getColumnName()] = $column->getComment();
+            }
+
+            $columns[$column->getColumnName()] = $this->getColumnExpression($column)
+                ->setName($this->db->quoteName($column->getColumnName()));
+        }
+
+        $sql = $this->getGrammar()::build(
+            'CREATE TABLE',
+            $ifNotExists ? 'IF NOT EXISTS' : null,
+            $tableName,
+            "(\n" . implode(",\n", $columns) . "\n)",
+            $this->getGrammar()::buildConfig(
+                [
+                    'INHERITS' => $options['inherits']
+                        ? (string) clause('()', $this->db->quoteName($options['inherits']))
+                        : null,
+                    'TABLESPACE' => $options['tablespace'] ? $this->db->quoteName($options['tablespace']) : null,
+                ],
+                ' '
+            )
+        );
+
+        $statement = $this->db->execute($sql);
+
+        if ($primaries) {
+            $this->addConstraint(
+                $table->getName(),
+                (new Constraint(Constraint::TYPE_PRIMARY_KEY, 'pk_' . $table->getName(), $table->getName()))
+                    ->columns($primaries),
+                $table->schemaName
+            );
+        }
+
+        foreach ($schema->getIndexes() as $index) {
+            $this->addIndex($table->getName(), $index, $table->schemaName);
+        }
+
+        foreach ($schema->getConstraints() as $constraint) {
+            $this->addConstraint($table->getName(), $constraint, $table->schemaName);
+        }
+
+        foreach ($comments as $comment) {
+            $this->db->execute(
+                $this->getGrammar()::build(
+                    'COMMENT ON',
+                    'COLUMN',
+                    $tableName,
+                    'IS',
+                    $this->db->quote($comment)
+                )
+            );
+        }
+
+        return $statement;
     }
 
-
-    public function getTableDetail(string $table, ?string $schema = null): ?array
+    public function modifyColumn(string $table, Column $column, ?string $schema = null): StatementInterface
     {
+        $alter = $this->createQuery()
+            ->alter('TABLE', $schema . '.' . $table);
+
+        $alter->subClause('ALTER COLUMN')
+            ->append(
+                [
+                    $this->db->quoteName($column->getColumnName()),
+                    'TYPE',
+                    $column->getTypeExpression()
+                ]
+            );
+
+        $alter->subClause('ALTER COLUMN')
+            ->append(
+                [
+                    $this->db->quoteName($column->getColumnName()),
+                    $column->getIsNullable() ? 'SET' : 'DROP',
+                    'NOT NULL'
+                ]
+            );
+
+        if ($column->getColumnDefault() !== false) {
+            $alter->subClause('ALTER COLUMN')
+                ->append(
+                    [
+                        $this->db->quoteName($column->getColumnName()),
+                        'SET DEFAULT',
+                        $this->db->quote($column->getColumnDefault())
+                    ]
+                );
+        }
+
+        $sql = [(string) $alter];
+
+        if ($column->getComment()) {
+            $sql[] = $this->getGrammar()::build(
+                'COMMENT ON',
+                'COLUMN',
+                $this->db->quoteName($schema . '.' . $table),
+                'IS',
+                $this->db->quote($column->getComment())
+            );
+        }
+
+        return $this->db->execute(implode(";", $sql));
     }
 
     /**
@@ -557,5 +683,18 @@ class PostgreSQLPlatform extends AbstractPlatform
      */
     public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface
     {
+    }
+
+    public function addIndex(string $table, Index $index, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'CREATE INDEX',
+                $this->db->quoteName($index->indexName),
+                'ON',
+                $this->db->quoteName($schema . '.' . $table),
+                (string) clause('()', $this->prepareKeyColumns($index->getColumns()), ','),
+            )
+        );
     }
 }

@@ -64,6 +64,15 @@ class AlterClause implements ClauseInterface
         return $this->target('SCHEMA', $this->query->quoteName($database));
     }
 
+    public function subClause(string $name, array $elements = []): Clause
+    {
+        $this->clause->append(
+            $clause = $this->query->clause($name, $elements)
+        );
+
+        return $clause;
+    }
+
     /**
      * addIndex
      *
@@ -74,41 +83,33 @@ class AlterClause implements ClauseInterface
      */
     public function addIndex(string $name, array $columns = []): Clause
     {
-        $this->clause->append(
-            $clause = $this->query->clause('ADD INDEX')
-                ->append($this->query->quoteName($name))
-                ->append(
-                    $this->query->clause(
-                        '()',
-                        $columns,
-                        ','
-                    )
+        return $this->subClause('ADD INDEX')
+            ->append($this->query->quoteName($name))
+            ->append(
+                $this->query->clause(
+                    '()',
+                    $columns,
+                    ','
                 )
-        );
-
-        return $clause;
+            );
     }
 
     public function addConstraint(?string $name, string $type, array $columns = []): Clause
     {
-        $this->clause->append(
-            $clause = $this->query->clause('ADD CONSTRAINT')
-                ->append($name ? $this->query->quoteName($name) : '')
-                ->append(
-                    $this->query->clause(
-                        $type . ' ()',
-                        $columns,
-                        ','
-                    )
+        return $this->subClause('ADD CONSTRAINT')
+            ->append($name ? $this->query->quoteName($name) : '')
+            ->append(
+                $this->query->clause(
+                    $type . ' ()',
+                    $columns,
+                    ','
                 )
-        );
-
-        return $clause;
+            );
     }
 
     public function addPrimaryKey(?string $name, array $columns): Clause
     {
-        return $this->addConstraint(null, Constraint::TYPE_PRIMARY_KEY, $columns);
+        return $this->addConstraint($name, Constraint::TYPE_PRIMARY_KEY, $columns);
     }
 
     public function addUniqueKey(string $name, array $columns): Clause
@@ -145,18 +146,14 @@ class AlterClause implements ClauseInterface
 
     public function modifyColumn(string $columnName, string $expression): Clause
     {
-        $this->clause->append(
-            $clause = $this->query->clause(
-                '',
-                [
-                    'MODIFY COLUMN',
-                    $this->query->quoteName($columnName),
-                    $expression
-                ]
-            )
+        return $this->subClause(
+            '',
+            [
+                'MODIFY COLUMN',
+                $this->query->quoteName($columnName),
+                $expression
+            ]
         );
-
-        return $clause;
     }
 
     public function append($elements): static

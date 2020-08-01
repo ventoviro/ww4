@@ -35,17 +35,17 @@ class SchemaTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  Schema::addPrimaryKey
+     * @see  Schema::addIndex()
      */
-    public function testAddPrimaryKey(): void
+    public function testAddIndex(): void
     {
-        $this->instance->addPrimaryKey('id');
-        $this->instance->addPrimaryKey(['foo', 'bar']);
+        $this->instance->addIndex('id');
+        $this->instance->addIndex(['foo', 'bar']);
 
-        $keys = $this->instance->getConstraints();
+        $keys = $this->instance->getIndexes();
 
-        self::assertEquals(['id'], $keys['idx_ww_flower_id']->getColumns());
-        self::assertEquals(['foo', 'bar'], $keys['idx_ww_flower_foo_bar']->getColumns());
+        self::assertEquals(['id'], array_keys($keys['idx_ww_flower_id']->getColumns()));
+        self::assertEquals(['foo', 'bar'], array_keys($keys['idx_ww_flower_foo_bar']->getColumns()));
     }
 
     /**
@@ -78,19 +78,14 @@ class SchemaTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  Schema::add
-     */
-    public function testAdd(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  Schema::getDateFormat
      */
     public function testGetDateFormat(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertEquals(
+            self::$db->getDateFormat(),
+            $this->instance->getDateFormat()
+        );
     }
 
     /**
@@ -110,73 +105,9 @@ class SchemaTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  Schema::text
-     */
-    public function testText(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Schema::decimal
-     */
-    public function testDecimal(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Schema::char
-     */
-    public function testChar(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Schema::timestamp
-     */
-    public function testTimestamp(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  Schema::__construct
      */
     public function testConstruct(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Schema::datetime
-     */
-    public function testDatetime(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Schema::varchar
-     */
-    public function testVarchar(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Schema::longtext
-     */
-    public function testLongtext(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
-     * @see  Schema::bigint
-     */
-    public function testBigint(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }
@@ -198,9 +129,9 @@ class SchemaTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  Schema::addIndex
+     * @see  Schema::addPrimaryKey()
      */
-    public function testAddIndex(): void
+    public function testAddPrimaryKey(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }

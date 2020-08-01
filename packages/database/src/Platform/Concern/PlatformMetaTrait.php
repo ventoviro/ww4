@@ -17,11 +17,6 @@ namespace Windwalker\Database\Platform\Concern;
 trait PlatformMetaTrait
 {
     /**
-     * @var string|null
-     */
-    protected static ?string $defaultSchema = null;
-
-    /**
      * @var string
      */
     protected $name = '';
@@ -64,14 +59,6 @@ trait PlatformMetaTrait
         }
 
         return strtolower($platform);
-    }
-
-    /**
-     * @return string
-     */
-    public static function getDefaultSchema(): ?string
-    {
-        return self::$defaultSchema;
     }
 
     /**

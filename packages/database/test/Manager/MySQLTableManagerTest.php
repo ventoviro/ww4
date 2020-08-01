@@ -16,7 +16,7 @@ use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
-class TableManagerTest extends AbstractDatabaseTestCase
+class MySQLTableManagerTest extends AbstractDatabaseTestCase
 {
     protected ?TableManager $instance;
 
@@ -70,7 +70,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
             `deleted` timestamp NOT NULL DEFAULT '1970-01-01 12:00:01',
             `params` json NOT NULL
             ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-            ALTER TABLE `enterprise` ADD CONSTRAINT PRIMARY KEY (`id`);
+            ALTER TABLE `enterprise` ADD CONSTRAINT `pk_enterprise` PRIMARY KEY (`id`);
             ALTER TABLE `enterprise` MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT;
             ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_catid_type` (`catid`,`type`);
             ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_title` (`title`(150));
@@ -88,9 +88,10 @@ class TableManagerTest extends AbstractDatabaseTestCase
     public function testGetConstraints(): void
     {
         $constraints = $this->instance->getConstraints();
+        $constraints = array_filter($constraints, fn (Constraint $item) => $item->constraintType !== 'CHECK');
 
         self::assertEquals(
-            ['PRIMARY', 'idx_enterprise_alias', 'params'],
+            ['PRIMARY', 'idx_enterprise_alias'],
             array_keys($constraints)
         );
     }
@@ -154,9 +155,9 @@ class TableManagerTest extends AbstractDatabaseTestCase
             WHERE `TABLE_NAME` = 'enterprise'
               AND `TABLE_SCHEMA` = (SELECT DATABASE());
             ALTER TABLE `enterprise`
-                ADD COLUMN `captain` varchar(512) NOT NULL;
+                ADD COLUMN `captain` varchar(512) NOT NULL DEFAULT '';
             ALTER TABLE `enterprise`
-                ADD COLUMN `first_officer` varchar(512) NOT NULL;
+                ADD COLUMN `first_officer` varchar(512) NOT NULL DEFAULT '';
             ALTER TABLE `enterprise`
                 MODIFY COLUMN `alias` char(25) DEFAULT '';
             SELECT `TABLE_SCHEMA`,

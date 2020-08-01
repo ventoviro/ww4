@@ -473,7 +473,7 @@ class MySQLPlatform extends AbstractPlatform
         if ($primaries) {
             $this->addConstraint(
                 $table->getName(),
-                (new Constraint(Constraint::TYPE_PRIMARY_KEY, 'PRIMARY', $table->getName()))
+                (new Constraint(Constraint::TYPE_PRIMARY_KEY, 'pk_' . $table->getName(), $table->getName()))
                     ->columns($primaries),
                 $table->schemaName
             );
@@ -510,11 +510,6 @@ class MySQLPlatform extends AbstractPlatform
             $column->getComment() ? 'COMMENT ' . $this->db->quote($column->getComment()) : '',
             $column->getOption('suffix')
         );
-    }
-
-    public function getTableDetail(string $table, ?string $schema = null): ?array
-    {
-        return $this->listTables($schema, true)[$table] ?? null;
     }
 
     public function renameTable(string $from, string $to, ?string $schema = null): StatementInterface

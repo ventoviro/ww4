@@ -358,13 +358,13 @@ abstract class AbstractGrammar
         return $clause;
     }
 
-    public static function buildConfig(array $elements): string
+    public static function buildConfig(array $elements, string $separator = '='): string
     {
         $elements = array_filter(TypeCast::mapAs($elements, 'string'), 'strlen');
         $items = [];
 
         foreach ($elements as $key => $element) {
-            $items[] = $key . '=' . $element;
+            $items[] = $key . $separator . $element;
         }
 
         return implode(' ', $items);

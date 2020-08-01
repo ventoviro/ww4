@@ -655,7 +655,7 @@ SQL
             'String value' => [
                 '\'foo\'',
                 'foo',
-                'f',
+                false,
                 false,
             ],
             'Sub query with as' => [
@@ -698,7 +698,7 @@ SQL
                 self::createQuery()
                     ->select('*')
                     ->from('bar'),
-                'bar',
+                false,
                 false,
             ],
         ];

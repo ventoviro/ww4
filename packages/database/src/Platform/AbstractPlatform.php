@@ -41,6 +41,11 @@ abstract class AbstractPlatform
     protected ?DataType $dataType = null;
 
     /**
+     * @var string|null
+     */
+    protected static ?string $defaultSchema = null;
+
+    /**
      * The depth of the current transaction.
      *
      * @var  int
@@ -52,6 +57,14 @@ abstract class AbstractPlatform
         $class = __NAMESPACE__ . '\\' . static::getPlatformName($platform) . 'Platform';
 
         return new $class($db);
+    }
+
+    /**
+     * @return string
+     */
+    public static function getDefaultSchema(): ?string
+    {
+        return static::$defaultSchema;
     }
 
     /**
@@ -226,13 +239,11 @@ abstract class AbstractPlatform
     public function getColumnExpression(Column $column): Clause
     {
         return $this->getGrammar()::build(
-            $this->db->quoteName($column->getColumnName()),
             $column->getTypeExpression(),
             $column->getIsNullable() ? '' : 'NOT NULL',
             $column->canHasDefaultValue()
                 ? 'DEFAULT ' . $this->db->quote($column->getColumnDefault())
                 : '',
-            $column->getOption('on_update') ? 'ON UPDATE CURRENT_TIMESTAMP' : null,
             $column->getOption('suffix')
         );
     }
@@ -253,7 +264,7 @@ abstract class AbstractPlatform
     {
         return $this->db->execute(
             $this->getGrammar()::build(
-                'DROP TABLE',
+                'ALTER TABLE',
                 $this->db->quoteName($schema . '.' . $from),
                 'RENAME TO',
                 $this->db->quoteName($schema . '.' . $to),
@@ -271,7 +282,10 @@ abstract class AbstractPlatform
         );
     }
 
-    abstract public function getTableDetail(string $table, ?string $schema = null): ?array;
+    public function getTableDetail(string $table, ?string $schema = null): ?array
+    {
+        return $this->listTables($schema, true)[$table] ?? null;
+    }
 
     public function addColumn(string $table, Column $column, ?string $schema = null): StatementInterface
     {
@@ -344,7 +358,7 @@ abstract class AbstractPlatform
 
         if ($constraint->constraintType === Constraint::TYPE_PRIMARY_KEY) {
             $alter->addPrimaryKey(
-                null,
+                $constraint->constraintName,
                 $this->db->quoteName(array_keys($constraint->getColumns()))
             );
         } elseif ($constraint->constraintType === Constraint::TYPE_UNIQUE) {
@@ -382,7 +396,7 @@ abstract class AbstractPlatform
         );
     }
 
-    protected function prepareColumn(Column $column): Column
+    public function prepareColumn(Column $column): Column
     {
         $typeMapper = $this->getDataType();
 
@@ -403,7 +417,7 @@ abstract class AbstractPlatform
      *
      * @return  Column
      */
-    protected function prepareDefaultValue(Column $column): Column
+    public function prepareDefaultValue(Column $column): Column
     {
         $typeMapper = $this->getDataType();
 

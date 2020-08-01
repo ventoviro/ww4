@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Schema\Ddl;
 
 use Windwalker\Database\Platform\Type\DataType;
+use Windwalker\Utilities\Classes\OptionAccessTrait;
 
 /**
  * The Constraint class.
@@ -19,6 +20,7 @@ use Windwalker\Database\Platform\Type\DataType;
 class Constraint
 {
     use WrapableTrait;
+    use OptionAccessTrait;
 
     public const TYPE_PRIMARY_KEY = 'PRIMARY KEY';
     public const TYPE_UNIQUE = 'UNIQUE';
