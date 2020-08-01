@@ -26,43 +26,23 @@ class CacheItem implements CacheItemInterface
 {
     use LoggerAwareTrait;
 
-    /**
-     * The key for the cache item.
-     *
-     * @var    string
-     * @since  2.0
-     */
-    protected $key;
+    protected ?string $key = null;
 
     /**
-     * The value of the cache item.
-     *
-     * @var    mixed
-     * @since  2.0
+     * @var mixed
      */
     protected $value;
 
-    /**
-     * Whether the cache item is value or not.
-     *
-     * @var    boolean
-     * @since  2.0
-     */
-    protected $hit = false;
+    protected bool $hit = false;
 
-    /**
-     * Property expiration.
-     *
-     * @var  DateTimeInterface
-     */
-    protected $expiration;
+    protected ?DateTimeInterface $expiration = null;
 
     /**
      * Property defaultExpiration.
      *
      * @var  string
      */
-    protected $defaultExpiration = 'now +1 year';
+    protected string $defaultExpiration = 'now +1 year';
 
     /**
      * Class constructor.

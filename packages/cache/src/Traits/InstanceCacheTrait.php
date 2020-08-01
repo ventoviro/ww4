@@ -11,10 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Cache\Traits;
 
-use Windwalker\Cache\CachePool;
-use Windwalker\Cache\Serializer\RawSerializer;
-use Windwalker\Cache\Storage\ArrayStorage;
-
 /**
  * Trait InstanceCacheTrait
  */

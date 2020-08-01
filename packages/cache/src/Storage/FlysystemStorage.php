@@ -28,8 +28,6 @@ class FlysystemStorage extends FileStorage
      *
      * @param  Filesystem  $driver
      * @param  array       $options
-     *
-     * @throws \League\Flysystem\FileNotFoundException
      */
     public function __construct(Filesystem $driver, array $options = [])
     {
