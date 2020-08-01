@@ -39,6 +39,13 @@ trait InstanceCacheTrait
         return isset($this->cacheStorage[$id]);
     }
 
+    public function cacheRemove(string $id): static
+    {
+        unset($this->cacheStorage[$id]);
+
+        return $this;
+    }
+
     protected function cacheReset(): static
     {
         $this->cacheStorage = [];

@@ -65,6 +65,8 @@ class TableManager extends AbstractMetaManager
     {
         $schema = $this->callSchema($schema);
 
+        $this->reset();
+
         foreach ($schema->getColumns() as $column) {
             if ($this->hasColumn($column->getName())) {
                 $this->modifyColumn($column);
@@ -72,6 +74,8 @@ class TableManager extends AbstractMetaManager
                 $this->addColumn($column);
             }
         }
+
+        $this->reset();
 
         foreach ($schema->getIndexes() as $index) {
             if ($this->hasIndex($index->indexName)) {
@@ -259,22 +263,29 @@ class TableManager extends AbstractMetaManager
         return $this;
     }
 
-    /**
-     * dropColumn
-     *
-     * @param  string  $name
-     *
-     * @return  static
-     */
-    public function dropColumn(string $name): static
+    public function dropColumn(string|array $names): static
     {
-        if (!$this->hasColumn($name)) {
-            return $this;
+        $names = (array) $names;
+        $platform = $this->getPlatform();
+        $constraints = $this->getConstraints();
+
+        foreach ($names as $name) {
+            if (!$this->hasColumn($name)) {
+                continue;
+            }
+
+            foreach ($constraints as $key => $constraint) {
+                if (array_key_exists($name, $constraint->getColumns())) {
+                    unset($constraints[$key]);
+
+                    $this->dropConstraint($constraint->constraintName);
+                }
+            }
+
+            $platform->dropColumn($this->getName(), $name, $this->schemaName);
         }
 
-        $this->getPlatform()->dropColumn($this->getName(), $name, $this->schemaName);
-
-        return $this->reset();
+        return $this;
     }
 
     public function modifyColumn(
@@ -299,9 +310,19 @@ class TableManager extends AbstractMetaManager
             $index = new Index($name, $this->getName());
             $index->columns((array) $columns)
                 ->bind($options);
+
+            foreach ($index->getColumns() as $column) {
+                $column->dataType($this->getColumns()[$column->getName()]->getDataType() ?? '');
+            }
         } else {
             $index = $columns;
         }
+
+        $name ??= $index->indexName ??= Schema::createKeyName(
+            $this->getName(),
+            array_keys($index->getColumns())
+        );
+        $index->name($name);
 
         if ($this->hasIndex($name)) {
             return $this;
@@ -312,15 +333,24 @@ class TableManager extends AbstractMetaManager
         return $this;
     }
 
-    public function dropIndex($name): static
+    public function dropIndex(array|string $names): static
     {
-        if (!$this->hasIndex($name)) {
-            $this->getPlatform()->dropIndex($this->getName(), $name, $this->schemaName);
+        $platform = $this->getPlatform();
+
+        foreach ((array) $names as $name) {
+            if (!$this->hasIndex($name)) {
+                $platform->dropIndex($this->getName(), $name, $this->schemaName);
+            }
         }
 
         return $this;
     }
 
+    /**
+     * getIndexes
+     *
+     * @return  Index[]
+     */
     public function getIndexes(): array
     {
         return $this->once(
@@ -343,17 +373,28 @@ class TableManager extends AbstractMetaManager
 
     public function addConstraint(
         array|string|Constraint $columns = [],
-        ?string $name = null,
         string $type = Constraint::TYPE_UNIQUE,
+        ?string $name = null,
         array $options = []
     ): static {
         if (!$columns instanceof Constraint) {
             $constraint = new Constraint($type, $name, $this->getName());
             $constraint->columns((array) $columns)
                 ->bind($options);
+
+            foreach ($constraint->getColumns() as $column) {
+                $column->dataType($this->getColumns()[$column->getName()]->getDataType() ?? '');
+            }
         } else {
             $constraint = $columns;
         }
+
+        $name ??= $constraint->constraintName ??= Schema::createKeyName(
+            $this->getName(),
+            array_keys($constraint->getColumns()),
+            'ct'
+        );
+        $constraint->name($name);
 
         if ($this->hasConstraint($name)) {
             return $this;
@@ -369,6 +410,11 @@ class TableManager extends AbstractMetaManager
         return isset($this->getConstraints()[$name]);
     }
 
+    /**
+     * getConstraints
+     *
+     * @return  Constraint[]
+     */
     public function getConstraints(): array
     {
         return $this->once(
@@ -384,10 +430,14 @@ class TableManager extends AbstractMetaManager
         return $this->getConstraints()[$name] ?? null;
     }
 
-    public function dropConstraint(string $name): static
+    public function dropConstraint(string|array $names): static
     {
-        if (!$this->hasConstraint($name)) {
-            $this->getPlatform()->dropConstraint($this->getName(), $name, $this->schemaName);
+        $platform = $this->getPlatform();
+
+        foreach ((array) $names as $name) {
+            if (!$this->hasConstraint($name)) {
+                $platform->dropConstraint($this->getName(), $name, $this->schemaName);
+            }
         }
 
         return $this;
@@ -465,8 +515,6 @@ class TableManager extends AbstractMetaManager
     public function reset(): static
     {
         $this->cacheReset();
-        $this->databaseName = null;
-        $this->schemaName = null;
 
         return $this;
     }

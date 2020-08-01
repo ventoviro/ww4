@@ -98,7 +98,7 @@ class AlterClause implements ClauseInterface
                     $this->query->clause(
                         $type . ' ()',
                         $columns,
-                        ",\n"
+                        ','
                     )
                 )
         );

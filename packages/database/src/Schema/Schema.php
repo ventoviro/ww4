@@ -115,7 +115,7 @@ class Schema
         }
 
         if (!$name) {
-            $name = $this->createKeyName(array_keys($index->getColumns()));
+            $name = static::createKeyName($this->table->getName(), array_keys($index->getColumns()));
         }
 
         $index->name($name);
@@ -130,7 +130,7 @@ class Schema
         $columns = (array) $columns;
 
         if (!$name) {
-            $name = $this->createKeyName($columns);
+            $name = static::createKeyName($this->table->getName(), $columns);
         }
 
         return $this->addConstraint(Constraint::TYPE_UNIQUE, $name)
@@ -163,7 +163,7 @@ class Schema
         return $constraint;
     }
 
-    protected function createKeyName(array $columns, string $prefix = 'idx'): string
+    public static function createKeyName(string $tableName, array $columns, string $prefix = 'idx'): string
     {
         $columns = array_map(
             static fn($col) => explode('(', $col)[0],
@@ -173,7 +173,7 @@ class Schema
         return sprintf(
             '%s_%s_%s',
             $prefix,
-            trim($this->table->getName(), '#_'),
+            trim($tableName, '#_'),
             implode('_', $columns)
         );
     }

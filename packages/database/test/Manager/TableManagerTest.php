@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test\Manager;
 
 use Windwalker\Database\Manager\TableManager;
+use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
@@ -131,6 +132,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
             fn () => $this->instance->update(function (Schema $schema) {
                 // New column
                 $schema->varchar('captain')->length(512)->after('catid');
+                $schema->varchar('first_officer')->length(512)->after('captain');
 
                 // Update column
                 $schema->char('alias')->length(25)
@@ -161,8 +163,10 @@ class TableManagerTest extends AbstractDatabaseTestCase
               AND `TABLE_SCHEMA` = (SELECT DATABASE());
             ALTER TABLE `enterprise`
                 ADD COLUMN `captain` varchar(512) NOT NULL;
-            ALTER TABLE
-              `enterprise` MODIFY COLUMN `alias` char(25) DEFAULT '';
+            ALTER TABLE `enterprise`
+                ADD COLUMN `first_officer` varchar(512) NOT NULL;
+            ALTER TABLE `enterprise`
+                MODIFY COLUMN `alias` char(25) DEFAULT '';
             SELECT `TABLE_SCHEMA`,
                    `TABLE_NAME`,
                    `NON_UNIQUE`,
@@ -187,7 +191,64 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     public function testAddIndex(): void
     {
+        $logs = $this->logQueries(
+            function () {
+                $this->instance->addIndex('created');
+                $this->instance->addIndex(['start_date', 'params']);
+            }
+        );
 
+        self::assertSqlFormatEquals(
+            <<<SQL
+            SELECT `ORDINAL_POSITION`,
+                   `COLUMN_DEFAULT`,
+                   `IS_NULLABLE`,
+                   `DATA_TYPE`,
+                   `CHARACTER_MAXIMUM_LENGTH`,
+                   `CHARACTER_OCTET_LENGTH`,
+                   `NUMERIC_PRECISION`,
+                   `NUMERIC_SCALE`,
+                   `COLUMN_NAME`,
+                   `COLUMN_TYPE`,
+                   `COLUMN_COMMENT`,
+                   `EXTRA`
+            FROM `INFORMATION_SCHEMA`.`COLUMNS`
+            WHERE `TABLE_NAME` = 'enterprise'
+              AND `TABLE_SCHEMA` = (SELECT DATABASE());
+            SELECT `TABLE_SCHEMA`,
+                   `TABLE_NAME`,
+                   `NON_UNIQUE`,
+                   `INDEX_NAME`,
+                   `COLUMN_NAME`,
+                   `COLLATION`,
+                   `CARDINALITY`,
+                   `SUB_PART`,
+                   `INDEX_COMMENT`
+            FROM `INFORMATION_SCHEMA`.`STATISTICS`
+            WHERE `TABLE_NAME` = 'enterprise'
+              AND `TABLE_SCHEMA` = (SELECT DATABASE());
+            ALTER TABLE `enterprise`
+                ADD INDEX `idx_enterprise_created` (`created`);
+            ALTER TABLE `enterprise`
+                ADD INDEX `idx_enterprise_start_date_params` (`start_date`, `params`(150))
+            SQL,
+            implode(";\n", $logs)
+        );
+
+        $this->instance->reset();
+
+        self::assertEquals(
+            [
+                'enterprise_PRIMARY',
+                'enterprise_idx_enterprise_alias',
+                'enterprise_idx_enterprise_catid_type',
+                'enterprise_idx_enterprise_title',
+                'enterprise_idx_enterprise_captain',
+                'enterprise_idx_enterprise_created',
+                'enterprise_idx_enterprise_start_date_params',
+            ],
+            array_keys($this->instance->getIndexes())
+        );
     }
 
     /**
@@ -215,14 +276,6 @@ class TableManagerTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  TableManager::rename
-     */
-    public function testRename(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  TableManager::dropIndex
      */
     public function testDropIndex(): void
@@ -235,7 +288,52 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     public function testAddConstraint(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $logs = $this->logQueries(
+            fn () => $this->instance->addConstraint(
+                ['captain', 'first_officer'],
+                Constraint::TYPE_UNIQUE
+            )
+        );
+
+        self::assertSqlFormatEquals(
+            <<<SQL
+SELECT `ORDINAL_POSITION`,
+       `COLUMN_DEFAULT`,
+       `IS_NULLABLE`,
+       `DATA_TYPE`,
+       `CHARACTER_MAXIMUM_LENGTH`,
+       `CHARACTER_OCTET_LENGTH`,
+       `NUMERIC_PRECISION`,
+       `NUMERIC_SCALE`,
+       `COLUMN_NAME`,
+       `COLUMN_TYPE`,
+       `COLUMN_COMMENT`,
+       `EXTRA`
+FROM `INFORMATION_SCHEMA`.`COLUMNS`
+WHERE `TABLE_NAME` = 'enterprise'
+  AND `TABLE_SCHEMA` = (SELECT DATABASE());
+SELECT `TABLE_NAME`, `CONSTRAINT_NAME`, `CONSTRAINT_TYPE`
+FROM `INFORMATION_SCHEMA`.`TABLE_CONSTRAINTS`
+WHERE `TABLE_NAME` = 'enterprise'
+  AND `TABLE_SCHEMA` = (SELECT DATABASE());
+SELECT `CONSTRAINT_NAME`,
+       `COLUMN_NAME`,
+       `REFERENCED_TABLE_SCHEMA`,
+       `REFERENCED_TABLE_NAME`,
+       `REFERENCED_COLUMN_NAME`,
+       `REFERENCED_COLUMN_NAME`
+FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE`
+WHERE `TABLE_NAME` = 'enterprise'
+  AND `TABLE_SCHEMA` = (SELECT DATABASE());
+SELECT `CONSTRAINT_NAME`, `MATCH_OPTION`, `UPDATE_RULE`, `DELETE_RULE`
+FROM `INFORMATION_SCHEMA`.`REFERENTIAL_CONSTRAINTS`
+WHERE `TABLE_NAME` = 'enterprise'
+  AND `CONSTRAINT_SCHEMA` = (SELECT DATABASE());
+ALTER TABLE `enterprise`
+    ADD CONSTRAINT `ct_enterprise_captain_first_officer` UNIQUE (`captain`(150),`first_officer`(150))
+SQL,
+            implode(";\n", $logs)
+        );
     }
 
     /**
@@ -243,7 +341,13 @@ class TableManagerTest extends AbstractDatabaseTestCase
      */
     public function testDropColumn(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $this->instance->reset();
+        $this->instance->dropColumn(['captain', 'first_officer']);
+
+        $this->instance->reset();
+
+        self::assertFalse($this->instance->hasColumn('captain'));
+        self::assertFalse($this->instance->hasColumn('first_officer'));
     }
 
     /**
@@ -372,6 +476,23 @@ class TableManagerTest extends AbstractDatabaseTestCase
     public function testGetDatabase(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    /**
+     * @see  TableManager::rename
+     */
+    public function testRename(): void
+    {
+        $newTable = $this->instance->rename('enterprise_d');
+
+        self::assertNotSame($newTable, $this->instance);
+
+        self::assertEquals('enterprise_d', $newTable->getName());
+
+        self::assertTrue($newTable->exists());
+        self::assertFalse($this->instance->exists());
+
+        $this->instance = $newTable;
     }
 
     /**

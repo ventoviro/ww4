@@ -263,6 +263,7 @@ class MySQLPlatform extends AbstractPlatform
                     'REFERENCED_TABLE_SCHEMA',
                     'REFERENCED_TABLE_NAME',
                     'REFERENCED_COLUMN_NAME',
+                    'REFERENCED_COLUMN_NAME',
                 ]
             )
             ->from('INFORMATION_SCHEMA.KEY_COLUMN_USAGE')
@@ -320,7 +321,7 @@ class MySQLPlatform extends AbstractPlatform
             }
 
             $constraints[$name] = [
-                'constraint_name' => $name,
+                'constraint_name' => $realName,
                 'constraint_type' => $row['CONSTRAINT_TYPE'],
                 'table_name' => $row['TABLE_NAME'],
                 'columns' => [],
@@ -509,6 +510,18 @@ class MySQLPlatform extends AbstractPlatform
         return $this->listTables($schema, true)[$table] ?? null;
     }
 
+    public function renameTable(string $from, string $to, ?string $schema = null): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()::build(
+                'RENAME TABLE',
+                $this->db->quoteName($schema . '.' . $from),
+                'TO',
+                $this->db->quoteName($schema . '.' . $to),
+            )
+        );
+    }
+
     public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface
     {
         $toColumn = Column::wrap($this->listColumns($table)[$to]);
@@ -525,16 +538,9 @@ class MySQLPlatform extends AbstractPlatform
         );
     }
 
-    public function addIndex(string $table, Index $index, ?string $schema = null): StatementInterface
+    protected function prepareKeyColumns(array $columns): array
     {
-        return $this->db->execute(
-            $this->db->getQuery(true)
-                ->alter('TABLE', $schema . '.' . $table)
-                ->tap(fn(AlterClause $alter) => $alter->addIndex(
-                    $index->indexName,
-                    array_map([$this, 'getIndexColumnName'], $index->getColumns())
-                ))
-        );
+        return array_map(fn (Column $col) => $this->getIndexColumnName($col), $columns);
     }
 
     protected function getIndexColumnName(Column $column): string
@@ -543,8 +549,28 @@ class MySQLPlatform extends AbstractPlatform
 
         $name = $this->db->quoteName($name);
 
-        if ($column->getErratas()['sub_parts'] ?? null) {
-            $name .= '(' . $column->getErratas()['sub_parts'] . ')';
+        $subParts = $column->getErratas()['sub_parts'] ?? null;
+        $length = $column->getCharacterMaximumLength();
+
+        $types = [
+            'varchar',
+            'char',
+            'text',
+            'longtext',
+            'mediumtext',
+            'json',
+        ];
+
+        if (
+            $subParts === null
+            && (!$length || $length <= 150)
+            && in_array($column->getDataType(), $types)
+        ) {
+            $subParts = 150;
+        }
+
+        if ($subParts) {
+            $name .= '(' . $subParts . ')';
         }
 
         return $name;

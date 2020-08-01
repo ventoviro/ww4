@@ -241,7 +241,7 @@ abstract class AbstractPlatform
     {
         return $this->db->execute(
             $this->getGrammar()::build(
-                'DROP TABLE',
+                'ALTER TABLE',
                 'IF EXISTS',
                 $this->db->quoteName($schema . '.' . $table),
                 $suffix
@@ -320,7 +320,7 @@ abstract class AbstractPlatform
                 ->alter('TABLE', $schema . '.' . $table)
                 ->tap(fn(AlterClause $alter) => $alter->addIndex(
                     $index->indexName,
-                    $this->db->quoteName(array_keys($index->getColumns()))
+                    $this->prepareKeyColumns($index->getColumns())
                 ))
         );
     }
@@ -350,19 +350,24 @@ abstract class AbstractPlatform
         } elseif ($constraint->constraintType === Constraint::TYPE_UNIQUE) {
             $alter->addUniqueKey(
                 $constraint->constraintName,
-                $this->db->quoteName(array_keys($constraint->getColumns()))
+                $this->prepareKeyColumns($constraint->getColumns())
             );
         } elseif ($constraint->constraintType === Constraint::TYPE_FOREIGN_KEY) {
             $alter->addForeignKey(
                 $constraint->constraintName,
-                $this->db->quoteName(array_keys($constraint->getColumns())),
-                $this->db->quoteName(array_keys($constraint->getReferencedColumns())),
+                $this->prepareKeyColumns($constraint->getColumns()),
+                $this->prepareKeyColumns($constraint->getReferencedColumns()),
                 $constraint->updateRule,
                 $constraint->deleteRule,
             );
         }
 
         return $this->db->execute((string) $alter);
+    }
+
+    protected function prepareKeyColumns(array $columns): array
+    {
+        return $this->db->quoteName(array_map(fn (Column $col) => $col->getName(), $columns));
     }
 
     public function dropConstraint(string $table, string $name, ?string $schema = null): StatementInterface
