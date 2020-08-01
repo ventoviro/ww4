@@ -62,7 +62,7 @@ class SchemaTest extends AbstractDatabaseTestCase
         $cols = [];
 
         foreach ($this->instance->getColumns() as $column) {
-            $cols[] = sprintf('%s %s', $column->getName(), $column->getTypeExpression());
+            $cols[] = sprintf('%s %s', $column->getColumnName(), $column->getTypeExpression());
         }
 
         self::assertEquals(
@@ -223,7 +223,7 @@ class SchemaTest extends AbstractDatabaseTestCase
 
     protected function setUp(): void
     {
-        $this->instance = static::$db->getTable('ww_flower')->getSchemaObject();
+        $this->instance = static::$db->getTable('ww_flower')->createSchemaObject();
     }
 
     protected function tearDown(): void

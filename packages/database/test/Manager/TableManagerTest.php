@@ -83,14 +83,6 @@ class TableManagerTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  TableManager::getSchema
-     */
-    public function testGetSchema(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
-
-    /**
      * @see  TableManager::getConstraints
      */
     public function testGetConstraints(): void
@@ -98,7 +90,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
         $constraints = $this->instance->getConstraints();
 
         self::assertEquals(
-            ['enterprise_PRIMARY', 'enterprise_idx_enterprise_alias', 'enterprise_params'],
+            ['PRIMARY', 'idx_enterprise_alias', 'params'],
             array_keys($constraints)
         );
     }
@@ -239,13 +231,13 @@ class TableManagerTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             [
-                'enterprise_PRIMARY',
-                'enterprise_idx_enterprise_alias',
-                'enterprise_idx_enterprise_catid_type',
-                'enterprise_idx_enterprise_title',
-                'enterprise_idx_enterprise_captain',
-                'enterprise_idx_enterprise_created',
-                'enterprise_idx_enterprise_start_date_params',
+                'PRIMARY',
+                'idx_enterprise_alias',
+                'idx_enterprise_catid_type',
+                'idx_enterprise_title',
+                'idx_enterprise_captain',
+                'idx_enterprise_created',
+                'idx_enterprise_start_date_params',
             ],
             array_keys($this->instance->getIndexes())
         );
@@ -260,7 +252,7 @@ class TableManagerTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  TableManager::getSchemaObject
+     * @see  TableManager::createSchemaObject
      */
     public function testGetSchemaObject(): void
     {
@@ -355,15 +347,19 @@ SQL,
      */
     public function testModifyColumn(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
-    }
+        $this->instance->modifyColumn(
+            'price',
+            'decimal(15,4)',
+            true,
+            100.5
+        );
 
-    /**
-     * @see  TableManager::dropConstraint
-     */
-    public function testDropConstraint(): void
-    {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $this->instance->reset();
+        $column = $this->instance->getColumn('price');
+
+        self::assertEquals('15,4', $column->getLengthExpression());
+        self::assertEquals('decimal', $column->getDataType());
+        self::assertEquals(100.5, $column->getColumnDefault());
     }
 
     /**
@@ -387,7 +383,9 @@ SQL,
      */
     public function testTruncate(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $logs = $this->logQueries(fn () => $this->instance->truncate());
+
+        self::assertEquals('TRUNCATE TABLE `enterprise`', $logs[0]);
     }
 
     /**
@@ -395,7 +393,27 @@ SQL,
      */
     public function testGetColumns(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+
+        $cols = array_keys($this->instance->reset()->getColumns());
+
+        self::assertEquals(
+            [
+                'id',
+                'type',
+                'catid',
+                'alias',
+                'title',
+                'price',
+                'intro',
+                'fulltext',
+                'start_date',
+                'created',
+                'updated',
+                'deleted',
+                'params'
+            ],
+            $cols
+        );
     }
 
     /**
@@ -411,7 +429,8 @@ SQL,
      */
     public function testHasColumn(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertTrue($this->instance->hasColumn('alias'));
+        self::assertFalse($this->instance->hasColumn('enemy'));
     }
 
     /**
@@ -419,7 +438,24 @@ SQL,
      */
     public function testGetColumnNames(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertEquals(
+            [
+                'id',
+                'type',
+                'catid',
+                'alias',
+                'title',
+                'price',
+                'intro',
+                'fulltext',
+                'start_date',
+                'created',
+                'updated',
+                'deleted',
+                'params'
+            ],
+            $this->instance->getColumnNames()
+        );
     }
 
     /**
@@ -427,7 +463,17 @@ SQL,
      */
     public function testGetIndex(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $index = $this->instance->getIndex('idx_enterprise_start_date_params');
+
+        self::assertEquals(
+            'idx_enterprise_start_date_params',
+            $index->indexName,
+        );
+
+        self::assertEquals(
+            ['start_date', 'params'],
+            array_keys($index->getColumns())
+        );
     }
 
     /**
@@ -443,7 +489,8 @@ SQL,
      */
     public function testExists(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        self::assertTrue($this->instance->exists());
+        self::assertFalse(self::$db->getTable('enterprise_j')->exists());
     }
 
     /**
@@ -451,7 +498,11 @@ SQL,
      */
     public function testGetColumn(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $column = $this->instance->reset()->getColumn('updated');
+
+        self::assertEquals('updated', $column->columnName);
+        self::assertEquals('timestamp', $column->getDataType());
+        self::assertEquals('current_timestamp()', $column->getErratas()['on_update']);
     }
 
     /**
@@ -459,7 +510,14 @@ SQL,
      */
     public function testGetConstraint(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $constraint = $this->instance->reset()->getConstraint('idx_enterprise_alias');
+
+        self::assertEquals(
+            'idx_enterprise_alias',
+            $constraint->constraintName
+        );
+
+        self::assertEquals(['alias'], array_keys($constraint->getColumns()));
     }
 
     /**
@@ -467,15 +525,65 @@ SQL,
      */
     public function testGetIndexes(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $indexes = array_keys($this->instance->getIndexes());
+
+        self::assertEquals(
+            [
+                'PRIMARY',
+                'idx_enterprise_alias',
+                'idx_enterprise_catid_type',
+                'idx_enterprise_title',
+                'idx_enterprise_created',
+                'idx_enterprise_start_date_params'
+            ],
+            $indexes
+        );
     }
 
-    /**
-     * @see  TableManager::getDatabase
-     */
     public function testGetDatabase(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
+    }
+
+    public function testGetSchema(): void
+    {
+        $this->instance->schemaName = self::$db->getOption('database');
+
+        $logs = $this->logQueries(fn () => $this->instance->getColumns());
+
+        self::assertSqlFormatEquals(
+            <<<SQL
+            SELECT `ORDINAL_POSITION`,
+                   `COLUMN_DEFAULT`,
+                   `IS_NULLABLE`,
+                   `DATA_TYPE`,
+                   `CHARACTER_MAXIMUM_LENGTH`,
+                   `CHARACTER_OCTET_LENGTH`,
+                   `NUMERIC_PRECISION`,
+                   `NUMERIC_SCALE`,
+                   `COLUMN_NAME`,
+                   `COLUMN_TYPE`,
+                   `COLUMN_COMMENT`,
+                   `EXTRA`
+            FROM `INFORMATION_SCHEMA`.`COLUMNS`
+            WHERE `TABLE_NAME` = 'enterprise'
+              AND `TABLE_SCHEMA` = 'windwalker_test'
+            SQL,
+            $logs[0]
+        );
+    }
+
+    /**
+     * @see  TableManager::dropConstraint
+     */
+    public function testDropConstraint(): void
+    {
+        $this->instance->dropColumn('params');
+
+        self::assertEquals(
+            ['PRIMARY'],
+            array_keys($this->instance->reset()->getConstraints())
+        );
     }
 
     /**

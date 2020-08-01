@@ -28,7 +28,7 @@ class Column
     use WrapableTrait;
     use OptionAccessTrait;
 
-    protected string $name = '';
+    public string $columnName = '';
 
     protected ?int $ordinalPosition = 1;
 
@@ -64,7 +64,7 @@ class Column
         mixed $columnDefault = null,
         array $options = []
     ) {
-        $this->name          = $name;
+        $this->columnName    = $name;
         $this->columnDefault = $columnDefault;
         $this->isNullable    = $isNullable;
         $this->dataType((string) $dataType);
@@ -75,9 +75,9 @@ class Column
     /**
      * @return string
      */
-    public function getName(): string
+    public function getColumnName(): string
     {
-        return $this->name;
+        return $this->columnName;
     }
 
     /**
@@ -85,9 +85,9 @@ class Column
      *
      * @return  static  Return self to support chaining.
      */
-    public function name(string $name): static
+    public function columnName(string $name): static
     {
-        $this->name = $name;
+        $this->columnName = $name;
 
         return $this;
     }
@@ -264,13 +264,13 @@ class Column
             return;
         }
 
-        $this->characterOctetLength($precision);
+        $this->characterMaximumLength($precision);
     }
 
     public function getLengthExpression(): ?string
     {
-        if ($this->characterOctetLength !== null) {
-            return (string) $this->characterOctetLength;
+        if ($this->characterMaximumLength !== null) {
+            return (string) $this->characterMaximumLength;
         }
 
         if ($this->numericPrecision !== null || $this->numericScale !== null) {

@@ -96,7 +96,7 @@ class Index
                 }
             }
 
-            $cols[$column->getName()] = $column;
+            $cols[$column->getColumnName()] = $column;
         }
 
         $this->columns = $cols;

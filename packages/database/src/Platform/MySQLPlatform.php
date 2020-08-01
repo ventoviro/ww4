@@ -192,6 +192,7 @@ class MySQLPlatform extends AbstractPlatform
             $erratas = [];
             $matches = [];
 
+            // Enum/Set
             if (preg_match('/^(?:enum|set)\((.+)\)$/i', $row['COLUMN_TYPE'], $matches)) {
                 $permittedValues = $matches[1];
 
@@ -211,6 +212,11 @@ class MySQLPlatform extends AbstractPlatform
                 $erratas['permitted_values'] = $permittedValues;
             }
 
+            // Timestamp
+            if (str_contains($row['EXTRA'], 'on update')) {
+                $erratas['on_update'] = 'current_timestamp()';
+            }
+
             // After MariaDB 10.2.7, the COLUMN_DEFAULT will surround with quotes if is string type.
             // @see https://mariadb.com/kb/en/information-schema-columns-table/
             if (
@@ -222,6 +228,7 @@ class MySQLPlatform extends AbstractPlatform
             }
 
             $columns[$row['COLUMN_NAME']] = [
+                'column_name' => $row['COLUMN_NAME'],
                 'ordinal_position' => $row['ORDINAL_POSITION'],
                 'column_default' => $row['COLUMN_DEFAULT'],
                 'is_nullable' => ('YES' === $row['IS_NULLABLE']),
@@ -442,8 +449,8 @@ class MySQLPlatform extends AbstractPlatform
                 $column->autoIncrement(false);
             }
 
-            $columns[$column->getName()] = $this->getColumnExpression($column)
-                ->setName($this->db->quoteName($column->getName()));
+            $columns[$column->getColumnName()] = $this->getColumnExpression($column)
+                ->setName($this->db->quoteName($column->getColumnName()));
         }
 
         $sql = $this->getGrammar()::build(
@@ -545,7 +552,7 @@ class MySQLPlatform extends AbstractPlatform
 
     protected function getIndexColumnName(Column $column): string
     {
-        $name = $column->getName();
+        $name = $column->getColumnName();
 
         $name = $this->db->quoteName($name);
 

@@ -19,7 +19,7 @@ trait PlatformMetaTrait
     /**
      * @var string|null
      */
-    protected static $defaultSchema = null;
+    protected static ?string $defaultSchema = null;
 
     /**
      * @var string

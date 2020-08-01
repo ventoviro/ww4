@@ -172,7 +172,7 @@ class Constraint
                 $column = clone $column;
             }
 
-            $cols[$column->getName()] = $column;
+            $cols[$column->getColumnName()] = $column;
         }
 
         $this->referencedColumns = $cols;
@@ -196,7 +196,7 @@ class Constraint
                 $column = new Column($column);
             }
 
-            $cols[$column->getName()] = $column;
+            $cols[$column->getColumnName()] = $column;
         }
 
         $this->columns = $cols;

@@ -67,7 +67,7 @@ class Schema
 
     public function add(string $name, Column|string $column): Column
     {
-        $column->name($name);
+        $column->columnName($name);
 
         return $this->addColumn($column);
     }
@@ -82,7 +82,7 @@ class Schema
             throw new \InvalidArgumentException(__METHOD__ . ' argument 1 need Column instance.');
         }
 
-        $this->columns[$column->getName()] = $column;
+        $this->columns[$column->getColumnName()] = $column;
 
         return $column;
     }

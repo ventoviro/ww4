@@ -226,7 +226,7 @@ abstract class AbstractPlatform
     public function getColumnExpression(Column $column): Clause
     {
         return $this->getGrammar()::build(
-            $this->db->quoteName($column->getName()),
+            $this->db->quoteName($column->getColumnName()),
             $column->getTypeExpression(),
             $column->getIsNullable() ? '' : 'NOT NULL',
             $column->canHasDefaultValue()
@@ -280,7 +280,7 @@ abstract class AbstractPlatform
                 'ALTER TABLE',
                 $this->db->quoteName($schema . '.' . $table),
                 'ADD COLUMN',
-                $this->db->quoteName($column->getName()),
+                $this->db->quoteName($column->getColumnName()),
                 (string) $this->getColumnExpression($column)
             )
         );
@@ -305,7 +305,7 @@ abstract class AbstractPlatform
                 'ALTER TABLE',
                 $this->db->quoteName($schema . '.' . $table),
                 'MODIFY COLUMN',
-                $this->db->quoteName($column->getName()),
+                $this->db->quoteName($column->getColumnName()),
                 (string) $this->getColumnExpression($column)
             )
         );
@@ -367,7 +367,7 @@ abstract class AbstractPlatform
 
     protected function prepareKeyColumns(array $columns): array
     {
-        return $this->db->quoteName(array_map(fn (Column $col) => $col->getName(), $columns));
+        return $this->db->quoteName(array_map(fn (Column $col) => $col->getColumnName(), $columns));
     }
 
     public function dropConstraint(string $table, string $name, ?string $schema = null): StatementInterface

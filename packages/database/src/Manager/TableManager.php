@@ -68,7 +68,7 @@ class TableManager extends AbstractMetaManager
         $this->reset();
 
         foreach ($schema->getColumns() as $column) {
-            if ($this->hasColumn($column->getName())) {
+            if ($this->hasColumn($column->getColumnName())) {
                 $this->modifyColumn($column);
             } else {
                 $this->addColumn($column);
@@ -256,7 +256,7 @@ class TableManager extends AbstractMetaManager
             $column = new Column($column, $dataType, $isNullable, $columnDefault, $options);
         }
 
-        if (!$this->hasColumn($column->getName())) {
+        if (!$this->hasColumn($column->getColumnName())) {
             $this->getPlatform()->addColumn($this->getName(), $column, $this->schemaName);
         }
 
@@ -276,9 +276,9 @@ class TableManager extends AbstractMetaManager
 
             foreach ($constraints as $key => $constraint) {
                 if (array_key_exists($name, $constraint->getColumns())) {
-                    unset($constraints[$key]);
-
                     $this->dropConstraint($constraint->constraintName);
+
+                    unset($constraints[$key]);
                 }
             }
 
@@ -312,7 +312,7 @@ class TableManager extends AbstractMetaManager
                 ->bind($options);
 
             foreach ($index->getColumns() as $column) {
-                $column->dataType($this->getColumns()[$column->getName()]->getDataType() ?? '');
+                $column->dataType($this->getColumns()[$column->getColumnName()]->getDataType() ?? '');
             }
         } else {
             $index = $columns;
@@ -356,7 +356,8 @@ class TableManager extends AbstractMetaManager
         return $this->once(
             'indexes',
             fn () => Index::wrapList(
-                $this->getPlatform()->listIndexes($this->getName(), $this->schemaName)
+                $this->getPlatform()->listIndexes($this->getName(), $this->schemaName),
+                'index_name'
             )
         );
     }
@@ -383,7 +384,7 @@ class TableManager extends AbstractMetaManager
                 ->bind($options);
 
             foreach ($constraint->getColumns() as $column) {
-                $column->dataType($this->getColumns()[$column->getName()]->getDataType() ?? '');
+                $column->dataType($this->getColumns()[$column->getColumnName()]->getDataType() ?? '');
             }
         } else {
             $constraint = $columns;
@@ -420,7 +421,8 @@ class TableManager extends AbstractMetaManager
         return $this->once(
             'constraints',
             fn () => Constraint::wrapList(
-                $this->getPlatform()->listConstraints($this->getName(), $this->schemaName)
+                $this->getPlatform()->listConstraints($this->getName(), $this->schemaName),
+                'constraint_name'
             )
         );
     }
@@ -435,7 +437,7 @@ class TableManager extends AbstractMetaManager
         $platform = $this->getPlatform();
 
         foreach ((array) $names as $name) {
-            if (!$this->hasConstraint($name)) {
+            if ($this->hasConstraint($name)) {
                 $platform->dropConstraint($this->getName(), $name, $this->schemaName);
             }
         }
@@ -462,7 +464,7 @@ class TableManager extends AbstractMetaManager
         return $this->db->getSchema($this->schemaName, $new);
     }
 
-    public function getSchemaObject(): Schema
+    public function createSchemaObject(): Schema
     {
         return new Schema($this);
     }
@@ -470,7 +472,7 @@ class TableManager extends AbstractMetaManager
     protected function callSchema(callable|Schema $callback): Schema
     {
         if (is_callable($callback)) {
-            $callback($schema = $this->getSchemaObject());
+            $callback($schema = $this->createSchemaObject());
         } else {
             $schema = $callback;
         }

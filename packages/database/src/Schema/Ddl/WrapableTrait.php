@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Schema\Ddl;
 
+use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\StrNormalise;
 
 /**
@@ -61,16 +62,21 @@ trait WrapableTrait
     /**
      * wrapList
      *
-     * @param  array  $items
+     * @param  array        $items
+     * @param  string|null  $keyName
      *
      * @return  static[]
      */
-    public static function wrapList(array $items): array
+    public static function wrapList(array $items, ?string $keyName = null): array
     {
-        foreach ($items as $name => $item) {
-            $items[$name] = static::wrap($item);
+        $newItems = [];
+
+        foreach ($items as $key => $item) {
+            $key = $keyName ? Arr::get($item, $keyName) : $key;
+
+            $newItems[$key] = static::wrap($item);
         }
 
-        return $items;
+        return $newItems;
     }
 }
