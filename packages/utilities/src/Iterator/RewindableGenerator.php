@@ -36,10 +36,7 @@ class RewindableGenerator implements \OuterIterator
      */
     protected $callable;
 
-    /**
-     * @var \Generator
-     */
-    protected $generator;
+    protected ?\Generator $generator = null;
 
     /**
      * RewindableGenerator constructor.

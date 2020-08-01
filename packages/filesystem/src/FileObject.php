@@ -41,10 +41,7 @@ use Windwalker\Utilities\Str;
  */
 class FileObject extends \SplFileInfo
 {
-    /**
-     * @var string|null
-     */
-    protected $root;
+    protected ?string $root;
 
     /**
      * unwrap
@@ -142,7 +139,7 @@ class FileObject extends \SplFileInfo
             return '';
         }
 
-        if (strpos($path, $root) !== 0) {
+        if (!str_starts_with($path, $root)) {
             return $path;
         }
 

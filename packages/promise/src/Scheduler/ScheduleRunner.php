@@ -19,7 +19,7 @@ class ScheduleRunner implements SchedulerInterface
     /**
      * @var SchedulerInterface[]
      */
-    protected $schedulers = [];
+    protected array $schedulers = [];
 
     /**
      * @var static

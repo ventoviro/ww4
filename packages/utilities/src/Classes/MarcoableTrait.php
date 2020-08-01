@@ -22,9 +22,9 @@ use Closure;
 trait MarcoableTrait
 {
     /**
-     * @var  array
+     * @var  callable[]
      */
-    protected static $macros = [];
+    protected static array $macros = [];
 
     public static function macro(string $name, callable $macro): void
     {

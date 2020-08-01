@@ -29,7 +29,7 @@ class CompareHelper
      * @param  mixed   $compare2  The compare2 calue.
      * @param  bool    $strict    Use strict compare.
      *
-     * @return  boolean
+     * @return  bool
      *
      * @throws InvalidArgumentException
      */

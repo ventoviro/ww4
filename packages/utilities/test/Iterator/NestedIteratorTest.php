@@ -31,6 +31,7 @@ class NestedIteratorTest extends TestCase
     {
         $iter = new NestedIterator(['a', 'b', 'c', 'd', 'e', 'f']);
         $iter = $iter->wrap(
+            // Map
             static function ($iterator) {
                 foreach ($iterator as $item) {
                     yield strtoupper($item);
@@ -38,6 +39,7 @@ class NestedIteratorTest extends TestCase
             }
         )
             ->wrap(
+                // Filter
                 static function ($iterator) {
                     foreach ($iterator as $item) {
                         if ($item !== 'D') {
@@ -49,6 +51,48 @@ class NestedIteratorTest extends TestCase
 
         self::assertEquals(
             ['A', 'B', 'C', 'E', 'F'],
+            iterator_to_array($iter)
+        );
+    }
+
+    public function testMap(): void
+    {
+        $iter = new NestedIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+        $iter = $iter->map('strtoupper');
+
+        self::assertEquals(
+            ['A', 'B', 'C', 'D', 'E', 'F'],
+            iterator_to_array($iter)
+        );
+    }
+
+    public function testMapWithKey(): void
+    {
+        $iter = new NestedIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+        $iter = $iter->mapWithKey(fn ($item) => [$item => strtoupper($item)]);
+
+        self::assertEquals(
+            [
+                'a' => 'A',
+                'b' => 'B',
+                'c' => 'C',
+                'd' => 'D',
+                'e' => 'E',
+                'f' => 'F',
+            ],
+            iterator_to_array($iter)
+        );
+    }
+
+    public function testFilter()
+    {
+        $iter = new NestedIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+        $iter = $iter->filter(
+            static fn($item) => $item !== 'd'
+        );
+
+        self::assertEquals(
+            ['a', 'b', 'c', 4 => 'e', 5 => 'f'],
             iterator_to_array($iter)
         );
     }

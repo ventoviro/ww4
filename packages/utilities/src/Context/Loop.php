@@ -21,7 +21,7 @@ class Loop
     /**
      * @var int
      */
-    protected $index;
+    protected int $index;
 
     /**
      * @var mixed
@@ -31,17 +31,17 @@ class Loop
     /**
      * @var  int
      */
-    protected $length;
+    protected int $length;
 
     /**
      * @var  Loop|null
      */
-    protected $parent;
+    protected ?Loop $parent;
 
     /**
      * @var  bool
      */
-    protected $stop = false;
+    protected bool $stop = false;
 
     /**
      * @var mixed

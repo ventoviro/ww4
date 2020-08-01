@@ -59,40 +59,19 @@ abstract class Utf8String
      * needs handling as UTF-8 or not, potentially offering performance
      * benefits by using the native PHP equivalent if it's just ASCII e.g.;
      *
-     * ``` php
-     * if (String::is_ascii($someString))
-     * {
-     *     // It's just ASCII - use the native PHP version
-     *     $someString = strtolower($someString);
-     * }
-     * else
-     * {
-     *     $someString = String::strtolower($someString);
-     * }
-     * ```
-     *
      * @param  string  $str  The string to test.
      *
-     * @return  boolean True if the string is all ASCII
+     * @return  bool True if the string is all ASCII
      *
      * @since   2.0
      */
-    public static function isAscii($str)
+    public static function isAscii(string $str): bool
     {
         // Search for any bytes which are outside the ASCII range...
         return (preg_match('/(?:[^\x00-\x7F])/', $str) !== 1);
     }
 
-    /**
-     * __callStatic
-     *
-     * @param  string  $name
-     * @param  array   $args
-     *
-     * @return  mixed
-     * @throws BadMethodCallException
-     */
-    public static function __callStatic($name, $args)
+    public static function __callStatic(string $name, array $args)
     {
         $underscoreName = strtolower(trim(preg_replace('#([A-Z])#', '_$1', $name)));
 
@@ -105,19 +84,13 @@ abstract class Utf8String
         throw new BadMethodCallException(sprintf('Call to undefined method: %s::%s', static::class, $name));
     }
 
-    /**
-     * str_ireplace
-     *
-     * @param  array|string  $search
-     * @param  array|string  $replace
-     * @param  string        $str
-     * @param  int           $count
-     * @param  string|null   $encoding
-     *
-     * @return  mixed
-     */
-    public static function strIreplace($search, $replace, string $str, ?int $count = null, ?string $encoding = null)
-    {
+    public static function strIreplace(
+        array|string $search,
+        array|string $replace,
+        string $str,
+        ?int $count = null,
+        ?string $encoding = null
+    ): array|string {
         $encoding = $encoding ?? mb_internal_encoding();
 
         if (!is_array($search)) {
@@ -167,18 +140,7 @@ abstract class Utf8String
         return $str;
     }
 
-    /**
-     * str_split
-     *
-     * @see  http://php.net/manual/en/function.str-split.php#117112
-     *
-     * @param  string       $string
-     * @param  int          $length
-     * @param  string|null  $encoding
-     *
-     * @return  array|bool
-     */
-    public static function strSplit(string $string, int $length = 1, ?string $encoding = null)
+    public static function strSplit(string $string, int $length = 1, ?string $encoding = null): array|bool
     {
         $encoding = $encoding ?? mb_internal_encoding();
 
@@ -207,7 +169,7 @@ abstract class Utf8String
      * @param  string       $str2  string 2 to compare
      * @param  string|null  $encoding
      *
-     * @return  integer   < 0 if str1 is less than str2; > 0 if str1 is greater than str2, and 0 if they are equal.
+     * @return  int   < 0 if str1 is less than str2; > 0 if str1 is greater than str2, and 0 if they are equal.
      *
      * @see     http://www.php.net/strcasecmp
      * @since   2.0
@@ -225,7 +187,7 @@ abstract class Utf8String
      * @param  string  $str1  string 1 to compare
      * @param  string  $str2  string 2 to compare
      *
-     * @return  integer  < 0 if str1 is less than str2; > 0 if str1 is greater than str2, and 0 if they are equal.
+     * @return  int  < 0 if str1 is less than str2; > 0 if str1 is greater than str2, and 0 if they are equal.
      *
      * @since   2.0
      */
@@ -240,12 +202,12 @@ abstract class Utf8String
      *
      * @param  string       $str     The string to process
      * @param  string       $mask    The mask
-     * @param  integer      $start   Optional starting character position (in characters)
-     * @param  integer      $length  Optional length
+     * @param  int          $start   Optional starting character position (in characters)
+     * @param  int          $length  Optional length
      *
      * @param  string|null  $encoding
      *
-     * @return  integer  The length of the initial segment of str1 which does not contain any of the characters in str2
+     * @return  int  The length of the initial segment of str1 which does not contain any of the characters in str2
      *
      * @see     http://www.php.net/strcspn
      * @since   2.0
@@ -302,12 +264,12 @@ abstract class Utf8String
      *
      * @param  string       $str     The haystack
      * @param  string       $mask    The mask
-     * @param  integer      $start   Start optional
-     * @param  integer      $length  Length optional
+     * @param  int          $start   Start optional
+     * @param  int          $length  Length optional
      *
      * @param  string|null  $encoding
      *
-     * @return  integer
+     * @return  int
      *
      * @see     http://www.php.net/strspn
      * @since   2.0
@@ -347,8 +309,8 @@ abstract class Utf8String
      *
      * @param  string       $str     The haystack
      * @param  string       $repl    The replacement string
-     * @param  integer      $start   Start
-     * @param  integer      $length  Length (optional)
+     * @param  int          $start   Start
+     * @param  int          $length  Length (optional)
      * @param  string|null  $encoding
      *
      * @return  string
@@ -600,7 +562,7 @@ abstract class Utf8String
      *
      * @param  string  $str  UTF-8 encoded string.
      *
-     * @return  boolean  true if valid
+     * @return  bool  true if valid
      *
      * @author  <hsivonen@iki.fi>
      * @see     http://hsivonen.iki.fi/php-utf8/
@@ -667,52 +629,51 @@ abstract class Utf8String
                      */
                     return false;
                 }
-            } else {
+            } elseif (0x80 === (0xC0 & $in)) {
                 // When mState is non-zero, we expect a continuation of the multi-octet
                 // sequence
-                if (0x80 === (0xC0 & $in)) {
-                    // Legal continuation.
-                    $shift = ($mState - 1) * 6;
-                    $tmp   = $in;
-                    $tmp   = ($tmp & 0x0000003F) << $shift;
-                    $mUcs4 |= $tmp;
 
+                // Legal continuation.
+                $shift = ($mState - 1) * 6;
+                $tmp   = $in;
+                $tmp   = ($tmp & 0x0000003F) << $shift;
+                $mUcs4 |= $tmp;
+
+                /*
+                 * End of the multi-octet sequence. mUcs4 now contains the final
+                 * Unicode codepoint to be output
+                 */
+                if (0 === --$mState) {
                     /*
-                     * End of the multi-octet sequence. mUcs4 now contains the final
-                     * Unicode codepoint to be output
-                     */
-                    if (0 === --$mState) {
-                        /*
-                        * Check for illegal sequences and codepoints.
-                        */
-                        // From Unicode 3.1, non-shortest form is illegal
-                        if (
-                            ((2 === $mBytes) && ($mUcs4 < 0x0080)) ||
-                            ((3 === $mBytes) && ($mUcs4 < 0x0800)) ||
-                            ((4 === $mBytes) && ($mUcs4 < 0x10000)) ||
-                            (4 < $mBytes) ||
-                            // From Unicode 3.2, surrogate characters are illegal
-                            (($mUcs4 & 0xFFFFF800) === 0xD800) ||
-                            // Codepoints outside the Unicode range are illegal
-                            ($mUcs4 > 0x10FFFF)
-                        ) {
-                            // @codeCoverageIgnoreStart
-                            return false;
-                            // @codeCoverageIgnoreEnd
-                        }
-
-                        //initialize UTF8 cache
-                        $mState = 0;
-                        $mUcs4  = 0;
-                        $mBytes = 1;
+                    * Check for illegal sequences and codepoints.
+                    */
+                    // From Unicode 3.1, non-shortest form is illegal
+                    if (
+                        ((2 === $mBytes) && ($mUcs4 < 0x0080)) ||
+                        ((3 === $mBytes) && ($mUcs4 < 0x0800)) ||
+                        ((4 === $mBytes) && ($mUcs4 < 0x10000)) ||
+                        (4 < $mBytes) ||
+                        // From Unicode 3.2, surrogate characters are illegal
+                        (($mUcs4 & 0xFFFFF800) === 0xD800) ||
+                        // Codepoints outside the Unicode range are illegal
+                        ($mUcs4 > 0x10FFFF)
+                    ) {
+                        // @codeCoverageIgnoreStart
+                        return false;
+                        // @codeCoverageIgnoreEnd
                     }
-                } else {
-                    /*
-                     *((0xC0 & (*in) != 0x80) && (mState != 0))
-                     * Incomplete multi-octet sequence.
-                     */
-                    return false;
+
+                    //initialize UTF8 cache
+                    $mState = 0;
+                    $mUcs4  = 0;
+                    $mBytes = 1;
                 }
+            } else {
+                /*
+                 *((0xC0 & (*in) != 0x80) && (mState != 0))
+                 * Incomplete multi-octet sequence.
+                 */
+                return false;
             }
         }
 
@@ -732,7 +693,7 @@ abstract class Utf8String
      *
      * @param  string  $str  UTF-8 string to check
      *
-     * @return  boolean  TRUE if string is valid UTF-8
+     * @return  bool  TRUE if string is valid UTF-8
      *
      * @see     isUtf8
      * @see     http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php#54805
@@ -791,17 +752,7 @@ abstract class Utf8String
         );
     }
 
-    /**
-     * shuffle
-     *
-     * @param  string  $string
-     * @param  string  $encoding
-     *
-     * @return  string
-     *
-     * @since  4.0
-     */
-    public static function shuffle(string $string, string $encoding = null): string
+    public static function shuffle(string $string, ?string $encoding = null): string
     {
         $encoding = mb_internal_encoding() ?? $encoding;
 
@@ -812,15 +763,6 @@ abstract class Utf8String
         return implode('', $chars);
     }
 
-    /**
-     * toAscii
-     *
-     * @param  string  $string
-     *
-     * @return  array
-     *
-     * @since  __DEPLOY_VERSION__
-     */
     public static function toAscii(string $string): array
     {
         return unpack('C*', $string);

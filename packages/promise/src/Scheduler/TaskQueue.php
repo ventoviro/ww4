@@ -19,12 +19,12 @@ class TaskQueue
     /**
      * @var bool
      */
-    protected $runAtShutdown;
+    protected ?bool $runAtShutdown = null;
 
     /**
      * @var callable[]
      */
-    protected $queue = [];
+    protected array $queue = [];
 
     /**
      * @var static

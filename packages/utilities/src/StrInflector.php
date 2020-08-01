@@ -22,10 +22,7 @@ use DomainException;
  */
 class StrInflector
 {
-    /**
-     * @var Inflector
-     */
-    protected static $inflector;
+    protected static ?Inflector $inflector = null;
 
     /**
      * Checks if a word is in a plural form.
@@ -66,7 +63,7 @@ class StrInflector
      *
      * @since  2.0
      */
-    public static function toPlural($word): string
+    public static function toPlural(string $word): string
     {
         static::checkDependency();
 
@@ -82,7 +79,7 @@ class StrInflector
      *
      * @since  2.0
      */
-    public static function toSingular($word): string
+    public static function toSingular(string $word): string
     {
         static::checkDependency();
 

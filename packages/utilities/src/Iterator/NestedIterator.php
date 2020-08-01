@@ -112,35 +112,53 @@ class NestedIterator implements \OuterIterator
      * filter
      *
      * @param  callable  $callback
+     * @param  int       $flags
      *
      * @return  static
      */
-    public function filter(callable $callback): static
+    public function filter(callable $callback, int $flags = 0): static
     {
         return $this->with(
-            function (iterable $files) use ($callback) {
-                foreach ($files as $key => $file) {
-                    if ($callback($file, $key, $this)) {
-                        yield $key => $file;
+            function (iterable $files) use ($flags, $callback) {
+                foreach ($files as $key => $item) {
+                    if ($flags === ARRAY_FILTER_USE_BOTH) {
+                        $result = $callback($item, $key);
+                    } elseif ($flags === ARRAY_FILTER_USE_KEY) {
+                        $result = $callback($key);
+                    } else {
+                        $result = $callback($item);
+                    }
+
+                    if ($result) {
+                        yield $key => $item;
                     }
                 }
             }
         );
     }
 
-    /**
-     * map
-     *
-     * @param  callable  $callback
-     *
-     * @return  static
-     */
     public function map(callable $callback): static
     {
         return $this->with(
             function (iterable $items) use ($callback) {
                 foreach ($items as $key => $item) {
-                    yield $key => $callback($item, $key, $this);
+                    yield $key => $callback($item);
+                }
+            }
+        );
+    }
+
+    public function mapWithKey(callable $callback): static
+    {
+        return $this->with(
+            function (iterable $items) use ($callback) {
+                foreach ($items as $key => $item) {
+                    $result = (array) $callback($item, $key);
+
+                    $k = array_key_first($result);
+                    $value = $result[$k];
+
+                    yield $k => $value;
                 }
             }
         );

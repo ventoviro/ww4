@@ -220,7 +220,11 @@ class AccessibleTraitTest extends TestCase
      */
     public function testGetIterator(): void
     {
-        self::assertEquals([1, 2, 3], iterator_to_array($this->instance));
+        foreach ($this->instance as &$v) {
+            $v++;
+        }
+
+        self::assertEquals([2, 3, 4], iterator_to_array($this->instance));
     }
 
     /**

@@ -25,20 +25,20 @@ class ValueReference implements WrapperInterface
      *
      * @var  string
      */
-    public $path;
+    public string $path;
 
     /**
      * Property separator.
      *
      * @var  string|null
      */
-    public $delimiter;
+    public ?string $delimiter;
 
     /**
      * ValueReference constructor.
      *
-     * @param  string  $path
-     * @param  string  $delimiter
+     * @param  string       $path
+     * @param  string|null  $delimiter
      */
     public function __construct(string $path, ?string $delimiter = null)
     {
