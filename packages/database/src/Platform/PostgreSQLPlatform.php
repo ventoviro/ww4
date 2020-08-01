@@ -33,7 +33,7 @@ use function Windwalker\raw;
  */
 class PostgreSQLPlatform extends AbstractPlatform
 {
-    protected $name = 'PostgreSQL';
+    protected string $name = self::POSTGRESQL;
 
     protected static ?string $defaultSchema = 'public';
 

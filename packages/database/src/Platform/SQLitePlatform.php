@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Platform;
 
+use Windwalker\Database\Driver\StatementInterface;
+use Windwalker\Database\Schema\Schema;
 use Windwalker\Query\Query;
 
 /**
@@ -18,9 +20,9 @@ use Windwalker\Query\Query;
  */
 class SQLitePlatform extends AbstractPlatform
 {
-    protected $name = 'SQLite';
+    protected string $name = self::SQLITE;
 
-    protected static $defaultSchema = 'main';
+    protected static ?string $defaultSchema = 'main';
 
     public function listDatabasesQuery(): Query
     {
@@ -150,5 +152,111 @@ class SQLitePlatform extends AbstractPlatform
         }
 
         return $this;
+    }
+
+    /**
+     * listColumns
+     *
+     * @param  string       $table
+     * @param  string|null  $schema
+     *
+     * @return  array
+     */
+    public function listColumns(string $table, ?string $schema = null): array
+    {
+    }
+
+    /**
+     * listConstraints
+     *
+     * @param  string       $table
+     * @param  string|null  $schema
+     *
+     * @return  array
+     */
+    public function listConstraints(string $table, ?string $schema = null): array
+    {
+    }
+
+    /**
+     * listIndexes
+     *
+     * @param  string       $table
+     * @param  string|null  $schema
+     *
+     * @return  array
+     */
+    public function listIndexes(string $table, ?string $schema = null): array
+    {
+    }
+
+    /**
+     * getCurrentDatabase
+     *
+     * @return  string|null
+     */
+    public function getCurrentDatabase(): ?string
+    {
+    }
+
+    /**
+     * dropDatabase
+     *
+     * @param  string  $name
+     *
+     * @return  StatementInterface
+     */
+    public function dropDatabase(string $name): StatementInterface
+    {
+    }
+
+    /**
+     * createSchema
+     *
+     * @param  string  $name
+     * @param  array   $options
+     *
+     * @return  StatementInterface
+     */
+    public function createSchema(string $name, array $options = []): StatementInterface
+    {
+    }
+
+    /**
+     * dropSchema
+     *
+     * @param  string  $name
+     *
+     * @return  StatementInterface
+     */
+    public function dropSchema(string $name): StatementInterface
+    {
+    }
+
+    /**
+     * createTable
+     *
+     * @param  Schema  $schema
+     * @param  bool    $ifNotExists
+     * @param  array   $options
+     *
+     * @return  StatementInterface
+     */
+    public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): StatementInterface
+    {
+    }
+
+    /**
+     * renameColumn
+     *
+     * @param  string       $table
+     * @param  string       $from
+     * @param  string       $to
+     * @param  string|null  $schema
+     *
+     * @return  StatementInterface
+     */
+    public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface
+    {
     }
 }

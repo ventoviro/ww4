@@ -32,7 +32,7 @@ use function Windwalker\raw;
  */
 class MySQLPlatform extends AbstractPlatform
 {
-    protected $name = 'MySQL';
+    protected string $name = self::MYSQL;
 
     /**
      * @inheritDoc

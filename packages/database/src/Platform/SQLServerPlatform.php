@@ -20,9 +20,9 @@ use function Windwalker\raw;
  */
 class SQLServerPlatform extends AbstractPlatform
 {
-    protected $name = 'SQLServer';
+    protected string $name = self::SQLSERVER;
 
-    protected static $defaultSchema = 'dbo';
+    protected static ?string $defaultSchema = 'dbo';
 
     public function listDatabasesQuery(): Query
     {

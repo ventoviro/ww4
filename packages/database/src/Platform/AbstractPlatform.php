@@ -30,7 +30,22 @@ use Windwalker\Query\Query;
  */
 abstract class AbstractPlatform
 {
-    use PlatformMetaTrait;
+    public const MYSQL = 'MySQL';
+    public const POSTGRESQL = 'PostgreSQL';
+    public const SQLSERVER = 'SQLServer';
+    public const SQLITE = 'SQLite';
+
+    /**
+     * @var string
+     */
+    protected string $name = '';
+
+    /**
+     * @var string|null
+     */
+    protected static ?string $defaultSchema = null;
+
+    protected int $depth = 0;
 
     protected ?Query $query = null;
 
@@ -40,17 +55,53 @@ abstract class AbstractPlatform
 
     protected ?DataType $dataType = null;
 
-    /**
-     * @var string|null
-     */
-    protected static ?string $defaultSchema = null;
+    public static function getPlatformName(string $platform): string
+    {
+        switch (strtolower($platform)) {
+            case 'pgsql':
+            case 'postgresql':
+                $platform = 'PostgreSQL';
+                break;
+
+            case 'sqlsrv':
+            case 'sqlserver':
+                $platform = 'SQLServer';
+                break;
+
+            case 'mysql':
+                $platform = 'MySQL';
+                break;
+
+            case 'sqlite':
+                $platform = 'SQLite';
+                break;
+        }
+
+        return $platform;
+    }
+
+    public static function getShortName(string $platform): string
+    {
+        switch (strtolower($platform)) {
+            case 'postgresql':
+                $platform = 'pgsql';
+                break;
+
+            case 'sqlserver':
+                $platform = 'sqlsrv';
+                break;
+        }
+
+        return strtolower($platform);
+    }
 
     /**
-     * The depth of the current transaction.
-     *
-     * @var  int
+     * @return string
      */
-    protected $depth = 0;
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
     public static function create(string $platform, DatabaseAdapter $db)
     {
