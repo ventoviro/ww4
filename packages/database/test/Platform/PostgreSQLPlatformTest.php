@@ -63,7 +63,26 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
         $tables = $this->instance->listTables(static::$schema);
 
         self::assertEquals(
-            ['ww_articles', 'ww_categories'],
+            [
+                'ww_articles' => [
+                    'TABLE_NAME' => 'ww_articles',
+                    'TABLE_CATALOG' => 'windwalker_test',
+                    'TABLE_SCHEMA' => 'public',
+                    'TABLE_TYPE' => 'BASE TABLE',
+                    'view_definition' => null,
+                    'check_option' => null,
+                    'is_updatable' => null
+                ],
+                'ww_categories' => [
+                    'TABLE_NAME' => 'ww_categories',
+                    'TABLE_CATALOG' => 'windwalker_test',
+                    'TABLE_SCHEMA' => 'public',
+                    'TABLE_TYPE' => 'BASE TABLE',
+                    'view_definition' => null,
+                    'check_option' => null,
+                    'is_updatable' => null
+                ]
+            ],
             $tables
         );
     }
@@ -76,7 +95,31 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
         $views = $this->instance->listViews(static::$schema);
 
         self::assertEquals(
-            ['ww_articles_view'],
+            [
+                'ww_articles_view' => [
+                    'TABLE_NAME' => 'ww_articles_view',
+                    'TABLE_CATALOG' => 'windwalker_test',
+                    'TABLE_SCHEMA' => 'public',
+                    'table_type' => 'VIEW',
+                    'VIEW_DEFINITION' => ' SELECT ww_articles.id,
+    ww_articles.category_id,
+    ww_articles.page_id,
+    ww_articles.type,
+    ww_articles.price,
+    ww_articles.title,
+    ww_articles.alias,
+    ww_articles.introtext,
+    ww_articles.state,
+    ww_articles.ordering,
+    ww_articles.created,
+    ww_articles.created_by,
+    ww_articles.language,
+    ww_articles.params
+   FROM ww_articles;',
+                    'CHECK_OPTION' => 'NONE',
+                    'IS_UPDATABLE' => 'YES'
+                ]
+            ],
             $views
         );
     }

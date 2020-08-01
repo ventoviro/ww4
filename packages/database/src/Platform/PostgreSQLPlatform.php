@@ -33,7 +33,7 @@ class PostgreSQLPlatform extends AbstractPlatform
 {
     protected $name = 'PostgreSQL';
 
-    protected static $defaultSchema = 'public';
+    protected static ?string $defaultSchema = 'public';
 
     public function listDatabasesQuery(): Query
     {
@@ -54,7 +54,17 @@ class PostgreSQLPlatform extends AbstractPlatform
     public function listTablesQuery(?string $schema): Query
     {
         $query = $this->createQuery()
-            ->select('table_name AS Name')
+            ->select('table_name AS TABLE_NAME')
+            ->select('table_catalog AS TABLE_CATALOG')
+            ->select('table_schema AS TABLE_SCHEMA')
+            ->select('table_type AS TABLE_TYPE')
+            ->select(
+                [
+                    raw('NULL AS VIEW_DEFINITION'),
+                    raw('NULL AS CHECK_OPTION'),
+                    raw('NULL AS IS_UPDATABLE')
+                ]
+            )
             ->from('information_schema.tables')
             ->where('table_type', 'BASE TABLE')
             ->order('table_name', 'ASC');
@@ -71,9 +81,18 @@ class PostgreSQLPlatform extends AbstractPlatform
     public function listViewsQuery(?string $schema): Query
     {
         $query = $this->createQuery()
-            ->select('table_name AS Name')
-            ->from('information_schema.tables')
-            ->where('table_type', 'VIEW')
+            ->select('table_name AS TABLE_NAME')
+            ->select('table_catalog AS TABLE_CATALOG')
+            ->select('table_schema AS TABLE_SCHEMA')
+            ->select(raw('\'VIEW\' AS TABLE_TYPE'))
+            ->select(
+                [
+                    'view_definition AS VIEW_DEFINITION',
+                    'check_option AS CHECK_OPTION',
+                    'is_updatable AS IS_UPDATABLE'
+                ]
+            )
+            ->from('information_schema.views')
             ->order('table_name', 'ASC');
 
         if ($schema) {

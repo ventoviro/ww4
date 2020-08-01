@@ -83,7 +83,7 @@ class ColumnTest extends TestCase
         );
         self::assertEquals(
             255,
-            $col->getCharacterOctetLength()
+            $col->getCharacterMaximumLength()
         );
         self::assertEquals(
             '255',

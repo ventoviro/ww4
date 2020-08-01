@@ -393,7 +393,6 @@ SQL,
      */
     public function testGetColumns(): void
     {
-
         $cols = array_keys($this->instance->reset()->getColumns());
 
         self::assertEquals(
@@ -578,10 +577,10 @@ SQL,
      */
     public function testDropConstraint(): void
     {
-        $this->instance->dropColumn('params');
+        $this->instance->dropConstraint('idx_enterprise_alias');
 
         self::assertEquals(
-            ['PRIMARY'],
+            ['PRIMARY', 'params'],
             array_keys($this->instance->reset()->getConstraints())
         );
     }

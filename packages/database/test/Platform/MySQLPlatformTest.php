@@ -114,6 +114,7 @@ class MySQLPlatformTest extends AbstractPlatformTest
 
         self::assertEquals(
             [
+                'column_name',
                 'ordinal_position',
                 'column_default',
                 'is_nullable',
@@ -133,60 +134,64 @@ class MySQLPlatformTest extends AbstractPlatformTest
         self::assertEquals(
             [
                 'id' => [
-                    'ordinal_position' => 1,
+                    'column_name' => 'id',
+                    'ordinal_position' => '1',
                     'column_default' => null,
                     'is_nullable' => false,
                     'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
-                    'numeric_scale' => 0,
+                    'numeric_precision' => '10',
+                    'numeric_scale' => '0',
                     'numeric_unsigned' => true,
                     'comment' => 'Primary Index',
                     'auto_increment' => true,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'category_id' => [
-                    'ordinal_position' => 2,
+                    'column_name' => 'category_id',
+                    'ordinal_position' => '2',
                     'column_default' => '0',
                     'is_nullable' => false,
                     'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
-                    'numeric_scale' => 0,
+                    'numeric_precision' => '10',
+                    'numeric_scale' => '0',
                     'numeric_unsigned' => true,
                     'comment' => 'Category ID',
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'page_id' => [
-                    'ordinal_position' => 3,
+                    'column_name' => 'page_id',
+                    'ordinal_position' => '3',
                     'column_default' => '0',
                     'is_nullable' => false,
                     'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
-                    'numeric_scale' => 0,
+                    'numeric_precision' => '10',
+                    'numeric_scale' => '0',
                     'numeric_unsigned' => true,
                     'comment' => 'Page ID',
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'type' => [
-                    'ordinal_position' => 4,
+                    'column_name' => 'type',
+                    'ordinal_position' => '4',
                     'column_default' => 'bar',
                     'is_nullable' => false,
                     'data_type' => 'enum',
-                    'character_maximum_length' => 3,
-                    'character_octet_length' => 12,
+                    'character_maximum_length' => '3',
+                    'character_octet_length' => '12',
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
@@ -196,33 +201,35 @@ class MySQLPlatformTest extends AbstractPlatformTest
                         'permitted_values' => [
                             'foo',
                             'bar',
-                            'yoo',
-                        ],
-                    ],
+                            'yoo'
+                        ]
+                    ]
                 ],
                 'price' => [
-                    'ordinal_position' => 5,
+                    'column_name' => 'price',
+                    'ordinal_position' => '5',
                     'column_default' => '0.000000',
                     'is_nullable' => true,
                     'data_type' => 'decimal',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 20,
-                    'numeric_scale' => 6,
+                    'numeric_precision' => '20',
+                    'numeric_scale' => '6',
                     'numeric_unsigned' => true,
                     'comment' => '',
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'title' => [
-                    'ordinal_position' => 6,
+                    'column_name' => 'title',
+                    'ordinal_position' => '6',
                     'column_default' => '',
                     'is_nullable' => false,
                     'data_type' => 'varchar',
-                    'character_maximum_length' => 255,
-                    'character_octet_length' => 1020,
+                    'character_maximum_length' => '255',
+                    'character_octet_length' => '1020',
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
@@ -230,15 +237,16 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'alias' => [
-                    'ordinal_position' => 7,
+                    'column_name' => 'alias',
+                    'ordinal_position' => '7',
                     'column_default' => '',
                     'is_nullable' => false,
                     'data_type' => 'varchar',
-                    'character_maximum_length' => 255,
-                    'character_octet_length' => 1020,
+                    'character_maximum_length' => '255',
+                    'character_octet_length' => '1020',
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
@@ -246,15 +254,16 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'introtext' => [
-                    'ordinal_position' => 8,
+                    'column_name' => 'introtext',
+                    'ordinal_position' => '8',
                     'column_default' => null,
                     'is_nullable' => false,
                     'data_type' => 'longtext',
-                    'character_maximum_length' => 4294967295,
-                    'character_octet_length' => 4294967295,
+                    'character_maximum_length' => '4294967295',
+                    'character_octet_length' => '4294967295',
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
@@ -262,42 +271,45 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'state' => [
-                    'ordinal_position' => 9,
+                    'column_name' => 'state',
+                    'ordinal_position' => '9',
                     'column_default' => '0',
                     'is_nullable' => false,
                     'data_type' => 'tinyint',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 3,
-                    'numeric_scale' => 0,
+                    'numeric_precision' => '3',
+                    'numeric_scale' => '0',
                     'numeric_unsigned' => false,
                     'comment' => '0: unpublished, 1:published',
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'ordering' => [
-                    'ordinal_position' => 10,
+                    'column_name' => 'ordering',
+                    'ordinal_position' => '10',
                     'column_default' => '0',
                     'is_nullable' => false,
                     'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
-                    'numeric_scale' => 0,
+                    'numeric_precision' => '10',
+                    'numeric_scale' => '0',
                     'numeric_unsigned' => true,
                     'comment' => 'Ordering',
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'created' => [
-                    'ordinal_position' => 11,
+                    'column_name' => 'created',
+                    'ordinal_position' => '11',
                     'column_default' => '1000-01-01 00:00:00',
                     'is_nullable' => false,
                     'data_type' => 'datetime',
@@ -310,31 +322,33 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'created_by' => [
-                    'ordinal_position' => 12,
+                    'column_name' => 'created_by',
+                    'ordinal_position' => '12',
                     'column_default' => '0',
                     'is_nullable' => false,
                     'data_type' => 'int',
                     'character_maximum_length' => null,
                     'character_octet_length' => null,
-                    'numeric_precision' => 10,
-                    'numeric_scale' => 0,
+                    'numeric_precision' => '10',
+                    'numeric_scale' => '0',
                     'numeric_unsigned' => true,
                     'comment' => 'Author',
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'language' => [
-                    'ordinal_position' => 13,
+                    'column_name' => 'language',
+                    'ordinal_position' => '13',
                     'column_default' => '',
                     'is_nullable' => false,
                     'data_type' => 'char',
-                    'character_maximum_length' => 7,
-                    'character_octet_length' => 28,
+                    'character_maximum_length' => '7',
+                    'character_octet_length' => '28',
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
@@ -342,15 +356,16 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
+                    ]
                 ],
                 'params' => [
-                    'ordinal_position' => 14,
+                    'column_name' => 'params',
+                    'ordinal_position' => '14',
                     'column_default' => null,
                     'is_nullable' => false,
                     'data_type' => 'text',
-                    'character_maximum_length' => 65535,
-                    'character_octet_length' => 65535,
+                    'character_maximum_length' => '65535',
+                    'character_octet_length' => '65535',
                     'numeric_precision' => null,
                     'numeric_scale' => null,
                     'numeric_unsigned' => false,
@@ -358,8 +373,8 @@ class MySQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ],
-                ],
+                    ]
+                ]
             ],
             $columns
         );
