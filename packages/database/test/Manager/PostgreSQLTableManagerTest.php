@@ -596,6 +596,16 @@ class PostgreSQLTableManagerTest extends AbstractDatabaseTestCase
         );
     }
 
+    public function testRenameColumn(): void
+    {
+        $this->instance->renameColumn('type', 'kind');
+
+        self::assertEquals(
+            'kind',
+            $this->instance->reset()->getColumn('kind')->getColumnName()
+        );
+    }
+
     /**
      * @see  TableManager::rename
      */

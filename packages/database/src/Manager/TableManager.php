@@ -307,15 +307,27 @@ class TableManager extends AbstractMetaManager
         return $this;
     }
 
+    public function renameColumn(string $from, string $to): static
+    {
+        if ($this->hasColumn($from)) {
+            $this->getPlatform()->renameColumn($this->getName(), $from, $to, $this->schemaName);
+        }
+
+        return $this;
+    }
+
     public function addIndex($columns = [], ?string $name = null, array $options = []): static
     {
         if (!$columns instanceof Index) {
+            $tableColumns = $this->getColumns();
             $index = new Index($name, $this->getName());
             $index->columns((array) $columns)
                 ->bind($options);
 
             foreach ($index->getColumns() as $column) {
-                $column->dataType($this->getColumns()[$column->getColumnName()]->getDataType() ?? '');
+                if (isset($tableColumns[$column->getColumnName()])) {
+                    $column->dataType($tableColumns[$column->getColumnName()]->getDataType());
+                }
             }
         } else {
             $index = $columns;
@@ -382,12 +394,16 @@ class TableManager extends AbstractMetaManager
         array $options = []
     ): static {
         if (!$columns instanceof Constraint) {
+            $tableColumns = $this->getColumns();
+
             $constraint = new Constraint($type, $name, $this->getName());
             $constraint->columns((array) $columns)
                 ->bind($options);
 
             foreach ($constraint->getColumns() as $column) {
-                $column->dataType($this->getColumns()[$column->getColumnName()]->getDataType() ?? '');
+                if (isset($tableColumns[$column->getColumnName()])) {
+                    $column->dataType($tableColumns[$column->getColumnName()]->getDataType() ?? '');
+                }
             }
         } else {
             $constraint = $columns;

@@ -103,11 +103,11 @@ class DataType
         self::BIT => [1, 0, 'int'],
         self::BIT_VARYING => [1, 0, 'int'],
 
-        self::BIGINT => [20, 0, 'int'],
-        self::INTEGER => [11, 0, 'int'],
-        self::SMALLINT => [6, 0, 'int'],
-        self::TINYINT => [4, 0, 'int'],
-        self::NUMERIC => [10, 0, 'int'],
+        self::BIGINT => [null, 0, 'int'],
+        self::INTEGER => [null, 0, 'int'],
+        self::SMALLINT => [null, 0, 'int'],
+        self::TINYINT => [null, 0, 'int'],
+        self::NUMERIC => [null, 0, 'int'],
 
         self::DECIMAL => ['10,2', 0, 'float'],
         self::FLOAT => ['10,2', 0, 'float'],

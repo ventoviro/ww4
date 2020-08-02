@@ -526,7 +526,7 @@ class MySQLPlatform extends AbstractPlatform
 
     public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface
     {
-        $toColumn = Column::wrap($this->listColumns($table)[$to]);
+        $toColumn = Column::wrap($this->listColumns($table)[$from]);
 
         return $this->db->execute(
             $this->getGrammar()::build(
@@ -540,16 +540,21 @@ class MySQLPlatform extends AbstractPlatform
         );
     }
 
-    protected function prepareKeyColumns(array $columns): array
+    public function addIndex(string $table, Index $index, ?string $schema = null): StatementInterface
     {
-        return array_map(fn (Column $col) => $this->getIndexColumnName($col), $columns);
+        return $this->db->execute(
+            $this->db->getQuery(true)
+                ->alter('TABLE', $schema . '.' . $table)
+                ->tap(fn(AlterClause $alter) => $alter->addIndex(
+                    $index->indexName,
+                    $this->prepareKeyColumns($index->getColumns())
+                ))
+        );
     }
 
-    protected function getIndexColumnName(Column $column): string
+    protected function getKeyColumnExpression(Column $column): Clause
     {
-        $name = $column->getColumnName();
-
-        $name = $this->db->quoteName($name);
+        $expr = parent::getKeyColumnExpression($column);
 
         $subParts = $column->getErratas()['sub_parts'] ?? null;
         $length = $column->getCharacterMaximumLength();
@@ -565,17 +570,17 @@ class MySQLPlatform extends AbstractPlatform
 
         if (
             $subParts === null
-            && (!$length || $length <= 150)
+            && (!$length || $length > 150)
             && in_array($column->getDataType(), $types)
         ) {
             $subParts = 150;
         }
 
         if ($subParts) {
-            $name .= '(' . $subParts . ')';
+            $expr->setName($expr->getName() . '(' . $subParts . ')');
         }
 
-        return $name;
+        return $expr;
     }
 
     /**

@@ -25,6 +25,8 @@ use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Query;
 
+use function Windwalker\Query\clause;
+
 /**
  * The AbstractPlatform class.
  */
@@ -381,12 +383,13 @@ abstract class AbstractPlatform
     public function addIndex(string $table, Index $index, ?string $schema = null): StatementInterface
     {
         return $this->db->execute(
-            $this->db->getQuery(true)
-                ->alter('TABLE', $schema . '.' . $table)
-                ->tap(fn(AlterClause $alter) => $alter->addIndex(
-                    $index->indexName,
-                    $this->prepareKeyColumns($index->getColumns())
-                ))
+            $this->getGrammar()::build(
+                'CREATE INDEX',
+                $this->db->quoteName($index->indexName),
+                'ON',
+                $this->db->quoteName($schema . '.' . $table),
+                (string) clause('()', $this->prepareKeyColumns($index->getColumns()), ','),
+            )
         );
     }
 
@@ -410,7 +413,7 @@ abstract class AbstractPlatform
         if ($constraint->constraintType === Constraint::TYPE_PRIMARY_KEY) {
             $alter->addPrimaryKey(
                 $constraint->constraintName,
-                $this->db->quoteName(array_keys($constraint->getColumns()))
+                $this->prepareKeyColumns($constraint->getColumns())
             );
         } elseif ($constraint->constraintType === Constraint::TYPE_UNIQUE) {
             $alter->addUniqueKey(
@@ -432,7 +435,18 @@ abstract class AbstractPlatform
 
     protected function prepareKeyColumns(array $columns): array
     {
-        return $this->db->quoteName(array_map(fn (Column $col) => $col->getColumnName(), $columns));
+        return array_map(fn (Column $col) => $this->getKeyColumnExpression($col), $columns);
+    }
+
+    protected function getKeyColumnExpression(Column $column): Clause
+    {
+        $expr = clause($this->db->quoteName($column->getColumnName()), [], ' ');
+
+        if ($column->getOption('sort')) {
+            $expr->append($column->getOption('sort'));
+        }
+
+        return $expr;
     }
 
     public function dropConstraint(string $table, string $name, ?string $schema = null): StatementInterface

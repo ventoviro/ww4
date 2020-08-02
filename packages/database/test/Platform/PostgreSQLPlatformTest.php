@@ -23,8 +23,6 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
 
     protected static string $driver = 'pdo_pgsql';
 
-
-
     protected static $schema = 'public';
 
     /**

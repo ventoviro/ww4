@@ -91,7 +91,9 @@ class Clause implements \Countable, ClauseInterface
             return substr($this->name, 0, -2) . '(' . implode($this->glue, $elements) . ')';
         }
 
-        return ltrim($this->name . ' ' . implode($this->glue, $elements));
+        $sep = str_ends_with($this->name, "\n") ? '' : ' ';
+
+        return trim($this->name . $sep . implode($this->glue, $elements));
     }
 
     /**

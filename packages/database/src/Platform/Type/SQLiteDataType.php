@@ -16,4 +16,29 @@ namespace Windwalker\Database\Platform\Type;
  */
 class SQLiteDataType extends DataType
 {
+    /**
+     * Property types.
+     *
+     * @var  array
+     */
+    public static array $defaultLengths = [
+    ];
+
+    /**
+     * "Length", "Default", "PHP Type"
+     *
+     * @var  array
+     */
+    public static array $typeDefinitions = [
+        //
+    ];
+
+    /**
+     * Property typeMapping.
+     *
+     * @var  array
+     */
+    protected static array $typeMapping = [
+        'int' => 'integer',
+    ];
 }

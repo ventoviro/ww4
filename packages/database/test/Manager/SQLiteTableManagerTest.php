@@ -12,12 +12,17 @@ declare(strict_types=1);
 namespace Windwalker\Database\Test\Manager;
 
 use Windwalker\Database\Manager\TableManager;
+use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 
-class MySQLTableManagerTest extends AbstractDatabaseTestCase
+class SQLiteTableManagerTest extends AbstractDatabaseTestCase
 {
+    protected static string $platform = AbstractPlatform::SQLITE;
+
+    protected static string $driver = 'pdo_sqlite';
+
     protected ?TableManager $instance;
 
     /**
@@ -56,25 +61,24 @@ class MySQLTableManagerTest extends AbstractDatabaseTestCase
         self::assertSqlFormatEquals(
             <<<SQL
             CREATE TABLE IF NOT EXISTS `enterprise` (
-            `id` int(11) NOT NULL,
+             `id` integer NOT NULL,
             `type` char(25) NOT NULL DEFAULT '',
-            `catid` int(11) DEFAULT NULL,
+            `catid` integer DEFAULT NULL,
             `alias` varchar(255) NOT NULL DEFAULT '',
             `title` varchar(255) NOT NULL DEFAULT 'H',
             `price` decimal(20,6) NOT NULL DEFAULT 0,
-            `intro` text NOT NULL,
-            `fulltext` text NOT NULL,
-            `start_date` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
-            `created` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
-            `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            `deleted` timestamp NOT NULL DEFAULT '1970-01-01 12:00:01',
-            `params` json NOT NULL
-            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-            ALTER TABLE `enterprise` ADD CONSTRAINT `pk_enterprise` PRIMARY KEY (`id`);
-            ALTER TABLE `enterprise` MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT;
-            ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_catid_type` (`catid`,`type`);
-            ALTER TABLE `enterprise` ADD INDEX `idx_enterprise_title` (`title`(150));
-            ALTER TABLE `enterprise` ADD CONSTRAINT `idx_enterprise_alias` UNIQUE (`alias`)
+            `intro` text NOT NULL DEFAULT '',
+            `fulltext` text NOT NULL DEFAULT '',
+            `start_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+            `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+            `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            `deleted` timestamp NOT NULL DEFAULT 1,
+            `params` json NOT NULL,
+            CONSTRAINT `idx_enterprise_alias` UNIQUE (`alias`),
+            CONSTRAINT `pk_enterprise` PRIMARY KEY (`id` AUTOINCREMENT)
+            );
+            CREATE INDEX `idx_enterprise_catid_type` ON `enterprise` (`catid`,`type`);
+            CREATE INDEX `idx_enterprise_title` ON `enterprise` (`title`)
             SQL,
             implode(";\n", $logs)
         );
@@ -91,7 +95,7 @@ class MySQLTableManagerTest extends AbstractDatabaseTestCase
         $constraints = array_filter($constraints, fn (Constraint $item) => $item->constraintType !== 'CHECK');
 
         self::assertEquals(
-            ['PRIMARY', 'idx_enterprise_alias'],
+            ['sqlite_autoindex_enterprise_1'],
             array_keys($constraints)
         );
     }
@@ -106,11 +110,30 @@ class MySQLTableManagerTest extends AbstractDatabaseTestCase
         self::assertEquals(
             [
                 'TABLE_NAME' => 'enterprise',
-                'TABLE_SCHEMA' => 'windwalker_test',
+                'TABLE_SCHEMA' => 'main',
                 'TABLE_TYPE' => 'BASE TABLE',
                 'VIEW_DEFINITION' => null,
                 'CHECK_OPTION' => null,
-                'IS_UPDATABLE' => null
+                'IS_UPDATABLE' => null,
+                'sql' => <<<SQL
+                    CREATE TABLE `enterprise` (
+                    `id` integer NOT NULL,
+                    `type` char(25) NOT NULL DEFAULT '',
+                    `catid` integer DEFAULT NULL,
+                    `alias` varchar(255) NOT NULL DEFAULT '',
+                    `title` varchar(255) NOT NULL DEFAULT 'H',
+                    `price` decimal(20,6) NOT NULL DEFAULT 0,
+                    `intro` text NOT NULL DEFAULT '',
+                    `fulltext` text NOT NULL DEFAULT '',
+                    `start_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                    `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                    `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    `deleted` timestamp NOT NULL DEFAULT 1,
+                    `params` json NOT NULL,
+                    CONSTRAINT `idx_enterprise_alias` UNIQUE (`alias`),
+                    CONSTRAINT `pk_enterprise` PRIMARY KEY (`id` AUTOINCREMENT)
+                    )
+                    SQL
             ],
             $detail
         );
@@ -121,62 +144,7 @@ class MySQLTableManagerTest extends AbstractDatabaseTestCase
      */
     public function testUpdate(): void
     {
-        $logs = $this->logQueries(
-            fn () => $this->instance->update(function (Schema $schema) {
-                // New column
-                $schema->varchar('captain')->length(512)->after('catid');
-                $schema->varchar('first_officer')->length(512)->after('captain');
-
-                // Update column
-                $schema->char('alias')->length(25)
-                    ->nullable(true)
-                    ->defaultValue('');
-
-                // New index
-                $schema->addIndex('captain');
-            })
-        );
-
-        self::assertSqlFormatEquals(
-            <<<SQL
-            SELECT `ORDINAL_POSITION`,
-                   `COLUMN_DEFAULT`,
-                   `IS_NULLABLE`,
-                   `DATA_TYPE`,
-                   `CHARACTER_MAXIMUM_LENGTH`,
-                   `CHARACTER_OCTET_LENGTH`,
-                   `NUMERIC_PRECISION`,
-                   `NUMERIC_SCALE`,
-                   `COLUMN_NAME`,
-                   `COLUMN_TYPE`,
-                   `COLUMN_COMMENT`,
-                   `EXTRA`
-            FROM `INFORMATION_SCHEMA`.`COLUMNS`
-            WHERE `TABLE_NAME` = 'enterprise'
-              AND `TABLE_SCHEMA` = (SELECT DATABASE());
-            ALTER TABLE `enterprise`
-                ADD COLUMN `captain` varchar(512) NOT NULL DEFAULT '';
-            ALTER TABLE `enterprise`
-                ADD COLUMN `first_officer` varchar(512) NOT NULL DEFAULT '';
-            ALTER TABLE `enterprise`
-                MODIFY COLUMN `alias` char(25) DEFAULT '';
-            SELECT `TABLE_SCHEMA`,
-                   `TABLE_NAME`,
-                   `NON_UNIQUE`,
-                   `INDEX_NAME`,
-                   `COLUMN_NAME`,
-                   `COLLATION`,
-                   `CARDINALITY`,
-                   `SUB_PART`,
-                   `INDEX_COMMENT`
-            FROM `INFORMATION_SCHEMA`.`STATISTICS`
-            WHERE `TABLE_NAME` = 'enterprise'
-              AND `TABLE_SCHEMA` = (SELECT DATABASE());
-            ALTER TABLE `enterprise`
-                ADD INDEX `idx_enterprise_captain` (`captain`)
-            SQL,
-            implode("\n;", $logs)
-        );
+        self::markTestIncomplete('Current SQLitePlatform not support schema change');
     }
 
     /**
@@ -187,43 +155,20 @@ class MySQLTableManagerTest extends AbstractDatabaseTestCase
         $logs = $this->logQueries(
             function () {
                 $this->instance->addIndex('created');
-                $this->instance->addIndex(['start_date', 'params']);
+                $this->instance->addIndex(['start_date', 'price']);
             }
         );
 
         self::assertSqlFormatEquals(
             <<<SQL
-            SELECT `ORDINAL_POSITION`,
-                   `COLUMN_DEFAULT`,
-                   `IS_NULLABLE`,
-                   `DATA_TYPE`,
-                   `CHARACTER_MAXIMUM_LENGTH`,
-                   `CHARACTER_OCTET_LENGTH`,
-                   `NUMERIC_PRECISION`,
-                   `NUMERIC_SCALE`,
-                   `COLUMN_NAME`,
-                   `COLUMN_TYPE`,
-                   `COLUMN_COMMENT`,
-                   `EXTRA`
-            FROM `INFORMATION_SCHEMA`.`COLUMNS`
-            WHERE `TABLE_NAME` = 'enterprise'
-              AND `TABLE_SCHEMA` = (SELECT DATABASE());
-            SELECT `TABLE_SCHEMA`,
-                   `TABLE_NAME`,
-                   `NON_UNIQUE`,
-                   `INDEX_NAME`,
-                   `COLUMN_NAME`,
-                   `COLLATION`,
-                   `CARDINALITY`,
-                   `SUB_PART`,
-                   `INDEX_COMMENT`
-            FROM `INFORMATION_SCHEMA`.`STATISTICS`
-            WHERE `TABLE_NAME` = 'enterprise'
-              AND `TABLE_SCHEMA` = (SELECT DATABASE());
-            ALTER TABLE `enterprise`
-                ADD INDEX `idx_enterprise_created` (`created`);
-            ALTER TABLE `enterprise`
-                ADD INDEX `idx_enterprise_start_date_params` (`start_date`, `params`(150))
+            PRAGMA table_info('enterprise');
+            PRAGMA table_info('enterprise');
+            PRAGMA index_list('enterprise');
+            PRAGMA index_info('idx_enterprise_title');
+            PRAGMA index_info('idx_enterprise_catid_type');
+            PRAGMA index_info('sqlite_autoindex_enterprise_1');
+            CREATE INDEX `idx_enterprise_created` ON `enterprise` (`created`);
+            CREATE INDEX `idx_enterprise_start_date_price` ON `enterprise` (`start_date`,`price`)
             SQL,
             implode(";\n", $logs)
         );
@@ -232,13 +177,11 @@ class MySQLTableManagerTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             [
-                'PRIMARY',
-                'idx_enterprise_alias',
-                'idx_enterprise_catid_type',
-                'idx_enterprise_title',
-                'idx_enterprise_captain',
+                'idx_enterprise_start_date_price',
                 'idx_enterprise_created',
-                'idx_enterprise_start_date_params',
+                'idx_enterprise_title',
+                'idx_enterprise_catid_type',
+                'sqlite_autoindex_enterprise_1',
             ],
             array_keys($this->instance->getIndexes())
         );
@@ -281,52 +224,7 @@ class MySQLTableManagerTest extends AbstractDatabaseTestCase
      */
     public function testAddConstraint(): void
     {
-        $logs = $this->logQueries(
-            fn () => $this->instance->addConstraint(
-                ['captain', 'first_officer'],
-                Constraint::TYPE_UNIQUE
-            )
-        );
-
-        self::assertSqlFormatEquals(
-            <<<SQL
-SELECT `ORDINAL_POSITION`,
-       `COLUMN_DEFAULT`,
-       `IS_NULLABLE`,
-       `DATA_TYPE`,
-       `CHARACTER_MAXIMUM_LENGTH`,
-       `CHARACTER_OCTET_LENGTH`,
-       `NUMERIC_PRECISION`,
-       `NUMERIC_SCALE`,
-       `COLUMN_NAME`,
-       `COLUMN_TYPE`,
-       `COLUMN_COMMENT`,
-       `EXTRA`
-FROM `INFORMATION_SCHEMA`.`COLUMNS`
-WHERE `TABLE_NAME` = 'enterprise'
-  AND `TABLE_SCHEMA` = (SELECT DATABASE());
-SELECT `TABLE_NAME`, `CONSTRAINT_NAME`, `CONSTRAINT_TYPE`
-FROM `INFORMATION_SCHEMA`.`TABLE_CONSTRAINTS`
-WHERE `TABLE_NAME` = 'enterprise'
-  AND `TABLE_SCHEMA` = (SELECT DATABASE());
-SELECT `CONSTRAINT_NAME`,
-       `COLUMN_NAME`,
-       `REFERENCED_TABLE_SCHEMA`,
-       `REFERENCED_TABLE_NAME`,
-       `REFERENCED_COLUMN_NAME`,
-       `REFERENCED_COLUMN_NAME`
-FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE`
-WHERE `TABLE_NAME` = 'enterprise'
-  AND `TABLE_SCHEMA` = (SELECT DATABASE());
-SELECT `CONSTRAINT_NAME`, `MATCH_OPTION`, `UPDATE_RULE`, `DELETE_RULE`
-FROM `INFORMATION_SCHEMA`.`REFERENTIAL_CONSTRAINTS`
-WHERE `TABLE_NAME` = 'enterprise'
-  AND `CONSTRAINT_SCHEMA` = (SELECT DATABASE());
-ALTER TABLE `enterprise`
-    ADD CONSTRAINT `ct_enterprise_captain_first_officer` UNIQUE (`captain`(150),`first_officer`(150))
-SQL,
-            implode(";\n", $logs)
-        );
+        self::markTestIncomplete('Current SQLitePlatform not support schema change');
     }
 
     /**
@@ -334,13 +232,7 @@ SQL,
      */
     public function testDropColumn(): void
     {
-        $this->instance->reset();
-        $this->instance->dropColumn(['captain', 'first_officer']);
-
-        $this->instance->reset();
-
-        self::assertFalse($this->instance->hasColumn('captain'));
-        self::assertFalse($this->instance->hasColumn('first_officer'));
+        self::markTestIncomplete('Current SQLitePlatform not support schema change');
     }
 
     /**
@@ -348,19 +240,7 @@ SQL,
      */
     public function testModifyColumn(): void
     {
-        $this->instance->modifyColumn(
-            'price',
-            'decimal(15,4)',
-            true,
-            100.5
-        );
-
-        $this->instance->reset();
-        $column = $this->instance->getColumn('price');
-
-        self::assertEquals('15,4', $column->getLengthExpression());
-        self::assertEquals('decimal', $column->getDataType());
-        self::assertEquals(100.5, $column->getColumnDefault());
+        self::markTestIncomplete('Current SQLitePlatform not support schema change');
     }
 
     /**
@@ -386,7 +266,7 @@ SQL,
     {
         $logs = $this->logQueries(fn () => $this->instance->truncate());
 
-        self::assertEquals('TRUNCATE TABLE `enterprise`', $logs[0]);
+        self::assertEquals('DELETE FROM `enterprise`', $logs[0]);
     }
 
     /**
@@ -463,15 +343,15 @@ SQL,
      */
     public function testGetIndex(): void
     {
-        $index = $this->instance->getIndex('idx_enterprise_start_date_params');
+        $index = $this->instance->getIndex('idx_enterprise_catid_type');
 
         self::assertEquals(
-            'idx_enterprise_start_date_params',
+            'idx_enterprise_catid_type',
             $index->indexName,
         );
 
         self::assertEquals(
-            ['start_date', 'params'],
+            ['catid', 'type'],
             array_keys($index->getColumns())
         );
     }
@@ -502,7 +382,6 @@ SQL,
 
         self::assertEquals('updated', $column->columnName);
         self::assertEquals('timestamp', $column->getDataType());
-        self::assertEquals('current_timestamp()', $column->getErratas()['on_update']);
     }
 
     /**
@@ -510,14 +389,7 @@ SQL,
      */
     public function testGetConstraint(): void
     {
-        $constraint = $this->instance->reset()->getConstraint('idx_enterprise_alias');
-
-        self::assertEquals(
-            'idx_enterprise_alias',
-            $constraint->constraintName
-        );
-
-        self::assertEquals(['alias'], array_keys($constraint->getColumns()));
+        self::markTestIncomplete('Currently SQLitePlatform cannot get constraints'); // TODO: Complete this test
     }
 
     /**
@@ -529,12 +401,11 @@ SQL,
 
         self::assertEquals(
             [
-                'PRIMARY',
-                'idx_enterprise_alias',
-                'idx_enterprise_catid_type',
-                'idx_enterprise_title',
+                'idx_enterprise_start_date_price',
                 'idx_enterprise_created',
-                'idx_enterprise_start_date_params'
+                'idx_enterprise_title',
+                'idx_enterprise_catid_type',
+                'sqlite_autoindex_enterprise_1'
             ],
             $indexes
         );
@@ -547,27 +418,13 @@ SQL,
 
     public function testGetSchema(): void
     {
-        $this->instance->schemaName = self::$db->getOption('database');
+        $this->instance->schemaName = $this->instance->getPlatform()::getDefaultSchema();
 
-        $logs = $this->logQueries(fn () => $this->instance->getColumns());
+        $logs = $this->logQueries(fn () => $this->instance->reset()->getColumns());
 
         self::assertSqlFormatEquals(
             <<<SQL
-            SELECT `ORDINAL_POSITION`,
-                   `COLUMN_DEFAULT`,
-                   `IS_NULLABLE`,
-                   `DATA_TYPE`,
-                   `CHARACTER_MAXIMUM_LENGTH`,
-                   `CHARACTER_OCTET_LENGTH`,
-                   `NUMERIC_PRECISION`,
-                   `NUMERIC_SCALE`,
-                   `COLUMN_NAME`,
-                   `COLUMN_TYPE`,
-                   `COLUMN_COMMENT`,
-                   `EXTRA`
-            FROM `INFORMATION_SCHEMA`.`COLUMNS`
-            WHERE `TABLE_NAME` = 'enterprise'
-              AND `TABLE_SCHEMA` = 'windwalker_test'
+            PRAGMA `main`.table_info('enterprise')
             SQL,
             $logs[0]
         );
@@ -578,22 +435,12 @@ SQL,
      */
     public function testDropConstraint(): void
     {
-        $this->instance->dropConstraint('idx_enterprise_alias');
-
-        self::assertEquals(
-            ['PRIMARY', 'params'],
-            array_keys($this->instance->reset()->getConstraints())
-        );
+        self::markTestIncomplete('Currently SQLitePlatform not support schema change');
     }
 
     public function testRenameColumn(): void
     {
-        $this->instance->renameColumn('type', 'kind');
-
-        self::assertEquals(
-            'kind',
-            $this->instance->reset()->getColumn('kind')->getColumnName()
-        );
+        self::markTestIncomplete('Currently SQLitePlatform not support schema change');
     }
 
     /**

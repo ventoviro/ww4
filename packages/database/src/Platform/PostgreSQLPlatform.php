@@ -683,18 +683,18 @@ class PostgreSQLPlatform extends AbstractPlatform
      */
     public function renameColumn(string $table, string $from, string $to, ?string $schema = null): StatementInterface
     {
-    }
+        $alter = $this->createQuery()
+            ->alter('TABLE', $schema . '.' . $table);
 
-    public function addIndex(string $table, Index $index, ?string $schema = null): StatementInterface
-    {
-        return $this->db->execute(
-            $this->getGrammar()::build(
-                'CREATE INDEX',
-                $this->db->quoteName($index->indexName),
-                'ON',
-                $this->db->quoteName($schema . '.' . $table),
-                (string) clause('()', $this->prepareKeyColumns($index->getColumns()), ','),
-            )
-        );
+        $alter->subClause('RENAME COLUMN')
+            ->append(
+                [
+                    $this->db->quoteName($from),
+                    'TO',
+                    $this->db->quoteName($to)
+                ]
+            );
+
+        return $this->db->execute((string) $alter);
     }
 }
