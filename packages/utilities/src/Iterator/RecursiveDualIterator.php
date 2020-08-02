@@ -24,9 +24,9 @@ class RecursiveDualIterator extends RecursiveIteratorIterator
      * Used to keep end of recursion equality. That is en leaving a nesting
      * level we need to check whether both child iterators are at their end.
      *
-     * @var boolean
+     * @var bool
      */
-    protected $equal = false;
+    protected bool $equal = false;
 
     /**
      * Construct from RecursiveDualIterator

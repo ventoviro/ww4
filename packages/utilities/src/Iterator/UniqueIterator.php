@@ -21,12 +21,12 @@ class UniqueIterator extends \FilterIterator
     /**
      * @var array
      */
-    protected $exists = [];
+    protected array $exists = [];
 
     /**
      * @var int
      */
-    protected $flags = SORT_STRING;
+    protected int $flags = SORT_STRING;
 
     /**
      * @inheritDoc
@@ -90,13 +90,13 @@ class UniqueIterator extends \FilterIterator
     /**
      * Method to set property strict
      *
-     * @param  bool  $flags
+     * @param  int  $flags
      *
      * @return  static  Return self to support chaining.
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function setFlags(bool $flags)
+    public function setFlags(int $flags)
     {
         $this->flags = $flags;
 

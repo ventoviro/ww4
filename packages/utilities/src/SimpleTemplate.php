@@ -21,25 +21,18 @@ class SimpleTemplate
     /**
      * @var  array
      */
-    protected $wrapper = ['{{', '}}'];
+    protected array $wrapper = ['{{', '}}'];
 
     /**
      * @var  string
      */
-    protected $delimiter = '.';
+    protected string $delimiter = '.';
 
     /**
      * @var string
      */
-    protected $template = '';
+    protected string $template = '';
 
-    /**
-     * SimpleTemplate constructor.
-     *
-     * @param  array   $wrapper
-     * @param  string  $delimiter
-     * @param  string  $template
-     */
     public function __construct(string $template, string $delimiter = '.', ?array $wrapper = null)
     {
         $this->delimiter = $delimiter;

@@ -34,9 +34,9 @@ trait AccessibleTrait
     /**
      * Get value from this object.
      *
-     * @param  string  $key
+     * @param  mixed  $key
      *
-     * @return mixed
+     * @return  mixed
      */
     public function &get($key)
     {
@@ -278,13 +278,15 @@ trait AccessibleTrait
     /**
      * Get storage iterator.
      *
-     * @return  Iterator
+     * @return  \Generator
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function getIterator(): Iterator
+    public function &getIterator(): \Generator
     {
-        return new ArrayIterator($this->storage);
+        foreach ($this->storage as $key => &$value) {
+            yield $key => $value;
+        }
     }
 
     /**

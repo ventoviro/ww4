@@ -35,34 +35,28 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @var bool
      */
-    protected $commiting = false;
+    protected bool $commiting = false;
 
     /**
      * @var array
      */
-    protected $deferredItems = [];
+    protected array $deferredItems = [];
 
     /**
      * @var StorageInterface
      */
-    protected $storage;
+    protected StorageInterface $storage;
 
     /**
      * @var SerializerInterface
      */
-    protected $serializer;
+    protected SerializerInterface $serializer;
 
     /**
      * @var bool
      */
-    private $autoCommit = true;
+    private bool $autoCommit = true;
 
-    /**
-     * CachePool constructor.
-     *
-     * @param  StorageInterface     $storage
-     * @param  SerializerInterface  $serializer
-     */
     public function __construct(?StorageInterface $storage = null, ?SerializerInterface $serializer = null)
     {
         $this->storage    = $storage ?? new ArrayStorage();
@@ -93,7 +87,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
      *
      * @return \Traversable|CacheItemInterface[]
      */
-    public function getItems(array $keys = [])
+    public function getItems(iterable $keys = [])
     {
         foreach ($keys as $key) {
             yield $key => $this->getItem($key);
@@ -103,7 +97,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function hasItem($key)
+    public function hasItem($key): bool
     {
         return $this->getItem($key)->isHit();
     }
@@ -111,7 +105,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function clear()
+    public function clear(): bool
     {
         try {
             $this->storage->clear();
@@ -130,7 +124,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function deleteItem($key)
+    public function deleteItem($key): bool
     {
         try {
             $this->storage->remove($key);
@@ -149,7 +143,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function deleteItems(array $keys)
+    public function deleteItems(array $keys): bool
     {
         $results = true;
 
@@ -163,7 +157,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function save(CacheItemInterface $item)
+    public function save(CacheItemInterface $item): bool
     {
         try {
             if (!$item instanceof CacheItem) {
@@ -200,7 +194,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function saveDeferred(CacheItemInterface $item)
+    public function saveDeferred(CacheItemInterface $item): bool
     {
         if (!$item instanceof CacheItem) {
             throw new InvalidArgumentException('Only support ' . CacheItem::class);
@@ -218,7 +212,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function commit()
+    public function commit(): bool
     {
         $this->commiting = true;
 
@@ -250,7 +244,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function set($key, $value, $ttl = null)
+    public function set($key, $value, $ttl = null): bool
     {
         $item = $this->getItem($key);
 
@@ -262,8 +256,9 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
 
     /**
      * @inheritDoc
+     * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function delete($key)
+    public function delete($key): bool
     {
         return $this->deleteItem($key);
     }
@@ -271,7 +266,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function getMultiple($keys, $default = null)
+    public function getMultiple($keys, $default = null): iterable
     {
         foreach ($this->getItems($keys) as $item) {
             yield $item->get();
@@ -281,7 +276,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function setMultiple($values, $ttl = null)
+    public function setMultiple($values, null|int|\DateInterval $ttl = null): bool
     {
         ArgumentsAssert::assert(
             is_iterable($values),
@@ -301,7 +296,7 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
     /**
      * @inheritDoc
      */
-    public function deleteMultiple($keys)
+    public function deleteMultiple($keys): bool
     {
         ArgumentsAssert::assert(
             is_iterable($keys),
@@ -320,8 +315,9 @@ class CachePool implements CacheItemPoolInterface, CacheInterface, LoggerAwareIn
 
     /**
      * @inheritDoc
+     * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function has($key)
+    public function has($key): bool
     {
         return $this->hasItem($key);
     }

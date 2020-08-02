@@ -25,7 +25,6 @@ use Windwalker\Scalars\Concern\StringInflectorTrait;
 use Windwalker\Scalars\Concern\StringModifyTrait;
 use Windwalker\Utilities\Classes\ImmutableHelperTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;
-use Windwalker\Utilities\Classes\StringableInterface;
 use Windwalker\Utilities\Contract\NullableInterface;
 use Windwalker\Utilities\Str;
 use Windwalker\Utilities\Utf8String;
@@ -76,7 +75,7 @@ use Windwalker\Utilities\Utf8String;
  *
  * @since  __DEPLOY_VERSION__
  */
-class StringObject implements Countable, ArrayAccess, IteratorAggregate, StringableInterface, NullableInterface
+class StringObject implements Countable, ArrayAccess, IteratorAggregate, \Stringable, NullableInterface
 {
     use MarcoableTrait;
     use ImmutableHelperTrait;

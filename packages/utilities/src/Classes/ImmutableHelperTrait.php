@@ -18,14 +18,7 @@ namespace Windwalker\Utilities\Classes;
  */
 trait ImmutableHelperTrait
 {
-    /**
-     * getReturnInstance
-     *
-     * @param  callable  $callback
-     *
-     * @return static
-     */
-    protected function cloneInstance(callable $callback = null)
+    protected function cloneInstance(callable $callback = null): static
     {
         $new = clone $this;
 

@@ -121,7 +121,7 @@ abstract class TypeCast
      *
      * @since   2.0
      */
-    public static function toObject(array $array, bool $recursive = false, string $class = stdClass::class)
+    public static function toObject(array $array, bool $recursive = false, string $class = stdClass::class): object
     {
         $obj = new $class();
 
@@ -319,7 +319,7 @@ abstract class TypeCast
      * @param  string  $name
      * @param  array   $args
      *
-     * @return  void
+     * @return  mixed
      *
      * @since  __DEPLOY_VERSION__
      */

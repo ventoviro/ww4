@@ -79,7 +79,7 @@ trait ArrConverterTrait
         $target = [];
 
         foreach ((array) $origin as $key => $row) {
-            if (strpos($key, $prefix) === 0) {
+            if (str_starts_with($key, $prefix)) {
                 $key2   = mb_substr($key, mb_strlen($prefix));
                 $target = Arr::set($target, $key2, $row);
 

@@ -24,7 +24,7 @@ class WhereWrapper implements WrapperInterface
     /**
      * @var  string
      */
-    protected $operator;
+    protected string $operator;
 
     /**
      * @var mixed
@@ -39,7 +39,7 @@ class WhereWrapper implements WrapperInterface
     /**
      * @var  bool
      */
-    protected $strict;
+    protected bool $strict;
 
     /**
      * CompareWrapper constructor.

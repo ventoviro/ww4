@@ -30,18 +30,9 @@ class Str
 
     public const ENCODING_US_ASCII = 'US-ASCII';
 
-    /**
-     * at
-     *
-     * @param  string  $string
-     * @param  int     $pos
-     * @param  string  $encoding
-     *
-     * @return string
-     */
-    public static function getChar(string $string, int $pos, string $encoding = null): string
+    public static function getChar(string $string, int $pos, ?string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         if (Utf8String::strlen($string, $encoding) < abs($pos)) {
             return '';
@@ -50,25 +41,14 @@ class Str
         return Utf8String::substr($string, $pos, 1);
     }
 
-    /**
-     * between
-     *
-     * @param  string       $string
-     * @param  string       $start
-     * @param  string       $end
-     * @param  int          $offset
-     * @param  string|null  $encoding
-     *
-     * @return  string
-     */
     public static function between(
         string $string,
         string $start,
         string $end,
         int $offset = 0,
-        string $encoding = null
+        ?string $encoding = null
     ): string {
-        $encoding = $encoding ?? mb_internal_encoding();
+        $encoding ??= mb_internal_encoding();
 
         $startIndex = Utf8String::strpos($string, $start, $offset, $encoding);
 
@@ -87,13 +67,6 @@ class Str
         return Utf8String::substr($string, $substrIndex, $endIndex - $substrIndex);
     }
 
-    /**
-     * collapseWhitespaces
-     *
-     * @param  string  $string
-     *
-     * @return  string
-     */
     public static function collapseWhitespaces(string $string): string
     {
         $string = preg_replace('/\s\s+/', ' ', $string);
@@ -101,48 +74,28 @@ class Str
         return trim(preg_replace('/\s+/', ' ', $string));
     }
 
-    /**
-     * contains
-     *
-     * @param  string  $string
-     * @param  string  $search
-     * @param  bool    $caseSensitive
-     * @param  string  $encoding
-     *
-     * @return bool
-     */
     public static function contains(
         string $string,
         string $search,
         bool $caseSensitive = true,
-        string $encoding = null
+        ?string $encoding = null
     ): bool {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         if ($caseSensitive) {
             return Utf8String::strpos($string, $search, 0, $encoding) !== false;
-        } else {
-            return Utf8String::stripos($string, $search, 0, $encoding) !== false;
         }
+
+        return Utf8String::stripos($string, $search, 0, $encoding) !== false;
     }
 
-    /**
-     * endsWith
-     *
-     * @param  string  $string
-     * @param  string  $search
-     * @param  bool    $caseSensitive
-     * @param  string  $encoding
-     *
-     * @return bool
-     */
     public static function endsWith(
         string $string,
         string $search,
         bool $caseSensitive = true,
-        string $encoding = null
+        ?string $encoding = null
     ): bool {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         $stringLength = Utf8String::strlen($string, $encoding);
         $targetLength = Utf8String::strlen($search, $encoding);
@@ -161,23 +114,13 @@ class Str
         return $end === $search;
     }
 
-    /**
-     * startsWith
-     *
-     * @param  string   $string
-     * @param  string   $target
-     * @param  boolean  $caseSensitive
-     * @param  string   $encoding
-     *
-     * @return bool
-     */
     public static function startsWith(
         string $string,
         string $target,
         bool $caseSensitive = true,
-        string $encoding = null
+        ?string $encoding = null
     ): bool {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         if (!$caseSensitive) {
             $string = Utf8String::strtoupper($string, $encoding);
@@ -187,16 +130,7 @@ class Str
         return Utf8String::strpos($string, $target, 0, $encoding) === 0;
     }
 
-    /**
-     * ensureLeft
-     *
-     * @param  string       $string
-     * @param  string       $search
-     * @param  string|null  $encoding
-     *
-     * @return  string
-     */
-    public static function ensureLeft(string $string, string $search, string $encoding = null): string
+    public static function ensureLeft(string $string, string $search, ?string $encoding = null): string
     {
         if (static::startsWith($string, $search, true, $encoding)) {
             return $string;
@@ -205,16 +139,7 @@ class Str
         return $search . $string;
     }
 
-    /**
-     * ensureRight
-     *
-     * @param  string       $string
-     * @param  string       $search
-     * @param  string|null  $encoding
-     *
-     * @return  string
-     */
-    public static function ensureRight(string $string, string $search, string $encoding = null): string
+    public static function ensureRight(string $string, string $search, ?string $encoding = null): string
     {
         if (static::endsWith($string, $search, true, $encoding)) {
             return $string;
@@ -223,45 +148,19 @@ class Str
         return $string . $search;
     }
 
-    /**
-     * hasLowerCase
-     *
-     * @param  string       $string
-     * @param  string|null  $encoding
-     *
-     * @return  bool
-     */
-    public static function hasLowerCase(string $string, string $encoding = null): bool
+    public static function hasLowerCase(string $string, ?string $encoding = null): bool
     {
         return static::match('.*[[:lower:]]', $string, 'msr', $encoding);
     }
 
-    /**
-     * hasUpperCase
-     *
-     * @param  string       $string
-     * @param  string|null  $encoding
-     *
-     * @return  bool
-     */
-    public static function hasUpperCase(string $string, string $encoding = null): bool
+    public static function hasUpperCase(string $string, ?string $encoding = null): bool
     {
         return static::match('.*[[:upper:]]', $string, 'msr', $encoding);
     }
 
-    /**
-     * match
-     *
-     * @param  string       $pattern
-     * @param  string       $string
-     * @param  string|null  $option
-     * @param  string|null  $encoding
-     *
-     * @return  bool
-     */
-    public static function match(string $pattern, string $string, string $option = 'msr', string $encoding = null): bool
+    public static function match(string $pattern, string $string, string $option = 'msr', ?string $encoding = null): bool
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         $encodingBackup = mb_regex_encoding();
 
@@ -274,19 +173,9 @@ class Str
         return $result;
     }
 
-    /**
-     * insert
-     *
-     * @param  string       $string
-     * @param  string       $insert
-     * @param  int          $position
-     * @param  string|null  $encoding
-     *
-     * @return  string
-     */
-    public static function insert(string $string, string $insert, int $position, string $encoding = null): string
+    public static function insert(string $string, string $insert, int $position, ?string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         $length = Utf8String::strlen($string, $encoding);
 
@@ -300,82 +189,41 @@ class Str
         return $left . $insert . $right;
     }
 
-    /**
-     * isLowerCase
-     *
-     * @param  string  $string
-     *
-     * @return  bool
-     */
     public static function isLowerCase(string $string): bool
     {
         return static::match('^[[:lower:]]*$', $string);
     }
 
-    /**
-     * isUpperCase
-     *
-     * @param  string  $string
-     *
-     * @return  bool
-     */
     public static function isUpperCase(string $string): bool
     {
         return static::match('^[[:upper:]]*$', $string);
     }
 
-    /**
-     * first
-     *
-     * @param  string       $string
-     * @param  int          $length
-     * @param  string|null  $encoding
-     *
-     * @return  string
-     */
-    public static function first(string $string, int $length = 1, string $encoding = null): string
+    public static function first(string $string, int $length = 1, ?string $encoding = null): string
     {
         if ($string === '' || $length <= 0) {
             return '';
         }
 
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         return Utf8String::substr($string, 0, $length, $encoding);
     }
 
-    /**
-     * last
-     *
-     * @param  string       $string
-     * @param  int          $length
-     * @param  string|null  $encoding
-     *
-     * @return  string
-     */
-    public static function last(string $string, int $length = 1, string $encoding = null): string
+    public static function last(string $string, int $length = 1, ?string $encoding = null): string
     {
         if ($string === '' || $length <= 0) {
             return '';
         }
 
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         return Utf8String::substr($string, -$length, null, $encoding);
     }
 
-    /**
-     * intersectLeft
-     *
-     * @param  string       $string1
-     * @param  string       $string2
-     * @param  string|null  $encoding
-     *
-     * @return  string
-     */
-    public static function intersectLeft(string $string1, string $string2, string $encoding = null): string
+    public static function intersectLeft(string $string1, string $string2, ?string $encoding = null): string
     {
-        $encoding  = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding  ??= mb_internal_encoding();
         $maxLength = min(Utf8String::strlen($string1, $encoding), Utf8String::strlen($string2, $encoding));
         $intersect = '';
 
@@ -392,18 +240,9 @@ class Str
         return $intersect;
     }
 
-    /**
-     * intersectRight
-     *
-     * @param  string       $string1
-     * @param  string       $string2
-     * @param  string|null  $encoding
-     *
-     * @return  string
-     */
-    public static function intersectRight(string $string1, string $string2, string $encoding = null): string
+    public static function intersectRight(string $string1, string $string2, ?string $encoding = null): string
     {
-        $encoding  = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding  ??= mb_internal_encoding();
         $maxLength = min(Utf8String::strlen($string1, $encoding), Utf8String::strlen($string2, $encoding));
         $intersect = '';
 
@@ -432,9 +271,9 @@ class Str
      *
      * @return  string
      */
-    public static function intersect(string $string1, string $string2, string $encoding = null): string
+    public static function intersect(string $string1, string $string2, ?string $encoding = null): string
     {
-        $encoding   = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding   ??= mb_internal_encoding();
         $str1Length = Utf8String::strlen($string1, $encoding);
         $str2Length = Utf8String::strlen($string2, $encoding);
 
@@ -482,9 +321,9 @@ class Str
         string $string,
         int $length = 0,
         string $substring = ' ',
-        string $encoding = null
+        ?string $encoding = null
     ): string {
-        $encoding  = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding  ??= mb_internal_encoding();
         $strLength = Utf8String::strlen($string, $encoding);
         $padding   = $length - $strLength;
 
@@ -505,9 +344,9 @@ class Str
         string $string,
         int $length = 0,
         string $substring = ' ',
-        string $encoding = null
+        ?string $encoding = null
     ): string {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();
 
         return static::doPad($string, $length - Utf8String::strlen($string, $encoding), 0, $substring, $encoding);
     }
@@ -526,9 +365,9 @@ class Str
         string $string,
         int $length = 0,
         string $substring = ' ',
-        string $encoding = null
+        ?string $encoding = null
     ): string {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();;
 
         return static::doPad($string, 0, $length - Utf8String::strlen($string, $encoding), $substring, $encoding);
     }
@@ -549,7 +388,7 @@ class Str
         int $left,
         int $right,
         string $substring,
-        string $encoding = null
+        ?string $encoding = null
     ): string {
         $strLength    = Utf8String::strlen($string, $encoding);
         $padLength    = Utf8String::strlen($substring, $encoding);
@@ -575,9 +414,9 @@ class Str
      *
      * @return  string
      */
-    public static function removeChar(string $string, int $offset, int $length = null, string $encoding = null): string
+    public static function removeChar(string $string, int $offset, int $length = null, ?string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();;
 
         if (Utf8String::strlen($string, $encoding) < abs($offset)) {
             return $string;
@@ -597,7 +436,7 @@ class Str
      *
      * @return  string
      */
-    public static function removeLeft(string $string, string $search, string $encoding = null): string
+    public static function removeLeft(string $string, string $search, ?string $encoding = null): string
     {
         if ($string === '') {
             return '';
@@ -607,7 +446,7 @@ class Str
             return $string;
         }
 
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();;
 
         if (!static::startsWith($string, $search, true, $encoding)) {
             return $string;
@@ -625,7 +464,7 @@ class Str
      *
      * @return  string
      */
-    public static function removeRight(string $string, string $search, string $encoding = null): string
+    public static function removeRight(string $string, string $search, ?string $encoding = null): string
     {
         if ($string === '') {
             return '';
@@ -635,7 +474,7 @@ class Str
             return $string;
         }
 
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();;
 
         if (!static::endsWith($string, $search, true, $encoding)) {
             return $string;
@@ -654,9 +493,9 @@ class Str
      *
      * @return  string
      */
-    public static function slice(string $string, int $start, int $end = null, string $encoding = null): string
+    public static function slice(string $string, int $start, int $end = null, ?string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();;
 
         if ($end === null) {
             $length = Utf8String::strlen($string, $encoding);
@@ -681,9 +520,9 @@ class Str
      *
      * @return  string
      */
-    public static function substring(string $string, int $start, int $end = null, string $encoding = null): string
+    public static function substring(string $string, int $start, int $end = null, ?string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();;
 
         if ($end === null) {
             $length = Utf8String::strlen($string, $encoding);
@@ -726,9 +565,9 @@ class Str
      *
      * @return  string
      */
-    public static function toggleCase(string $string, string $encoding = null): string
+    public static function toggleCase(string $string, ?string $encoding = null): string
     {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();;
 
         return preg_replace_callback(
             '/[\S]/u',
@@ -761,7 +600,7 @@ class Str
         bool $wordBreak = true,
         ?string $encoding = null
     ): string {
-        $encoding = $encoding === null ? mb_internal_encoding() : $encoding;
+        $encoding ??= mb_internal_encoding();;
 
         if ($length >= Utf8String::strlen($string, $encoding)) {
             return $string;
@@ -786,7 +625,7 @@ class Str
      *
      * @return  string
      */
-    public static function map(string $string, callable $callback, string $encoding = null): string
+    public static function map(string $string, callable $callback, ?string $encoding = null): string
     {
         $result = [];
 
@@ -810,7 +649,7 @@ class Str
      *
      * @return  string
      */
-    public static function filter(string $string, callable $callback, string $encoding = null): string
+    public static function filter(string $string, callable $callback, ?string $encoding = null): string
     {
         return static::map(
             $string,
@@ -836,7 +675,7 @@ class Str
      *
      * @return  string
      */
-    public static function reject(string $string, callable $callback, string $encoding = null): string
+    public static function reject(string $string, callable $callback, ?string $encoding = null): string
     {
         return static::filter(
             $string,

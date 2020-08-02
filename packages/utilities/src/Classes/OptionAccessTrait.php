@@ -13,6 +13,7 @@ namespace Windwalker\Utilities\Classes;
 
 use ArrayAccess;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Contract\AccessibleInterface;
 
 /**
  * The OptionAccessTrait class.
@@ -21,12 +22,7 @@ use Windwalker\Utilities\Arr;
  */
 trait OptionAccessTrait
 {
-    /**
-     * Property options.
-     *
-     * @var  array|ArrayAccess
-     */
-    protected $options = [];
+    protected array|ArrayAccess|AccessibleInterface $options = [];
 
     /**
      * prepareDefaultOptions
@@ -41,52 +37,24 @@ trait OptionAccessTrait
         $this->options = Arr::mergeRecursive($this->options, $defaults, $options);
     }
 
-    /**
-     * Method to get property Options
-     *
-     * @param  string  $name
-     * @param  mixed   $default
-     *
-     * @return  mixed
-     */
-    public function getOption($name, $default = null)
+    public function getOption(string $name, $default = null)
     {
         return $this->options[$name] ?? $default;
     }
 
-    /**
-     * Method to set property options
-     *
-     * @param  string  $name
-     * @param  mixed   $value
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function setOption($name, $value)
+    public function setOption(string $name, $value): static
     {
         $this->options[$name] = $value;
 
         return $this;
     }
 
-    /**
-     * Method to get property Options
-     *
-     * @return  array|ArrayAccess
-     */
-    public function getOptions()
+    public function getOptions(): array|ArrayAccess|AccessibleInterface
     {
         return $this->options;
     }
 
-    /**
-     * Method to set property options
-     *
-     * @param  array|ArrayAccess  $options
-     *
-     * @return  static  Return self to support chaining.
-     */
-    public function setOptions($options)
+    public function setOptions(array|ArrayAccess|AccessibleInterface $options)
     {
         $this->options = $options;
 

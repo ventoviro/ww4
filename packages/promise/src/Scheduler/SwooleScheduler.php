@@ -22,7 +22,7 @@ class SwooleScheduler implements SchedulerInterface
     /**
      * @var int|null
      */
-    protected $timeout;
+    protected ?int $timeout;
 
     /**
      * SwooleAsync constructor.

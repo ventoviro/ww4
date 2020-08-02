@@ -27,7 +27,7 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @var string
      */
-    protected $state = self::PENDING;
+    protected string $state = self::PENDING;
 
     /**
      * @var mixed
@@ -37,20 +37,19 @@ class Promise implements ExtendedPromiseInterface
     /**
      * @var callable[]
      */
-    protected $handlers = [];
+    protected array $handlers = [];
 
     /**
      * @var ScheduleCursor
      */
-    protected $scheduleCursor;
+    protected ?ScheduleCursor $scheduleCursor = null;
 
     /**
      * create
      *
-     * @param  callable  $resolver
+     * @param  callable|null  $resolver
      *
-     * @return  static
-     * @throws \Throwable
+     * @return static
      */
     public static function create(?callable $resolver = null)
     {
