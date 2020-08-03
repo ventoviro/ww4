@@ -284,7 +284,19 @@ abstract class AbstractPlatform
     }
 
     abstract public function dropDatabase(string $name, array $options = []): StatementInterface;
-    abstract public function createSchema(string $name, array $options = []): StatementInterface;
+
+    public function createSchema(string $name, array $options = []): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'CREATE SCHEMA',
+                    !empty($options['if_not_exists']) ? 'IF NOT EXISTS' : null,
+                    $this->db->quoteName($name)
+                )
+        );
+    }
+
     abstract public function dropSchema(string $name): StatementInterface;
 
     abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): StatementInterface;

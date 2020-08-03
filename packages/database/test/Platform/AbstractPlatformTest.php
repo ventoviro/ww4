@@ -112,6 +112,46 @@ abstract class AbstractPlatformTest extends AbstractDatabaseTestCase
         $this->assertNotEquals('E', $result2);
     }
 
+    public function testGetCurrentDatabase(): void
+    {
+        self::assertEquals(
+            self::$db->getOption('database'),
+            $this->instance->getCurrentDatabase()
+        );
+    }
+
+    public function testCreateDropDatabase(): void
+    {
+        if (in_array('hello', $this->instance->listDatabases(), true)) {
+            $this->instance->dropDatabase('hello');
+        }
+
+        $this->instance->createDatabase('hello');
+
+        self::assertContains(
+            'hello',
+            $this->instance->listDatabases()
+        );
+
+        $this->instance->dropDatabase('hello');
+    }
+
+    public function testCreateDropSchema(): void
+    {
+        if (in_array('hello', $this->instance->listSchemas(), true)) {
+            $this->instance->dropSchema('hello');
+        }
+
+        $this->instance->createSchema('hello');
+
+        self::assertContains(
+            'hello',
+            $this->instance->listSchemas()
+        );
+
+        $this->instance->dropSchema('hello');
+    }
+
     protected function tearDown(): void
     {
     }

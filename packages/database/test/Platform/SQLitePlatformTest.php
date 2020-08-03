@@ -13,7 +13,9 @@ namespace Windwalker\Database\Test\Platform;
 
 use Windwalker\Database\Platform\MySQLPlatform;
 use Windwalker\Database\Platform\SQLitePlatform;
+use Windwalker\Test\Helper\TestStringHelper;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Str;
 
 /**
  * The SQLitePlatformTest class.
@@ -36,9 +38,9 @@ class SQLitePlatformTest extends AbstractPlatformTest
     {
         $dbs = $this->instance->listDatabases();
 
-        self::assertContains(
-            'main',
-            $dbs
+        self::assertEquals(
+            realpath(self::getTestParams()['database']),
+            realpath($dbs[0])
         );
     }
 
@@ -93,6 +95,8 @@ class SQLitePlatformTest extends AbstractPlatformTest
     public function testListViews(): void
     {
         $views = $this->instance->listViews(static::getTestSchema());
+
+        $views['ww_articles_view']['sql'] = TestStringHelper::removeCRLF($views['ww_articles_view']['sql']);
 
         self::assertEquals(
             [
@@ -505,6 +509,38 @@ FROM `ww_articles`'
         );
     }
 
+    public function testGetCurrentDatabase(): void
+    {
+        $file = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, self::$db->getOption('database'));
+
+        self::assertEquals(
+            $file,
+            Str::intersectRight($file, $this->instance->getCurrentDatabase())
+        );
+    }
+
+    public function testCreateDropDatabase(): void
+    {
+        $file = __DIR__ . '/../../tmp/hello.db';
+
+        if (in_array('hello', $this->instance->listSchemas(), true)) {
+            $this->instance->dropSchema('hello');
+        }
+
+        $this->instance->createDatabase($file, ['as' => 'hello']);
+
+        self::assertContains(
+            'hello',
+            $this->instance->listSchemas()
+        );
+
+        $this->instance->dropDatabase(realpath($file));
+    }
+
+    public function testCreateDropSchema(): void
+    {
+        self::markTestSkipped();
+    }
 
     protected function setUp(): void
     {

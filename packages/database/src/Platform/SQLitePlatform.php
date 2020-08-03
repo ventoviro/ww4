@@ -122,7 +122,7 @@ class SQLitePlatform extends AbstractPlatform
         return $this->db->prepare(
             $this->listDatabasesQuery()
         )
-            ->loadColumn(1)
+            ->loadColumn(2)
             ->dump();
     }
 
@@ -131,7 +131,11 @@ class SQLitePlatform extends AbstractPlatform
      */
     public function listSchemas(): array
     {
-        return $this->listDatabases();
+        return $this->db->prepare(
+            $this->listDatabasesQuery()
+        )
+            ->loadColumn(1)
+            ->dump();
     }
 
     /**
@@ -347,6 +351,26 @@ class SQLitePlatform extends AbstractPlatform
         return $this;
     }
 
+    public function createDatabase(string $name, array $options = []): StatementInterface
+    {
+        $as = $options['as'] ?? pathinfo($name, PATHINFO_BASENAME);
+
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'ATTACH DATABASE',
+                    $this->db->quote($name),
+                    'AS',
+                    $this->db->quoteName($as)
+                )
+        );
+    }
+
+    public function createSchema(string $name, array $options = []): StatementInterface
+    {
+        return $this->createDatabase($name, $options);
+    }
+
     /**
      * getCurrentDatabase
      *
@@ -354,29 +378,28 @@ class SQLitePlatform extends AbstractPlatform
      */
     public function getCurrentDatabase(): ?string
     {
+        $databases = $this->db->prepare($this->pragma('database_list'))
+            ->loadAll()
+            ->keyBy('name');
+
+        return $databases[static::getDefaultSchema()]->file ?? null;
     }
 
-    /**
-     * dropDatabase
-     *
-     * @param  string  $name
-     *
-     * @return  StatementInterface
-     */
-    public function dropDatabase(string $name): StatementInterface
+    public function dropDatabase(string $name, array $options = []): StatementInterface
     {
-    }
+        $databases = $this->db->prepare($this->pragma('database_list'))
+            ->loadAll()
+            ->keyBy('file');
 
-    /**
-     * createSchema
-     *
-     * @param  string  $name
-     * @param  array   $options
-     *
-     * @return  StatementInterface
-     */
-    public function createSchema(string $name, array $options = []): StatementInterface
-    {
+        $dbname = $databases[$name]->name;
+
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'DETACH DATABASE',
+                    $this->db->quoteName($dbname)
+                )
+        );
     }
 
     /**
@@ -388,6 +411,13 @@ class SQLitePlatform extends AbstractPlatform
      */
     public function dropSchema(string $name): StatementInterface
     {
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'DETACH DATABASE',
+                    $this->db->quoteName($name)
+                )
+        );
     }
 
     /**

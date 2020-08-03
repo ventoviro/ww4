@@ -503,26 +503,6 @@ class PostgreSQLPlatform extends AbstractPlatform
     }
 
     /**
-     * createSchema
-     *
-     * @param  string  $name
-     * @param  array   $options
-     *
-     * @return  bool
-     */
-    public function createSchema(string $name, array $options = []): StatementInterface
-    {
-        return $this->db->execute(
-            $this->getGrammar()
-                ::build(
-                    'CREATE SCHEMA',
-                    !empty($options['if_not_exists']) ? 'IF NOT EXISTS' : null,
-                    $this->db->quoteName($name)
-                )
-        );
-    }
-
-    /**
      * dropSchema
      *
      * @param  string  $name
@@ -531,6 +511,14 @@ class PostgreSQLPlatform extends AbstractPlatform
      */
     public function dropSchema(string $name): StatementInterface
     {
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'DROP SCHEMA',
+                    $this->db->quoteName($name),
+                    'CASCADE'
+                )
+        );
     }
 
     /**

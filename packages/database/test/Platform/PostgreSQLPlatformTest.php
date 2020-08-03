@@ -69,7 +69,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'TABLE_TYPE' => 'BASE TABLE',
                     'VIEW_DEFINITION' => null,
                     'CHECK_OPTION' => null,
-                    'IS_UPDATABLE' => null
+                    'IS_UPDATABLE' => null,
                 ],
                 'ww_categories' => [
                     'TABLE_NAME' => 'ww_categories',
@@ -78,8 +78,8 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'TABLE_TYPE' => 'BASE TABLE',
                     'VIEW_DEFINITION' => null,
                     'CHECK_OPTION' => null,
-                    'IS_UPDATABLE' => null
-                ]
+                    'IS_UPDATABLE' => null,
+                ],
             ],
             $tables
         );
@@ -115,8 +115,8 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
     ww_articles.params
    FROM ww_articles;',
                     'CHECK_OPTION' => 'NONE',
-                    'IS_UPDATABLE' => 'YES'
-                ]
+                    'IS_UPDATABLE' => 'YES',
+                ],
             ],
             $views
         );
@@ -143,7 +143,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                 'numeric_unsigned',
                 'comment',
                 'auto_increment',
-                'erratas'
+                'erratas',
             ],
             array_keys($columns[array_key_first($columns)])
         );
@@ -165,7 +165,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => true,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'category_id' => [
                     'column_name' => 'category_id',
@@ -182,7 +182,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'page_id' => [
                     'column_name' => 'page_id',
@@ -199,7 +199,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'type' => [
                     'column_name' => 'type',
@@ -216,7 +216,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'price' => [
                     'column_name' => 'price',
@@ -233,7 +233,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'title' => [
                     'column_name' => 'title',
@@ -250,7 +250,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'alias' => [
                     'column_name' => 'alias',
@@ -267,7 +267,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'introtext' => [
                     'column_name' => 'introtext',
@@ -284,7 +284,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'state' => [
                     'column_name' => 'state',
@@ -301,7 +301,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'ordering' => [
                     'column_name' => 'ordering',
@@ -318,7 +318,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'created' => [
                     'column_name' => 'created',
@@ -335,7 +335,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'created_by' => [
                     'column_name' => 'created_by',
@@ -352,7 +352,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'language' => [
                     'column_name' => 'language',
@@ -369,7 +369,7 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
+                    ],
                 ],
                 'params' => [
                     'column_name' => 'params',
@@ -386,8 +386,8 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'auto_increment' => false,
                     'erratas' => [
 
-                    ]
-                ]
+                    ],
+                ],
             ],
             $columns
         );
@@ -400,9 +400,12 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
     {
         $constraints = $this->instance->listConstraints('#__articles', static::$schema);
 
-        $constraints = array_filter($constraints, function (array $constraint) {
-            return $constraint['constraint_type'] !== 'CHECK';
-        });
+        $constraints = array_filter(
+            $constraints,
+            function (array $constraint) {
+                return $constraint['constraint_type'] !== 'CHECK';
+            }
+        );
 
         self::assertEquals(
             [
@@ -411,24 +414,24 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'constraint_type' => 'PRIMARY KEY',
                     'table_name' => 'ww_articles',
                     'columns' => [
-                        'id'
-                    ]
+                        'id',
+                    ],
                 ],
                 'fk_articles_category_id' => [
                     'constraint_name' => 'fk_articles_category_id',
                     'constraint_type' => 'FOREIGN KEY',
                     'table_name' => 'ww_articles',
                     'columns' => [
-                        'category_id'
+                        'category_id',
                     ],
                     'referenced_table_schema' => 'public',
                     'referenced_table_name' => 'ww_categories',
                     'referenced_columns' => [
-                        'id'
+                        'id',
                     ],
                     'match_option' => 'NONE',
                     'update_rule' => 'RESTRICT',
-                    'delete_rule' => 'RESTRICT'
+                    'delete_rule' => 'RESTRICT',
                 ],
                 'fk_articles_category_more' => [
                     'constraint_name' => 'fk_articles_category_more',
@@ -436,25 +439,25 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'table_name' => 'ww_articles',
                     'columns' => [
                         'page_id',
-                        'created_by'
+                        'created_by',
                     ],
                     'referenced_table_schema' => null,
                     'referenced_table_name' => null,
                     'referenced_columns' => [
                         null,
-                        null
+                        null,
                     ],
                     'match_option' => 'NONE',
                     'update_rule' => 'RESTRICT',
-                    'delete_rule' => 'RESTRICT'
+                    'delete_rule' => 'RESTRICT',
                 ],
                 'idx_articles_alias' => [
                     'constraint_name' => 'idx_articles_alias',
                     'constraint_type' => 'UNIQUE',
                     'table_name' => 'ww_articles',
                     'columns' => [
-                        'alias'
-                    ]
+                        'alias',
+                    ],
                 ],
             ],
             $constraints
@@ -477,9 +480,9 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'id' => [
                             'column_name' => 'id',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_category_id' => [
                     'table_schema' => 'public',
@@ -491,9 +494,9 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'category_id' => [
                             'column_name' => 'category_id',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_alias' => [
                     'table_schema' => 'public',
@@ -505,9 +508,9 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'alias' => [
                             'column_name' => 'alias',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_created_by' => [
                     'table_schema' => 'public',
@@ -519,9 +522,9 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'created_by' => [
                             'column_name' => 'created_by',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_language' => [
                     'table_schema' => 'public',
@@ -533,9 +536,9 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'language' => [
                             'column_name' => 'language',
-                            'sub_part' => null
-                        ]
-                    ]
+                            'sub_part' => null,
+                        ],
+                    ],
                 ],
                 'idx_articles_page_id' => [
                     'table_schema' => 'public',
@@ -547,20 +550,12 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
                     'columns' => [
                         'page_id' => [
                             'column_name' => 'page_id',
-                            'sub_part' => null
-                        ]
-                    ]
-                ]
+                            'sub_part' => null,
+                        ],
+                    ],
+                ],
             ],
             $indexes
-        );
-    }
-
-    public function testGetCurrentDatabase(): void
-    {
-        self::assertEquals(
-            self::$db->getOption('dbname'),
-            $this->instance->getCurrentDatabase()
         );
     }
 
