@@ -65,7 +65,7 @@ class SchemaTest extends AbstractDatabaseTestCase
             $cols[] = sprintf('%s %s', $column->getColumnName(), $column->getTypeExpression());
         }
 
-        self::assertEquals(
+        self::assertStringSafeEquals(
             <<<EOT
             id integer
             category_id integer(11)
