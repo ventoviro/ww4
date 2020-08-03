@@ -67,7 +67,7 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate, Even
      *
      * @return  Collection
      */
-    public function loadColumn($offset = 0): Collection;
+    public function loadColumn(int|string $offset = 0): Collection;
 
     /**
      * Fetch first cell and close the cursor.

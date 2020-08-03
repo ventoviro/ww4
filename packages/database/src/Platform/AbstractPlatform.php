@@ -283,7 +283,7 @@ abstract class AbstractPlatform
         );
     }
 
-    abstract public function dropDatabase(string $name): StatementInterface;
+    abstract public function dropDatabase(string $name, array $options = []): StatementInterface;
     abstract public function createSchema(string $name, array $options = []): StatementInterface;
     abstract public function dropSchema(string $name): StatementInterface;
 

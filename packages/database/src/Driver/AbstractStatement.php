@@ -157,7 +157,7 @@ abstract class AbstractStatement implements StatementInterface
     /**
      * @inheritDoc
      */
-    public function loadColumn($offset = 0): Collection
+    public function loadColumn(int|string $offset = 0): Collection
     {
         return $this->loadAll()
             ->mapProxy()

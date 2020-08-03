@@ -556,6 +556,14 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
         );
     }
 
+    public function testGetCurrentDatabase(): void
+    {
+        self::assertEquals(
+            self::$db->getOption('dbname'),
+            $this->instance->getCurrentDatabase()
+        );
+    }
+
     protected function setUp(): void
     {
         $this->instance = static::$db->getDriver()->getPlatform();

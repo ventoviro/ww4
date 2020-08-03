@@ -488,17 +488,18 @@ class PostgreSQLPlatform extends AbstractPlatform
      */
     public function getCurrentDatabase(): ?string
     {
+        return $this->db->prepare('SELECT current_database()')->loadResult();
     }
 
-    /**
-     * dropDatabase
-     *
-     * @param  string  $name
-     *
-     * @return  bool
-     */
-    public function dropDatabase(string $name): StatementInterface
+    public function dropDatabase(string $name, array $options = []): StatementInterface
     {
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'DROP DATABASE',
+                    $this->db->quoteName($name)
+                )
+        );
     }
 
     /**
@@ -511,6 +512,14 @@ class PostgreSQLPlatform extends AbstractPlatform
      */
     public function createSchema(string $name, array $options = []): StatementInterface
     {
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'CREATE SCHEMA',
+                    !empty($options['if_not_exists']) ? 'IF NOT EXISTS' : null,
+                    $this->db->quoteName($name)
+                )
+        );
     }
 
     /**
