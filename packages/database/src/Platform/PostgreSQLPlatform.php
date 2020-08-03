@@ -493,6 +493,14 @@ class PostgreSQLPlatform extends AbstractPlatform
 
     public function dropDatabase(string $name, array $options = []): StatementInterface
     {
+        // $pid = version_compare($this->db->getVersion(), '9.2', '>=') ? 'pid' : 'procpid';
+        // $query = $this->db->getQuery(true);
+        // $query->select('pg_terminate_backend(' . $pid . ')')
+        //     ->from('pg_stat_activity')
+        //     ->where('datname = ' . $query->quote($this->getName()));
+        //
+        // $this->db->setQuery($query)->execute();
+
         return $this->db->execute(
             $this->getGrammar()
                 ::build(

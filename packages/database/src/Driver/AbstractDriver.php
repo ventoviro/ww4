@@ -182,6 +182,8 @@ abstract class AbstractDriver implements DriverInterface
         return $this->prepare($query)->execute($params);
     }
 
+    abstract public function getVersion(): string;
+
     /**
      * Replace the table prefix.
      *
