@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Query;
 
+use Windwalker\Data\Collection;
+use Windwalker\Database\Driver\AbstractDriver;
+use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Query\Bounded\BindableInterface;
 use Windwalker\Query\Bounded\BindableTrait;
 use Windwalker\Query\Bounded\BoundedHelper;
@@ -78,8 +81,13 @@ use function Windwalker\value;
  * @method $this havingNotLike($column, string $search)
  * @method string|array qn($text)
  * @method string|array q($text)
+ *
+ * @method Collection|null get(string $class = Collection::class, array $args = [])
+ * @method Collection|Collection[] all(string $class = Collection::class, array $args = [])
+ * @method Collection loadColumn(int|string $offset = 0)
+ * @method string|null result(int|string $offset = 0)
  */
-class Query implements QueryInterface, BindableInterface
+class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 {
     use MarcoableTrait;
     use FlowControlTrait;
@@ -95,141 +103,63 @@ class Query implements QueryInterface, BindableInterface
 
     public const TYPE_CUSTOM = 'custom';
 
-    /**
-     * @var string
-     */
-    protected $type;
+    protected ?string $type = null;
 
-    /**
-     * @var Clause
-     */
-    protected $select;
+    protected ?Clause $select = null;
 
-    /**
-     * @var Clause
-     */
-    protected $delete;
+    protected ?Clause $delete = null;
 
-    /**
-     * @var Clause
-     */
-    protected $from;
+    protected ?Clause $from = null;
 
-    /**
-     * @var Clause
-     */
-    protected $join;
+    protected ?Clause $join = null;
 
-    /**
-     * @var Clause
-     */
-    protected $union;
+    protected ?Clause $union = null;
 
-    /**
-     * @var Clause
-     */
-    protected $where;
+    protected ?Clause $where = null;
 
-    /**
-     * @var Clause
-     */
-    protected $having;
+    protected ?Clause $having = null;
 
-    /**
-     * @var Clause
-     */
-    protected $order;
+    protected ?Clause $order = null;
 
-    /**
-     * @var Clause
-     */
-    protected $group;
+    protected ?Clause $group = null;
 
-    /**
-     * @var int
-     */
-    protected $limit;
+    protected ?int $limit = null;
 
-    /**
-     * @var int
-     */
-    protected $offset;
+    protected ?int $offset = null;
 
-    /**
-     * @var Clause
-     */
-    protected $insert;
+    protected ?Clause $insert = null;
 
-    /**
-     * @var Clause
-     */
-    protected $update;
+    protected ?Clause $update = null;
 
-    /**
-     * @var Clause
-     */
-    protected $columns;
+    protected ?Clause $columns = null;
 
-    /**
-     * @var Clause
-     */
-    protected $values;
+    protected ?Clause $values = null;
 
-    /**
-     * @var Clause
-     */
-    protected $set;
+    protected ?Clause $set = null;
 
-    /**
-     * @var Clause
-     */
-    protected $suffix;
+    protected ?Clause $suffix = null;
 
-    /**
-     * @var string
-     */
-    protected $incrementField;
+    protected ?string $incrementField = null;
 
-    /**
-     * @var array
-     */
-    protected $subQueries = [];
+    protected array $subQueries = [];
 
-    /**
-     * @var AbstractGrammar
-     */
-    protected $grammar;
+    protected ?AbstractGrammar $grammar = null;
 
-    /**
-     * @var Expression
-     */
-    protected $expression;
+    protected ?Expression $expression = null;
 
-    /**
-     * @var string
-     */
-    protected $alias;
+    protected ?string $alias = null;
 
-    /**
-     * @var string
-     */
-    protected $sql;
+    protected ?string $sql = null;
 
-    /**
-     * @var BoundedSequence
-     */
-    protected $sequence;
+    protected ?BoundedSequence $sequence = null;
 
-    /**
-     * @var Escaper
-     */
-    protected $escaper;
+    protected ?Escaper $escaper = null;
 
     /**
      * Query constructor.
      *
-     * @param  mixed|\PDO|Escaper           $escaper
-     * @param  AbstractGrammar|string|null  $grammar
+     * @param  mixed|\PDO|Escaper|AbstractDriver  $escaper
+     * @param  AbstractGrammar|string|null        $grammar
      */
     public function __construct($escaper = null, $grammar = null)
     {
@@ -264,10 +194,11 @@ class Query implements QueryInterface, BindableInterface
     /**
      * selectAs
      *
-     * @param  string|RawWrapper  $column
-     * @param  string|null        $alias
+     * @param  mixed        $column
+     * @param  string|null  $alias
+     * @param  bool         $isColumn
      *
-     * @return  static
+     * @return static
      */
     public function selectAs($column, ?string $alias = null, bool $isColumn = true)
     {
@@ -1870,8 +1801,53 @@ class Query implements QueryInterface, BindableInterface
             return $this->join($aliases[$name], ...$args);
         }
 
+        // Load
+        $methods = [
+            'get',
+            'all',
+            'result',
+            'loadcolumn',
+        ];
+
+        if (in_array(strtolower($name), $methods)) {
+            $db = $this->getEscaper()->getConnection();
+
+            if (!$db instanceof AbstractDriver) {
+                throw new \BadMethodCallException(
+                    sprintf(
+                        'Calling method: %s() only support when escaper is %s class.',
+                        $name,
+                        AbstractDriver::class
+                    )
+                );
+            }
+
+            return $db->prepare($this)->$name(...$args);
+        }
+
         throw new \BadMethodCallException(
             sprintf('Call to undefined method of: %s::%s()', static::class, $name)
         );
+    }
+
+    /**
+     * getIterator
+     *
+     * @return  StatementInterface
+     */
+    public function getIterator(): StatementInterface
+    {
+        $db = $this->getEscaper()->getConnection();
+
+        if (!$db instanceof AbstractDriver) {
+            throw new \BadMethodCallException(
+                sprintf(
+                    'Instant iterate only supports when escaper is %s class.',
+                    AbstractDriver::class
+                )
+            );
+        }
+
+        return $db->prepare($this);
     }
 }

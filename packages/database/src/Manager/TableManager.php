@@ -11,13 +11,13 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Manager;
 
-use Windwalker\Cache\Traits\InstanceCacheTrait;
 use Windwalker\Database\Schema\DatabaseManager;
 use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Ddl\Index;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Schema\SchemaManager;
+use Windwalker\Utilities\Cache\InstanceCacheTrait;
 
 /**
  * The TableManager class.

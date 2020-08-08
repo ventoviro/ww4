@@ -14,92 +14,69 @@ namespace Windwalker\Database\Schema;
 use Windwalker\Database\Manager\AbstractMetaManager;
 use Windwalker\Database\Manager\TableManager;
 
+use Windwalker\Database\Schema\Ddl\Table;
+use Windwalker\Utilities\Cache\InstanceCacheTrait;
+
+use function PHPUnit\Framework\once;
+
 /**
  * The SchemaManager class.
  */
 class SchemaManager extends AbstractMetaManager
 {
-    /**
-     * @var array
-     */
-    protected $tables = null;
+    use InstanceCacheTrait;
 
-    /**
-     * @var array
-     */
-    protected $views = null;
-
-    /**
-     * getTable
-     *
-     * @param string $name
-     * @param bool   $new
-     *
-     * @return  TableManager
-     */
-    public function getTable(string $name, bool $new = false)
+    public function getTable(string $name, bool $new = false): TableManager
     {
-        return $this->db->getTable($this->getName() . '.' . $name, $new);
+        return $this->once('table.manager.' . $name, fn () => new TableManager($name, $this->db), $new);
     }
 
     /**
-     * Method to get an array of all tables in the database.
-     *
      * @param  bool  $includeViews
      * @param  bool  $refresh
      *
-     * @return  array  An array of all the tables in the database.
-     *
-     * @since   2.0
+     * @return  Table[]
      */
     public function getTables(bool $includeViews = false, bool $refresh = false): array
     {
-        $schemaManager = $this->db->getPlatform();
+        $platform = $this->db->getPlatform();
 
-        if ($this->tables === null || $refresh) {
-            $this->tables = $schemaManager->listTables($this->getName());
-        }
-
-        $tables = $this->tables;
+        $tables = $this->once(
+            'tables',
+            fn () => Table::wrapList(
+                $platform->listTables($this->getName())
+            ),
+            $refresh
+        );
 
         if ($includeViews) {
-            if ($this->views === null || $refresh) {
-                $this->views = $schemaManager->listViews($this->getName());
-            }
-
-            array_merge($tables, $this->views);
+            $tables = array_merge($tables, $this->getViews());
         }
 
         return $tables;
     }
 
-    /**
-     * getTableDetail
-     *
-     * @param string $table
-     *
-     * @return  array
-     */
-    public function getTableDetail(string $table): array
+    public function getViews(bool $refresh = false)
     {
-        return $this->db->getPlatform()->getTableDetail($table);
+        return $this->once(
+            'views',
+            fn () => Table::wrapList(
+                $this->getPlatform()->listViews($this->getName())
+            ),
+            $refresh
+        );
     }
 
-    /**
-     * tableExists
-     *
-     * @param string $table
-     *
-     * @return  bool
-     */
+    public function getTableDetail(string $table, bool $includeViews = false): ?Table
+    {
+        return $this->getTables($includeViews)[$table];
+    }
+
     public function hasTable(string $table): bool
     {
         return in_array($this->db->replacePrefix($table), $this->getTables(), true);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function reset(): static
     {
         $this->tables = null;

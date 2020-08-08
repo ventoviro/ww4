@@ -48,7 +48,7 @@ class PostgreSQLPlatform extends AbstractPlatform
 
     public function listSchemaQuery(): Query
     {
-        return $this->db->getQuery(true)
+        return $this->db->createQuery()
             ->select('schema_name')
             ->from('information_schema.schemata')
             ->whereNotIn('schema_name', ['pg_catalog', 'information_schema']);
@@ -101,7 +101,7 @@ class PostgreSQLPlatform extends AbstractPlatform
 
     public function listColumnsQuery(string $table, ?string $schema): Query
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select(
                 [
                     'ordinal_position',
@@ -302,7 +302,7 @@ class PostgreSQLPlatform extends AbstractPlatform
     public function listConstraints(string $table, ?string $schema = null): array
     {
         $constraintGroup = $this->loadConstraintsStatement($table, $schema)
-            ->loadAll()
+            ->all()
             ->group('constraint_name');
 
         $name        = null;
@@ -423,7 +423,7 @@ class PostgreSQLPlatform extends AbstractPlatform
             ->where('table_name', $this->db->replacePrefix(trim($table[0], '" ')))
             ->where('column_default', 'LIKE', '%nextval%');
 
-        $colName = $this->db->prepare($colNameQuery)->loadOne()->first();
+        $colName = $this->db->prepare($colNameQuery)->get()->first();
 
         $changedColName = str_replace('nextval', 'currval', $colName);
 
@@ -432,7 +432,7 @@ class PostgreSQLPlatform extends AbstractPlatform
         $insertidQuery->selectRaw($changedColName);
 
         try {
-            return $this->db->prepare($insertidQuery)->loadResult();
+            return $this->db->prepare($insertidQuery)->result();
         } catch (\PDOException $e) {
             // 55000 means we trying to insert value to serial column
             // Just return because insertedId get the last generated value.
@@ -489,13 +489,13 @@ class PostgreSQLPlatform extends AbstractPlatform
      */
     public function getCurrentDatabase(): ?string
     {
-        return $this->db->prepare('SELECT current_database()')->loadResult();
+        return $this->db->prepare('SELECT current_database()')->result();
     }
 
     public function dropDatabase(string $name, array $options = []): StatementInterface
     {
         // $pid = version_compare($this->db->getVersion(), '9.2', '>=') ? 'pid' : 'procpid';
-        // $query = $this->db->getQuery(true);
+        // $query = $this->db->createQuery();
         // $query->select('pg_terminate_backend(' . $pid . ')')
         //     ->from('pg_stat_activity')
         //     ->where('datname = ' . $query->quote($this->getName()));
@@ -731,7 +731,7 @@ class PostgreSQLPlatform extends AbstractPlatform
             }
 
             // Get the details columns information.
-            $query = $this->db->getQuery(true);
+            $query = $this->db->createQuery();
 
             $query->select($name)
                 ->from('pg_class AS s')
@@ -755,7 +755,7 @@ class PostgreSQLPlatform extends AbstractPlatform
                 ->where('d.deptype', 'a')
                 ->where('t.relname', $table);
             echo $query->render(true);
-            return $this->db->prepare($query)->loadAll();
+            return $this->db->prepare($query)->all();
         }
 
         return null;

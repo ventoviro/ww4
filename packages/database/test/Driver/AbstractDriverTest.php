@@ -51,7 +51,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
                     'title' => 'Amaryllis',
                 ],
             ],
-            $st->loadAll()
+            $st->all()
                 ->mapProxy()
                 ->only(['id', 'title'])
                 ->dump(true)
@@ -67,17 +67,17 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
 
         self::assertEquals(
             'Alstroemeria',
-            $st->loadOne()->title
+            $st->get()->title
         );
         $id++;
         self::assertEquals(
             'Amaryllis',
-            $st->loadOne()->title
+            $st->get()->title
         );
         $id++;
         self::assertEquals(
             'Anemone',
-            $st->loadOne()->title
+            $st->get()->title
         );
     }
 
@@ -96,17 +96,17 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
 
         self::assertEquals(
             'Alstroemeria',
-            $st->loadOne()->title
+            $st->get()->title
         );
         $id++;
         self::assertEquals(
             'Amaryllis',
-            $st->loadOne()->title
+            $st->get()->title
         );
         $id++;
         self::assertEquals(
             'Anemone',
-            $st->loadOne()->title
+            $st->get()->title
         );
     }
 
@@ -129,7 +129,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
                     'title' => 'Amaryllis',
                 ],
             ],
-            $st->loadAll()
+            $st->all()
                 ->mapProxy()
                 ->only(['id', 'title'])
                 ->dump(true)
@@ -153,7 +153,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
                     'title' => 'Anemone',
                 ],
             ],
-            $st->loadAll()
+            $st->all()
                 ->mapProxy()
                 ->only(['id', 'title'])
                 ->dump(true)
@@ -178,7 +178,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
             static::$driver->prepare(
                 'SELECT params FROM ww_flower WHERE id = 1'
             )
-                ->loadResult()
+                ->result()
         );
 
         self::assertEquals(
@@ -216,7 +216,7 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
         $this->expectException(DatabaseQueryException::class);
         $this->expectExceptionMessageMatches(sprintf('/(%s)/', preg_quote($sql)));
 
-        static::$driver->prepare($sql)->loadOne();
+        static::$driver->prepare($sql)->get();
     }
 
     public function testEvents()

@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Manager;
 
-use Windwalker\Cache\Traits\InstanceCacheTrait;
-use Windwalker\Database\Schema\Ddl\Column;
+use Windwalker\Utilities\Cache\InstanceCacheTrait;
 
 /**
  * The DatabaseManager class.

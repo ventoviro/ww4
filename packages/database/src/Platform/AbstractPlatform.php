@@ -169,9 +169,7 @@ abstract class AbstractPlatform
 
     public function listSchemas(): array
     {
-        return $this->db->prepare(
-            $this->listSchemaQuery()
-        )
+        return $this->listSchemaQuery()
             ->loadColumn()
             ->dump();
     }
@@ -181,10 +179,8 @@ abstract class AbstractPlatform
      */
     public function listTables(?string $schema = null, bool $includeViews = false): array
     {
-        $tables = $this->db->prepare(
-            $this->listTablesQuery($schema)
-        )
-            ->loadAll()
+        $tables = $this->listTablesQuery($schema)
+            ->all()
             ->keyBy('TABLE_NAME')
             ->dump(true);
 
@@ -205,10 +201,8 @@ abstract class AbstractPlatform
     {
         $this->listViewsQuery($schema)->render(true);
 
-        return $this->db->prepare(
-            $this->listViewsQuery($schema)
-        )
-            ->loadAll()
+        return $this->listViewsQuery($schema)
+            ->all()
             ->keyBy('TABLE_NAME')
             ->dump(true);
     }
@@ -223,9 +217,7 @@ abstract class AbstractPlatform
      */
     public function loadColumnsStatement(string $table, ?string $schema = null): StatementInterface
     {
-        return $this->db->prepare(
-            $this->listColumnsQuery($table, $schema)
-        );
+        return $this->listColumnsQuery($table, $schema)->getIterator();
     }
 
     /**
@@ -238,9 +230,7 @@ abstract class AbstractPlatform
      */
     public function loadConstraintsStatement(string $table, ?string $schema = null): StatementInterface
     {
-        return $this->db->prepare(
-            $this->listConstraintsQuery($table, $schema)
-        );
+        return $this->listConstraintsQuery($table, $schema)->getIterator();
     }
 
     /**
@@ -253,9 +243,7 @@ abstract class AbstractPlatform
      */
     public function loadIndexesStatement(string $table, ?string $schema = null): StatementInterface
     {
-        return $this->db->prepare(
-            $this->listIndexesQuery($table, $schema)
-        );
+        return $this->listIndexesQuery($table, $schema)->getIterator();
     }
 
     abstract public function getCurrentDatabase(): ?string;
@@ -440,7 +428,7 @@ abstract class AbstractPlatform
 
     public function addConstraint(string $table, Constraint $constraint, ?string $schema = null): StatementInterface
     {
-        $alter = $this->db->getQuery(true)
+        $alter = $this->db->createQuery()
             ->alter('TABLE', $schema . '.' . $table);
 
         if ($constraint->constraintType === Constraint::TYPE_PRIMARY_KEY) {

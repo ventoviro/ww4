@@ -38,7 +38,7 @@ class SqlsrvDriver extends AbstractDriver
      */
     public function lastInsertId(?string $sequence = null): ?string
     {
-        return $this->prepare('SELECT @@IDENTITY')->loadResult();
+        return $this->prepare('SELECT @@IDENTITY')->result();
     }
 
     /**

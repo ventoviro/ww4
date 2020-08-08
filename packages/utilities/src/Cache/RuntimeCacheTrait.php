@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Cache\Traits;
+namespace Windwalker\Utilities\Cache;
 
 /**
  * The RuntimeCacheTrait class.

@@ -379,7 +379,7 @@ class SQLitePlatform extends AbstractPlatform
     public function getCurrentDatabase(): ?string
     {
         $databases = $this->db->prepare($this->pragma('database_list'))
-            ->loadAll()
+            ->all()
             ->keyBy('name');
 
         return $databases[static::getDefaultSchema()]->file ?? null;
@@ -388,7 +388,7 @@ class SQLitePlatform extends AbstractPlatform
     public function dropDatabase(string $name, array $options = []): StatementInterface
     {
         $databases = $this->db->prepare($this->pragma('database_list'))
-            ->loadAll()
+            ->all()
             ->keyBy('file');
 
         if ($databases[$name]) {

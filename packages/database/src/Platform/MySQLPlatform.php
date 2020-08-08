@@ -77,8 +77,7 @@ class MySQLPlatform extends AbstractPlatform
 
     public function listViewsQuery(?string $schema): Query
     {
-        $query = $this->createQuery()
-            ->select(
+        $query = $this->db->select(
                 [
                     'TABLE_NAME',
                     'TABLE_SCHEMA',
@@ -101,8 +100,7 @@ class MySQLPlatform extends AbstractPlatform
 
     public function listColumnsQuery(string $table, ?string $schema): Query
     {
-        $query = $this->createQuery()
-            ->select(
+        $query = $this->db->select(
                 [
                     'ORDINAL_POSITION',
                     'COLUMN_DEFAULT',
@@ -132,8 +130,7 @@ class MySQLPlatform extends AbstractPlatform
 
     public function listIndexesQuery(string $table, ?string $schema): Query
     {
-        $query = $this->db->getQuery(true)
-            ->select(
+        $query = $this->db->select(
                 [
                     'TABLE_SCHEMA',
                     'TABLE_NAME',
@@ -160,8 +157,7 @@ class MySQLPlatform extends AbstractPlatform
 
     public function listConstraintsQuery(string $table, ?string $schema): Query
     {
-        return $this->db->getQuery(true)
-            ->select(
+        return $this->db->select(
                 [
                     'TABLE_NAME',
                     'CONSTRAINT_NAME',
@@ -258,11 +254,11 @@ class MySQLPlatform extends AbstractPlatform
 
         // Query 1: TABLE_CONSTRAINTS
         $constraintItems = $this->loadConstraintsStatement($table, $schema)
-            ->loadAll()
+            ->all()
             ->keyBy('CONSTRAINT_NAME');
 
         // Query 2: KEY_COLUMN_USAGE
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select(
                 [
                     'CONSTRAINT_NAME',
@@ -285,10 +281,10 @@ class MySQLPlatform extends AbstractPlatform
                 }
             );
 
-        $kcuGroup = $this->db->prepare($query)->loadAll()->group('CONSTRAINT_NAME');
+        $kcuGroup = $this->db->prepare($query)->all()->group('CONSTRAINT_NAME');
 
         // Query 3: REFERENTIAL_CONSTRAINTS
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select(
                 [
                     'CONSTRAINT_NAME',
@@ -309,7 +305,7 @@ class MySQLPlatform extends AbstractPlatform
                 }
             );
 
-        $rcItems = $this->db->prepare($query)->loadAll()->keyBy('CONSTRAINT_NAME');
+        $rcItems = $this->db->prepare($query)->all()->keyBy('CONSTRAINT_NAME');
 
         $realName    = null;
         $constraints = [];
@@ -361,7 +357,7 @@ class MySQLPlatform extends AbstractPlatform
     public function listIndexes(string $table, ?string $schema = null): array
     {
         $indexGroup = $this->loadIndexesStatement($table, $schema)
-            ->loadAll()
+            ->all()
             ->group('INDEX_NAME');
 
         $indexes = [];
@@ -398,7 +394,7 @@ class MySQLPlatform extends AbstractPlatform
 
     public function getCurrentDatabase(): ?string
     {
-        return $this->db->prepare('SELECT DATABASE()')->loadResult();
+        return $this->db->prepare('SELECT DATABASE()')->result();
     }
 
     public function createSchema(string $name, array $options = []): StatementInterface
@@ -531,7 +527,7 @@ class MySQLPlatform extends AbstractPlatform
     public function addIndex(string $table, Index $index, ?string $schema = null): StatementInterface
     {
         return $this->db->execute(
-            $this->db->getQuery(true)
+            $this->db->createQuery()
                 ->alter('TABLE', $schema . '.' . $table)
                 ->tap(fn(AlterClause $alter) => $alter->addIndex(
                     $index->indexName,

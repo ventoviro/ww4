@@ -15,50 +15,33 @@ use Windwalker\Database\Driver\AbstractDriver;
 use Windwalker\Database\Driver\ConnectionInterface;
 use Windwalker\Database\Driver\DriverFactory;
 use Windwalker\Database\Driver\StatementInterface;
+use Windwalker\Database\Manager\TableManager;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Schema\DatabaseManager;
 use Windwalker\Database\Schema\SchemaManager;
-use Windwalker\Database\Manager\TableManager;
 use Windwalker\Event\EventAttachableInterface;
 use Windwalker\Event\ListenableTrait;
 use Windwalker\Query\Query;
+use Windwalker\Utilities\Cache\InstanceCacheTrait;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
-use Windwalker\Utilities\Wrapper\WrapperInterface;
-
-use function Windwalker\value;
 
 /**
  * The DatabaseAdapter class.
+ *
+ * @method Query select(...$columns)
+ * @method Query update(string $table, ?string $alias = null)
+ * @method Query delete(string $table, ?string $alias = null)
+ * @method Query insert(string $table, ?string $incrementField = null)
  */
 class DatabaseAdapter implements EventAttachableInterface
 {
     use OptionAccessTrait;
     use ListenableTrait;
+    use InstanceCacheTrait;
 
-    /**
-     * @var AbstractDriver
-     */
-    protected $driver;
+    protected ?AbstractDriver $driver = null;
 
-    /**
-     * @var Query|string
-     */
-    protected $query;
-
-    /**
-     * @var SchemaManager[]
-     */
-    protected $schemas = [];
-
-    /**
-     * @var DatabaseManager[]
-     */
-    protected $databases = [];
-
-    /**
-     * @var TableManager[]
-     */
-    protected $tables = [];
+    protected \Stringable|string|null $query = null;
 
     /**
      * DatabaseAdapter constructor.
@@ -112,15 +95,25 @@ class DatabaseAdapter implements EventAttachableInterface
      *
      * @param  bool  $new
      *
-     * @return  string|Query
+     * @return string|Query
      */
-    public function getQuery(bool $new = false)
+    public function getQuery(bool $new = false): Query|\Stringable|string|null
     {
         if ($new) {
             return $this->getPlatform()->createQuery();
         }
 
         return $this->query;
+    }
+
+    public function createQuery(): Query
+    {
+        return $this->getQuery(true);
+    }
+
+    public function getCachedQuery(bool $new = false): Query
+    {
+        return $this->once('cached.query', fn () => $this->getQuery(true), $new);
     }
 
     /**
@@ -137,7 +130,7 @@ class DatabaseAdapter implements EventAttachableInterface
 
     public function quote(mixed $value): array|string
     {
-        return $this->getQuery(true)->quote($value);
+        return $this->getCachedQuery()->quote($value);
     }
 
     /**
@@ -158,6 +151,19 @@ class DatabaseAdapter implements EventAttachableInterface
     public function listSchemas(): array
     {
         return $this->getPlatform()->listSchemas();
+    }
+
+    /**
+     * listTables
+     *
+     * @param  string|null  $schema
+     * @param  bool         $includeViews
+     *
+     * @return  array
+     */
+    public function listTables(?string $schema = null, bool $includeViews = false): array
+    {
+        return $this->getSchema($schema)->getTables($includeViews);
     }
 
     /**
@@ -184,31 +190,19 @@ class DatabaseAdapter implements EventAttachableInterface
     {
         $name = $name ?? $this->getOption('database');
 
-        if (!isset($this->databases[$name]) || $new) {
-            $this->databases[$name] = new DatabaseManager($name, $this);
-        }
-
-        return $this->databases[$name];
+        return $this->once('database.' . $name, fn () => new DatabaseManager($name, $this), $new);
     }
 
     public function getSchema(?string $name = null, $new = false): SchemaManager
     {
         $name = $name ?? $this->getPlatform()::getDefaultSchema();
 
-        if (!isset($this->schemas[$name]) || $new) {
-            $this->schemas[$name] = new SchemaManager($name, $this);
-        }
-
-        return $this->schemas[$name];
+        return $this->once('schema.' . $name, fn () => new SchemaManager($name, $this), $new);
     }
 
     public function getTable(string $name, $new = false): TableManager
     {
-        if (!isset($this->tables[$name]) || $new) {
-            $this->tables[$name] = new TableManager($name, $this);
-        }
-
-        return $this->tables[$name];
+        return $this->getSchema()->getTable($name, $new);
     }
 
     public function replacePrefix(string $query, string $prefix = '#__'): string
@@ -273,6 +267,24 @@ class DatabaseAdapter implements EventAttachableInterface
                 null,
             ],
             true
+        );
+    }
+
+    public function __call(string $name, array $args)
+    {
+        $queryMethods = [
+            'select',
+            'delete',
+            'update',
+            'insert'
+        ];
+
+        if (in_array(strtolower($name), $queryMethods, true)) {
+            return $this->createQuery()->$name($args);
+        }
+
+        throw new \BadMethodCallException(
+            sprintf('Call to undefined method of: %s::%s()', static::class, $name)
         );
     }
 }

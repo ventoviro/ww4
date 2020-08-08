@@ -171,6 +171,10 @@ class Escaper
      */
     public function setConnection($connection)
     {
+        if ($connection instanceof DatabaseAdapter) {
+            $connection = $connection->getDriver();
+        }
+
         $this->connection = $connection;
 
         return $this;

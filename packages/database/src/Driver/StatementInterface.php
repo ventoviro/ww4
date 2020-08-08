@@ -48,7 +48,7 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate, Even
      *
      * @return  Collection|null
      */
-    public function loadOne(string $class = Collection::class, array $args = []): ?Collection;
+    public function get(string $class = Collection::class, array $args = []): ?Collection;
 
     /**
      * Fetch all items and close cursor.
@@ -58,7 +58,7 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate, Even
      *
      * @return  Collection[]|Collection
      */
-    public function loadAll(string $class = Collection::class, array $args = []): Collection;
+    public function all(string $class = Collection::class, array $args = []): Collection;
 
     /**
      * Fetch all column values and close the cursor.
@@ -74,7 +74,7 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate, Even
      *
      * @return  string|null
      */
-    public function loadResult(): ?string;
+    public function result(): ?string;
 
     /**
      * Close cursor and free result.

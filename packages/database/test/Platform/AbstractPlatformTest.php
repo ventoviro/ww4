@@ -74,7 +74,7 @@ abstract class AbstractPlatformTest extends AbstractDatabaseTestCase
 
         $this->instance->transactionCommit();
 
-        $result = static::$db->prepare('SELECT title FROM #__flower WHERE title = \'A\'')->loadResult();
+        $result = static::$db->prepare('SELECT title FROM #__flower WHERE title = \'A\'')->result();
 
         $this->assertEquals('A', $result);
     }
@@ -105,10 +105,10 @@ abstract class AbstractPlatformTest extends AbstractDatabaseTestCase
         $this->instance->transactionRollback();
         $this->instance->transactionCommit();
 
-        $result = static::$db->prepare('SELECT title FROM #__flower WHERE title = \'D\'')->loadResult();
+        $result = static::$db->prepare('SELECT title FROM #__flower WHERE title = \'D\'')->result();
         $this->assertEquals('D', $result);
 
-        $result2 = static::$db->prepare('SELECT title FROM #__flower WHERE title = \'E\'')->loadResult();
+        $result2 = static::$db->prepare('SELECT title FROM #__flower WHERE title = \'E\'')->result();
         $this->assertNotEquals('E', $result2);
     }
 

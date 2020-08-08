@@ -15,11 +15,8 @@ use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Schema\Ddl\Column;
 use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Schema;
-use Windwalker\Query\Clause\AlterClause;
 use Windwalker\Query\Clause\Clause;
 use Windwalker\Query\Query;
-
-use Windwalker\Query\Sqlsrv\SqlsrvGrammar;
 
 use function Windwalker\raw;
 
@@ -34,14 +31,14 @@ class SQLServerPlatform extends AbstractPlatform
 
     public function listDatabasesQuery(): Query
     {
-        return $this->db->getQuery(true)
+        return $this->db->createQuery()
             ->select('name')
             ->from('master.dbo.sysdatabases');
     }
 
     public function listSchemaQuery(): Query
     {
-        return $this->db->getQuery(true)
+        return $this->db->createQuery()
             ->select('SCHEMA_NAME')
             ->from('INFORMATION_SCHEMA.SCHEMATA')
             ->where('SCHEMA_NAME', '!=', 'INFORMATION_SCHEMA');
@@ -333,7 +330,7 @@ class SQLServerPlatform extends AbstractPlatform
     public function listConstraints(string $table, ?string $schema = null): array
     {
         $constraintGroup = $this->loadConstraintsStatement($table, $schema)
-            ->loadAll()
+            ->all()
             ->mapProxy()
             ->apply(static function (array $storage) {
                 return array_change_key_case($storage, CASE_LOWER);
@@ -389,7 +386,7 @@ class SQLServerPlatform extends AbstractPlatform
     public function listIndexes(string $table, ?string $schema = null): array
     {
         $indexGroup = $this->loadIndexesStatement($table, $schema)
-            ->loadAll()
+            ->all()
             ->group('index_name');
 
         $indexes = [];
@@ -487,7 +484,7 @@ class SQLServerPlatform extends AbstractPlatform
      */
     public function getCurrentDatabase(): ?string
     {
-        return $this->db->prepare('SELECT DB_NAME()')->loadResult();
+        return $this->db->prepare('SELECT DB_NAME()')->result();
     }
 
     /**
@@ -500,7 +497,7 @@ class SQLServerPlatform extends AbstractPlatform
      */
     public function dropDatabase(string $name, array $options = []): StatementInterface
     {
-        $query = $this->db->getQuery(true);
+        $query = $this->db->createQuery();
         $this->db->execute(
             $query->format('ALTER DATABASE %n SET SINGLE_USER WITH ROLLBACK IMMEDIATE', $name)
         );
@@ -679,7 +676,7 @@ SQL;
 
     public function addComment(string $type, string $table, string $name, string $comment): StatementInterface
     {
-        $query = $this->db->getQuery(true);
+        $query = $this->db->createQuery();
         $table = $this->db->replacePrefix($table);
 
         return $this->db->execute(
@@ -775,7 +772,7 @@ SQL;
 
     public function dropColumnConstraints(string $table, string $column, ?string $schema = null): void
     {
-        $query = $this->db->getQuery(true);
+        $query = $this->db->createQuery();
 
         // Sqlsrv must drop default constraint first
         // todo: join sys.schemas
