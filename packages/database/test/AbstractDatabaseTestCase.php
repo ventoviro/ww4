@@ -58,11 +58,11 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
         }
 
         $db->on(QueryEndEvent::class, function (QueryEndEvent $event) use ($logFile) {
-            static::$lastQueries[] = $event['sql'];
+            static::$lastQueries[] = $event->getSql();
 
             $fp = fopen($logFile, 'ab+');
 
-            fwrite($fp, $event['sql'] . ";\n\n");
+            fwrite($fp, $event->getSql() . ";\n\n");
 
             fclose($fp);
         });
@@ -85,7 +85,7 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
     {
         $logs = [];
         $fp = function (QueryEndEvent $event) use (&$logs) {
-            return $logs[] = $event['sql'];
+            return $logs[] = $event->getSql();
         };
 
         static::$db->on(QueryEndEvent::class, $fp);

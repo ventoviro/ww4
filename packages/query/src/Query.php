@@ -133,7 +133,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
     protected ?Clause $columns = null;
 
-    protected ?Clause $values = null;
+    protected Query|Clause|null $values = null;
 
     protected ?Clause $set = null;
 
@@ -141,7 +141,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
     protected ?string $incrementField = null;
 
-    protected array $subQueries = [];
+    protected ?array $subQueries = [];
 
     protected ?AbstractGrammar $grammar = null;
 
@@ -1743,14 +1743,11 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
             return $this;
         }
 
-        $this->$clauses = null;
+        $props = (new \ReflectionClass($this))->getDefaultProperties();
+        $this->$clauses = $props[$clauses] ?? null;
 
         foreach ($handlers[$clauses] ?? [] as $field) {
-            if (is_array($this->$field)) {
-                $this->$field = [];
-            } else {
-                $this->$field = null;
-            }
+            $this->$field = $props[$field] ?? null;
         }
 
         return $this;

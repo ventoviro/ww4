@@ -89,7 +89,7 @@ abstract class AbstractStatement implements StatementInterface
         $statement = $this;
         $dispatcher = $this->getDispatcher();
 
-        $dispatcher->emit(new QueryStartEvent(compact('params')));
+        $dispatcher->emit(QueryStartEvent::class, compact('params'));
 
         try {
             $result = $this->doExecute($params);
@@ -99,12 +99,12 @@ abstract class AbstractStatement implements StatementInterface
             }
         } catch (\RuntimeException $exception) {
             $statement->close();
-            $event = $dispatcher->emit(new QueryFailedEvent(compact('exception')));
+            $event = $dispatcher->emit(QueryFailedEvent::class, compact('exception'));
 
-            throw $event['exception'];
+            throw $event->getException();
         }
 
-        $dispatcher->emit(new QueryEndEvent(compact('result')));
+        $dispatcher->emit(QueryEndEvent::class, compact('result'));
 
         $this->executed = true;
 

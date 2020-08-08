@@ -234,8 +234,8 @@ abstract class AbstractDriverTest extends AbstractDatabaseDriverTestCase
 
         $stmt->on(
             QueryEndEvent::class,
-            static function (EventInterface $event) use (&$data) {
-                $data['end'] = $event['query']->render(true);
+            static function (QueryEndEvent $event) use (&$data) {
+                $data['end'] = $event->getQuery()->render(true);
             }
         );
 

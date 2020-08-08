@@ -11,18 +11,32 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Event;
 
-use Windwalker\Event\Event;
+use Windwalker\Event\AbstractEvent;
 
 /**
  * The QueryStartEvent class.
  */
-class QueryStartEvent extends Event
+class QueryStartEvent extends AbstractEvent
 {
+    protected ?array $params = [];
+
     /**
-     * @inheritDoc
+     * @return array|null
      */
-    public function __construct(array $arguments = [])
+    public function getParams(): ?array
     {
-        parent::__construct(null, $arguments);
+        return $this->params;
+    }
+
+    /**
+     * @param  array|null  $params
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setParams(?array $params)
+    {
+        $this->params = $params;
+
+        return $this;
     }
 }

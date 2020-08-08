@@ -22,13 +22,13 @@ function serialize($data): string
     return \Opis\Closure\serialize($data);
 }
 
-function unserialize(string $data)
+function unserialize(string $data, ?array $options = null)
 {
     if (!class_exists(SerializableClosure::class)) {
         throw new \LogicException('Please install opis/closure first');
     }
 
-    return \Opis\Closure\unserialize($data);
+    return \Opis\Closure\unserialize($data, $options);
 }
 
 function closure(\Closure $closure)

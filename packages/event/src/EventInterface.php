@@ -18,7 +18,7 @@ use Psr\EventDispatcher\StoppableEventInterface;
  *
  * @since 2.0
  */
-interface EventInterface extends StoppableEventInterface, \ArrayAccess
+interface EventInterface extends StoppableEventInterface
 {
     /**
      * Get the event name.

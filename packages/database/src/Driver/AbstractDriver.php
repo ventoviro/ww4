@@ -142,19 +142,20 @@ abstract class AbstractDriver implements DriverInterface
                 $sql,
                 $bounded
             ) {
-                $event['query']   = $query;
-                $event['sql']     = $this->handleQuery($query, $bounded, true);
-                $event['bounded'] = $bounded;
+                $event->setQuery($query)
+                    ->setSql($this->handleQuery($query, $bounded, true))
+                    ->setBounded($bounded);
 
-                /** @var \Throwable|\PDOException $e */
-                $e = $event['exception'];
+                $e = $event->getException();
 
                 $sql = $this->replacePrefix(($query instanceof Query ? $query->render(true) : (string) $query));
 
-                $event['exception'] = new DatabaseQueryException(
-                    $e->getMessage() . ' - SQL: ' . $sql,
-                    (int) $e->getCode(),
-                    $e
+                $event->setException(
+                    new DatabaseQueryException(
+                        $e->getMessage() . ' - SQL: ' . $sql,
+                        (int) $e->getCode(),
+                        $e
+                    )
                 );
             }
         );
@@ -165,9 +166,9 @@ abstract class AbstractDriver implements DriverInterface
                 $query,
                 $bounded
             ) {
-                $event['query']   = $query;
-                $event['sql']     = $this->handleQuery($query, $bounded, true);
-                $event['bounded'] = $bounded;
+                $event->setQuery($query)
+                    ->setSql($this->handleQuery($query, $bounded, true))
+                    ->setBounded($bounded);
             }
         );
 
