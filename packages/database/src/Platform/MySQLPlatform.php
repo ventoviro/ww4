@@ -418,9 +418,9 @@ class MySQLPlatform extends AbstractPlatform
         return $this->createDatabase($name, $options);
     }
 
-    public function dropSchema(string $name): StatementInterface
+    public function dropSchema(string $name, array $options = []): StatementInterface
     {
-        return $this->dropDatabase($name);
+        return $this->dropDatabase($name, $options);
     }
 
     public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): StatementInterface

@@ -129,18 +129,6 @@ class SQLitePlatform extends AbstractPlatform
     /**
      * @inheritDoc
      */
-    public function listSchemas(): array
-    {
-        return $this->db->prepare(
-            $this->listDatabasesQuery()
-        )
-            ->loadColumn(1)
-            ->dump();
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function listColumns(string $table, ?string $schema = null): array
     {
         $columns = [];
@@ -407,9 +395,11 @@ class SQLitePlatform extends AbstractPlatform
      *
      * @param  string  $name
      *
+     * @param  array   $options
+     *
      * @return  StatementInterface
      */
-    public function dropSchema(string $name): StatementInterface
+    public function dropSchema(string $name, array $options = []): StatementInterface
     {
         return $this->db->execute(
             $this->getGrammar()

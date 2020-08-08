@@ -60,6 +60,8 @@ class TableManager extends AbstractMetaManager
      * @param  callable|Schema  $schema
      *
      * @return  static
+     *
+     * @todo Move update() logic to Platform class.
      */
     public function update($schema): static
     {

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Database\Platform;
 
+use Windwalker\Data\Collection;
 use Windwalker\Database\Driver\Pdo\PdoDriver;
 use Windwalker\Database\Driver\Postgresql\PostgresqlTransaction;
 use Windwalker\Database\Driver\StatementInterface;
@@ -515,9 +516,11 @@ class PostgreSQLPlatform extends AbstractPlatform
      *
      * @param  string  $name
      *
-     * @return  bool
+     * @param  array   $options
+     *
+     * @return StatementInterface
      */
-    public function dropSchema(string $name): StatementInterface
+    public function dropSchema(string $name, array $options = []): StatementInterface
     {
         return $this->db->execute(
             $this->getGrammar()
@@ -701,5 +704,60 @@ class PostgreSQLPlatform extends AbstractPlatform
             );
 
         return $this->db->execute((string) $alter);
+    }
+
+    public function getTableSequences(string $table, ?string $schema = null): ?Collection
+    {
+        // To check if table exists and prevent SQL injection
+        $tableList = $this->listTables($schema);
+
+        $table = $this->db->replacePrefix($table);
+
+        if (array_key_exists($table, $tableList)) {
+            $name = [
+                's.relname AS sequence',
+                'n.nspname AS schema',
+                't.relname AS table',
+                'a.attname AS column',
+                'info.data_type AS data_type',
+                'info.minimum_value AS minimum_value',
+                'info.maximum_value AS maximum_value',
+                'info.increment AS increment',
+                'info.cycle_option AS cycle_option',
+            ];
+
+            if (version_compare($this->db->getDriver()->getVersion(), '9.1.0', '>=')) {
+                $name[] .= 'info.start_value AS start_value';
+            }
+
+            // Get the details columns information.
+            $query = $this->db->getQuery(true);
+
+            $query->select($name)
+                ->from('pg_class AS s')
+                ->leftJoin(
+                    'pg_depend',
+                    'd',
+                    static function (JoinClause $join) {
+                        $join->on("d.objid", '=', "s.oid");
+                        $join->onRaw("d.classid = 'pg_class'::regclass");
+                        $join->onRaw("d.refclassid = 'pg_class'::regclass");
+                    }
+                )
+                ->leftJoin('pg_class', 't', 't.oid', 'd.refobjid')
+                ->leftJoin('pg_namespace', 'n', 'n.oid', 't.relnamespace')
+                ->leftJoin('pg_attribute', 'a', function (JoinClause $join) {
+                    $join->on('a.attrelid', 't.oid');
+                    $join->on('a.attnum', 'd.refobjsubid');
+                })
+                ->leftJoin('information_schema.sequences', 'info', 'info.sequence_name', 's.relname')
+                ->where('s.relkind', 'S')
+                ->where('d.deptype', 'a')
+                ->where('t.relname', $table);
+            echo $query->render(true);
+            return $this->db->prepare($query)->loadAll();
+        }
+
+        return null;
     }
 }

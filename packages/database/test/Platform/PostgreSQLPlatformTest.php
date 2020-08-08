@@ -559,6 +559,13 @@ class PostgreSQLPlatformTest extends AbstractPlatformTest
         );
     }
 
+    public function testGetTableSequence()
+    {
+        $seq = $this->instance->getTableSequences('#__articles');
+
+        self::assertEquals('ww_articles_id_seq', $seq->first()->sequence);
+    }
+
     protected function setUp(): void
     {
         $this->instance = static::$db->getDriver()->getPlatform();

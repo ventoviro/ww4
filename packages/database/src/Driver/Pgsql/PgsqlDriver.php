@@ -66,4 +66,14 @@ class PgsqlDriver extends AbstractDriver
     {
         return pg_escape_string($this->connect()->get(), $value);
     }
+
+    /**
+     * getVersion
+     *
+     * @return  string
+     */
+    public function getVersion(): string
+    {
+        return pg_version($this->connect()->get())['server'] ?? '';
+    }
 }

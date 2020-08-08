@@ -524,7 +524,7 @@ FROM `ww_articles`'
         $file = __DIR__ . '/../../tmp/hello.db';
 
         if (in_array('hello', $this->instance->listSchemas(), true)) {
-            $this->instance->dropSchema('hello');
+            $this->instance->dropSchema('hello', []);
         }
 
         $this->instance->createDatabase($file, ['as' => 'hello']);

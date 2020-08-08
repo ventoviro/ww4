@@ -56,4 +56,14 @@ class SqlsrvDriver extends AbstractDriver
     {
         return $this->getPlatform()->getGrammar()->localEscape($value);
     }
+
+    /**
+     * getVersion
+     *
+     * @return  string
+     */
+    public function getVersion(): string
+    {
+        return (string) (sqlsrv_server_info($this->connect()->get())['SQLServerVersion'] ?? '');
+    }
 }

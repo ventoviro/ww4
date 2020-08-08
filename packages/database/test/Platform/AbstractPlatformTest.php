@@ -139,7 +139,7 @@ abstract class AbstractPlatformTest extends AbstractDatabaseTestCase
     public function testCreateDropSchema(): void
     {
         if (in_array('hello', $this->instance->listSchemas(), true)) {
-            $this->instance->dropSchema('hello');
+            $this->instance->dropSchema('hello', []);
         }
 
         $this->instance->createSchema('hello');
@@ -149,7 +149,7 @@ abstract class AbstractPlatformTest extends AbstractDatabaseTestCase
             $this->instance->listSchemas()
         );
 
-        $this->instance->dropSchema('hello');
+        $this->instance->dropSchema('hello', []);
     }
 
     protected function tearDown(): void

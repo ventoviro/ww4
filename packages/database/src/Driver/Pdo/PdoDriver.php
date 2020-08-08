@@ -144,4 +144,17 @@ class PdoDriver extends AbstractDriver implements TransactionDriverInterface
 
         return $pdo->rollBack();
     }
+
+    /**
+     * getVersion
+     *
+     * @return  string
+     */
+    public function getVersion(): string
+    {
+        /** @var \PDO $pdo */
+        $pdo = $this->connect()->get();
+
+        return $pdo->getAttribute(\PDO::ATTR_SERVER_VERSION);
+    }
 }

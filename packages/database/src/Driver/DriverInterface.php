@@ -80,4 +80,6 @@ interface DriverInterface
      * @return  string
      */
     public function escape(string $value): string;
+
+    public function getVersion(): string;
 }

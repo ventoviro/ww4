@@ -99,4 +99,17 @@ class MysqliDriver extends AbstractDriver implements TransactionDriverInterface
 
         return $mysqli->rollback();
     }
+
+    /**
+     * getVersion
+     *
+     * @return  string
+     */
+    public function getVersion(): string
+    {
+        /** @var \mysqli $mysqli */
+        $mysqli = $this->connect()->get();
+
+        return (string) $mysqli->server_version;
+    }
 }
