@@ -283,7 +283,17 @@ abstract class AbstractPlatform
         );
     }
 
-    abstract public function dropDatabase(string $name, array $options = []): StatementInterface;
+    public function dropDatabase(string $name, array $options = []): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'DROP DATABASE',
+                    !empty($options['if_exists']) ? 'IF EXISTS' : null,
+                    $this->db->quoteName($name)
+                )
+        );
+    }
 
     public function createSchema(string $name, array $options = []): StatementInterface
     {
@@ -297,7 +307,24 @@ abstract class AbstractPlatform
         );
     }
 
-    abstract public function dropSchema(string $name, array $options = []): StatementInterface;
+    /**
+     * dropSchema
+     *
+     * @param  string  $name
+     * @param  array   $options
+     *
+     * @return  StatementInterface
+     */
+    public function dropSchema(string $name, array $options = []): StatementInterface
+    {
+        return $this->db->execute(
+            $this->getGrammar()
+                ::build(
+                    'DROP SCHEMA',
+                    $this->db->quoteName($name)
+                )
+        );
+    }
 
     abstract public function createTable(Schema $schema, bool $ifNotExists = false, array $options = []): StatementInterface;
 

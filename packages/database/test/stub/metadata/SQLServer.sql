@@ -47,7 +47,7 @@ CREATE INDEX idx_categories_path
 DROP TABLE IF EXISTS ww_articles;
 CREATE TABLE ww_articles
 (
-    id          int                                          NOT NULL identity PRIMARY KEY,
+    id          int                                          NOT NULL identity,
     category_id int            DEFAULT 0                     ,
     page_id     int            DEFAULT 0                     NOT NULL,
     type        char(15)       DEFAULT 'bar'                 NOT NULL,
@@ -62,6 +62,10 @@ CREATE TABLE ww_articles
     language    char(7)        DEFAULT ''                    NOT NULL,
     params      text                                         NOT NULL
 );
+
+ALTER TABLE ww_articles
+    ADD CONSTRAINT pk_ww_articles
+        PRIMARY KEY (id);
 
 ALTER TABLE ww_articles
     ADD CONSTRAINT fk_articles_category_id

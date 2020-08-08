@@ -618,7 +618,13 @@ SQL,
      */
     public function testDrop(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $this->instance->setName('enterprise_d')->reset();
+        $this->instance->drop();
+
+        self::assertNotContains(
+            'enterprise_d',
+            $this->instance->getPlatform()->listTables()
+        );
     }
 
     /**

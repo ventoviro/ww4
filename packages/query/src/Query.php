@@ -845,6 +845,10 @@ class Query implements QueryInterface, BindableInterface
 
         $operator = strtolower($operator);
 
+        if (str_starts_with($operator, 'not')) {
+            $operator = 'not ' . substr($operator, 3);
+        }
+
         $operator = $maps[$operator] ?? $operator;
 
         $arg1 = array_shift($args);
@@ -1594,10 +1598,11 @@ class Query implements QueryInterface, BindableInterface
      *
      * @param  bool  $pre
      * @param  bool  $format
+     * @param  bool  $asString
      *
-     * @return  string
+     * @return string|null
      */
-    public function debug(bool $pre = false, bool $format = true): string
+    public function debug(bool $pre = false, bool $format = true, bool $asString = true): ?string
     {
         $sql = $this->render(true);
 
@@ -1609,7 +1614,13 @@ class Query implements QueryInterface, BindableInterface
             $sql = \SqlFormatter::format($sql, false);
         }
 
-        return $sql;
+        if ($asString) {
+            return $sql;
+        }
+
+        echo $sql;
+
+        return null;
     }
 
     public function getMergedBounded(): array
@@ -1822,25 +1833,25 @@ class Query implements QueryInterface, BindableInterface
             'q' => 'quote',
         ];
 
-        if (in_array($name, $aliases, true)) {
+        if (isset($aliases[$name])) {
             return $this->{$aliases[$name]}(...$args);
         }
 
         // Get Fields
-        $field = lcfirst(substr($name, 3));
+        $field = lcfirst((string) substr($name, 3));
 
         if (property_exists($this, $field)) {
             return $this->$field;
         }
 
         // Where/Having
-        if (strpos($name, 'where') === 0) {
+        if (str_starts_with(strtolower($name), 'where')) {
             $operator = substr($name, 5);
 
             return $this->whereVariant('where', $operator, $args);
         }
 
-        if (strpos($name, 'having') === 0) {
+        if (str_starts_with(strtolower($name), 'having')) {
             $operator = substr($name, 6);
 
             return $this->whereVariant('having', $operator, $args);

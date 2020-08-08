@@ -41,7 +41,7 @@ class Column
 
     protected ?string $dataType = null;
 
-    protected ?int $characterMaximumLength = null;
+    protected int|string|null $characterMaximumLength = null;
 
     protected ?int $characterOctetLength = null;
 
@@ -248,14 +248,14 @@ class Column
         [$dataType, $precision, $scale] = DataType::extract("{$this->dataType}($value)");
 
         $this->setLengthByType(
-            TypeCast::tryInteger($precision, true),
+            $precision,
             TypeCast::tryInteger($scale, true)
         );
 
         return $this;
     }
 
-    private function setLengthByType(?int $precision, ?int $scale): void
+    private function setLengthByType(int|string|null $precision, ?int $scale): void
     {
         if ($this->isNumeric()) {
             $this->numericPrecision($precision);
@@ -269,11 +269,11 @@ class Column
 
     public function getLengthExpression(): ?string
     {
-        if ($this->characterMaximumLength !== null) {
+        if ((string) $this->characterMaximumLength !== '') {
             return (string) $this->characterMaximumLength;
         }
 
-        if ($this->numericPrecision !== null || $this->numericScale !== null) {
+        if ((string) $this->numericPrecision !== '' || $this->numericScale !== null) {
             return implode(',', array_filter([$this->numericPrecision, $this->numericScale]));
         }
 
@@ -306,21 +306,21 @@ class Column
     }
 
     /**
-     * @return int
+     * @return int|string|null
      */
-    public function getCharacterMaximumLength(): ?int
+    public function getCharacterMaximumLength(): int|string|null
     {
         return $this->characterMaximumLength;
     }
 
     /**
-     * @param  int  $characterMaximumLength
+     * @param  int|string  $characterMaximumLength
      *
      * @return  static  Return self to support chaining.
      */
     public function characterMaximumLength(int|string|null $characterMaximumLength): static
     {
-        $this->characterMaximumLength = TypeCast::tryInteger($characterMaximumLength, true);
+        $this->characterMaximumLength = $characterMaximumLength;
 
         return $this;
     }

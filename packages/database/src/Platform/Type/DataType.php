@@ -234,7 +234,7 @@ class DataType
     public static function extract(string $type): array
     {
         preg_match(
-            '/(\w+)\(*(\d*)[,\s]*(\d*)\)*/',
+            '/(\w+)\(*(\w*)[,\s]*(\d*)\)*/',
             $type,
             $matches
         );

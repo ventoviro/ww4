@@ -401,18 +401,6 @@ class MySQLPlatform extends AbstractPlatform
         return $this->db->prepare('SELECT DATABASE()')->loadResult();
     }
 
-    public function dropDatabase(string $name, array $options = []): StatementInterface
-    {
-        return $this->db->execute(
-            $this->getGrammar()
-                ::build(
-                    'DROP DATABASE',
-                    !empty($options['if_exists']) ? 'IF EXISTS' : null,
-                    $this->db->quoteName($name)
-                )
-        );
-    }
-
     public function createSchema(string $name, array $options = []): StatementInterface
     {
         return $this->createDatabase($name, $options);

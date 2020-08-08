@@ -62,11 +62,12 @@ class SQLServerDataType extends DataType
         DataType::TINYINT => self::SMALLINT,
         DataType::BOOLEAN => self::BIT,
         DataType::VARCHAR => self::NVARCHAR,
-        DataType::CHAR => self::NVARCHAR,
+        DataType::CHAR => self::NCHAR,
         DataType::TEXT => self::NVARCHAR,
         DataType::LONGTEXT => self::NVARCHAR,
         DataType::DATETIME => self::DATETIME2,
         DataType::TIMESTAMP => self::DATETIME2,
+        'json' => self::NVARCHAR,
     ];
 
     /**

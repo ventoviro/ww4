@@ -43,6 +43,10 @@ class TableManager extends AbstractMetaManager
      */
     public function create(callable|Schema $callback, bool $ifNotExists = true, array $options = []): static
     {
+        if ($this->exists()) {
+            return $this;
+        }
+
         $this->getPlatform()->createTable(
             $this->callSchema($callback),
             $ifNotExists,
