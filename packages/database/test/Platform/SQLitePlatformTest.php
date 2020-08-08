@@ -534,7 +534,12 @@ FROM `ww_articles`'
             $this->instance->listSchemas()
         );
 
-        $this->instance->dropDatabase(realpath($file));
+        $this->instance->dropDatabase('hello');
+
+        self::assertNotContains(
+            'hello',
+            $this->instance->listSchemas()
+        );
     }
 
     public function testCreateDropSchema(): void

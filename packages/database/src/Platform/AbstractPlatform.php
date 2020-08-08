@@ -158,9 +158,6 @@ abstract class AbstractPlatform
 
     abstract public function listIndexesQuery(string $table, ?string $schema): Query;
 
-    /**
-     * @inheritDoc
-     */
     public function listDatabases(): array
     {
         return $this->db->prepare(
@@ -170,9 +167,6 @@ abstract class AbstractPlatform
             ->dump();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function listSchemas(): array
     {
         return $this->db->prepare(
@@ -344,7 +338,7 @@ abstract class AbstractPlatform
     {
         return $this->db->execute(
             $this->getGrammar()::build(
-                'ALTER TABLE',
+                'DROP TABLE',
                 'IF EXISTS',
                 $this->db->quoteName($schema . '.' . $table),
                 $suffix

@@ -86,6 +86,18 @@ class SQLitePlatform extends AbstractPlatform
             ->order('name');
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function listSchemas(): array
+    {
+        return $this->db->prepare(
+            $this->listSchemaQuery()
+        )
+            ->loadColumn(1)
+            ->dump();
+    }
+
     public function listViews(?string $schema = null): array
     {
         $views = parent::listViews($schema);
@@ -379,15 +391,19 @@ class SQLitePlatform extends AbstractPlatform
             ->loadAll()
             ->keyBy('file');
 
-        $dbname = $databases[$name]->name;
+        if ($databases[$name]) {
+            $dbname = $databases[$name]->name;
 
-        return $this->db->execute(
-            $this->getGrammar()
-                ::build(
-                    'DETACH DATABASE',
-                    $this->db->quoteName($dbname)
-                )
-        );
+            return $this->db->execute(
+                $this->getGrammar()
+                    ::build(
+                        'DETACH DATABASE',
+                        $this->db->quoteName($dbname)
+                    )
+            );
+        }
+
+        return $this->dropSchema($name, $options);
     }
 
     /**

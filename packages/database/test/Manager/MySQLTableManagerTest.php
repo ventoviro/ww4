@@ -55,6 +55,27 @@ class MySQLTableManagerTest extends AbstractDatabaseTestCase
 
         self::assertSqlFormatEquals(
             <<<SQL
+            SELECT `TABLE_NAME`,
+                   `TABLE_SCHEMA`,
+                   `TABLE_TYPE`,
+                   NULL AS VIEW_DEFINITION,
+                   NULL AS CHECK_OPTION,
+                   NULL AS IS_UPDATABLE
+            FROM `INFORMATION_SCHEMA`.`TABLES`
+            WHERE `TABLE_TYPE` = 'BASE TABLE'
+              AND `TABLE_SCHEMA` = (
+                SELECT DATABASE()
+            );
+            SELECT `TABLE_NAME`,
+                   `TABLE_SCHEMA`,
+                   'VIEW' AS TABLE_TYPE,
+                   `VIEW_DEFINITION`,
+                   `CHECK_OPTION`,
+                   `IS_UPDATABLE`
+            FROM `INFORMATION_SCHEMA`.`VIEWS`
+            WHERE `TABLE_SCHEMA` = (
+                SELECT DATABASE()
+            );
             CREATE TABLE IF NOT EXISTS `enterprise` (
             `id` int(11) NOT NULL,
             `type` char(25) NOT NULL DEFAULT '',

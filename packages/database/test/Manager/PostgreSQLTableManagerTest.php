@@ -59,6 +59,27 @@ class PostgreSQLTableManagerTest extends AbstractDatabaseTestCase
 
         self::assertSqlFormatEquals(
             <<<SQL
+            SELECT "table_name"    AS "TABLE_NAME",
+                   "table_catalog" AS "TABLE_CATALOG",
+                   "table_schema"  AS "TABLE_SCHEMA",
+                   "table_type"    AS "TABLE_TYPE",
+                   NULL            AS "VIEW_DEFINITION",
+                   NULL            AS "CHECK_OPTION",
+                   NULL            AS "IS_UPDATABLE"
+            FROM "information_schema"."tables"
+            WHERE "table_type" = 'BASE TABLE'
+              AND "table_schema" NOT IN ('pg_catalog', 'information_schema')
+            ORDER BY "table_name" ASC;
+            SELECT "table_name"      AS "TABLE_NAME",
+                   "table_catalog"   AS "TABLE_CATALOG",
+                   "table_schema"    AS "TABLE_SCHEMA",
+                   'VIEW'            AS "TABLE_TYPE",
+                   "view_definition" AS "VIEW_DEFINITION",
+                   "check_option"    AS "CHECK_OPTION",
+                   "is_updatable"    AS "IS_UPDATABLE"
+            FROM "information_schema"."views"
+            WHERE "table_schema" NOT IN ('pg_catalog', 'information_schema')
+            ORDER BY "table_name" ASC;
             CREATE TABLE IF NOT EXISTS "enterprise" (
             "id" serial NOT NULL,
             "type" char(25) NOT NULL DEFAULT '',

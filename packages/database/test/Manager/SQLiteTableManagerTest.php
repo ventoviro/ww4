@@ -61,6 +61,28 @@ class SQLiteTableManagerTest extends AbstractDatabaseTestCase
 
         self::assertSqlFormatEquals(
             <<<SQL
+            SELECT `name`       AS `TABLE_NAME`,
+                   'BASE TABLE' AS TABLE_TYPE,
+                   'main'       AS TABLE_SCHEMA,
+                   NULL         AS VIEW_DEFINITION,
+                   NULL         AS CHECK_OPTION,
+                   NULL         AS IS_UPDATABLE,
+                   `sql`
+            FROM `main`.`sqlite_master`
+            WHERE `type` = 'table'
+              AND `name` NOT LIKE 'sqlite_%'
+            ORDER BY `name`;
+            SELECT `name` AS `TABLE_NAME`,
+                   'VIEW' AS TABLE_TYPE,
+                   ''     AS TABLE_SCHEMA,
+                   NULL   AS VIEW_DEFINITION,
+                   'NONE' AS CHECK_OPTION,
+                   NULL   AS IS_UPDATABLE,
+                   `sql`
+            FROM `sqlite_master`
+            WHERE `type` = 'view'
+              AND `name` NOT LIKE 'sqlite_%'
+            ORDER BY `name`;
             CREATE TABLE IF NOT EXISTS `enterprise` (
              `id` integer NOT NULL,
             `type` char(25) NOT NULL DEFAULT '',
