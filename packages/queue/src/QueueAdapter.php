@@ -109,11 +109,13 @@ class QueueAdapter
         if (!$message instanceof QueueMessage) {
             $msg = new QueueMessage();
             $msg->setId($message);
+
+            $message = $msg;
         }
 
         $this->driver->delete($message);
 
-        $message->isDeleted(true);
+        $message->setDeleted(true);
     }
 
     /**

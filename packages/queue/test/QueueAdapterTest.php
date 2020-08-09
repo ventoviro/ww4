@@ -120,7 +120,13 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
      */
     public function testDelete(): void
     {
-        self::markTestIncomplete(); // TODO: Complete this test
+        $this->instance->delete(2);
+
+        $items = self::$db->select('*')
+            ->from('queue_jobs')
+            ->all();
+
+        self::assertCount(1, $items);
     }
 
     /**
@@ -134,7 +140,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     /**
      * @see  QueueAdapter::__construct
      */
-    public function test__construct(): void
+    public function testConstruct(): void
     {
         self::markTestIncomplete(); // TODO: Complete this test
     }

@@ -108,7 +108,7 @@ class Worker implements EventAttachableInterface
      * @return  void
      * @throws \Exception
      */
-    public function loop($queue, array $options)
+    public function loop(string|array $queue, array $options = [])
     {
         gc_enable();
 
@@ -122,7 +122,7 @@ class Worker implements EventAttachableInterface
 
         $this->setState(static::STATE_ACTIVE);
 
-        while (true) {
+        while (!$this->isStop()) {
             $this->gc();
 
             $worker = $this;
@@ -134,7 +134,7 @@ class Worker implements EventAttachableInterface
             // Timeout handler
             $this->registerSignals($options);
 
-            if ($this->canLoop() || $options['force'] ?? null) {
+            if (($options['force'] ?? null) || $this->canLoop()) {
                 try {
                     $this->runNextJob($queue, $options);
                 } catch (\Exception $exception) {
@@ -151,7 +151,7 @@ class Worker implements EventAttachableInterface
             // @loop end
             $this->emit(LoopEndEvent::class, compact('worker', 'adapter'));
 
-            $this->sleep((int) ($options['sleep'] ?? 1));
+            $this->sleep((float) ($options['sleep'] ?? 1));
         }
     }
 
@@ -163,7 +163,7 @@ class Worker implements EventAttachableInterface
      *
      * @return  void
      */
-    public function runNextJob(string|array $queue, array $options)
+    public function runNextJob(string|array $queue, array $options): void
     {
         $message = $this->getNextMessage($queue);
 
@@ -228,7 +228,7 @@ class Worker implements EventAttachableInterface
             $this->handleJobException($job, $message, $options, $t);
         } finally {
             if (!$message->isDeleted()) {
-                $this->adapter->release($message, (int) $options->get('delay', 0));
+                $this->adapter->release($message, (int) ($options['delay'] ?? 0));
             }
         }
     }
@@ -289,11 +289,13 @@ class Worker implements EventAttachableInterface
     /**
      * stop
      *
-     * @param string $reason
+     * @param  string  $reason
+     * @param  int     $code
+     * @param  bool    $instant
      *
      * @return void
      */
-    public function stop(string $reason = 'Unknown reason'): void
+    public function stop(string $reason = 'Unknown reason', int $code = 0, bool $instant = false): void
     {
         $this->logger->info('Worker stop: ' . $reason);
 
@@ -308,7 +310,21 @@ class Worker implements EventAttachableInterface
 
         $this->setState(static::STATE_STOP);
 
-        exit();
+        if ($instant) {
+            exit($code);
+        }
+    }
+
+    public function isStop(): bool
+    {
+        return in_array(
+            $this->getState(),
+            [
+                static::STATE_EXITING,
+                static::STATE_STOP
+            ],
+            true
+        );
     }
 
     /**
@@ -391,13 +407,13 @@ class Worker implements EventAttachableInterface
     /**
      * sleep
      *
-     * @param int $seconds
+     * @param float $seconds
      *
      * @return  void
      */
-    protected function sleep(int $seconds): void
+    protected function sleep(float $seconds): void
     {
-        usleep($seconds * 1000000);
+        usleep((int) ($seconds * 1000000));
     }
 
     /**
@@ -458,7 +474,7 @@ class Worker implements EventAttachableInterface
     {
         $restartSignal = $options['restart_signal'] ?? null;
 
-        if (is_file($restartSignal)) {
+        if ($restartSignal && is_file($restartSignal)) {
             $signal = file_get_contents($restartSignal);
 
             if ($this->lastRestart < $signal) {

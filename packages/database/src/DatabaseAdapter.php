@@ -284,7 +284,7 @@ class DatabaseAdapter implements EventAttachableInterface
         ];
 
         if (in_array(strtolower($name), $queryMethods, true)) {
-            return $this->createQuery()->$name($args);
+            return $this->createQuery()->$name(...$args);
         }
 
         throw new \BadMethodCallException(
