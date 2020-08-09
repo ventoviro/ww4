@@ -90,9 +90,9 @@ class QueueAdapter
      *
      * @param  string|null  $queue
      *
-     * @return  QueueMessage
+     * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): QueueMessage
+    public function pop(?string $queue = null): ?QueueMessage
     {
         return $this->driver->pop($queue);
     }
@@ -154,7 +154,7 @@ class QueueAdapter
         $data['class'] = get_class($job);
 
         $message->setName($job->getName());
-        $message->setJob(serialize($job));
+        $message->setSerializedJob(serialize($job));
         $message->setData($data);
 
         return $message;

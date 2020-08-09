@@ -16,6 +16,7 @@ use Windwalker\Database\Driver\ConnectionInterface;
 use Windwalker\Database\Driver\DriverFactory;
 use Windwalker\Database\Driver\StatementInterface;
 use Windwalker\Database\Manager\TableManager;
+use Windwalker\Database\Manager\WriterManager;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Schema\DatabaseManager;
 use Windwalker\Database\Schema\SchemaManager;
@@ -205,6 +206,11 @@ class DatabaseAdapter implements EventAttachableInterface
         return $this->getSchema()->getTable($name, $new);
     }
 
+    public function getWriter($new = false): WriterManager
+    {
+        return $this->once('writer', fn () => new WriterManager($this), $new);
+    }
+
     public function replacePrefix(string $query, string $prefix = '#__'): string
     {
         return $this->getDriver()->replacePrefix($query, $prefix);
@@ -217,15 +223,13 @@ class DatabaseAdapter implements EventAttachableInterface
      * @param  bool      $autoCommit
      * @param  bool      $enabled
      *
-     * @return  static
+     * @return  mixed
      *
      * @throws \Throwable
      */
     public function transaction(callable $callback, bool $autoCommit = true, bool $enabled = true)
     {
-        $this->getPlatform()->transaction($callback, $autoCommit, $enabled);
-
-        return $this;
+        return $this->getPlatform()->transaction($callback, $autoCommit, $enabled);
     }
 
     /**

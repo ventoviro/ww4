@@ -62,7 +62,7 @@ use function Windwalker\value;
  * @method string|null getAlias()
  * @method Clause|null getSuffix()
  * @method string|null getSql()
- * @method string|null getIncrementField()
+ * @method bool getIncrementField()
  * @method $this leftJoin($table, ?string $alias, ...$on)
  * @method $this rightJoin($table, ?string $alias, ...$on)
  * @method $this outerJoin($table, ?string $alias, ...$on)
@@ -86,12 +86,14 @@ use function Windwalker\value;
  * @method Collection|Collection[] all(string $class = Collection::class, array $args = [])
  * @method Collection loadColumn(int|string $offset = 0)
  * @method string|null result(int|string $offset = 0)
+ * @method StatementInterface execute(?array $params = null)
  */
 class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 {
     use MarcoableTrait;
     use FlowControlTrait;
     use BindableTrait;
+    use QueryConcernTrait;
 
     public const TYPE_SELECT = 'select';
 
@@ -139,7 +141,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
     protected ?Clause $suffix = null;
 
-    protected ?string $incrementField = null;
+    protected bool $incrementField = false;
 
     protected ?array $subQueries = [];
 
@@ -895,11 +897,11 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
      * insert
      *
      * @param  string  $table
-     * @param  string  $incrementField
+     * @param  bool  $incrementField
      *
      * @return  static
      */
-    public function insert(string $table, ?string $incrementField = null)
+    public function insert(string $table, bool $incrementField = false)
     {
         $this->type           = static::TYPE_INSERT;
         $this->insert         = $this->clause('INSERT INTO', $this->quoteName($table));
@@ -1061,11 +1063,11 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
             // Process Raw
             $value = $this->val($value);
         } else {
-            ArgumentsAssert::assert(
-                !is_array($value) && !is_object($value),
-                'Write values should be scalar or NULL, %2$s given.',
-                $value
-            );
+            // ArgumentsAssert::assert(
+            //     !is_array($value) && !is_object($value),
+            //     'Write values should be scalar or NULL, %2$s given.',
+            //     $value
+            // );
 
             // Process simple value compare
             $this->bind(null, $value = $this->val($value));
@@ -1294,9 +1296,25 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
         return $this->getGrammar()::nullDate();
     }
 
-    public function dateFormat(): string
+    public function getDateFormat(): string
     {
         return $this->getGrammar()::dateFormat();
+    }
+
+    /**
+     * castValue
+     *
+     * @param mixed $value
+     *
+     * @return  string
+     */
+    public function castValue($value): mixed
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $this->formatDateTime($value);
+        }
+
+        return $value;
     }
 
     public function raw(string $string, ...$args): RawWrapper
@@ -1576,7 +1594,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
             if ($param['value'] instanceof ValueClause) {
                 $param['value']->setPlaceholder($sequence->get());
                 $key            = $param['value']->getPlaceholder();
-                $param['value'] = $param['value']->getValue();
+                $param['value'] = $this->castValue($param['value']->getValue());
 
                 $bounded[$key] = $param;
             } else {
@@ -1804,6 +1822,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
             'all',
             'result',
             'loadcolumn',
+            'execute',
         ];
 
         if (in_array(strtolower($name), $methods)) {

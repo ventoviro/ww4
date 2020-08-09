@@ -30,7 +30,7 @@ class SyncQueueDriver implements QueueDriverInterface
      */
     public function push(QueueMessage $message): int|string
     {
-        $job = $message->getJob();
+        $job = $message->getSerializedJob();
         /** @var JobInterface $job */
         $job = unserialize($job);
 

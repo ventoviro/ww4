@@ -77,7 +77,7 @@ class QueueMessage implements \JsonSerializable
     public function __construct(?JobInterface $job = null, array $data = [], int $delay = 0, array $options = [])
     {
         if ($job !== null) {
-            $this->setJob($job);
+            $this->setSerializedJob($job);
         }
 
         if ($data) {
@@ -169,7 +169,7 @@ class QueueMessage implements \JsonSerializable
      *
      * @return  string
      */
-    public function getJob(): string
+    public function getSerializedJob(): string
     {
         return Arr::get($this->body, 'job', '');
     }
@@ -177,11 +177,11 @@ class QueueMessage implements \JsonSerializable
     /**
      * Method to set property job
      *
-     * @param   JobInterface $job
+     * @param   string $job
      *
      * @return  static  Return self to support chaining.
      */
-    public function setJob(JobInterface $job)
+    public function setSerializedJob(string $job)
     {
         $this->body['job'] = $job;
 
@@ -205,7 +205,7 @@ class QueueMessage implements \JsonSerializable
      *
      * @return  static  Return self to support chaining.
      */
-    public function setData(array $data): array
+    public function setData(array $data)
     {
         $this->body['data'] = $data;
 
@@ -215,9 +215,9 @@ class QueueMessage implements \JsonSerializable
     /**
      * Method to get property Queue
      *
-     * @return  string
+     * @return  string|null
      */
-    public function getQueueName(): string
+    public function getQueueName(): ?string
     {
         return Arr::get($this->body, 'queue', '');
     }

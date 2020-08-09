@@ -9,9 +9,10 @@
 
 declare(strict_types=1);
 
+use Opis\Closure\SerializableClosure;
+
 include_once __DIR__ . '/functions.php';
 
-// WeakReference polyfill
-if (!class_exists(WeakReference::class)) {
-    include_once __DIR__ . '/weak_reference.php';
+if (class_exists(SerializableClosure::class) && class_exists(\FFI::class)) {
+    SerializableClosure::init();
 }

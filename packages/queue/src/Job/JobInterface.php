@@ -18,17 +18,7 @@ namespace Windwalker\Queue\Job;
  */
 interface JobInterface
 {
-    /**
-     * getName
-     *
-     * @return  string
-     */
-    public function getName();
+    public function getName(): string;
 
-    /**
-     * execute
-     *
-     * @return  void
-     */
-    public function execute();
+    public function execute(): void;
 }

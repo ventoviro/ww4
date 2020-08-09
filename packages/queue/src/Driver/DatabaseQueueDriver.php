@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Queue\Driver;
 
-use Windwalker\Database\Driver\AbstractDatabaseDriver;
-use Windwalker\DateTime\Chronos;
+use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Query\Query;
 use Windwalker\Queue\QueueMessage;
 
@@ -26,40 +25,25 @@ class DatabaseQueueDriver implements QueueDriverInterface
     /**
      * Property db.
      *
-     * @var  AbstractDatabaseDriver
+     * @var  DatabaseAdapter
      */
-    protected $db;
+    protected DatabaseAdapter $db;
 
-    /**
-     * Property table.
-     *
-     * @var
-     */
-    protected $table;
+    protected string $table;
 
-    /**
-     * Property queue.
-     *
-     * @var  string
-     */
-    protected $queue;
+    protected string $queue;
 
-    /**
-     * Property timeout.
-     *
-     * @var  int
-     */
-    protected $timeout;
+    protected int $timeout;
 
     /**
      * DatabaseQueueDriver constructor.
      *
-     * @param AbstractDatabaseDriver $db
+     * @param DatabaseAdapter $db
      * @param string                 $queue
      * @param string                 $table
      * @param int                    $timeout
      */
-    public function __construct(AbstractDatabaseDriver $db, $queue = 'default', $table = 'queue_jobs', $timeout = 60)
+    public function __construct(DatabaseAdapter $db, string $queue = 'default', string $table = 'queue_jobs', int $timeout = 60)
     {
         $this->db = $db;
         $this->table = $table;
@@ -81,14 +65,14 @@ class DatabaseQueueDriver implements QueueDriverInterface
 
         $data = [
             'queue' => $message->getQueueName() ?: $this->queue,
-            'body' => json_encode($message),
+            'body' => json_encode($message, JSON_THROW_ON_ERROR),
             'attempts' => 0,
             'created' => $time->format('Y-m-d H:i:s'),
-            'visibility' => $time->modify(sprintf('+%dseconds', $message->getDelay()))->format('Y-m-d H:i:s'),
+            'visibility' => $time->modify(sprintf('+%dseconds', $message->getDelay())),
             'reserved' => null,
         ];
 
-        $this->db->getWriter()->insertOne($this->table, $data, 'id');
+        $data = $this->db->getWriter()->insertOne($this->table, $data, 'id');
 
         return $data['id'];
     }
@@ -99,7 +83,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
      * @param  string|null  $queue
      *
      * @return QueueMessage|null
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function pop(?string $queue = null): ?QueueMessage
     {
@@ -110,20 +94,19 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $query = $this->db->getQuery(true);
 
         $query->select('*')
-            ->from($query->quoteName($this->table))
-            ->where('queue = %q', $queue)
-            ->where('visibility <= %q', $now->format('Y-m-d H:i:s'))
+            ->from($this->table)
+            ->where('queue', $queue)
+            ->where('visibility', '<=', $now)
             ->orWhere(
                 function (Query $query) use ($now) {
-                    $query->where('reserved IS NULL')
-                        ->where('reserved < %q', $now->modify('-' . $this->timeout . 'seconds')->format('Y-m-d H:i:s'));
+                    $query->where('reserved', null)
+                        ->where('reserved', '<', $now->modify('-' . $this->timeout . 'seconds'));
                 }
-            );
+            )
+            ->forUpdate();
 
-        $trans = $this->db->getTransaction()->start();
-
-        try {
-            $data = $this->db->setQuery($query . ' FOR UPDATE')->loadOne('assoc');
+        $data = $this->db->transaction(function () use ($now, $query) {
+            $data = $this->db->prepare($query)->get();
 
             if (!$data) {
                 return null;
@@ -131,20 +114,22 @@ class DatabaseQueueDriver implements QueueDriverInterface
 
             $data['attempts']++;
 
-            $values = ['reserved' => $now->format('Y-m-d H:i:s'), 'attempts' => $data['attempts']];
+            $values = ['reserved' => $now, 'attempts' => $data['attempts']];
 
             $this->db->getWriter()->updateBatch($this->table, $values, ['id' => $data['id']]);
 
-            $trans->commit();
-        } catch (\Throwable $t) {
-            $trans->rollback();
+            return $data;
+        });
+
+        if ($data === null) {
+            return null;
         }
 
         $message = new QueueMessage();
 
         $message->setId($data['id']);
         $message->setAttempts($data['attempts']);
-        $message->setBody(json_decode($data['body'], true));
+        $message->setBody(json_decode($data['body'], true, 512, JSON_THROW_ON_ERROR));
         $message->setRawBody($data['body']);
         $message->setQueueName($queue);
 
@@ -156,21 +141,16 @@ class DatabaseQueueDriver implements QueueDriverInterface
      *
      * @param  QueueMessage  $message
      *
-     * @return DatabaseQueueDriver
+     * @return static
      */
     public function delete(QueueMessage $message)
     {
         $queue = $message->getQueueName() ?: $this->queue;
 
-        $query = $this->db->getQuery(true);
-
-        $query->delete($query->quoteName($this->table))
-            ->where('id = :id')
-            ->where('queue = :queue')
-            ->bind('id', $message->getId())
-            ->bind('queue', $queue);
-
-        $this->db->setQuery($query)->execute();
+        $this->db->delete($this->table)
+            ->where('id', $message->getId())
+            ->where('queue', $queue)
+            ->execute();
 
         return $this;
     }
@@ -192,7 +172,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
 
         $values = [
             'reserved' => null,
-            'visibility' => $time->format('Y-m-d H:i:s'),
+            'visibility' => $time,
         ];
 
         $this->db->getWriter()->updateBatch(
@@ -210,9 +190,9 @@ class DatabaseQueueDriver implements QueueDriverInterface
     /**
      * Method to get property Table
      *
-     * @return  mixed
+     * @return  string
      */
-    public function getTable()
+    public function getTable(): string
     {
         return $this->table;
     }
@@ -224,7 +204,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
      *
      * @return  static  Return self to support chaining.
      */
-    public function setTable($table)
+    public function setTable(string $table)
     {
         $this->table = $table;
 
@@ -234,9 +214,9 @@ class DatabaseQueueDriver implements QueueDriverInterface
     /**
      * Method to get property Db
      *
-     * @return  AbstractDatabaseDriver
+     * @return  DatabaseAdapter
      */
-    public function getDb()
+    public function getDb(): DatabaseAdapter
     {
         return $this->db;
     }
@@ -244,11 +224,11 @@ class DatabaseQueueDriver implements QueueDriverInterface
     /**
      * Method to set property db
      *
-     * @param   AbstractDatabaseDriver $db
+     * @param   DatabaseAdapter $db
      *
      * @return  static  Return self to support chaining.
      */
-    public function setDb($db)
+    public function setDb(DatabaseAdapter $db)
     {
         $this->db = $db;
 

@@ -81,7 +81,7 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
         static::$db = null;
     }
 
-    public function logQueries(callable $callback): array
+    public function logQueries(callable $callback, &$result = null): array
     {
         $logs = [];
         $fp = function (QueryEndEvent $event) use (&$logs) {
@@ -90,7 +90,7 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
 
         static::$db->on(QueryEndEvent::class, $fp);
 
-        $callback();
+        $result = $callback();
 
         static::$db->getDispatcher()->remove($fp);
 

@@ -2,11 +2,11 @@ CREATE TABLE IF NOT EXISTS `queue_jobs` (
   `id` bigint(20) unsigned NOT NULL,
   `queue` varchar(255) NOT NULL DEFAULT '',
   `body` longtext NOT NULL,
-  `attempts` tinyint(4) unsigned NOT NULL DEFAULT '0',
-  `created` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
-  `visibility` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
+  `attempts` tinyint(4) NOT NULL DEFAULT '0',
+  `created` datetime DEFAULT NULL,
+  `visibility` datetime DEFAULT NULL,
   `reserved` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE `queue_jobs`
   ADD PRIMARY KEY (`id`),

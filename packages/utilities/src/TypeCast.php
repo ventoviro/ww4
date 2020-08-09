@@ -146,7 +146,7 @@ abstract class TypeCast
      *
      * @since  3.5
      */
-    public static function toString($data, bool $dump = true): string
+    public static function toString($data, bool $dump = false): string
     {
         if (is_callable($data)) {
             return static::toString($data());

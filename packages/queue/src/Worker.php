@@ -186,7 +186,7 @@ class Worker implements EventAttachableInterface
     {
         $maxTries = (int) ($options['tries'] ?? 5);
 
-        $job = $message->getJob();
+        $job = $message->getSerializedJob();
         /** @var JobInterface $job */
         $job = unserialize($job);
 

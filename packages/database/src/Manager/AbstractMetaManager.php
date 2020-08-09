@@ -38,7 +38,7 @@ abstract class AbstractMetaManager
     public function __construct(?string $name, DatabaseAdapter $db)
     {
         $this->db = $db;
-        $this->name = $name;
+        $this->setName($name);
     }
 
     /**
@@ -68,4 +68,16 @@ abstract class AbstractMetaManager
      * @return  static
      */
     abstract public function reset(): static;
+
+    /**
+     * @param  string  $name
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setName(?string $name)
+    {
+        $this->name = $name;
+
+        return $this;
+    }
 }

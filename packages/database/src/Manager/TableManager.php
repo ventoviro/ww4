@@ -470,9 +470,24 @@ class TableManager extends AbstractMetaManager
         return $this;
     }
 
-    public function setName(string $name): static
+    /**
+     * @param  string  $name
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setName(?string $name)
     {
-        $this->name = $name;
+        if ($name !== null) {
+            $names = explode('.', $name);
+
+            if (\count($names) >= 2) {
+                [$schema, $name] = $names;
+            }
+
+            $this->schemaName = $schema;
+        }
+
+        parent::setName($name);
 
         return $this;
     }

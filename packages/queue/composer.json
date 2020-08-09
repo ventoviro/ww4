@@ -19,7 +19,8 @@
     "require-dev": {
         "windwalker/test": "~4.0",
         "windwalker/database": "~4.0",
-        "jdorn/sql-formatter": "^1.0"
+        "jdorn/sql-formatter": "^1.0",
+        "opis/closure": "^3.4"
     },
     "suggest": {
         "aws/aws-sdk-php": "If you want to use AWS SQS as queue service.",

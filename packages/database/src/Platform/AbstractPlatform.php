@@ -590,7 +590,7 @@ abstract class AbstractPlatform
      * @param  bool      $autoCommit
      * @param  bool      $enabled
      *
-     * @return  static
+     * @return  mixed
      *
      * @throws \Throwable
      */
@@ -605,18 +605,18 @@ abstract class AbstractPlatform
         $this->transactionStart();
 
         try {
-            $callback($this->db, $this);
+            $result = $callback($this->db, $this);
 
             if ($autoCommit) {
                 $this->transactionCommit();
             }
+
+            return $result;
         } catch (\Throwable $e) {
             $this->transactionRollback();
 
             throw $e;
         }
-
-        return $this;
     }
 
     public function getDataType(): DataType

@@ -23,12 +23,12 @@ class NullJob implements JobInterface
      *
      * @return  string
      */
-    public function getName()
+    public function getName(): string
     {
         return 'null';
     }
 
-    public function execute()
+    public function execute(): void
     {
     }
 }
