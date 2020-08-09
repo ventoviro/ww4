@@ -35,7 +35,7 @@ class SQLServerQueryTest extends QueryTest
 
     public function testInsert(): void
     {
-        $this->instance->insert('foo', 'id')
+        $this->instance->insert('foo', true)
             ->columns('id', 'title', ['foo', 'bar'], 'yoo')
             ->values(
                 [1, 'A', 'a', null, raw('CURRENT_TIMESTAMP()')],

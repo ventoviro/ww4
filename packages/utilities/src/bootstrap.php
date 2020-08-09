@@ -13,6 +13,7 @@ use Opis\Closure\SerializableClosure;
 
 include_once __DIR__ . '/functions.php';
 
-if (class_exists(SerializableClosure::class) && class_exists(\FFI::class)) {
-    SerializableClosure::init();
-}
+// todo: Enable if FFI ready
+// if (class_exists(SerializableClosure::class) && class_exists(\FFI::class)) {
+//     SerializableClosure::init();
+// }

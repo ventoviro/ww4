@@ -482,9 +482,9 @@ class TableManager extends AbstractMetaManager
 
             if (\count($names) >= 2) {
                 [$schema, $name] = $names;
-            }
 
-            $this->schemaName = $schema;
+                $this->schemaName = $schema;
+            }
         }
 
         parent::setName($name);

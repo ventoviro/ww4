@@ -487,7 +487,7 @@ class QueryTest extends TestCase
 
     public function testInsert(): void
     {
-        $this->instance->insert('foo', 'id')
+        $this->instance->insert('foo', true)
             ->columns('id', 'title', ['foo', 'bar'], 'yoo')
             ->values(
                 [1, 'A', 'a', null, raw('CURRENT_TIMESTAMP()')],
@@ -1618,7 +1618,7 @@ SQL
             $query = clone $q;
 
             // Set the type.
-            $query->$type('foo', 'bar');
+            $query->$type('foo');
 
             // Clear the type.
             $query->clear($type);
