@@ -33,32 +33,29 @@ interface StatementInterface extends BindableInterface, \IteratorAggregate, Even
     /**
      * Fetch 1 row and move cursor to next position.
      *
-     * @param  string  $class
-     * @param  array   $args
+     * @param  array  $args
      *
      * @return  Collection|null
      */
-    public function fetch(string $class = Collection::class, array $args = []): ?Collection;
+    public function fetch(array $args = []): ?Collection;
 
     /**
      * Fetch 1 row and close ths cursor.
      *
-     * @param  string  $class
-     * @param  array   $args
+     * @param  array  $args
      *
      * @return  Collection|null
      */
-    public function get(string $class = Collection::class, array $args = []): ?Collection;
+    public function get(array $args = []): ?Collection;
 
     /**
      * Fetch all items and close cursor.
      *
-     * @param  string  $class
-     * @param  array   $args
+     * @param  array  $args
      *
-     * @return  Collection[]|Collection
+     * @return Collection
      */
-    public function all(string $class = Collection::class, array $args = []): Collection;
+    public function all(array $args = []): Collection;
 
     /**
      * Fetch all column values and close the cursor.

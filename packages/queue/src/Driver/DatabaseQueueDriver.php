@@ -31,7 +31,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
 
     protected string $table;
 
-    protected string $queue;
+    protected string $channel;
 
     protected int $timeout;
 
@@ -39,15 +39,15 @@ class DatabaseQueueDriver implements QueueDriverInterface
      * DatabaseQueueDriver constructor.
      *
      * @param DatabaseAdapter $db
-     * @param string                 $queue
+     * @param string                 $channel
      * @param string                 $table
      * @param int                    $timeout
      */
-    public function __construct(DatabaseAdapter $db, string $queue = 'default', string $table = 'queue_jobs', int $timeout = 60)
+    public function __construct(DatabaseAdapter $db, string $channel = 'default', string $table = 'queue_jobs', int $timeout = 60)
     {
         $this->db = $db;
         $this->table = $table;
-        $this->queue = $queue;
+        $this->channel = $channel;
         $this->timeout = $timeout;
     }
 
@@ -64,7 +64,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $time = new \DateTimeImmutable('now');
 
         $data = [
-            'queue' => $message->getQueueName() ?: $this->queue,
+            'channel' => $message->getChannel() ?: $this->channel,
             'body' => json_encode($message, JSON_THROW_ON_ERROR),
             'attempts' => 0,
             'created' => $time->format('Y-m-d H:i:s'),
@@ -80,14 +80,14 @@ class DatabaseQueueDriver implements QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      * @throws \Throwable
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
-        $queue = $queue ?: $this->queue;
+        $channel = $channel ?: $this->channel;
 
         $now = new \DateTimeImmutable('now');
 
@@ -95,7 +95,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
 
         $query->select('*')
             ->from($this->table)
-            ->where('queue', $queue)
+            ->where('channel', $channel)
             ->where('visibility', '<=', $now)
             ->orWhere(
                 function (Query $query) use ($now) {
@@ -131,7 +131,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $message->setAttempts($data['attempts']);
         $message->setBody(json_decode($data['body'], true, 512, JSON_THROW_ON_ERROR));
         $message->setRawBody($data['body']);
-        $message->setQueueName($queue);
+        $message->setChannel($channel);
 
         return $message;
     }
@@ -145,11 +145,11 @@ class DatabaseQueueDriver implements QueueDriverInterface
      */
     public function delete(QueueMessage $message)
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
         $this->db->delete($this->table)
             ->where('id', $message->getId())
-            ->where('queue', $queue)
+            ->where('channel', $channel)
             ->execute();
 
         return $this;
@@ -165,7 +165,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
      */
     public function release(QueueMessage $message)
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
         $time = new \DateTimeImmutable('now');
         $time = $time->modify('+' . $message->getDelay() . 'seconds');
@@ -180,7 +180,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
             $values,
             [
                 'id' => $message->getId(),
-                'queue' => $queue,
+                'channel' => $channel,
             ]
         );
 

@@ -65,7 +65,7 @@ abstract class AbstractStatement implements StatementInterface
         $gen = function () use ($class, $args) {
             $this->execute();
 
-            while (($row = $this->fetch($class, $args)) !== null) {
+            while (($row = $this->fetch($args)) !== null) {
                 yield $row;
             }
         };
@@ -123,10 +123,10 @@ abstract class AbstractStatement implements StatementInterface
     /**
      * @inheritDoc
      */
-    public function get(string $class = Collection::class, array $args = []): ?Collection
+    public function get(array $args = []): ?Collection
     {
         return tap(
-            $this->fetch($class, $args),
+            $this->fetch($args),
             function () {
                 $this->close();
             }
@@ -136,14 +136,14 @@ abstract class AbstractStatement implements StatementInterface
     /**
      * @inheritDoc
      */
-    public function all(string $class = Collection::class, array $args = []): Collection
+    public function all(array $args = []): Collection
     {
         $this->execute();
 
         $array = [];
 
         // Get all of the rows from the result set.
-        while ($row = $this->fetch($class, $args)) {
+        while ($row = $this->fetch($args)) {
             $array[] = $row;
         }
 

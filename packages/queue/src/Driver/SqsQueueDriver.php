@@ -26,28 +26,28 @@ class SqsQueueDriver implements QueueDriverInterface
      *
      * @var SqsClient
      */
-    protected $client;
+    protected SqsClient $client;
 
     /**
      * Property name.
      *
      * @var string
      */
-    protected $queue;
+    protected string $channel;
 
     /**
      * SqsQueueDriver constructor.
      *
      * @param string $key
      * @param string $secret
-     * @param string $queue
+     * @param string $channel
      * @param array  $options
      */
-    public function __construct($key, $secret, $queue = 'default', array $options = [])
+    public function __construct(string $key, string $secret, string $channel = 'default', array $options = [])
     {
         $this->client = $this->getSqsClient($key, $secret, $options);
 
-        $this->queue = $queue;
+        $this->channel = $channel;
     }
 
     /**
@@ -56,12 +56,13 @@ class SqsQueueDriver implements QueueDriverInterface
      * @param  QueueMessage  $message
      *
      * @return int|string
+     * @throws \JsonException
      */
     public function push(QueueMessage $message): int|string
     {
         $request = [
-            'QueueUrl' => $this->getQueueUrl($message->getQueueName()),
-            'MessageBody' => json_encode($message),
+            'QueueUrl' => $this->getQueueUrl($message->getChannel()),
+            'MessageBody' => json_encode($message, JSON_THROW_ON_ERROR),
         ];
 
         $request['DelaySeconds'] = $message->getDelay();
@@ -76,15 +77,15 @@ class SqsQueueDriver implements QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
         $result = $this->client->receiveMessage(
             [
-                'QueueUrl' => $this->getQueueUrl($queue),
+                'QueueUrl' => $this->getQueueUrl($channel),
                 'AttributeNames' => ['ApproximateReceiveCount'],
             ]
         );
@@ -101,7 +102,7 @@ class SqsQueueDriver implements QueueDriverInterface
         $res->setAttempts($data['Attributes']['ApproximateReceiveCount']);
         $res->setBody(json_decode($data['Body'], true));
         $res->setRawBody($data['Body']);
-        $res->setQueueName($queue ?: $this->queue);
+        $res->setChannel($channel ?: $this->channel);
         $res->set('ReceiptHandle', $data['ReceiptHandle']);
 
         return $res;
@@ -112,14 +113,13 @@ class SqsQueueDriver implements QueueDriverInterface
      *
      * @param  QueueMessage  $message
      *
-     * @return SqsQueueDriver
-     * @internal param null $queue
+     * @return static
      */
     public function delete(QueueMessage $message)
     {
         $this->client->deleteMessage(
             [
-                'QueueUrl' => $this->getQueueUrl($message->getQueueName()),
+                'QueueUrl' => $this->getQueueUrl($message->getChannel()),
                 'ReceiptHandle' => $this->getReceiptHandle($message),
             ]
         );
@@ -130,7 +130,7 @@ class SqsQueueDriver implements QueueDriverInterface
     /**
      * release
      *
-     * @param QueueMessage|string $message
+     * @param QueueMessage $message
      *
      * @return static
      */
@@ -138,7 +138,7 @@ class SqsQueueDriver implements QueueDriverInterface
     {
         $this->client->changeMessageVisibility(
             [
-                'QueueUrl' => $this->getQueueUrl($message->getQueueName()),
+                'QueueUrl' => $this->getQueueUrl($message->getChannel()),
                 'ReceiptHandle' => $this->getReceiptHandle($message),
                 'VisibilityTimeout' => $message->getDelay(),
             ]
@@ -150,19 +150,19 @@ class SqsQueueDriver implements QueueDriverInterface
     /**
      * getQueueUrl
      *
-     * @param string $queue
+     * @param string $channel
      *
      * @return string
      */
-    public function getQueueUrl($queue = null)
+    public function getQueueUrl(?string $channel = null)
     {
-        $queue = $queue ?: $this->queue;
+        $channel = $channel ?: $this->channel;
 
-        if (filter_var($queue, FILTER_VALIDATE_URL) !== false) {
-            return $queue;
+        if (filter_var($channel, FILTER_VALIDATE_URL) !== false) {
+            return $channel;
         }
 
-        return $this->client->getQueueUrl(['QueueName' => $queue])->get('QueueUrl');
+        return $this->client->getQueueUrl(['QueueName' => $channel])->get('QueueUrl');
     }
 
     /**
@@ -172,7 +172,7 @@ class SqsQueueDriver implements QueueDriverInterface
      *
      * @return  string
      */
-    public function getReceiptHandle(QueueMessage $message)
+    public function getReceiptHandle(QueueMessage $message): string
     {
         return $message->get('ReceiptHandle', $message->getId());
     }
@@ -187,7 +187,7 @@ class SqsQueueDriver implements QueueDriverInterface
      * @return  SqsClient
      * @throws \DomainException
      */
-    public function getSqsClient($key, $secret, array $options = [])
+    public function getSqsClient(string $key, string $secret, array $options = []): SqsClient
     {
         if (!class_exists(SqsClient::class)) {
             throw new \DomainException('Please install aws/aws-sdk-php first.');

@@ -47,11 +47,11 @@ class SyncQueueDriver implements QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
         return new QueueMessage();
     }
@@ -71,7 +71,7 @@ class SyncQueueDriver implements QueueDriverInterface
     /**
      * release
      *
-     * @param QueueMessage|string $message
+     * @param QueueMessage $message
      *
      * @return static
      */

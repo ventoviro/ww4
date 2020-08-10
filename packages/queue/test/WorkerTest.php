@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 use Windwalker\Queue\Driver\DatabaseQueueDriver;
 use Windwalker\Queue\Event\LoopEndEvent;
-use Windwalker\Queue\QueueAdapter;
+use Windwalker\Queue\Queue;
 use Windwalker\Queue\Worker;
 
 use Windwalker\Utilities\Cache\RuntimeCacheTrait;
@@ -36,7 +36,7 @@ class WorkerTest extends AbstractDatabaseTestCase
      */
     public function testLoop(): void
     {
-        $this->instance->getAdapter()->push(
+        $this->instance->getQueue()->push(
             static function () {
                 static::$logs[] = 'Job executed.';
             },
@@ -121,7 +121,7 @@ class WorkerTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  Worker::getAdapter
+     * @see  Worker::getQueue
      */
     public function testGetAdapter(): void
     {
@@ -131,7 +131,7 @@ class WorkerTest extends AbstractDatabaseTestCase
     protected function setUp(): void
     {
         $this->instance = new Worker(
-            new QueueAdapter(
+            new Queue(
                 new DatabaseQueueDriver(self::$db)
             )
         );

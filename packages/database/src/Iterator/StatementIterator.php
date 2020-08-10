@@ -98,7 +98,7 @@ class StatementIterator implements \Countable, \Iterator
     public function next()
     {
         // Try to get an object
-        $this->current = $current = $this->stmt->fetch($this->class, $this->args);
+        $this->current = $current = $this->stmt->fetch($this->args);
 
         if ($current) {
             $this->key++;

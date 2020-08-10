@@ -13,7 +13,7 @@ namespace Windwalker;
 
 use Windwalker\Data\Collection;
 
-function collect($storage): Collection
+function collect($storage = []): Collection
 {
     return Collection::wrap($storage);
 }

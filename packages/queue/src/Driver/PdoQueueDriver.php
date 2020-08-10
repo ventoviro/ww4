@@ -26,42 +26,42 @@ class PdoQueueDriver implements QueueDriverInterface
      *
      * @var  \PDO
      */
-    protected $pdo;
+    protected \PDO $pdo;
 
     /**
      * Property table.
      *
-     * @var
+     * @var string
      */
-    protected $table;
+    protected string $table;
 
     /**
-     * Property queue.
+     * Property channel.
      *
      * @var  string
      */
-    protected $queue;
+    protected string $channel;
 
     /**
      * Property timeout.
      *
      * @var  int
      */
-    protected $timeout;
+    protected int $timeout;
 
     /**
      * DatabaseQueueDriver constructor.
      *
      * @param \PDO   $db
-     * @param string $queue
+     * @param string $channel
      * @param string $table
      * @param int    $timeout
      */
-    public function __construct(\PDO $db, $queue = 'default', $table = 'queue_jobs', $timeout = 60)
+    public function __construct(\PDO $db, string $channel = 'default', string $table = 'queue_jobs', int $timeout = 60)
     {
         $this->pdo = $db;
         $this->table = $table;
-        $this->queue = $queue;
+        $this->channel = $channel;
         $this->timeout = $timeout;
     }
 
@@ -78,7 +78,7 @@ class PdoQueueDriver implements QueueDriverInterface
         $time = new \DateTimeImmutable('now');
 
         $data = [
-            ':queue' => $message->getQueueName() ?: $this->queue,
+            ':channel' => $message->getChannel() ?: $this->channel,
             ':body' => json_encode($message),
             ':attempts' => 0,
             ':created' => $time->format('Y-m-d H:i:s'),
@@ -87,8 +87,8 @@ class PdoQueueDriver implements QueueDriverInterface
         ];
 
         $sql = 'INSERT INTO ' . $this->table .
-            ' (queue, body, attempts, created, visibility, reserved)' .
-            ' VALUES (:queue, :body, :attempts, :created, :visibility, :reserved)';
+            ' (channel, body, attempts, created, visibility, reserved)' .
+            ' VALUES (:channel, :body, :attempts, :created, :visibility, :reserved)';
 
         $this->pdo->prepare($sql)->execute($data);
 
@@ -98,28 +98,28 @@ class PdoQueueDriver implements QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      * @throws \Exception
      * @throws \InvalidArgumentException
      * @throws \Throwable
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
-        $queue = $queue ?: $this->queue;
+        $channel = $channel ?: $this->channel;
 
         $now = new \DateTimeImmutable('now');
 
         $sql = 'SELECT * FROM ' . $this->table .
-            ' WHERE queue = :queue AND visibility < :visibility' .
+            ' WHERE channel = :channel AND visibility < :visibility' .
             ' AND (reserved IS NULL OR reserved < :reserved)' .
             ' FOR UPDATE';
 
         $this->pdo->beginTransaction();
 
         $stat = $this->pdo->prepare($sql);
-        $stat->bindValue(':queue', $queue);
+        $stat->bindValue(':channel', $channel);
         $stat->bindValue(':visibility', $now->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
         $stat->bindValue(
             ':reserved',
@@ -161,7 +161,7 @@ class PdoQueueDriver implements QueueDriverInterface
         $message->setAttempts($data['attempts']);
         $message->setBody(json_decode($data['body'], true));
         $message->setRawBody($data['body']);
-        $message->setQueueName($queue);
+        $message->setChannel($channel);
 
         return $message;
     }
@@ -175,14 +175,14 @@ class PdoQueueDriver implements QueueDriverInterface
      */
     public function delete(QueueMessage $message)
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
         $sql = 'DELETE FROM ' . $this->table .
-            ' WHERE id = :id AND queue = :queue';
+            ' WHERE id = :id AND channel = :channel';
 
         $stat = $this->pdo->prepare($sql);
         $stat->bindValue(':id', $message->getId());
-        $stat->bindValue(':queue', $queue);
+        $stat->bindValue(':channel', $channel);
 
         $stat->execute();
 
@@ -199,21 +199,21 @@ class PdoQueueDriver implements QueueDriverInterface
      */
     public function release(QueueMessage $message)
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
         $time = new \DateTimeImmutable('now');
         $time = $time->modify('+' . $message->getDelay() . 'seconds');
 
         $values = [
             'id' => $message->getId(),
-            'queue' => $queue,
+            'channel' => $channel,
             'reserved' => null,
             'visibility' => $time->format('Y-m-d H:i:s'),
         ];
 
         $sql = 'UPDATE ' . $this->table .
             ' SET reserved = :reserved, visibility = :visibility' .
-            ' WHERE id = :id AND queue = :queue';
+            ' WHERE id = :id AND channel = :channel';
 
         $stat = $this->pdo->prepare($sql);
 

@@ -21,44 +21,44 @@ interface QueueFailerInterface
     /**
      * add
      *
-     * @param string $connection
-     * @param string $queue
-     * @param string $body
-     * @param string $exception
+     * @param  string  $connection
+     * @param  string  $channel
+     * @param  string  $body
+     * @param  string  $exception
      *
      * @return  int|string
      */
-    public function add($connection, $queue, $body, $exception);
+    public function add(string $connection, string $channel, string $body, string $exception): int|string;
 
     /**
      * all
      *
      * @return  array
      */
-    public function all();
+    public function all(): array;
 
     /**
      * get
      *
-     * @param mixed $conditions
+     * @param  mixed  $conditions
      *
-     * @return  array
+     * @return array|null
      */
-    public function get($conditions);
+    public function get($conditions): ?array;
 
     /**
      * remove
      *
-     * @param mixed $conditions
+     * @param  mixed  $conditions
      *
      * @return  bool
      */
-    public function remove($conditions);
+    public function remove($conditions): bool;
 
     /**
      * clear
      *
      * @return  bool
      */
-    public function clear();
+    public function clear(): bool;
 }

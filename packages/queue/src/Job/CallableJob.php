@@ -91,4 +91,12 @@ class CallableJob implements JobInterface
     // {
     //     $this->callback = \Windwalker\unserialize($serialized);
     // }
+
+    /**
+     * @return callable
+     */
+    public function getCallback(): callable
+    {
+        return $this->callback;
+    }
 }

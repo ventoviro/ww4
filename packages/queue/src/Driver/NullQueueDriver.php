@@ -35,13 +35,13 @@ class NullQueueDriver implements QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
-        return new QueueMessage();
+        return null;
     }
 
     /**
@@ -49,7 +49,7 @@ class NullQueueDriver implements QueueDriverInterface
      *
      * @param  QueueMessage  $message
      *
-     * @return NullQueueDriver
+     * @return static
      */
     public function delete(QueueMessage $message)
     {

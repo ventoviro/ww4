@@ -28,32 +28,32 @@ class BeanstalkdQueueDriver implements QueueDriverInterface
      *
      * @var  Pheanstalk
      */
-    protected $client;
+    protected Pheanstalk $client;
 
     /**
-     * Property queue.
+     * Property channel.
      *
      * @var  string
      */
-    protected $queue;
+    protected string $channel;
 
     /**
      * Property timeout.
      *
      * @var  int
      */
-    protected $timeout;
+    protected int $timeout;
 
     /**
      * BeanstalkdQueueDriver constructor.
      *
-     * @param string $host
-     * @param string $queue
-     * @param int    $timeout
+     * @param  string  $host
+     * @param  string  $channel
+     * @param  int     $timeout
      */
-    public function __construct($host, $queue, $timeout = 60)
+    public function __construct(string $host, string $channel, int $timeout = 60)
     {
-        $this->queue = $queue;
+        $this->channel = $channel;
         $this->timeout = $timeout;
 
         $this->client = $this->getPheanstalk($host);
@@ -68,9 +68,9 @@ class BeanstalkdQueueDriver implements QueueDriverInterface
      */
     public function push(QueueMessage $message): int|string
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
-        return $this->client->useTube($queue)->put(
+        return $this->client->useTube($channel)->put(
             json_encode($message),
             PheanstalkInterface::DEFAULT_PRIORITY,
             $message->getDelay(),
@@ -81,15 +81,15 @@ class BeanstalkdQueueDriver implements QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
-        $queue = $queue ?: $this->queue;
+        $channel = $channel ?: $this->channel;
 
-        $job = $this->client->watchOnly($queue)->reserve(0);
+        $job = $this->client->watchOnly($channel)->reserve(0);
 
         if (!$job instanceof Job) {
             return null;
@@ -101,7 +101,7 @@ class BeanstalkdQueueDriver implements QueueDriverInterface
         $message->setAttempts($this->client->statsJob($job)->reserves);
         $message->setBody(json_decode($job->getData(), true));
         $message->setRawBody($job->getData());
-        $message->setQueueName($queue ?: $this->queue);
+        $message->setChannel($channel ?: $this->channel);
 
         return $message;
     }
@@ -115,9 +115,9 @@ class BeanstalkdQueueDriver implements QueueDriverInterface
      */
     public function delete(QueueMessage $message)
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
-        $this->client->useTube($queue)->delete(new Job($message->getId(), ''));
+        $this->client->useTube($channel)->delete(new Job($message->getId(), ''));
 
         return $this;
     }

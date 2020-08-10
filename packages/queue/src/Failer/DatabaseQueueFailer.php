@@ -11,8 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Queue\Failer;
 
-use Windwalker\Core\DateTime\Chronos;
-use Windwalker\Database\Driver\AbstractDatabaseDriver;
+use Windwalker\Database\DatabaseAdapter;
+
+use function Windwalker\collect;
 
 /**
  * The DatabaseQueueFailer class.
@@ -24,24 +25,24 @@ class DatabaseQueueFailer implements QueueFailerInterface
     /**
      * Property db.
      *
-     * @var  AbstractDatabaseDriver
+     * @var  DatabaseAdapter
      */
-    protected $db;
+    protected DatabaseAdapter $db;
 
     /**
      * Property table.
      *
      * @var  string
      */
-    protected $table;
+    protected string $table;
 
     /**
      * DatabaseQueueFailer constructor.
      *
-     * @param AbstractDatabaseDriver $db
+     * @param DatabaseAdapter $db
      * @param string                 $table
      */
-    public function __construct(AbstractDatabaseDriver $db, $table = 'queue_failed_jobs')
+    public function __construct(DatabaseAdapter $db, string $table = 'queue_failed_jobs')
     {
         $this->db = $db;
         $this->table = $table;
@@ -52,7 +53,7 @@ class DatabaseQueueFailer implements QueueFailerInterface
      *
      * @return  bool
      */
-    public function isSupported()
+    public function isSupported(): bool
     {
         return $this->db->getTable($this->table)->exists();
     }
@@ -60,25 +61,26 @@ class DatabaseQueueFailer implements QueueFailerInterface
     /**
      * add
      *
-     * @param string $connection
-     * @param string $queue
-     * @param string $body
-     * @param string $exception
+     * @param  string  $connection
+     * @param  string  $channel
+     * @param  string  $body
+     * @param  string  $exception
      *
      * @return  int|string
+     * @throws \JsonException
      */
-    public function add($connection, $queue, $body, $exception)
+    public function add(string $connection, string $channel, string $body, string $exception): int|string
     {
-        $data = get_defined_vars();
+        $data = compact(
+            'connection',
+            'channel',
+            'body',
+            'exception'
+        );
 
-        // For B/C
-        if (class_exists(Chronos::class)) {
-            $data['created'] = Chronos::create('now')->toSql();
-        } else {
-            $data['created'] = (new \DateTime('now'))->format('Y-m-d H:i:s');
-        }
+        $data['created'] = new \DateTime('now');
 
-        $this->db->getWriter()->insertOne($this->table, $data, 'id');
+        $data = $this->db->getWriter()->insertOne($this->table, $data, 'id');
 
         return $data['id'];
     }
@@ -90,51 +92,44 @@ class DatabaseQueueFailer implements QueueFailerInterface
      * @throws \RuntimeException
      * @throws \InvalidArgumentException
      */
-    public function all()
+    public function all(): array
     {
-        $query = $this->db->getQuery(true);
-
-        $query->select('*')
-            ->from($query->quoteName($this->table));
-
-        return $this->db->setQuery($query)->loadAll(null, 'assoc');
+        return $this->db->select('*')
+            ->from($this->table)
+            ->all()
+            ->dump();
     }
 
     /**
      * get
      *
-     * @param mixed $conditions
+     * @param  mixed  $conditions
      *
-     * @return  array
+     * @return array|null
      */
-    public function get($conditions)
+    public function get($conditions): ?array
     {
-        $query = $this->db->getQuery(true);
+        $item = $this->db->select('*')
+            ->from($this->table)
+            ->where('id', $conditions)
+            ->get() ?? collect();
 
-        $query->select('*')
-            ->from($query->quoteName($this->table))
-            ->where('id = :id')
-            ->bind('id', $conditions);
-
-        return $this->db->setQuery($query)->loadOne('assoc');
+        return $item->dump();
     }
 
     /**
      * remove
      *
-     * @param mixed $conditions
+     * @param  mixed  $conditions
      *
      * @return  bool
      */
-    public function remove($conditions)
+    public function remove($conditions): bool
     {
-        $query = $this->db->getQuery(true);
-
-        $query->delete($query->quoteName($this->table))
-            ->where('id = :id')
-            ->bind('id', $conditions);
-
-        $this->db->setQuery($query)->execute();
+        $this->db->delete($this->table)
+            ->where('id', $conditions)
+            ->execute()
+            ->countAffected();
 
         return true;
     }
@@ -144,7 +139,7 @@ class DatabaseQueueFailer implements QueueFailerInterface
      *
      * @return  bool
      */
-    public function clear()
+    public function clear(): bool
     {
         $this->db->getTable($this->table)->truncate();
 
@@ -156,7 +151,7 @@ class DatabaseQueueFailer implements QueueFailerInterface
      *
      * @return  string
      */
-    public function getTable()
+    public function getTable(): string
     {
         return $this->table;
     }
@@ -164,11 +159,11 @@ class DatabaseQueueFailer implements QueueFailerInterface
     /**
      * Method to set property table
      *
-     * @param   string $table
+     * @param  string  $table
      *
      * @return  static  Return self to support chaining.
      */
-    public function setTable($table)
+    public function setTable(string $table)
     {
         $this->table = $table;
 

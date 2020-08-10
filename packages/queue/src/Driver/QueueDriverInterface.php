@@ -32,11 +32,11 @@ interface QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): ?QueueMessage;
+    public function pop(?string $channel = null): ?QueueMessage;
 
     /**
      * delete

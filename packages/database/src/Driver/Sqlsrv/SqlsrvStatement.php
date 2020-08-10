@@ -83,7 +83,7 @@ class SqlsrvStatement extends AbstractStatement
     /**
      * @inheritDoc
      */
-    public function fetch(string $class = Collection::class, array $args = []): ?Collection
+    public function fetch(array $args = []): ?Collection
     {
         $this->execute();
 

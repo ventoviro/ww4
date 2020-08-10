@@ -21,16 +21,16 @@ class NullQueueFailer implements QueueFailerInterface
     /**
      * add
      *
-     * @param string $connection
-     * @param string $queue
-     * @param string $body
-     * @param string $exception
+     * @param  string  $connection
+     * @param  string  $channel
+     * @param  string  $body
+     * @param  string  $exception
      *
      * @return  int|string
      */
-    public function add($connection, $queue, $body, $exception)
+    public function add(string $connection, string $channel, string $body, string $exception): int|string
     {
-        return null;
+        return 0;
     }
 
     /**
@@ -38,7 +38,7 @@ class NullQueueFailer implements QueueFailerInterface
      *
      * @return  array
      */
-    public function all()
+    public function all(): array
     {
         return [];
     }
@@ -46,11 +46,11 @@ class NullQueueFailer implements QueueFailerInterface
     /**
      * get
      *
-     * @param mixed $conditions
+     * @param  mixed  $conditions
      *
-     * @return  array
+     * @return array|null
      */
-    public function get($conditions)
+    public function get($conditions): ?array
     {
         return [];
     }
@@ -58,11 +58,11 @@ class NullQueueFailer implements QueueFailerInterface
     /**
      * remove
      *
-     * @param mixed $conditions
+     * @param  mixed  $conditions
      *
      * @return  bool
      */
-    public function remove($conditions)
+    public function remove($conditions): bool
     {
         return true;
     }
@@ -72,7 +72,7 @@ class NullQueueFailer implements QueueFailerInterface
      *
      * @return  bool
      */
-    public function clear()
+    public function clear(): bool
     {
         return true;
     }

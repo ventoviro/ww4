@@ -13,7 +13,7 @@ namespace Windwalker\Queue\Event;
 
 use Windwalker\Event\AbstractEvent;
 use Windwalker\Queue\Job\JobInterface;
-use Windwalker\Queue\QueueAdapter;
+use Windwalker\Queue\Queue;
 use Windwalker\Queue\QueueMessage;
 use Windwalker\Queue\Worker;
 

@@ -14,14 +14,13 @@ namespace Windwalker\Queue;
 use Windwalker\Queue\Driver\QueueDriverInterface;
 use Windwalker\Queue\Job\CallableJob;
 use Windwalker\Queue\Job\JobInterface;
-use Windwalker\Utilities\Assert\ArgumentsAssert;
 
 /**
  * The Queue class.
  *
  * @since  3.2
  */
-class QueueAdapter
+class Queue
 {
     /**
      * Property driver.
@@ -45,16 +44,16 @@ class QueueAdapter
      *
      * @param  mixed        $job
      * @param  int          $delay
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      * @param  array        $options
      *
      * @return int|string
      */
-    public function push($job, int $delay = 0, ?string $queue = null, array $options = []): int|string
+    public function push($job, int $delay = 0, ?string $channel = null, array $options = []): int|string
     {
         $message = $this->getMessageByJob($job);
         $message->setDelay($delay);
-        $message->setQueueName($queue);
+        $message->setChannel($channel);
         $message->setOptions($options);
 
         return $this->driver->push($message);
@@ -65,13 +64,13 @@ class QueueAdapter
      *
      * @param  string|array  $body
      * @param  int           $delay
-     * @param  string|null   $queue
+     * @param  string|null   $channel
      * @param  array         $options
      *
      * @return  int|string
      * @throws \JsonException
      */
-    public function pushRaw(string|array $body, int $delay = 0, ?string $queue = null, array $options = []): int|string
+    public function pushRaw(string|array $body, int $delay = 0, ?string $channel = null, array $options = []): int|string
     {
         if (is_string($body)) {
             json_decode($body, true, 512, JSON_THROW_ON_ERROR);
@@ -80,7 +79,7 @@ class QueueAdapter
         $message = new QueueMessage();
         $message->setBody($body);
         $message->setDelay($delay);
-        $message->setQueueName($queue);
+        $message->setChannel($channel);
         $message->setOptions($options);
 
         return $this->driver->push($message);
@@ -89,13 +88,13 @@ class QueueAdapter
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
-        return $this->driver->pop($queue);
+        return $this->driver->pop($channel);
     }
 
     /**

@@ -48,9 +48,9 @@ class Worker implements EventAttachableInterface
     /**
      * Property queue.
      *
-     * @var  QueueAdapter
+     * @var  Queue
      */
-    protected QueueAdapter $adapter;
+    protected Queue $queue;
 
     /**
      * Property logger.
@@ -65,13 +65,6 @@ class Worker implements EventAttachableInterface
      * @var  string
      */
     protected string $state = self::STATE_INACTIVE;
-
-    /**
-     * Property exiting.
-     *
-     * @var bool
-     */
-    protected bool $exiting = false;
 
     /**
      * Property lastRestart.
@@ -90,25 +83,25 @@ class Worker implements EventAttachableInterface
     /**
      * Worker constructor.
      *
-     * @param QueueAdapter     $adapter
+     * @param Queue            $queue
      * @param LoggerInterface  $logger
      */
-    public function __construct(QueueAdapter $adapter, ?LoggerInterface $logger = null)
+    public function __construct(Queue $queue, ?LoggerInterface $logger = null)
     {
-        $this->adapter = $adapter;
-        $this->logger  = $logger ?? new NullLogger();
+        $this->queue  = $queue;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
      * loop
      *
-     * @param string|array $queue
-     * @param array    $options
+     * @param string|array  $channel
+     * @param array         $options
      *
      * @return  void
      * @throws \Exception
      */
-    public function loop(string|array $queue, array $options = [])
+    public function loop(string|array $channel, array $options = [])
     {
         gc_enable();
 
@@ -126,17 +119,17 @@ class Worker implements EventAttachableInterface
             $this->gc();
 
             $worker = $this;
-            $adapter = $this->adapter;
+            $queue = $this->queue;
 
             // @loop start
-            $this->emit(LoopStartEvent::class, compact('worker', 'adapter'));
+            $this->emit(LoopStartEvent::class, compact('worker', 'queue'));
 
             // Timeout handler
             $this->registerSignals($options);
 
             if (($options['force'] ?? null) || $this->canLoop()) {
                 try {
-                    $this->runNextJob($queue, $options);
+                    $this->runNextJob($channel, $options);
                 } catch (\Exception $exception) {
                     $message = sprintf('Worker failure in a loop cycle: %s', $exception->getMessage());
 
@@ -149,7 +142,7 @@ class Worker implements EventAttachableInterface
             $this->stopIfNecessary($options);
 
             // @loop end
-            $this->emit(LoopEndEvent::class, compact('worker', 'adapter'));
+            $this->emit(LoopEndEvent::class, compact('worker', 'queue'));
 
             $this->sleep((float) ($options['sleep'] ?? 1));
         }
@@ -158,14 +151,14 @@ class Worker implements EventAttachableInterface
     /**
      * runNextJob
      *
-     * @param string|array $queue
-     * @param array    $options
+     * @param string|array  $channel
+     * @param array         $options
      *
      * @return  void
      */
-    public function runNextJob(string|array $queue, array $options): void
+    public function runNextJob(string|array $channel, array $options): void
     {
-        $message = $this->getNextMessage($queue);
+        $message = $this->getNextMessage($channel);
 
         if (!$message) {
             return;
@@ -198,19 +191,19 @@ class Worker implements EventAttachableInterface
                     'worker' => $this,
                     'message' => $message,
                     'job' => $job,
-                    'adapter' => $this->adapter,
+                    'queue' => $this->queue,
                 ]
             );
 
             // Fail if max attempts
             if ($maxTries !== 0 && $maxTries < $message->getAttempts()) {
-                $this->adapter->delete($message);
+                $this->queue->delete($message);
 
                 throw new MaxAttemptsExceededException('Max attempts exceed for Message: ' . $message->getId());
             }
 
             // run
-            $job->__invoke();
+            $this->runJob($job);
 
             // @after event
             $this->emit(
@@ -219,18 +212,30 @@ class Worker implements EventAttachableInterface
                     'worker' => $this,
                     'message' => $message,
                     'job' => $job,
-                    'manager' => $this->adapter,
+                    'queue' => $this->queue,
                 ]
             );
 
-            $this->adapter->delete($message);
+            $this->queue->delete($message);
         } catch (\Throwable $t) {
             $this->handleJobException($job, $message, $options, $t);
         } finally {
             if (!$message->isDeleted()) {
-                $this->adapter->release($message, (int) ($options['delay'] ?? 0));
+                $this->queue->release($message, (int) ($options['delay'] ?? 0));
             }
         }
+    }
+
+    /**
+     * runJob
+     *
+     * @param  JobInterface  $job
+     *
+     * @return  mixed
+     */
+    protected function runJob(JobInterface $job)
+    {
+        return $job();
     }
 
     /**
@@ -303,7 +308,7 @@ class Worker implements EventAttachableInterface
             StopEvent::class,
             [
                 'worker' => $this,
-                'adapter' => $this->adapter,
+                'queue' => $this->queue,
                 'reason' => $reason,
             ]
         );
@@ -361,7 +366,7 @@ class Worker implements EventAttachableInterface
 
         // Delete and log error if reach max attempts.
         if ($maxTries !== 0 && $maxTries <= $message->getAttempts()) {
-            $this->adapter->delete($message);
+            $this->queue->delete($message);
             $this->logger->error(
                 sprintf(
                     'Max attempts exceeded. Job: %s (%s) - Class: %s',
@@ -376,7 +381,7 @@ class Worker implements EventAttachableInterface
             JobFailureEvent::class,
             [
                 'worker' => $this,
-                'adapter' => $this->adapter,
+                'queue' => $this->queue,
                 'exception' => $e,
                 'job' => $job,
                 'message' => $message,
@@ -387,16 +392,16 @@ class Worker implements EventAttachableInterface
     /**
      * getNextMessage
      *
-     * @param string|array $queue
+     * @param string|array  $channel
      *
      * @return  null|QueueMessage
      */
-    protected function getNextMessage(string|array $queue): ?QueueMessage
+    protected function getNextMessage(string|array $channel): ?QueueMessage
     {
-        $queue = (array) $queue;
+        $channel = (array) $channel;
 
-        foreach ($queue as $queueName) {
-            if ($message = $this->adapter->pop($queueName)) {
+        foreach ($channel as $channelName) {
+            if ($message = $this->queue->pop($channelName)) {
                 return $message;
             }
         }
@@ -434,11 +439,11 @@ class Worker implements EventAttachableInterface
     /**
      * Method to get property Manager
      *
-     * @return  QueueAdapter
+     * @return  Queue
      */
-    public function getAdapter(): QueueAdapter
+    public function getQueue(): Queue
     {
-        return $this->adapter;
+        return $this->queue;
     }
 
     /**

@@ -21,25 +21,25 @@ use Windwalker\Queue\Resque\Resque;
  */
 class ResqueQueueDriver implements QueueDriverInterface
 {
-    const JOB_CLASS = 'JobClass';
+    public const JOB_CLASS = 'JobClass';
 
     /**
-     * Property queue.
+     * Property channel.
      *
      * @var  string
      */
-    protected $queue;
+    protected string $channel;
 
     /**
      * ResqueQueueDriver constructor.
      *
      * @param string $host
      * @param int    $port
-     * @param string $queue
+     * @param string $channel
      */
-    public function __construct($host = 'localhost', $port = 6379, $queue = 'default')
+    public function __construct(string $host = 'localhost', int $port = 6379, string $channel = 'default')
     {
-        $this->queue = $queue;
+        $this->channel = $channel;
 
         $this->connect($host, $port);
     }
@@ -54,11 +54,11 @@ class ResqueQueueDriver implements QueueDriverInterface
      */
     public function push(QueueMessage $message): int|string
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
         if (!$message->getId()) {
             $message->set('attempts', 0);
-            $message->set('queue', $queue);
+            $message->set('channel', $channel);
             $message->set('id', Resque::generateJobId());
             $message->set('class', static::JOB_CLASS);
             $message->setId($message->getId());
@@ -73,7 +73,7 @@ class ResqueQueueDriver implements QueueDriverInterface
 
             \ResqueScheduler::delayedPush(time() + $delay, $data);
         } else {
-            Resque::push($queue, $data);
+            Resque::push($channel, $data);
         }
 
         return $message->getId();
@@ -82,19 +82,19 @@ class ResqueQueueDriver implements QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
         if (static::supportDelayed()) {
-            $this->requeueDelayedItems();
+            $this->rechannelDelayedItems();
         }
 
-        $queue = $queue ?: $this->queue;
+        $channel = $channel ?: $this->channel;
 
-        $job = Resque::pop($queue);
+        $job = Resque::pop($channel);
 
         if (!$job) {
             return null;
@@ -108,7 +108,7 @@ class ResqueQueueDriver implements QueueDriverInterface
         $message->setId($job['id']);
         $message->setBody($job);
         $message->setRawBody(json_encode($job));
-        $message->setQueueName($queue ?: $this->queue);
+        $message->setChannel($channel ?: $this->channel);
         $message->setAttempts($attempts);
         $message->set('attempts', $attempts);
 
@@ -124,9 +124,9 @@ class ResqueQueueDriver implements QueueDriverInterface
      */
     public function delete(QueueMessage $message)
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
-        Resque::dequeue($queue, [static::JOB_CLASS => $message->getId()]);
+        Resque::dechannel($channel, [static::JOB_CLASS => $message->getId()]);
 
         return $this;
     }
@@ -149,14 +149,14 @@ class ResqueQueueDriver implements QueueDriverInterface
      * Handle delayed items for the next scheduled timestamp.
      *
      * Searches for any items that are due to be scheduled in Resque
-     * and adds them to the appropriate job queue in Resque.
+     * and adds them to the appropriate job channel in Resque.
      *
      * @param \DateTime|int $timestamp Search for any items up to this timestamp to schedule.
      */
-    public function requeueDelayedItems()
+    public function rechannelDelayedItems()
     {
         while (($oldestJobTimestamp = \ResqueScheduler::nextDelayedTimestamp()) !== false) {
-            $this->enqueueDelayedItemsForTimestamp($oldestJobTimestamp);
+            $this->enchannelDelayedItemsForTimestamp($oldestJobTimestamp);
         }
     }
 
@@ -168,12 +168,12 @@ class ResqueQueueDriver implements QueueDriverInterface
      *
      * @param \DateTime|int $timestamp Search for any items up to this timestamp to schedule.
      */
-    public function enqueueDelayedItemsForTimestamp($timestamp)
+    public function enchannelDelayedItemsForTimestamp($timestamp)
     {
         $item = null;
 
         while ($item = \ResqueScheduler::nextItemForTimestamp($timestamp)) {
-            Resque::push($item['queue'], $item);
+            Resque::push($item['channel'], $item);
         }
     }
 

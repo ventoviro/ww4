@@ -32,11 +32,11 @@ class RabbitmqQueueDriver implements QueueDriverInterface
     protected $client;
 
     /**
-     * Property queue.
+     * Property channel.
      *
      * @var  string
      */
-    protected $queue;
+    protected $channel;
 
     /**
      * Property channel.
@@ -48,14 +48,14 @@ class RabbitmqQueueDriver implements QueueDriverInterface
     /**
      * RabbitmqQueueDriver constructor.
      *
-     * @param string $queue
+     * @param string $channel
      * @param array  $options
      */
-    public function __construct($queue, array $options = [])
+    public function __construct($channel, array $options = [])
     {
         $this->client = $this->getAMQPConnection($options);
 
-        $this->queue = $queue;
+        $this->channel = $channel;
         $this->channel = $this->client->channel();
     }
 
@@ -68,9 +68,9 @@ class RabbitmqQueueDriver implements QueueDriverInterface
      */
     public function push(QueueMessage $message): int|string
     {
-        $queue = $message->getQueueName() ?: $this->queue;
+        $channel = $message->getChannel() ?: $this->channel;
 
-        $this->queueDeclare($queue);
+        $this->channelDeclare($channel);
 
         $options = [
             'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT,
@@ -86,7 +86,7 @@ class RabbitmqQueueDriver implements QueueDriverInterface
 
         $msg = new AMQPMessage(json_encode($message), $options);
 
-        $this->channel->basic_publish($msg, '', $queue);
+        $this->channel->basic_publish($msg, '', $channel);
 
         return 1;
     }
@@ -94,18 +94,18 @@ class RabbitmqQueueDriver implements QueueDriverInterface
     /**
      * pop
      *
-     * @param  string|null  $queue
+     * @param  string|null  $channel
      *
      * @return QueueMessage|null
      */
-    public function pop(?string $queue = null): ?QueueMessage
+    public function pop(?string $channel = null): ?QueueMessage
     {
-        $queue = $queue ?: $this->queue;
+        $channel = $channel ?: $this->channel;
 
-        $this->queueDeclare($queue);
+        $this->channelDeclare($channel);
 
         $this->channel->basic_qos(null, 1, null);
-        $result = $this->channel->basic_get($queue, false);
+        $result = $this->channel->basic_get($channel, false);
 
         if (!$result) {
             return null;
@@ -116,7 +116,7 @@ class RabbitmqQueueDriver implements QueueDriverInterface
         $message->setId(0);
         $message->setBody(json_decode($result->body, true));
         $message->setRawBody($result->body);
-        $message->setQueueName($queue ?: $this->queue);
+        $message->setChannel($channel ?: $this->channel);
 
         // Delivery tag
         $message->set('delivery_tag', $result->delivery_info['delivery_tag']);
@@ -163,15 +163,15 @@ class RabbitmqQueueDriver implements QueueDriverInterface
     }
 
     /**
-     * queueDeclare
+     * channelDeclare
      *
-     * @param string $queue
+     * @param string $channel
      *
      * @return  void
      */
-    protected function queueDeclare($queue)
+    protected function channelDeclare($channel)
     {
-        $this->channel->queue_declare($queue, false, true, false, false);
+        $this->channel->channel_declare($channel, false, true, false, false);
     }
 
     /**

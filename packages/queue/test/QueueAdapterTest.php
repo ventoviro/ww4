@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 use Windwalker\Queue\Driver\DatabaseQueueDriver;
 use Windwalker\Queue\Job\JobInterface;
-use Windwalker\Queue\QueueAdapter;
+use Windwalker\Queue\Queue;
 use Windwalker\Queue\Test\Stub\TestJob;
 
 /**
@@ -23,10 +23,10 @@ use Windwalker\Queue\Test\Stub\TestJob;
  */
 class QueueAdapterTest extends AbstractDatabaseTestCase
 {
-    protected ?QueueAdapter $instance;
+    protected ?Queue $instance;
 
     /**
-     * @see  QueueAdapter::push
+     * @see  Queue::push
      */
     public function testPush(): void
     {
@@ -46,7 +46,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             'default',
-            $job->queue
+            $job->channel
         );
 
         $body = json_decode($job->body, true);
@@ -58,7 +58,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  QueueAdapter::pop
+     * @see  Queue::pop
      */
     public function testPop(): void
     {
@@ -80,7 +80,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  QueueAdapter::setDriver
+     * @see  Queue::setDriver
      */
     public function testSetDriver(): void
     {
@@ -88,7 +88,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  QueueAdapter::release
+     * @see  Queue::release
      */
     public function testRelease(): void
     {
@@ -116,7 +116,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  QueueAdapter::delete
+     * @see  Queue::delete
      */
     public function testDelete(): void
     {
@@ -130,7 +130,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  QueueAdapter::getDriver
+     * @see  Queue::getDriver
      */
     public function testGetDriver(): void
     {
@@ -138,7 +138,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  QueueAdapter::__construct
+     * @see  Queue::__construct
      */
     public function testConstruct(): void
     {
@@ -146,7 +146,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  QueueAdapter::getMessageByJob
+     * @see  Queue::getMessageByJob
      */
     public function testGetMessageByJob(): void
     {
@@ -154,7 +154,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * @see  QueueAdapter::pushRaw
+     * @see  Queue::pushRaw
      */
     public function testPushRaw(): void
     {
@@ -163,7 +163,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
 
     protected function setUp(): void
     {
-        $this->instance = new QueueAdapter(
+        $this->instance = new Queue(
             new DatabaseQueueDriver(static::$db)
         );
     }

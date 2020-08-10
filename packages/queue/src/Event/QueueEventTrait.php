@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Queue\Event;
 
-use Windwalker\Queue\QueueAdapter;
+use Windwalker\Queue\Queue;
 use Windwalker\Queue\Worker;
 
 /**
@@ -20,7 +20,7 @@ use Windwalker\Queue\Worker;
 trait QueueEventTrait
 {
     protected Worker $worker;
-    protected QueueAdapter $adapter;
+    protected Queue $queue;
 
     /**
      * @return Worker
@@ -43,21 +43,21 @@ trait QueueEventTrait
     }
 
     /**
-     * @return QueueAdapter
+     * @return Queue
      */
-    public function getAdapter(): QueueAdapter
+    public function getQueue(): Queue
     {
-        return $this->adapter;
+        return $this->queue;
     }
 
     /**
-     * @param  QueueAdapter  $adapter
+     * @param  Queue  $queue
      *
      * @return  static  Return self to support chaining.
      */
-    public function setAdapter(QueueAdapter $adapter)
+    public function setQueue(Queue $queue)
     {
-        $this->adapter = $adapter;
+        $this->queue = $queue;
 
         return $this;
     }
