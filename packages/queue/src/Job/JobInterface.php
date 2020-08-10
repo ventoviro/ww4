@@ -20,5 +20,5 @@ interface JobInterface
 {
     public function getName(): string;
 
-    public function execute(): void;
+    public function __invoke(): void;
 }

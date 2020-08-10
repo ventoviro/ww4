@@ -47,7 +47,7 @@ class TestJob implements JobInterface
      *
      * @return  void
      */
-    public function execute(): void
+    public function __invoke(): void
     {
         $this->executed = $this->logs;
     }

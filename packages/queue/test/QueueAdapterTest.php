@@ -71,7 +71,7 @@ class QueueAdapterTest extends AbstractDatabaseTestCase
 
         /** @var TestJob $job */
         $job = unserialize($message->getSerializedJob());
-        $job->execute();
+        $job->__invoke();
 
         self::assertEquals(
             ['Hello'],

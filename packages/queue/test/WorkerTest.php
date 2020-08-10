@@ -18,6 +18,8 @@ use Windwalker\Queue\Event\LoopEndEvent;
 use Windwalker\Queue\QueueAdapter;
 use Windwalker\Queue\Worker;
 
+use Windwalker\Utilities\Cache\RuntimeCacheTrait;
+
 use function Windwalker\closure;
 
 /**
@@ -27,27 +29,17 @@ class WorkerTest extends AbstractDatabaseTestCase
 {
     protected ?Worker $instance = null;
 
+    public static array $logs = [];
+
     /**
      * @see  Worker::loop
      */
     public function testLoop(): void
     {
-        $file = __DIR__ . '/../tmp/worker.tmp';
-
-        if (is_file($file)) {
-            unlink($file);
-        }
-
-        if (!is_dir(dirname($file))) {
-            mkdir(dirname($file), 0755, true);
-        }
-
         $this->instance->getAdapter()->push(
-            closure(
-                function () use ($file) {
-                    file_put_contents($file, 'Job executed.');
-                }
-            ),
+            static function () {
+                static::$logs[] = 'Job executed.';
+            },
             0,
             'hello'
         );
@@ -58,8 +50,10 @@ class WorkerTest extends AbstractDatabaseTestCase
 
         self::assertEquals(
             'Job executed.',
-            file_get_contents($file)
+            static::$logs[0]
         );
+
+        self::$logs = [];
     }
 
     /**

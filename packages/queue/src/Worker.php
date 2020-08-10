@@ -210,7 +210,7 @@ class Worker implements EventAttachableInterface
             }
 
             // run
-            $job->execute();
+            $job->__invoke();
 
             // @after event
             $this->emit(

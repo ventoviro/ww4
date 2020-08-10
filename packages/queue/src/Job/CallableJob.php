@@ -59,7 +59,7 @@ class CallableJob implements JobInterface
      *
      * @return  void
      */
-    public function execute(): void
+    public function __invoke(): void
     {
         $callback = $this->callback;
 

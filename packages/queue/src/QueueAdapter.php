@@ -14,6 +14,7 @@ namespace Windwalker\Queue;
 use Windwalker\Queue\Driver\QueueDriverInterface;
 use Windwalker\Queue\Job\CallableJob;
 use Windwalker\Queue\Job\JobInterface;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 
 /**
  * The Queue class.
@@ -170,7 +171,7 @@ class QueueAdapter
      * @return  JobInterface
      * @throws \InvalidArgumentException
      */
-    protected function createJobInstance($job): JobInterface
+    protected function createJobInstance(JobInterface|callable $job): JobInterface
     {
         if ($job instanceof JobInterface) {
             return $job;
@@ -194,10 +195,6 @@ class QueueAdapter
             }
 
             $job = $this->createJobByClassName($job);
-        }
-
-        if (is_array($job)) {
-            throw new \InvalidArgumentException('Job should not be array.');
         }
 
         return $job;

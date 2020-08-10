@@ -28,7 +28,7 @@ class NullJob implements JobInterface
         return 'null';
     }
 
-    public function execute(): void
+    public function __invoke(): void
     {
     }
 }

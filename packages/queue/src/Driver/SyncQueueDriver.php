@@ -34,9 +34,14 @@ class SyncQueueDriver implements QueueDriverInterface
         /** @var JobInterface $job */
         $job = unserialize($job);
 
-        $job->execute();
+        $this->runJob($job);
 
         return 0;
+    }
+
+    protected function runJob(callable $job)
+    {
+        return $job();
     }
 
     /**
