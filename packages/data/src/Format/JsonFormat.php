@@ -40,9 +40,9 @@ class JsonFormat implements FormatInterface
      * @param  string  $string   JSON formatted string to convert.
      * @param  array   $options  Options used by the formatter.
      *
-     * @return array Data array.
+     * @return mixed Data array.
      */
-    public function parse(string $string, array $options = []): array
+    public function parse(string $string, array $options = [])
     {
         $assoc  = $options['assoc'] ?? true;
         $depth  = $options['depth'] ?? 512;

@@ -72,9 +72,9 @@ class PhpFormat implements FormatInterface
      * @param  string  $string   PHP Class formatted string to convert.
      * @param  array   $options  Options used by the formatter.
      *
-     * @return array Data array.
+     * @return void Data array.
      */
-    public function parse(string $string, array $options = []): array
+    public function parse(string $string, array $options = [])
     {
         throw new \LogicException('Currently does not support parse php array.');
     }

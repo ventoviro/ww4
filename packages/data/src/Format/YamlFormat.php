@@ -47,11 +47,11 @@ class YamlFormat implements FormatInterface
      * @param  string  $string   YAML formatted string to convert.
      * @param  array   $options  Options used by the formatter.
      *
-     * @return array Data array.
+     * @return mixed Data array.
      *
      * @since   2.0
      */
-    public function parse(string $string, array $options = []): array
+    public function parse(string $string, array $options = [])
     {
         $flags = $options['flags'] ?? 0;
 

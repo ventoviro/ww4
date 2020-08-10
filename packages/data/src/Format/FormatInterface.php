@@ -36,9 +36,9 @@ interface FormatInterface
      * @param  string  $string   Formatted string
      * @param  array   $options  An array of options for the formatter.
      *
-     * @return array Data array
+     * @return  array
      *
      * @since   2.0
      */
-    public function parse(string $string, array $options = []): array;
+    public function parse(string $string, array $options = []);
 }

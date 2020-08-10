@@ -62,11 +62,11 @@ class FormatRegistry
      * @param  string  $format
      * @param  array   $options
      *
-     * @return  array
+     * @return array
      *
      * @since  __DEPLOY_VERSION__
      */
-    public function parse(string $string, string $format, array $options = []): array
+    public function parse(string $string, string $format, array $options = [])
     {
         return $this->getFormatHandler($this->resolveFormatAlias($format))
             ->parse($string, $options);
@@ -78,7 +78,7 @@ class FormatRegistry
             ->dump($data, $options);
     }
 
-    public function loadFile(string $file, ?string $format = null, array $options = []): array
+    public function loadFile(string $file, ?string $format = null, array $options = [])
     {
         if ($format === null) {
             $paths = explode('.', $file);
@@ -90,7 +90,7 @@ class FormatRegistry
         return $this->parse(file_get_contents($file), $format ?: $this->defaultFormat, $options);
     }
 
-    public function load(string $string, ?string $format = null, array $options = []): array
+    public function load(string $string, ?string $format = null, array $options = [])
     {
         if (strlen($string) < PHP_MAXPATHLEN && is_file($string)) {
             return $this->loadFile($string, $format, $options);

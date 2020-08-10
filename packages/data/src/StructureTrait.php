@@ -108,12 +108,16 @@ trait StructureTrait
      */
     protected function loadData($data, ?string $format = null, array $options = []): array
     {
+        if ($data instanceof \SplFileInfo) {
+            $data = $data->getPathname();
+        }
+
         if (is_array($data) || is_object($data)) {
             $storage = TypeCast::toArray($data, $options['to_array'] ?? false);
         } else {
             $registry = $this->getFormatRegistry();
 
-            $storage = $registry->load((string) $data, $format, $options);
+            $storage = TypeCast::toArray($registry->load((string) $data, $format, $options), $options['to_array'] ?? false);
         }
 
         return $storage;

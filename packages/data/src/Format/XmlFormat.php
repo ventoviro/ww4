@@ -57,7 +57,7 @@ class XmlFormat implements FormatInterface
      *
      * @since   2.0
      */
-    public function parse(string $string, array $options = []): array
+    public function parse(string $string, array $options = [])
     {
         $obj = [];
 

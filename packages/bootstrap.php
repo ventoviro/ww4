@@ -22,6 +22,7 @@ include_once __DIR__ . '/queue/src/bootstrap.php';
 include_once __DIR__ . '/reactor/src/bootstrap.php';
 include_once __DIR__ . '/renderer/src/bootstrap.php';
 include_once __DIR__ . '/scalars/src/bootstrap.php';
+include_once __DIR__ . '/session/src/bootstrap.php';
 include_once __DIR__ . '/stream/src/bootstrap.php';
 include_once __DIR__ . '/test/src/bootstrap.php';
 include_once __DIR__ . '/utilities/src/bootstrap.php';
