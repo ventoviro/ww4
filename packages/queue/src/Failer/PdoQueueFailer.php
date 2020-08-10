@@ -23,14 +23,14 @@ class PdoQueueFailer implements QueueFailerInterface
      *
      * @var  \PDO
      */
-    protected $pdo;
+    protected \PDO $pdo;
 
     /**
      * Property table.
      *
      * @var  string
      */
-    protected $table;
+    protected string $table;
 
     /**
      * DatabaseQueueFailer constructor.
@@ -76,12 +76,12 @@ class PdoQueueFailer implements QueueFailerInterface
         $created = (new \DateTime('now'))->format('Y-m-d H:i:s');
 
         $sql = 'INSERT INTO ' . $this->table .
-            ' (connection, queue, body, exception, created)' .
-            ' VALUES (:connection, :queue, :body, :exception, :created)';
+            ' (connection, channel, body, exception, created)' .
+            ' VALUES (:connection, :channel, :body, :exception, :created)';
 
         $stat = $this->pdo->prepare($sql);
         $stat->bindValue(':connection', $connection);
-        $stat->bindValue(':queue', $channel);
+        $stat->bindValue(':channel', $channel);
         $stat->bindValue(':body', $body);
         $stat->bindValue(':exception', $exception);
         $stat->bindValue(':created', $created);

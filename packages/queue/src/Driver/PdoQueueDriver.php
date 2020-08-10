@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Queue\Driver;
 
 use Windwalker\DateTime\Chronos;
+use Windwalker\Query\Bounded\BoundedHelper;
 use Windwalker\Queue\QueueMessage;
 
 /**
@@ -112,14 +113,14 @@ class PdoQueueDriver implements QueueDriverInterface
         $now = new \DateTimeImmutable('now');
 
         $sql = 'SELECT * FROM ' . $this->table .
-            ' WHERE channel = :channel AND visibility < :visibility' .
+            ' WHERE channel = :channel AND visibility <= :visibility' .
             ' AND (reserved IS NULL OR reserved < :reserved)' .
             ' FOR UPDATE';
 
         $this->pdo->beginTransaction();
 
         $stat = $this->pdo->prepare($sql);
-        $stat->bindValue(':channel', $channel);
+        $stat->bindValue(':channel', $channel, \PDO::PARAM_STR);
         $stat->bindValue(':visibility', $now->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
         $stat->bindValue(
             ':reserved',

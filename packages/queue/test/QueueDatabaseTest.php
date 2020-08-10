@@ -21,7 +21,7 @@ use Windwalker\Queue\Test\Stub\TestJob;
 /**
  * The QueueAdapterTest class.
  */
-class QueueAdapterTest extends AbstractDatabaseTestCase
+class QueueDatabaseTest extends AbstractDatabaseTestCase
 {
     protected ?Queue $instance;
 
