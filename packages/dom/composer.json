@@ -11,12 +11,12 @@
     "license": "MIT",
     "require": {
         "php": ">=8.0.0",
-        "windwalker/utilities": "~4.0",
+        "windwalker/utilities": "dev-master",
         "ext-json": "*",
         "ext-dom": "*"
     },
     "require-dev": {
-        "windwalker/test": "~4.0",
+        "windwalker/test": "dev-master",
         "masterminds/html5": "^2.7",
         "symfony/dom-crawler": "^4.4",
         "symfony/css-selector": "^4.4"

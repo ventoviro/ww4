@@ -11,11 +11,11 @@
     "license": "MIT",
     "require": {
         "php": ">=8.0.0",
-        "windwalker/utilities": "~4.0"
+        "windwalker/utilities": "dev-master"
     },
     "require-dev": {
-        "windwalker/test": "~4.0",
-        "windwalker/validator": "~4.0",
+        "windwalker/test": "dev-master",
+        "windwalker/validator": "dev-master",
         "mikey179/vfsstream": "^1.6",
         "webmozart/glob": "^4.1"
     },

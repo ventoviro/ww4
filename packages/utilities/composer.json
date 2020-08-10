@@ -14,7 +14,7 @@
     },
     "require-dev": {
         "windwalker/test": "~3.0",
-        "doctrine/inflector": "^1.3"
+        "doctrine/inflector": "^2.0"
     },
     "suggest": {
         "doctrine/inflector": "Install ~1.0 to use inflector.",

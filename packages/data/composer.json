@@ -13,9 +13,9 @@
         "php": ">=8.0.0"
     },
     "require-dev": {
-        "windwalker/test": "~4.0",
-        "windwalker/scalars": "~4.0",
-        "windwalker/utilities": "~4.0"
+        "windwalker/test": "dev-master",
+        "windwalker/scalars": "dev-master",
+        "windwalker/utilities": "dev-master"
     },
     "suggest": {
     },

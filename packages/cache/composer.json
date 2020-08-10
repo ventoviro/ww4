@@ -18,10 +18,10 @@
         "php": ">=8.0.0",
         "psr/cache": "^1.0",
         "psr/simple-cache": "^1.0",
-        "windwalker/utilities": "~4.0"
+        "windwalker/utilities": "dev-master"
     },
     "require-dev": {
-        "windwalker/test": "~4.0"
+        "windwalker/test": "dev-master"
     },
     "suggest": {
     },

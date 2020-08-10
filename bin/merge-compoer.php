@@ -29,27 +29,25 @@ class MergeComposer extends \Asika\SimpleConsole\Console
         $packages = \Windwalker\Filesystem\Filesystem::folders(PACKAGES_PATH);
 
         $rootJsonFile = PROJECT_ROOT . '/composer.json';
-        $rootJson = \Windwalker\collect(file_get_contents($rootJsonFile));
+        $rootJson = Collection::wrap($rootJsonFile);
 
         foreach ($packages as $package) {
             if (!is_file($composerFile = $package->getPathname() . '/composer.json')) {
                 continue;
             }
-            
-            $json = \Windwalker\collect($composerFile);
+
+            $json = Collection::wrap($composerFile);
 
             if (!$json->get('name')) {
                 continue;
             }
-            
-            $this->out('Sync: ' . $composerFile);
 
-            $this->mergeRequires($rootJson->proxy('require'), (array) $json->get('require'));
-            $this->mergeRequires($rootJson->proxy('require-dev'), (array) $json->get('require-dev'));
-            $this->mergeRequires($rootJson->proxy('suggest'), (array) $json->get('suggest'));
+            $this->mergeRequires($rootJson, $json, 'require');
+            $this->mergeRequires($rootJson, $json, 'require-dev');
+            $this->mergeRequires($rootJson, $json, 'suggest');
 
             $this->mergeAutoload($rootJson, $json, 'autoload.psr-4', 'src');
-            $this->mergeAutoload($rootJson, $json, 'autoload.files', 'bootstrap.php');
+            $this->mergeAutoload($rootJson, $json, 'autoload.files', 'src/bootstrap.php');
             $this->mergeAutoload($rootJson, $json, 'autoload-dev.psr-4', 'test');
         }
 
@@ -63,14 +61,40 @@ class MergeComposer extends \Asika\SimpleConsole\Console
         return 1;
     }
 
-    protected function mergeRequires(Collection $rootRequires, array $requires)
+    protected function mergeRequires(Collection $rootJson, Collection $json, string $path)
     {
-        foreach ($requires as $package => $version) {
+        $rootRequires = $rootJson->proxy($path);
+
+        $requires = $json->getDeep($path);
+
+        foreach ($requires as $package => $pkgVersion) {
             if (str_starts_with($package, 'windwalker')) {
                 continue;
             }
 
-            $rootRequires[$package] = $version;
+            if (!$rootRequires[$package]) {
+                $rootRequires[$package] = $pkgVersion;
+                continue;
+            }
+
+            $rootVersion = explode('|', (string) $rootRequires[$package]);
+            $rootVersion = $rootVersion[array_key_last($rootVersion)];
+            $version = explode('|', (string) $pkgVersion);
+            $version = $version[array_key_last($version)];
+
+            if (\Composer\Semver\Comparator::greaterThan($version, $rootVersion)) {
+                $rootRequires[$package] = $pkgVersion;
+            } elseif (\Composer\Semver\Comparator::lessThan($version, $rootVersion) && str_starts_with($path, 'require')) {
+                $this->out(
+                    sprintf(
+                        '[Warning] %s: %s in %s less than root %s.',
+                        $package,
+                        $pkgVersion,
+                        $json->getDeep('name'),
+                        $rootRequires[$package]
+                    )
+                );
+            }
         }
     }
 
@@ -82,7 +106,8 @@ class MergeComposer extends \Asika\SimpleConsole\Console
 
         foreach ((array) $json->getDeep($path) as $key => $item) {
             if (is_numeric($key)) {
-                $target->push("packages/$name/$dir");
+                $target->append("packages/$name/$dir")
+                    ->apply(fn ($storage) => array_unique($storage));
             } else {
                 $target->set($key, "packages/$name/$dir");
             }

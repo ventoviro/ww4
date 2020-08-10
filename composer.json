@@ -24,7 +24,9 @@
         "paragonie/constant_time_encoding": "^2.3",
         "masterminds/html5": "^2.7",
         "ext-json": "*",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "composer/semver": "^3.0",
+        "dflydev/fig-cookies": "^2.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -33,7 +35,7 @@
         "symfony/yaml": "^4.3",
         "laktak/hjson": "^2.1",
         "yosymfony/toml": "^1.0",
-        "opis/closure": "4.x-dev",
+        "opis/closure": "4.x-dev||^4.0",
         "phpunit/phpunit": "^8.4||^9.0",
         "squizlabs/php_codesniffer": "^3.5",
         "swoole/ide-helper": "^4.4",
@@ -48,12 +50,24 @@
         "ext-pdo": "*",
         "jdorn/sql-formatter": "^1.2",
         "asika/sql-splitter": "^1.0",
-        "doctrine/inflector": "^2.0"
+        "doctrine/inflector": "^2.0",
+        "masterminds/html5": "^2.7",
+        "guzzlehttp/promises": "^1.3",
+        "react/promise": "^2.7"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",
         "php-http/httplug": "Install ~2.0 if you require HttpClient as HttpPlug implementation.",
-        "webmozart/glob": "Install ^4.0 to support Ant-like glob()."
+        "webmozart/glob": "Install ^4.0 to support Ant-like glob().",
+        "ext-openssl": "Install openssl to support legacy openssl cipher.",
+        "doctrine/inflector": "Install ~1.0 to use inflector.",
+        "opis/closure": "Install ^3.0 to support serializable Closure.",
+        "aws/aws-sdk-php": "If you want to use AWS SQS as queue service.",
+        "iron-io/iron_mq": "If you want to use Iron.io as queue service.",
+        "php-amqplib/php-amqplib": "If you want to use RabbitMQ as queue service.",
+        "pda/pheanstalk": "If you want to use Beanstalkd queue as service.",
+        "chrisboulton/php-resque": "Install <= 1.2 if you want to use PHP Resque (Redis) as queue service.",
+        "reactivex/rxphp": "Support EventEmitter::observe() pattern."
     },
     "autoload": {
         "psr-4": {
@@ -73,31 +87,46 @@
             "Windwalker\\Renderer\\": "packages/renderer/src",
             "Windwalker\\Test\\": "packages/test/src",
             "Windwalker\\Utilities\\": "packages/utilities/src",
-            "Windwalker\\Validator\\": "packages/validator/src"
+            "Windwalker\\Validator\\": "packages/validator/src",
+            "Windwalker\\Session\\": "packages/session/src"
         },
         "files": [
-            "packages/bootstrap.php"
+            "packages/bootstrap.php",
+            "packages/database/src/bootstrap.php",
+            "packages/renderer/src/bootstrap.php",
+            "packages/cache/src/bootstrap.php",
+            "packages/test/src/bootstrap.php",
+            "packages/crypt/src/bootstrap.php",
+            "packages/scalars/src/bootstrap.php",
+            "packages/filesystem/src/bootstrap.php",
+            "packages/utilities/src/bootstrap.php",
+            "packages/queue/src/bootstrap.php",
+            "packages/dom/src/bootstrap.php",
+            "packages/promise/src/bootstrap.php",
+            "packages/query/src/bootstrap.php",
+            "packages/data/src/bootstrap.php",
+            "packages/event/src/bootstrap.php",
+            "packages/reactor/src/bootstrap.php",
+            "packages/session/src/bootstrap.php"
         ]
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Cache\\Test\\": "packages/cache/test",
-            "Windwalker\\Crypt\\Test\\": "packages/crypt/test",
-            "Windwalker\\Data\\Test\\": "packages/data/test",
             "Windwalker\\Database\\Test\\": "packages/database/test",
-            "Windwalker\\DOM\\Test\\": "packages/dom/test",
-            "Windwalker\\Event\\Test\\": "packages/event/test",
+            "Windwalker\\Renderer\\Test\\": "packages/renderer/test",
+            "Windwalker\\Cache\\Test\\": "packages/cache/test",
+            "Windwalker\\Test\\Test\\": "packages/test/test",
+            "Windwalker\\Crypt\\Test\\": "packages/crypt/test",
+            "Windwalker\\Scalars\\Test\\": "packages/scalars/test",
             "Windwalker\\Filesystem\\Test\\": "packages/filesystem/test",
+            "Windwalker\\Utilities\\Test\\": "packages/utilities/test",
+            "Windwalker\\Queue\\Test\\": "packages/queue/test",
+            "Windwalker\\DOM\\Test\\": "packages/dom/test",
             "Windwalker\\Promise\\Test\\": "packages/promise/test",
             "Windwalker\\Query\\Test\\": "packages/query/test",
-            "Windwalker\\Queue\\Test\\": "packages/queue/test",
-            "Windwalker\\Scalars\\Test\\": "packages/scalars/test",
-            "Windwalker\\Stream\\Test\\": "packages/stream/test",
+            "Windwalker\\Event\\Test\\": "packages/event/test",
             "Windwalker\\Reactor\\Test\\": "packages/reactor/test",
-            "Windwalker\\Renderer\\Test\\": "packages/renderer/test",
-            "Windwalker\\Test\\Test\\": "packages/test/test",
-            "Windwalker\\Utilities\\Test\\": "packages/utilities/test",
-            "Windwalker\\Validator\\Test\\": "packages/validator/test"
+            "Windwalker\\Session\\Test\\": "packages/session/test"
         }
     },
     "config": {
@@ -110,7 +139,7 @@
             "dev-master": "4.x-dev"
         }
     },
-    "provide":           {
+    "provide": {
         "psr/cache-implementation": "~1.0",
         "psr/http-message-implementation": "~1.0"
     },
