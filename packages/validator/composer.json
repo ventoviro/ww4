@@ -1,0 +1,44 @@
+{
+    "name": "windwalker/validator",
+    "type": "windwalker-package",
+    "description": "Windwalker Validator package",
+    "keywords": [
+        "windwalker",
+        "framework",
+        "validator"
+    ],
+    "homepage": "https://github.com/ventoviro/windwalker-validator",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.0.0"
+    },
+    "require-dev": {
+        "windwalker/test": "~3.0"
+    },
+    "suggest": {
+    },
+    "minimum-stability": "beta",
+    "autoload": {
+        "psr-4": {
+            "Windwalker\\Validator\\": "src/"
+        },
+        "files": [
+            "src/bootstrap.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Windwalker\\Validator\\Test\\": "test/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "4.x-dev"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.0.0"
+        }
+    }
+}

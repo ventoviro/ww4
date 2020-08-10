@@ -16,7 +16,7 @@ use Windwalker\Scalars\Concern\ArrayCreationTrait;
 use Windwalker\Scalars\Concern\ArrayLoopTrait;
 use Windwalker\Scalars\Concern\ArrayModifyTrait;
 use Windwalker\Scalars\Concern\ArraySortTrait;
-use Windwalker\Utilities\AccessibleTrait;
+use Windwalker\Utilities\Accessible\AccessibleTrait;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Classes\FlowControlTrait;
 use Windwalker\Utilities\Classes\MarcoableTrait;

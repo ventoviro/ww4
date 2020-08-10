@@ -10,7 +10,7 @@
 namespace Windwalker\Utilities\Test;
 
 use PHPUnit\Framework\TestCase;
-use Windwalker\Utilities\AccessibleTrait;
+use Windwalker\Utilities\Accessible\AccessibleTrait;
 use Windwalker\Utilities\Test\Stub\StubAccessible;
 
 /**

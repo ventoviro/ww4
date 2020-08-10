@@ -9,7 +9,7 @@
 
 namespace Windwalker\Utilities\Test\Stub;
 
-use Windwalker\Utilities\AccessibleTrait;
+use Windwalker\Utilities\Accessible\AccessibleTrait;
 use Windwalker\Utilities\Contract\AccessibleInterface;
 
 /**

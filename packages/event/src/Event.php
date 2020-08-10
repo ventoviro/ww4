@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Event;
 
-use Windwalker\Utilities\AccessibleTrait;
-use Windwalker\Utilities\Assert\ArgumentsAssert;
+use Windwalker\Utilities\Accessible\AccessibleTrait;
 use Windwalker\Utilities\Contract\AccessibleInterface;
 
 /**

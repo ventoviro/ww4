@@ -107,7 +107,8 @@
             "packages/data/src/bootstrap.php",
             "packages/event/src/bootstrap.php",
             "packages/reactor/src/bootstrap.php",
-            "packages/session/src/bootstrap.php"
+            "packages/session/src/bootstrap.php",
+            "packages/validator/src/bootstrap.php"
         ]
     },
     "autoload-dev": {
@@ -126,7 +127,8 @@
             "Windwalker\\Query\\Test\\": "packages/query/test",
             "Windwalker\\Event\\Test\\": "packages/event/test",
             "Windwalker\\Reactor\\Test\\": "packages/reactor/test",
-            "Windwalker\\Session\\Test\\": "packages/session/test"
+            "Windwalker\\Session\\Test\\": "packages/session/test",
+            "Windwalker\\Validator\\Test\\": "packages/validator/test"
         }
     },
     "config": {
