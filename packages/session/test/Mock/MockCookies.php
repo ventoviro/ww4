@@ -11,12 +11,12 @@ declare(strict_types=1);
 
 namespace Windwalker\Session\Test\Mock;
 
-use Windwalker\Session\CookieSetter;
+use Windwalker\Session\Cookies;
 
 /**
  * The MockCookieSetter class.
  */
-class MockCookieSetter extends CookieSetter
+class MockCookies extends Cookies
 {
     public array $cookies = [];
     public array $cookieData = [];

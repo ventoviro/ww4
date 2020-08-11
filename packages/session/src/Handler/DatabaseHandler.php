@@ -20,7 +20,7 @@ use Windwalker\Utilities\Classes\OptionAccessTrait;
  * @see    http://www.php.net/manual/en/function.session-set-save-handler.php
  * @since  2.0
  */
-class DatabaseHandler implements HandlerInterface
+class DatabaseHandler extends AbstractHandler
 {
     use OptionAccessTrait;
 
@@ -30,6 +30,16 @@ class DatabaseHandler implements HandlerInterface
      * @var DatabaseAdapter
      */
     protected DatabaseAdapter $db;
+
+    /**
+     * isSupported
+     *
+     * @return  bool
+     */
+    public static function isSupported(): bool
+    {
+        return class_exists(DatabaseAdapter::class);
+    }
 
     /**
      * Class init.
@@ -55,29 +65,6 @@ class DatabaseHandler implements HandlerInterface
     }
 
     /**
-     * Re-initializes existing session, or creates a new one.
-     *
-     * @param  string  $savePath     Save path
-     * @param  string  $sessionName  Session name, see http://php.net/function.session-name.php
-     *
-     * @return bool true on success, false on failure
-     */
-    public function open($savePath, $sessionName)
-    {
-        return true;
-    }
-
-    /**
-     * Closes the current session.
-     *
-     * @return bool true on success, false on failure
-     */
-    public function close()
-    {
-        return true;
-    }
-
-    /**
      * Read the data for a particular session identifier from the SessionHandler backend.
      *
      * @param  string  $id  The session identifier.
@@ -87,11 +74,11 @@ class DatabaseHandler implements HandlerInterface
      * @throws \Exception
      * @since   2.0
      */
-    public function read($id)
+    public function doRead(string $id): string
     {
-        return $this->db->select($this->getOption('columns')['data'])
+        return (string) $this->db->select($this->getOption('columns')['data'])
             ->from($this->getOption('table'))
-            ->where($this->getOption('columns')['id'], $id)
+            ->where($this->getOption('columns')['id'], (string) $id)
             ->result();
     }
 
@@ -188,7 +175,7 @@ class DatabaseHandler implements HandlerInterface
         $past = time() - $lifetime;
 
         $this->db->delete($this->getOption('table'))
-            ->where($this->getOption('time'), '<', $past)
+            ->where($this->getOption('columns')['time'], '<', $past)
             ->execute();
 
         return true;
@@ -214,13 +201,13 @@ class DatabaseHandler implements HandlerInterface
                     "INSERT INTO %n (%n, %n, %n) VALUES (:id, :data, :time)
 ON DUPLICATE KEY UPDATE %n = VALUES(%n), %n = VALUES(%n)",
                     $table,
-                    $columns['id_col'],
-                    $columns['data_col'],
-                    $columns['time_col'],
-                    $columns['data_col'],
-                    $columns['data_col'],
-                    $columns['time_col'],
-                    $columns['time_col']
+                    $columns['id'],
+                    $columns['data'],
+                    $columns['time'],
+                    $columns['data'],
+                    $columns['data'],
+                    $columns['time'],
+                    $columns['time']
                 );
 
             case 'oci':
@@ -230,12 +217,12 @@ ON DUPLICATE KEY UPDATE %n = VALUES(%n), %n = VALUES(%n)",
                     THEN INSERT (%n, %n, %n) VALUES (:id, :data, :time) WHEN MATCHED
                     THEN UPDATE SET %n = :data, %n = :time",
                     $table,
-                    $columns['id_col'],
-                    $columns['id_col'],
-                    $columns['data_col'],
-                    $columns['time_col'],
-                    $columns['data_col'],
-                    $columns['time_col']
+                    $columns['id'],
+                    $columns['id'],
+                    $columns['data'],
+                    $columns['time'],
+                    $columns['data'],
+                    $columns['time']
                 );
 
             case AbstractPlatform::SQLSERVER === $platformName && version_compare(
@@ -251,24 +238,43 @@ ON DUPLICATE KEY UPDATE %n = VALUES(%n), %n = VALUES(%n)",
                     WHEN NOT MATCHED THEN INSERT (%n, %n, %n) VALUES (:id, :data, :time)
                     WHEN MATCHED THEN UPDATE SET %n = :data, %n = :time;",
                     $table,
-                    $columns['id_col'],
-                    $columns['id_col'],
-                    $columns['data_col'],
-                    $columns['time_col'],
-                    $columns['data_col'],
-                    $columns['time_col']
+                    $columns['id'],
+                    $columns['id'],
+                    $columns['data'],
+                    $columns['time'],
+                    $columns['data'],
+                    $columns['time']
                 );
 
             case AbstractPlatform::SQLITE:
                 return $query->format(
                     "INSERT OR REPLACE INTO %n (%n, %n, %n) VALUES (:id, :data, :time)",
                     $table,
-                    $columns['id_col'],
-                    $columns['data_col'],
-                    $columns['time_col']
+                    $columns['id'],
+                    $columns['data'],
+                    $columns['time']
                 );
         }
 
         return null;
+    }
+
+    /**
+     * updateTimestamp
+     *
+     * @param  string  $session_id
+     * @param  string  $session_data
+     *
+     * @return  bool
+     */
+    public function updateTimestamp($session_id, $session_data)
+    {
+        $this->db->createQuery()
+            ->update($this->getOption('table'))
+            ->set('time', time())
+            ->where('id', $session_id)
+            ->execute();
+
+        return true;
     }
 }

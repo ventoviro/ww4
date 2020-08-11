@@ -11,13 +11,19 @@ declare(strict_types=1);
 
 namespace Windwalker\Session\Bridge;
 
+use Windwalker\Data\Format\FormatInterface;
+use Windwalker\Data\Format\JsonFormat;
 use Windwalker\Session\Handler\HandlerInterface;
+use Windwalker\Session\Handler\NativeHandler;
+use Windwalker\Utilities\Classes\OptionAccessTrait;
 
 /**
  * The ArrayBridge class.
  */
 class NativeBridge implements BridgeInterface
 {
+    use OptionAccessTrait;
+
     protected HandlerInterface $handler;
 
     protected ?string $id = null;
@@ -26,14 +32,25 @@ class NativeBridge implements BridgeInterface
 
     protected array $storage = [];
 
+    protected ?string $origin = null;
+
+    /**
+     * @var FormatInterface|null
+     */
+    protected ?FormatInterface $format;
+
     /**
      * NativeBridge constructor.
      *
-     * @param  HandlerInterface  $handler
+     * @see https://gist.github.com/franksacco/d6e943c41189f8ee306c182bf8f07654
+     *
+     * @param  HandlerInterface|null  $handler
+     * @param  FormatInterface|null   $format
      */
-    public function __construct(HandlerInterface $handler)
+    public function __construct(?HandlerInterface $handler = null, ?FormatInterface $format = null)
     {
-        $this->handler = $handler;
+        $this->handler = $handler ?? new NativeHandler();
+        $this->format = $format ?? new JsonFormat();
     }
 
     /**
@@ -43,13 +60,23 @@ class NativeBridge implements BridgeInterface
      */
     public function start(): bool
     {
-        $dataString = $this->handler->read($this->getId());
+        $this->handler->open($this->getOption('save_path'), $this->getOption('session_name'));
 
-        $r = session_decode($dataString);
+        register_shutdown_function([$this, 'writeClose']);
+
+        $id = $this->getId();
+
+        if ($id === null || (ini_get('session.use_strict_mode') && !$this->handler->validateId($id))) {
+            $this->setId($id = $this->createId());
+        }
+
+        $this->origin = $dataString = $this->handler->read($id) ?? '';
+
+        $_SESSION = (array) $this->format->parse($dataString);
 
         $this->status = PHP_SESSION_ACTIVE;
 
-        return $r;
+        return true;
     }
 
     /**
@@ -114,13 +141,18 @@ class NativeBridge implements BridgeInterface
      */
     public function regenerate(bool $deleteOld = false): bool
     {
-        $data = session_encode();
+        $this->origin = $data = $this->format->dump($_SESSION);
 
         if ($deleteOld) {
             $this->handler->destroy($this->getId());
+        } else {
+            $this->handler->write($this->getId(), $data);
         }
 
-        $this->setId(md5(random_bytes(32)));
+        $this->handler->close();
+        $this->handler->open($this->getOption('save_path'), $this->getOption('session_name'));
+
+        $this->setId($this->createId());
 
         $this->handler->write($this->getId(), $data);
 
@@ -136,13 +168,29 @@ class NativeBridge implements BridgeInterface
      */
     public function writeClose(bool $unset = true): bool
     {
-        $data = session_encode();
+        if (true) {
+            $this->handler->gc($this->getOption('gc_maxlifetime'));
+        }
 
-        $this->handler->write($this->getId(), $data);
+        $data = $this->format->dump($_SESSION);
+
+        if (
+            ini_get('session.lazy_write')
+            && $this->origin === $data
+            && $this->handler instanceof \SessionUpdateTimestampHandlerInterface
+        ) {
+            $r = $this->handler->updateTimestamp($this->getId(), $data);
+        } else {
+            $r = $this->handler->write($this->getId(), $data);
+        }
 
         if ($unset) {
             $_SESSION = [];
         }
+
+        $this->status = PHP_SESSION_DISABLED;
+
+        return $r;
     }
 
     /**
@@ -152,6 +200,9 @@ class NativeBridge implements BridgeInterface
      */
     public function destroy(): void
     {
+        $this->handler->destroy($this->getId());
+
+        $this->handler->close();
     }
 
     /**
@@ -162,5 +213,17 @@ class NativeBridge implements BridgeInterface
     public function &getStorage(): ?array
     {
         return $this->storage;
+    }
+
+    /**
+     * generateId
+     *
+     * @return  string
+     *
+     * @throws \Exception
+     */
+    protected function createId(): string
+    {
+        return session_create_id();
     }
 }

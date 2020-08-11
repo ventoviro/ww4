@@ -12,13 +12,17 @@ declare(strict_types=1);
 error_reporting(-1);
 
 use Windwalker\Database\DatabaseAdapter;
+use Windwalker\Database\Event\QueryEndEvent;
 use Windwalker\Session\Bridge\NativeBridge;
+use Windwalker\Session\Bridge\PhpBridge;
 use Windwalker\Session\Cookies;
 use Windwalker\Session\Handler\DatabaseHandler;
 
 include_once __DIR__ . '/../../../vendor/autoload.php';
 
 ini_set('session.use_strict_mode', '1');
+// ini_set('session.gc_probability', '100');
+// ini_set('session.gc_divisor', '100');
 
 $cookie = Cookies::create()
     ->httpOnly(true)
@@ -36,9 +40,11 @@ $db = new DatabaseAdapter(
     ]
 );
 
+$db->on(QueryEndEvent::class, fn (QueryEndEvent $event) => show($event->getSql()));
+
 $db->execute(file_get_contents(__DIR__ . '/../resources/sql/mysql.sql'));
 
-$sess = new NativeBridge(
+$sess = new PhpBridge(
     new DatabaseHandler(
         $db
     )
@@ -52,6 +58,7 @@ $sess->start();
 $cookie->set('WW_SESS_ID', $sess->getId());
 
 $_SESSION['flower'] = 'Sakura';
+
 //
 // $options = $cookie->getOptions();
 //

@@ -11,7 +11,9 @@ declare(strict_types=1);
 
 namespace Windwalker\Session\Bridge;
 
-use Windwalker\Session\CookieSetter;
+use Windwalker\Session\Cookies;
+use Windwalker\Session\Handler\HandlerInterface;
+use Windwalker\Session\Handler\NativeHandler;
 
 /**
  * The PhpBridge class.
@@ -19,22 +21,27 @@ use Windwalker\Session\CookieSetter;
 class PhpBridge implements BridgeInterface
 {
     /**
-     * @var CookieSetter
+     * @var Cookies
      */
-    protected CookieSetter $cookieSetter;
+    protected Cookies $cookieSetter;
+
+    protected HandlerInterface $handler;
 
     /**
      * NativeBridge constructor.
      *
-     * @param  CookieSetter|null  $cookieSetter
+     * @param  HandlerInterface|null  $handler
+     * @param  Cookies|null           $cookieSetter
      */
-    public function __construct(CookieSetter $cookieSetter = null)
+    public function __construct(HandlerInterface $handler = null, Cookies $cookieSetter = null)
     {
-        $this->cookieSetter = $cookieSetter ?? CookieSetter::create()
+        $this->cookieSetter = $cookieSetter ?? Cookies::create()
             ->httpOnly(true)
             ->expires('+30days')
             ->secure(false)
-            ->sameSite(CookieSetter::SAMESITE_LAX);
+            ->sameSite(Cookies::SAMESITE_LAX);
+
+        $this->handler = $handler ?? new NativeHandler();
     }
 
     /**
@@ -49,6 +56,8 @@ class PhpBridge implements BridgeInterface
         }
 
         $this->setCookieParams();
+
+        session_set_save_handler($this->handler);
 
         // Call session_write_close when shutdown.
         session_register_shutdown();

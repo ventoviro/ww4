@@ -16,7 +16,7 @@ use Dflydev\FigCookies\Modifier\SameSite;
 /**
  * The CookieSetter class.
  */
-class CookieSetter
+class Cookies
 {
     public const SAMESITE_NONE = 'None';
     public const SAMESITE_LAX = 'Lax';
@@ -37,6 +37,16 @@ class CookieSetter
     public function set(string $name, string $value): bool
     {
         return setcookie($name, $value, $this->getOptions());
+    }
+
+    public function get(string $name): ?string
+    {
+        return $_COOKIE[$name] ?? null;
+    }
+
+    public function remove(string $name): bool
+    {
+        return setcookie($name, '', ['expires' => time() - 500]);
     }
 
     public function getOptions(): array

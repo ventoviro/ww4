@@ -14,12 +14,12 @@ namespace Windwalker\Session\Test\Bridge;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\Filesystem;
 use Windwalker\Session\Bridge\PhpBridge;
-use Windwalker\Session\CookieSetter;
+use Windwalker\Session\Cookies;
 
 /**
- * The NativeBridgeTest class.
+ * The PhpBridgeTest class.
  */
-class NativeBridgeTest extends TestCase
+class PhpBridgeTest extends TestCase
 {
     protected ?PhpBridge $instance;
     protected static string $sess1 = '93cd6b3ec9f36b23d68e9385942dc41c';

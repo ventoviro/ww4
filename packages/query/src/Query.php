@@ -1549,18 +1549,18 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
      * @param  bool  $format
      * @param  bool  $asString
      *
-     * @return string|null
+     * @return mixed|static
      */
-    public function debug(bool $pre = false, bool $format = true, bool $asString = true): ?string
+    public function debug(bool $pre = false, bool $format = true, bool $asString = true)
     {
         $sql = $this->render(true);
 
-        if ($pre) {
-            $sql = '<pre class="c-windwalker-db-query">' . $sql . '</pre>';
-        }
-
         if ($format && class_exists(\SqlFormatter::class)) {
             $sql = \SqlFormatter::format($sql, false);
+        }
+
+        if ($pre) {
+            $sql = '<pre class="c-windwalker-db-query">' . $sql . '</pre>';
         }
 
         if ($asString) {
@@ -1569,7 +1569,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
         echo $sql;
 
-        return null;
+        return $this;
     }
 
     public function getMergedBounded(): array
