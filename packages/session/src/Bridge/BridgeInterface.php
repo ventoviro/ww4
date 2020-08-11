@@ -22,78 +22,55 @@ interface BridgeInterface
      *
      * @throws \RuntimeException If something goes wrong starting the session.
      */
-    public function start();
+    public function start(): bool;
 
     /**
      * Checks if the session is started.
      *
      * @return  bool  True if started, false otherwise.
      */
-    public function isStarted();
+    public function isStarted(): bool;
 
     /**
      * Returns the session ID
      *
-     * @return  string  The session ID or empty.
+     * @return string|null The session ID or empty.
      */
-    public function getId();
+    public function getId(): ?string;
 
     /**
      * Sets the session ID
      *
-     * @param   string $id Set the session id
+     * @param  string  $id  Set the session id
      *
      * @return  void
      */
-    public function setId($id);
+    public function setId(string $id): void;
 
     /**
      * Returns the session name
      *
-     * @return  mixed   The session name.
+     * @return string|null The session name.
      */
-    public function getName();
+    public function getSessionName(): ?string;
 
     /**
      * Sets the session name
      *
-     * @param   string $name Set the name of the session
+     * @param  string  $name  Set the name of the session
      *
      * @return  void
      */
-    public function setName($name);
-
-    /**
-     * Regenerates id that represents this storage.
-     *
-     * This method must invoke session_regenerate_id($destroy) unless
-     * this interface is used for a storage object designed for unit
-     * or functional testing where a real PHP session would interfere
-     * with testing.
-     *
-     * Note regenerate+destroy should not clear the session data in memory
-     * only delete the session data from persistent storage.
-     *
-     * @param   bool $destroy    Destroy session when regenerating?
-     * @param   int  $lifetime   Sets the cookie lifetime for the session cookie. A null value
-     *                           will leave the system settings unchanged, 0 sets the cookie
-     *                           to expire with browser session. Time is in seconds, and is
-     *                           not a Unix timestamp.
-     *
-     * @return  bool  True if session regenerated, false if error
-     *
-     * @throws  \RuntimeException  If an error occurs while regenerating this storage
-     */
-    public function restart($destroy = false, $lifetime = null);
+    public function setSessionName(string $name): void;
 
     /**
      * regenerate
      *
-     * @param bool $destroy
+     * @param bool  $deleteOld
      *
      * @return  bool
      */
-    public function regenerate($destroy = false);
+    public function regenerate(bool $deleteOld = false): bool;
 
     /**
      * Force the session to be saved and closed.
@@ -103,50 +80,52 @@ interface BridgeInterface
      * a real PHP session would interfere with testing, in which case it
      * it should actually persist the session data if required.
      *
-     * @return  void
+     * @param  bool  $unset
+     *
+     * @return bool
      *
      * @throws \RuntimeException If the session is saved without being started, or if the session
      *                           is already closed.
      */
-    public function save();
+    public function writeClose(bool $unset = true): bool;
 
     /**
      * Clear all session data in memory.
      *
      * @return  void
      */
-    public function destroy();
+    public function destroy(): void;
 
-    /**
-     * getCookieParams
-     *
-     * @return  array
-     */
-    public function getCookieParams();
-
-    /**
-     * Set session cookie parameters, this method should call before session started.
-     *
-     * @param   integer $lifetime   Lifetime of the session cookie, defined in seconds.
-     * @param   string  $path       Path on the domain where the cookie will work. Use a single
-     *                              slash ('/') for all paths on the domain.
-     * @param   string  $domain     Cookie domain, for example 'www.php.net'. To make cookies
-     *                              visible on all sub domains then the domain must be prefixed
-     *                              with a dot like '.php.net'.
-     * @param   boolean $secure     If true cookie will only be sent over secure connections.
-     * @param   boolean $httponly   If set to true then PHP will attempt to send the httponly
-     *                              flag when setting the session cookie.
-     *
-     * @return  static
-     *
-     * @since   2.0
-     */
-    public function setCookieParams($lifetime, $path = null, $domain = null, $secure = false, $httponly = true);
+    // /**
+    //  * getCookieParams
+    //  *
+    //  * @return  array
+    //  */
+    // public function getCookieParams(): array;
+    //
+    // /**
+    //  * Set session cookie parameters, this method should call before session started.
+    //  *
+    //  * @param   integer $lifetime   Lifetime of the session cookie, defined in seconds.
+    //  * @param   string  $path       Path on the domain where the cookie will work. Use a single
+    //  *                              slash ('/') for all paths on the domain.
+    //  * @param   string  $domain     Cookie domain, for example 'www.php.net'. To make cookies
+    //  *                              visible on all sub domains then the domain must be prefixed
+    //  *                              with a dot like '.php.net'.
+    //  * @param   boolean $secure     If true cookie will only be sent over secure connections.
+    //  * @param   boolean $httponly   If set to true then PHP will attempt to send the httponly
+    //  *                              flag when setting the session cookie.
+    //  *
+    //  * @return  static
+    //  *
+    //  * @since   2.0
+    //  */
+    // public function setCookieParams($lifetime, $path = null, $domain = null, $secure = false, $httponly = true);
 
     /**
      * getStorage
      *
-     * @return  array
+     * @return array|null
      */
-    public function &getStorage();
+    public function &getStorage(): ?array;
 }

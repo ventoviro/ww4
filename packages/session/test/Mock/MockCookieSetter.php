@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * Part of ww4 project.
+ *
+ * @copyright  Copyright (C) 2020 __ORGANIZATION__.
+ * @license    __LICENSE__
+ */
+
+declare(strict_types=1);
+
+namespace Windwalker\Session\Test\Mock;
+
+use Windwalker\Session\CookieSetter;
+
+/**
+ * The MockCookieSetter class.
+ */
+class MockCookieSetter extends CookieSetter
+{
+    public array $cookies = [];
+    public array $cookieData = [];
+
+    /**
+     * set
+     *
+     * @param  string  $name
+     * @param  string  $value
+     *
+     * @return  bool
+     */
+    public function set(string $name, string $value): bool
+    {
+        $this->cookies[$name] = $value;
+
+        $opt = $this->getOptions();
+        $opt['value'] = $value;
+        $this->cookieData[$name] = $opt;
+
+        return true;
+    }
+
+    public function clear(): void
+    {
+        $this->cookies = [];
+        $this->cookieData = [];
+    }
+}

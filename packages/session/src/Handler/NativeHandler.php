@@ -9,14 +9,19 @@
 namespace Windwalker\Session\Handler;
 
 /**
- * Interface HandlerInterface
+ * Class PhpHandler
+ *
+ * @since 2.0
  */
-interface HandlerInterface extends \SessionHandlerInterface
+class NativeHandler extends \SessionHandler implements HandlerInterface
 {
     /**
      * isSupported
      *
      * @return  boolean
      */
-    public static function isSupported(): bool;
+    public static function isSupported(): bool
+    {
+        return true;
+    }
 }
