@@ -13,8 +13,9 @@ namespace Windwalker\Session;
 
 use Windwalker\Session\Bridge\BridgeInterface;
 use Windwalker\Session\Bridge\PhpBridge;
+use Windwalker\Session\Cookie\Cookies;
+use Windwalker\Session\Cookie\CookiesInterface;
 use Windwalker\Session\Handler\HandlerInterface;
-use Windwalker\Session\Handler\NativeHandler;
 use Windwalker\Utilities\Accessible\SimpleAccessibleTrait;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
 
@@ -33,23 +34,17 @@ class Session implements SessionInterface
     /**
      * @var Cookies|null
      */
-    protected ?Cookies $cookies;
+    protected ?CookiesInterface $cookies;
 
     /**
      * Session constructor.
      *
-     * @param  array                  $options
-     * @param  BridgeInterface|null   $bridge
+     * @param  array                 $options
+     * @param  BridgeInterface|null  $bridge
+     * @param  CookiesInterface|null          $cookies
      */
-    public function __construct(array $options = [], ?BridgeInterface $bridge = null, ?Cookies $cookies = null)
+    public function __construct(array $options = [], ?BridgeInterface $bridge = null, ?CookiesInterface $cookies = null)
     {
-        $this->bridge  = $bridge ?? new PhpBridge();
-        $this->cookies = $cookies ?? Cookies::create()
-            ->httpOnly(true)
-            ->expires('+30days')
-            ->secure(false)
-            ->sameSite(Cookies::SAMESITE_LAX);
-
         $this->prepareOptions(
             [
                 'ini' => [
@@ -58,12 +53,19 @@ class Session implements SessionInterface
             ],
             $options
         );
+
+        $this->bridge  = $bridge ?? new PhpBridge();
+        $this->cookies = $cookies ?? Cookies::create()
+            ->httpOnly(true)
+            ->expires('+30days')
+            ->secure(false)
+            ->sameSite(Cookies::SAMESITE_LAX);
     }
 
     public function registerINI(): void
     {
         if (!headers_sent()) {
-            foreach ($this->getOption('ini') as $key => $value) {
+            foreach ((array) $this->getOption('ini') as $key => $value) {
                 if ($value !== null) {
                     if (!str_starts_with($key, 'session.')) {
                         $key = 'session.' . $key;
@@ -95,15 +97,18 @@ class Session implements SessionInterface
 
         $this->registerINI();
 
-        if (ini_get('session.use_cookies')) {
+        if ($this->getOptionAndINI('use_cookies')) {
+            // If use auto cookie, we set cookie params first.
             $this->setCookieParams();
         } else {
+            // Otherwise set session ID from $_COOKIE.
             $this->bridge->setId(
                 $this->cookies->get(
                     $this->bridge->getSessionName()
                 )
             );
 
+            // Must set cookie and update expires after session end.
             register_shutdown_function(function () {
                 $this->cookies->set(
                     $this->bridge->getSessionName(),
@@ -188,5 +193,30 @@ class Session implements SessionInterface
         if (headers_sent()) {
             session_set_cookie_params($options ?? $this->cookies->getOptions());
         }
+    }
+
+    /**
+     * @return Cookies|null
+     */
+    public function getCookies(): ?Cookies
+    {
+        return $this->cookies;
+    }
+
+    /**
+     * @param  Cookies|null  $cookies
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setCookies(?Cookies $cookies)
+    {
+        $this->cookies = $cookies;
+
+        return $this;
+    }
+
+    protected function getOptionAndINI(string $name)
+    {
+        return $this->getOption($name) ?? ini_get('session.' . $name);
     }
 }

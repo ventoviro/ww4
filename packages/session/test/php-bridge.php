@@ -13,9 +13,8 @@ error_reporting(-1);
 
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Event\QueryEndEvent;
-use Windwalker\Session\Bridge\NativeBridge;
 use Windwalker\Session\Bridge\PhpBridge;
-use Windwalker\Session\Cookies;
+use Windwalker\Session\Cookie\Cookies;
 use Windwalker\Session\Handler\DatabaseHandler;
 
 include_once __DIR__ . '/../../../vendor/autoload.php';

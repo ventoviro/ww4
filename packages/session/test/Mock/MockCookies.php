@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Session\Test\Mock;
 
-use Windwalker\Session\Cookies;
+use Windwalker\Session\Cookie\Cookies;
 
 /**
  * The MockCookieSetter class.

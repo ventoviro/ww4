@@ -8,8 +8,6 @@
 
 namespace Windwalker\Session\Handler;
 
-use Windwalker\Session\Cookies;
-
 /**
  * Class AbstractHandler
  *

@@ -13,7 +13,7 @@ error_reporting(-1);
 
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Session\Bridge\NativeBridge;
-use Windwalker\Session\Cookies;
+use Windwalker\Session\Cookie\Cookies;
 use Windwalker\Session\Handler\DatabaseHandler;
 
 include_once __DIR__ . '/../../../vendor/autoload.php';

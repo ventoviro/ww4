@@ -14,7 +14,6 @@ namespace Windwalker\Session\Test\Bridge;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\Filesystem;
 use Windwalker\Session\Bridge\PhpBridge;
-use Windwalker\Session\Cookies;
 
 /**
  * The PhpBridgeTest class.

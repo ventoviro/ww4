@@ -9,14 +9,12 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Session;
-
-use Dflydev\FigCookies\Modifier\SameSite;
+namespace Windwalker\Session\Cookie;
 
 /**
  * The CookieSetter class.
  */
-class Cookies
+class Cookies implements CookiesInterface
 {
     public const SAMESITE_NONE = 'None';
     public const SAMESITE_LAX = 'Lax';

@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\Session\Bridge;
 
-use Windwalker\Session\Cookies;
 use Windwalker\Session\Handler\HandlerInterface;
 use Windwalker\Session\Handler\NativeHandler;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
@@ -23,28 +22,16 @@ class PhpBridge implements BridgeInterface
 {
     use OptionAccessTrait;
 
-    /**
-     * @var Cookies
-     */
-    protected Cookies $cookies;
-
     protected HandlerInterface $handler;
 
     /**
      * NativeBridge constructor.
      *
-     * @param  array                 $options
+     * @param  array                  $options
      * @param  HandlerInterface|null  $handler
-     * @param  Cookies|null          $cookieSetter
      */
-    public function __construct(array $options = [], HandlerInterface $handler = null, Cookies $cookieSetter = null)
+    public function __construct(array $options = [], HandlerInterface $handler = null)
     {
-        $this->cookies = $cookieSetter ?? Cookies::create()
-            ->httpOnly(true)
-            ->expires('+30days')
-            ->secure(false)
-            ->sameSite(Cookies::SAMESITE_LAX);
-
         $this->handler = $handler ?? new NativeHandler();
 
         $this->prepareOptions(
@@ -192,16 +179,6 @@ class PhpBridge implements BridgeInterface
             session_destroy();
         }
     }
-
-    // /**
-    //  * getCookieParams
-    //  *
-    //  * @return  array
-    //  */
-    // public function getCookieParams(): array
-    // {
-    //     return session_get_cookie_params();
-    // }
 
     /**
      * getStorage

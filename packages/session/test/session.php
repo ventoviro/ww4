@@ -9,30 +9,34 @@
 
 declare(strict_types=1);
 
-use Windwalker\Database\DatabaseAdapter;
-use Windwalker\Database\Event\QueryEndEvent;
 use Windwalker\Session\Bridge\NativeBridge;
-use Windwalker\Session\Bridge\PhpBridge;
-use Windwalker\Session\Cookies;
+use Windwalker\Session\Cookie\Cookies;
 use Windwalker\Session\Handler\DatabaseHandler;
+use Windwalker\Session\Handler\NativeHandler;
 use Windwalker\Session\Session;
 
 error_reporting(-1);
 
 include_once __DIR__ . '/../../../vendor/autoload.php';
 
+// $b = new NativeHandler();
+// $b->read('');
+
 $session = new Session(
     [
         'ini' => [
-            'save_path' => __DIR__ . '/../tmp',
+            'save_path' => dirname(__DIR__) . '/tmp/',
             'use_strict_mode' => '1',
             'use_cookies' => '0',
-            'serialize_handler' => 'php_serialize'
+            'serialize_handler' => 'php_serialize',
         ]
     ],
     new NativeBridge(
-        [],
-        new DatabaseHandler(require __DIR__ . '/db-adapter.php')
+        [
+            'gc_probability' => 1
+        ],
+        $n = new NativeHandler()
+        // new DatabaseHandler(require __DIR__ . '/db-adapter.php')
     ),
     Cookies::create()
         ->httpOnly(true)
@@ -44,6 +48,8 @@ $session = new Session(
 $session->setName('WW_SESS');
 
 $session->start();
+
+show(session_save_path(), $n->write('qwe', 'asdawe'));
 
 show($session->all());
 
