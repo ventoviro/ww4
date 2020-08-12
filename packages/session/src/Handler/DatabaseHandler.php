@@ -74,9 +74,9 @@ class DatabaseHandler extends AbstractHandler
      * @throws \Exception
      * @since   2.0
      */
-    public function doRead(string $id): string
+    public function doRead(string $id): ?string
     {
-        return (string) $this->db->select($this->getOption('columns')['data'])
+        return $this->db->select($this->getOption('columns')['data'])
             ->from($this->getOption('table'))
             ->where($this->getOption('columns')['id'], (string) $id)
             ->result();
@@ -162,14 +162,14 @@ class DatabaseHandler extends AbstractHandler
     /**
      * Garbage collect stale sessions from the SessionHandler backend.
      *
-     * @param  integer  $lifetime  The maximum age of a session.
+     * @param  int  $lifetime  The maximum age of a session.
      *
      * @return  boolean  True on success, false otherwise.
      *
      * @throws  \Exception
      * @since   2.0
      */
-    public function gc($lifetime = 1440)
+    public function gc($lifetime)
     {
         // Determine the timestamp threshold with which to purge old sessions.
         $past = time() - $lifetime;

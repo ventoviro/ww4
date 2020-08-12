@@ -14,34 +14,45 @@ namespace Windwalker\Session\Bridge;
 use Windwalker\Session\Cookies;
 use Windwalker\Session\Handler\HandlerInterface;
 use Windwalker\Session\Handler\NativeHandler;
+use Windwalker\Utilities\Classes\OptionAccessTrait;
 
 /**
  * The PhpBridge class.
  */
 class PhpBridge implements BridgeInterface
 {
+    use OptionAccessTrait;
+
     /**
      * @var Cookies
      */
-    protected Cookies $cookieSetter;
+    protected Cookies $cookies;
 
     protected HandlerInterface $handler;
 
     /**
      * NativeBridge constructor.
      *
+     * @param  array                 $options
      * @param  HandlerInterface|null  $handler
-     * @param  Cookies|null           $cookieSetter
+     * @param  Cookies|null          $cookieSetter
      */
-    public function __construct(HandlerInterface $handler = null, Cookies $cookieSetter = null)
+    public function __construct(array $options = [], HandlerInterface $handler = null, Cookies $cookieSetter = null)
     {
-        $this->cookieSetter = $cookieSetter ?? Cookies::create()
+        $this->cookies = $cookieSetter ?? Cookies::create()
             ->httpOnly(true)
             ->expires('+30days')
             ->secure(false)
             ->sameSite(Cookies::SAMESITE_LAX);
 
         $this->handler = $handler ?? new NativeHandler();
+
+        $this->prepareOptions(
+            [
+                //
+            ],
+            $options
+        );
     }
 
     /**
@@ -54,8 +65,6 @@ class PhpBridge implements BridgeInterface
         if ($this->isStarted()) {
             return true;
         }
-
-        $this->setCookieParams();
 
         session_set_save_handler($this->handler);
 
@@ -78,7 +87,7 @@ class PhpBridge implements BridgeInterface
      */
     public function isStarted(): bool
     {
-        return session_status() === PHP_SESSION_ACTIVE;
+        return $this->getStatus() === PHP_SESSION_ACTIVE;
     }
 
     /**
@@ -184,35 +193,15 @@ class PhpBridge implements BridgeInterface
         }
     }
 
-    /**
-     * getCookieParams
-     *
-     * @return  array
-     */
-    public function getCookieParams(): array
-    {
-        return session_get_cookie_params();
-    }
-
-    /**
-     * Set session cookie parameters, this method should call before session started.
-     *
-     * @param array $options An associative array which may have any of the keys lifetime, path, domain,
-     * secure, httponly and samesite. The values have the same meaning as described
-     * for the parameters with the same name. The value of the samesite element
-     * should be either Lax or Strict. If any of the allowed options are not given,
-     * their default values are the same as the default values of the explicit
-     * parameters. If the samesite element is omitted, no SameSite cookie attribute
-     * is set.
-     *
-     * @since   2.0
-     */
-    public function setCookieParams(?array $options = null): void
-    {
-        if (headers_sent()) {
-            session_set_cookie_params($options ?? $this->cookieSetter->getOptions());
-        }
-    }
+    // /**
+    //  * getCookieParams
+    //  *
+    //  * @return  array
+    //  */
+    // public function getCookieParams(): array
+    // {
+    //     return session_get_cookie_params();
+    // }
 
     /**
      * getStorage
@@ -222,5 +211,25 @@ class PhpBridge implements BridgeInterface
     public function &getStorage(): ?array
     {
         return $_SESSION;
+    }
+
+    /**
+     * getStatus
+     *
+     * @return  int
+     */
+    public function getStatus(): int
+    {
+        return session_status();
+    }
+
+    /**
+     * unset
+     *
+     * @return  bool
+     */
+    public function unset(): bool
+    {
+        return session_unset();
     }
 }

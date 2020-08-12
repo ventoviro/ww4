@@ -18,7 +18,5 @@ use Windwalker\Utilities\Contract\SimpleAccessibleInterface;
  */
 interface SessionInterface extends \Countable, \JsonSerializable, SimpleAccessibleInterface
 {
-    public function clear(): void;
-
-    public function hasChanged(): bool;
+    public function clear(): bool;
 }

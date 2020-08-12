@@ -96,6 +96,8 @@ interface BridgeInterface
      */
     public function destroy(): void;
 
+    public function unset(): bool;
+
     // /**
     //  * getCookieParams
     //  *
@@ -128,4 +130,9 @@ interface BridgeInterface
      * @return array|null
      */
     public function &getStorage(): ?array;
+
+    /**
+     * @return int
+     */
+    public function getStatus(): int;
 }

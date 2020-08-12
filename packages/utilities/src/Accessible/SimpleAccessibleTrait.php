@@ -38,7 +38,7 @@ trait SimpleAccessibleTrait
             return $ret;
         }
 
-        $ret =& $this->storage[$key];
+        $ret =& $this->getStorage()[$key];
 
         return $ret;
     }
@@ -53,7 +53,7 @@ trait SimpleAccessibleTrait
      */
     public function set($key, $value)
     {
-        $this->storage[$key] = $value;
+        $this->getStorage()[$key] = $value;
 
         return $this;
     }
@@ -70,7 +70,7 @@ trait SimpleAccessibleTrait
      */
     public function def($key, $default)
     {
-        $this->storage[$key] = $this->storage[$key] ?? $default;
+        $this->getStorage()[$key] = $this->getStorage()[$key] ?? $default;
 
         return $this;
     }
@@ -86,7 +86,7 @@ trait SimpleAccessibleTrait
      */
     public function has($key): bool
     {
-        return isset($this->storage[$key]);
+        return isset($this->getStorage()[$key]);
     }
 
     /**
@@ -101,7 +101,7 @@ trait SimpleAccessibleTrait
     public function remove($key)
     {
         if ($this->has($key)) {
-            unset($this->storage[$key]);
+            unset($this->getStorage()[$key]);
         }
 
         return $this;
@@ -119,10 +119,10 @@ trait SimpleAccessibleTrait
     public function dump(bool $recursive = false, bool $onlyDumpable = false): array
     {
         if (!$recursive) {
-            return $this->storage;
+            return $this->getStorage();
         }
 
-        return TypeCast::toArray($this->storage, true, $onlyDumpable);
+        return TypeCast::toArray($this->getStorage(), true, $onlyDumpable);
     }
 
     /**
@@ -132,7 +132,7 @@ trait SimpleAccessibleTrait
      */
     public function jsonSerialize(): array
     {
-        return $this->storage;
+        return $this->getStorage();
     }
 
     /**
@@ -144,6 +144,14 @@ trait SimpleAccessibleTrait
      */
     public function count(): int
     {
-        return count($this->storage);
+        return count($this->getStorage());
+    }
+
+    /**
+     * @return array|null
+     */
+    public function &getStorage(): ?array
+    {
+        return $this->storage;
     }
 }

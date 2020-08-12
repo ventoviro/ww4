@@ -13,6 +13,8 @@ namespace Windwalker\Session\Bridge;
 
 use Windwalker\Data\Format\FormatInterface;
 use Windwalker\Data\Format\JsonFormat;
+use Windwalker\Data\Format\PhpSerializeFormat;
+use Windwalker\Session\Format\SessionSerializeFormat;
 use Windwalker\Session\Handler\HandlerInterface;
 use Windwalker\Session\Handler\NativeHandler;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
@@ -24,9 +26,9 @@ class NativeBridge implements BridgeInterface
 {
     use OptionAccessTrait;
 
-    protected HandlerInterface $handler;
-
     protected ?string $id = null;
+
+    protected ?string $name = null;
 
     protected int $status = PHP_SESSION_NONE;
 
@@ -34,23 +36,30 @@ class NativeBridge implements BridgeInterface
 
     protected ?string $origin = null;
 
-    /**
-     * @var FormatInterface|null
-     */
-    protected ?FormatInterface $format;
+    protected ?HandlerInterface $handler = null;
+
+    protected ?FormatInterface $format = null;
 
     /**
      * NativeBridge constructor.
      *
      * @see https://gist.github.com/franksacco/d6e943c41189f8ee306c182bf8f07654
      *
+     * @param  array                  $options
      * @param  HandlerInterface|null  $handler
      * @param  FormatInterface|null   $format
      */
-    public function __construct(?HandlerInterface $handler = null, ?FormatInterface $format = null)
+    public function __construct(array $options = [], HandlerInterface $handler = null, ?FormatInterface $format = null)
     {
         $this->handler = $handler ?? new NativeHandler();
-        $this->format = $format ?? new JsonFormat();
+        $this->format = $format ?? new PhpSerializeFormat();
+
+        $this->prepareOptions(
+            [
+                'save_path' => null,
+            ],
+            $options
+        );
     }
 
     /**
@@ -60,7 +69,7 @@ class NativeBridge implements BridgeInterface
      */
     public function start(): bool
     {
-        $this->handler->open($this->getOption('save_path'), $this->getOption('session_name'));
+        $this->handler->open($this->getOption('save_path') ?? session_save_path(), $this->getSessionName());
 
         register_shutdown_function([$this, 'writeClose']);
 
@@ -72,7 +81,7 @@ class NativeBridge implements BridgeInterface
 
         $this->origin = $dataString = $this->handler->read($id) ?? '';
 
-        $_SESSION = (array) $this->format->parse($dataString);
+        $this->storage = (array) ($this->format->parse($dataString) ?: []);
 
         $this->status = PHP_SESSION_ACTIVE;
 
@@ -118,6 +127,7 @@ class NativeBridge implements BridgeInterface
      */
     public function getSessionName(): ?string
     {
+        return $this->name ??= session_name();
     }
 
     /**
@@ -129,6 +139,7 @@ class NativeBridge implements BridgeInterface
      */
     public function setSessionName(string $name): void
     {
+        $this->name = $name;
     }
 
     /**
@@ -150,7 +161,7 @@ class NativeBridge implements BridgeInterface
         }
 
         $this->handler->close();
-        $this->handler->open($this->getOption('save_path'), $this->getOption('session_name'));
+        $this->handler->open($this->getOption('save_path') ?? session_save_path(), $this->getSessionName());
 
         $this->setId($this->createId());
 
@@ -168,11 +179,15 @@ class NativeBridge implements BridgeInterface
      */
     public function writeClose(bool $unset = true): bool
     {
-        if (true) {
-            $this->handler->gc($this->getOption('gc_maxlifetime'));
+        if ($this->status !== PHP_SESSION_ACTIVE) {
+            return true;
         }
 
-        $data = $this->format->dump($_SESSION);
+        if (true) {
+            $this->handler->gc($this->getOption('gc_maxlifetime',  1440));
+        }
+
+        $data = $this->format->dump($this->storage);
 
         if (
             ini_get('session.lazy_write')
@@ -225,5 +240,25 @@ class NativeBridge implements BridgeInterface
     protected function createId(): string
     {
         return session_create_id();
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    /**
+     * unset
+     *
+     * @return  bool
+     */
+    public function unset(): bool
+    {
+        $this->storage = [];
+
+        return true;
     }
 }

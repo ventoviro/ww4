@@ -19,6 +19,8 @@ abstract class AbstractHandler implements HandlerInterface, \SessionUpdateTimest
 {
     protected ?string $loadedData = null;
 
+    protected bool $newSessionId = false;
+
     /**
      * Re-initializes existing session, or creates a new one.
      *
@@ -53,7 +55,11 @@ abstract class AbstractHandler implements HandlerInterface, \SessionUpdateTimest
     {
         $this->loadedData = $this->read($id);
 
-        return $this->loadedData !== '';
+        $newSessionId = $this->newSessionId;
+
+        $this->newSessionId = false;
+
+        return !$newSessionId;
     }
 
     /**
@@ -72,8 +78,14 @@ abstract class AbstractHandler implements HandlerInterface, \SessionUpdateTimest
             return $data;
         }
 
-        return $this->doRead($id);
+        $data = $this->doRead($id);
+
+        if ($data === null) {
+            $this->newSessionId = true;
+        }
+
+        return (string) $data;
     }
 
-    abstract public function doRead(string $id): string;
+    abstract public function doRead(string $id): ?string;
 }
