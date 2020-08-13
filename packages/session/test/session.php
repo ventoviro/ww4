@@ -9,9 +9,10 @@
 
 declare(strict_types=1);
 
-use Windwalker\Session\Bridge\NativeBridge;
+use Windwalker\Session\Bridge\PhpBridge;
 use Windwalker\Session\Cookie\Cookies;
 use Windwalker\Session\Handler\DatabaseHandler;
+use Windwalker\Session\Handler\FilesystemHandler;
 use Windwalker\Session\Handler\NativeHandler;
 use Windwalker\Session\Session;
 
@@ -24,6 +25,7 @@ include_once __DIR__ . '/../../../vendor/autoload.php';
 
 $session = new Session(
     [
+        'auto_commit' => false,
         'ini' => [
             'save_path' => dirname(__DIR__) . '/tmp/',
             'use_strict_mode' => '1',
@@ -31,11 +33,11 @@ $session = new Session(
             'serialize_handler' => 'php_serialize',
         ]
     ],
-    new NativeBridge(
+    new \Windwalker\Session\Bridge\NativeBridge(
         [
             'gc_probability' => 1
         ],
-        $n = new NativeHandler()
+        $n = new FilesystemHandler()
         // new DatabaseHandler(require __DIR__ . '/db-adapter.php')
     ),
     Cookies::create()
@@ -48,11 +50,9 @@ $session = new Session(
 $session->setName('WW_SESS');
 
 $session->start();
-
-show(session_save_path(), $n->write('qwe', 'asdawe'));
-
-show($session->all());
+show($_SESSION);
+// show(session_save_path(), $n->write('qwe', 'asdawe'));
+$session->addFlash('dsf', 'info');
 
 $session->set('flower', 'Sakura');
-
-$session->stop();
+die;

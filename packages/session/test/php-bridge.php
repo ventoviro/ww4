@@ -13,7 +13,7 @@ error_reporting(-1);
 
 use Windwalker\Database\DatabaseAdapter;
 use Windwalker\Database\Event\QueryEndEvent;
-use Windwalker\Session\Bridge\PhpBridge;
+use Windwalker\Session\Bridge\NativeBridge;
 use Windwalker\Session\Cookie\Cookies;
 use Windwalker\Session\Handler\DatabaseHandler;
 
@@ -43,7 +43,7 @@ $db->on(QueryEndEvent::class, fn (QueryEndEvent $event) => show($event->getSql()
 
 $db->execute(file_get_contents(__DIR__ . '/../resources/sql/mysql.sql'));
 
-$sess = new PhpBridge(
+$sess = new NativeBridge(
     new DatabaseHandler(
         $db
     )

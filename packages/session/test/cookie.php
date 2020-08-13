@@ -12,7 +12,7 @@ declare(strict_types=1);
 error_reporting(-1);
 
 use Windwalker\Database\DatabaseAdapter;
-use Windwalker\Session\Bridge\NativeBridge;
+use Windwalker\Session\Bridge\PhpBridge;
 use Windwalker\Session\Cookie\Cookies;
 use Windwalker\Session\Handler\DatabaseHandler;
 
@@ -38,7 +38,7 @@ $db = new DatabaseAdapter(
 
 $db->execute(file_get_contents(__DIR__ . '/../resources/sql/mysql.sql'));
 
-$sess = new NativeBridge(
+$sess = new PhpBridge(
     new DatabaseHandler(
         $db
     )

@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Session;
 
 use Windwalker\Session\Bridge\BridgeInterface;
-use Windwalker\Session\Bridge\PhpBridge;
+use Windwalker\Session\Bridge\NativeBridge;
 use Windwalker\Session\Cookie\Cookies;
 use Windwalker\Session\Cookie\CookiesInterface;
 use Windwalker\Session\Handler\HandlerInterface;
@@ -36,6 +36,8 @@ class Session implements SessionInterface
      */
     protected ?CookiesInterface $cookies;
 
+    protected ?FlashBag $flashBag = null;
+
     /**
      * Session constructor.
      *
@@ -47,6 +49,7 @@ class Session implements SessionInterface
     {
         $this->prepareOptions(
             [
+                'auto_commit' => true,
                 'ini' => [
                     //
                 ]
@@ -54,7 +57,7 @@ class Session implements SessionInterface
             $options
         );
 
-        $this->bridge  = $bridge ?? new PhpBridge();
+        $this->bridge  = $bridge ?? new NativeBridge();
         $this->cookies = $cookies ?? Cookies::create()
             ->httpOnly(true)
             ->expires('+30days')
@@ -110,6 +113,10 @@ class Session implements SessionInterface
 
             // Must set cookie and update expires after session end.
             register_shutdown_function(function () {
+                if ($this->getOption('auto_commit')) {
+                    $this->stop(true);
+                }
+
                 $this->cookies->set(
                     $this->bridge->getSessionName(),
                     $this->bridge->getId()
@@ -172,7 +179,9 @@ class Session implements SessionInterface
 
     public function &getStorage(): ?array
     {
-        return $this->bridge->getStorage();
+        $storage =& $this->bridge->getStorage();
+
+        return $storage;
     }
 
     /**
@@ -218,5 +227,63 @@ class Session implements SessionInterface
     protected function getOptionAndINI(string $name)
     {
         return $this->getOption($name) ?? ini_get('session.' . $name);
+    }
+
+    /**
+     * @return FlashBag
+     */
+    public function getFlashBag(): FlashBag
+    {
+        if ($this->flashBag === null) {
+            $storage = &$this->getStorage();
+            $storage['_flash'] = [];
+
+            $this->flashBag = new FlashBag($storage['_flash']);
+        }
+
+        return $this->flashBag;
+    }
+
+    /**
+     * @param  FlashBag|null  $flashBag
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setFlashBag(?FlashBag $flashBag)
+    {
+        $this->flashBag = $flashBag;
+
+        return $this;
+    }
+
+    /**
+     * Add a flash message.
+     *
+     * @param array|string  $messages  The message you want to set, can be an array to storage multiple messages.
+     * @param string        $type      The message type, default is `info`.
+     *
+     * @return  static
+     *
+     * @since   2.0
+     */
+    public function addFlash(array|string $messages, string $type = 'info')
+    {
+        foreach ((array) $messages as $message) {
+            $this->getFlashBag()->add($message, $type);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Take all flashes and clean them from bag.
+     *
+     * @return  array  All flashes data.
+     *
+     * @since   2.0
+     */
+    public function getFlashes()
+    {
+        return $this->getFlashBag()->all();
     }
 }

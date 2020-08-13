@@ -15,8 +15,9 @@
         "windwalker/utilities": "dev-master"
     },
     "require-dev": {
-        "windwalker/test": "~3.0",
-        "windwalker/database": "~3.0"
+        "windwalker/test": "~4.0",
+        "windwalker/database": "~4.0",
+        "windwalker/filesystem": "~4.0"
     },
     "suggest": {
         "doctrine/inflector": "Install ~1.0 to use inflector."

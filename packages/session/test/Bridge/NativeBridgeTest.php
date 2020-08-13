@@ -13,21 +13,21 @@ namespace Windwalker\Session\Test\Bridge;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Filesystem\Filesystem;
-use Windwalker\Session\Bridge\PhpBridge;
+use Windwalker\Session\Bridge\NativeBridge;
 
 /**
  * The PhpBridgeTest class.
  */
-class PhpBridgeTest extends TestCase
+class NativeBridgeTest extends TestCase
 {
-    protected ?PhpBridge $instance;
+    protected ?NativeBridge $instance;
     protected static string $sess1 = '93cd6b3ec9f36b23d68e9385942dc41c';
     protected static string $sess2 = 'fa0a731220e28af75afba7135723015e';
 
     /**
      * @runInSeparateProcess
      *
-     * @see  PhpBridge::start
+     * @see  NativeBridge::start
      */
     public function testStart(): void
     {
@@ -97,7 +97,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::destroy
+     * @see  NativeBridge::destroy
      *
      * @runInSeparateProcess
      */
@@ -117,7 +117,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::setSessionName
+     * @see  NativeBridge::setSessionName
      *
      * @runInSeparateProcess
      */
@@ -140,7 +140,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::setSessionName
+     * @see  NativeBridge::setSessionName
      * @runInSeparateProcess
      */
     public function testSetSessionName(): void
@@ -170,7 +170,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::isStarted
+     * @see  NativeBridge::isStarted
      * @runInSeparateProcess
      */
     public function testIsStartedAndRestart(): void
@@ -198,7 +198,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::restart
+     * @see  NativeBridge::restart
      * @runInSeparateProcess
      */
     public function testRestartAndDestroyOld(): void
@@ -226,7 +226,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::getId
+     * @see  NativeBridge::getId
      * @runInSeparateProcess
      */
     public function testGetId(): void
@@ -240,7 +240,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::regenerate
+     * @see  NativeBridge::regenerate
      * @runInSeparateProcess
      */
     public function testRegenerate(): void
@@ -264,7 +264,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::regenerate
+     * @see  NativeBridge::regenerate
      * @runInSeparateProcess
      */
     public function testRegenerateDeleteOld(): void
@@ -288,7 +288,7 @@ class PhpBridgeTest extends TestCase
     }
 
     /**
-     * @see  PhpBridge::getStorage
+     * @see  NativeBridge::getStorage
      */
     public function testGetStorage(): void
     {
@@ -297,7 +297,7 @@ class PhpBridgeTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->instance = new PhpBridge();
+        $this->instance = new NativeBridge();
     }
 
     /**
