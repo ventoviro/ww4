@@ -24,6 +24,9 @@ class PhpBridge implements BridgeInterface
 {
     use OptionAccessTrait;
 
+    public const OPTION_AUTO_COMMIT = 'auto_commit';
+    public const OPTION_WITH_SUPER_GLOBAL = 'with_super_global';
+
     protected ?string $id = null;
 
     protected ?string $name = null;
@@ -36,7 +39,7 @@ class PhpBridge implements BridgeInterface
 
     protected ?HandlerInterface $handler = null;
 
-    protected ?FormatInterface $format = null;
+    protected ?FormatInterface $serializer = null;
 
     /**
      * NativeBridge constructor.
@@ -45,16 +48,17 @@ class PhpBridge implements BridgeInterface
      *
      * @param  array                  $options
      * @param  HandlerInterface|null  $handler
-     * @param  FormatInterface|null   $format
+     * @param  FormatInterface|null   $serializer
      */
-    public function __construct(array $options = [], HandlerInterface $handler = null, ?FormatInterface $format = null)
+    public function __construct(array $options = [], HandlerInterface $handler = null, ?FormatInterface $serializer = null)
     {
-        $this->handler = $handler ?? new NativeHandler();
-        $this->format = $format ?? new PhpSerializeFormat();
+        $this->handler    = $handler ?? new NativeHandler();
+        $this->serializer = $serializer;
 
         $this->prepareOptions(
             [
-                'auto_commit' => false
+                static::OPTION_AUTO_COMMIT => false,
+                static::OPTION_WITH_SUPER_GLOBAL => false
             ],
             $options
         );
@@ -88,7 +92,11 @@ class PhpBridge implements BridgeInterface
 
         $this->origin = $dataString = $this->handler->read($id) ?: '';
 
-        $this->storage = (array) ($this->format->parse($dataString) ?: []);
+        $this->storage = $this->decodeData($dataString);
+
+        if ($this->getOption(static::OPTION_WITH_SUPER_GLOBAL)) {
+            $_SESSION = &$this->storage;
+        }
 
         $this->status = PHP_SESSION_ACTIVE;
 
@@ -159,7 +167,7 @@ class PhpBridge implements BridgeInterface
      */
     public function regenerate(bool $deleteOld = false): bool
     {
-        $this->origin = $data = $this->format->dump($_SESSION);
+        $this->origin = $data = $this->encodeData($this->getStorage());
 
         if ($deleteOld) {
             $this->handler->destroy($this->getId());
@@ -191,14 +199,13 @@ class PhpBridge implements BridgeInterface
         }
 
         if ($this->gcEnabled()) {
-            show('GC');
             $this->handler->gc($this->getOptionAndINI('gc_maxlifetime') ?? 1440);
         }
 
-        $data = $this->format->dump($this->storage);
+        $data = $this->encodeData($this->storage);
 
         if (
-            ini_get('session.lazy_write')
+            $this->getOptionAndINI('lazy_write')
             && $this->origin === $data
             && $this->handler instanceof \SessionUpdateTimestampHandlerInterface
         ) {
@@ -208,10 +215,10 @@ class PhpBridge implements BridgeInterface
         }
 
         if ($unset) {
-            $_SESSION = [];
+            $this->unset();
         }
 
-        $this->status = PHP_SESSION_DISABLED;
+        $this->status = PHP_SESSION_NONE;
 
         return $r;
     }
@@ -235,9 +242,13 @@ class PhpBridge implements BridgeInterface
      */
     public function destroy(): void
     {
-        $this->handler->destroy($this->getId());
+        if ($this->getId()) {
+            $this->handler->destroy($this->getId());
 
-        $this->handler->close();
+            $this->unset();
+        }
+
+        $this->status = PHP_SESSION_NONE;
     }
 
     /**
@@ -279,11 +290,73 @@ class PhpBridge implements BridgeInterface
     {
         $this->storage = [];
 
+        if ($this->getOption(static::OPTION_WITH_SUPER_GLOBAL)) {
+            unset($_SESSION);
+        }
+
         return true;
     }
 
     protected function getOptionAndINI(string $name)
     {
         return $this->getOption($name) ?? ini_get('session.' . $name);
+    }
+
+    /**
+     * @return HandlerInterface
+     */
+    public function getHandler(): HandlerInterface
+    {
+        return $this->handler;
+    }
+
+    /**
+     * @param  HandlerInterface  $handler
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setHandler(HandlerInterface $handler)
+    {
+        if ($this->getStatus() === PHP_SESSION_ACTIVE) {
+            throw new \RuntimeException('Cannot change handler during session active.');
+        }
+
+        $this->handler = $handler;
+
+        return $this;
+    }
+
+    public function getSerializer(): ?FormatInterface
+    {
+        return $this->serializer;
+    }
+
+    public function setSerializer(?FormatInterface $serializer)
+    {
+        if ($this->getStatus() === PHP_SESSION_ACTIVE) {
+            throw new \RuntimeException('Cannot change serializer during session active.');
+        }
+
+        $this->serializer = $serializer;
+
+        return $this;
+    }
+
+    protected function decodeData(string $dataString): array
+    {
+        if (!$this->serializer) {
+            return (array) (unserialize($dataString) ?: []);
+        }
+
+        return (array) ($this->serializer->parse($dataString) ?: []);
+    }
+
+    protected function encodeData(array $storage): string
+    {
+        if (!$this->serializer) {
+            return serialize($storage);
+        }
+
+        return $this->serializer->dump($storage);
     }
 }

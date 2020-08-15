@@ -24,6 +24,28 @@ class NativeBridgeTest extends TestCase
     protected static string $sess1 = '93cd6b3ec9f36b23d68e9385942dc41c';
     protected static string $sess2 = 'fa0a731220e28af75afba7135723015e';
 
+    protected static function resetSessions(): void
+    {
+        session_save_path(static::getSessionPath());
+
+        foreach (Filesystem::glob(self::getSessionPath() . '/sess_*') as $fileObject) {
+            $fileObject->delete();
+        }
+
+        $buffer = 'flower|s:6:"Sakura";animal|s:3:"Cat";';
+
+        file_put_contents(self::getSessionPath() . '/' . 'sess_' . static::$sess1, $buffer);
+
+        $buffer = 'flower|s:4:"Rose";tree|s:3:"Oak";';
+
+        file_put_contents(self::getSessionPath() . '/' . 'sess_' . static::$sess2, $buffer);
+    }
+
+    protected static function getSessionPath(): string
+    {
+        return __DIR__ . '/../../tmp';
+    }
+
     /**
      * @runInSeparateProcess
      *
@@ -72,28 +94,6 @@ class NativeBridgeTest extends TestCase
             'flower|s:4:"Rose";tree|s:3:"Oak";animal|s:4:"Bird";',
             file_get_contents(self::getSessionPath() . '/' . 'sess_' . static::$sess2),
         );
-    }
-
-    protected static function resetSessions(): void
-    {
-        session_save_path(static::getSessionPath());
-
-        foreach (Filesystem::glob(self::getSessionPath() . '/sess_*') as $fileObject) {
-            $fileObject->delete();
-        }
-
-        $buffer = 'flower|s:6:"Sakura";animal|s:3:"Cat";';
-
-        file_put_contents(self::getSessionPath() . '/' . 'sess_' . static::$sess1, $buffer);
-
-        $buffer = 'flower|s:4:"Rose";tree|s:3:"Oak";';
-
-        file_put_contents(self::getSessionPath() . '/' . 'sess_' . static::$sess2, $buffer);
-    }
-
-    protected static function getSessionPath(): string
-    {
-        return __DIR__ . '/../../tmp';
     }
 
     /**
