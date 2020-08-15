@@ -1,30 +1,27 @@
 {
-    "name": "windwalker/session",
+    "name": "windwalker/di",
     "type": "windwalker-package",
-    "description": "Windwalker Session package",
+    "description": "Windwalker DI package",
     "keywords": [
         "windwalker",
         "framework",
-        "session"
+        "di"
     ],
-    "homepage": "https://github.com/ventoviro/windwalker-session",
+    "homepage": "https://github.com/ventoviro/windwalker-di",
     "license": "MIT",
     "require": {
         "php": ">=8.0.0",
-        "windwalker/cache": "dev-master",
         "windwalker/utilities": "dev-master"
     },
     "require-dev": {
-        "windwalker/test": "~4.0",
-        "windwalker/database": "~4.0",
-        "windwalker/filesystem": "~4.0"
+        "windwalker/test": "~4.0"
     },
     "suggest": {
     },
     "minimum-stability": "beta",
     "autoload": {
         "psr-4": {
-            "Windwalker\\Session\\": "src/"
+            "Windwalker\\DI\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
@@ -32,7 +29,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Windwalker\\Session\\Test\\": "test/"
+            "Windwalker\\DI\\Test\\": "test/"
         }
     },
     "extra": {

@@ -107,7 +107,9 @@ class MergeComposer extends \Asika\SimpleConsole\Console
         foreach ((array) $json->getDeep($path) as $key => $item) {
             if (is_numeric($key)) {
                 $target->append("packages/$name/$dir")
-                    ->apply(fn ($storage) => array_unique($storage));
+                    ->apply(fn ($storage) => array_unique($storage))
+                    ->sort()
+                    ->values();
             } else {
                 $target->set($key, "packages/$name/$dir");
             }
