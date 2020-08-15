@@ -34,6 +34,10 @@ class Cookies implements CookiesInterface
 
     public function set(string $name, string $value): bool
     {
+        if (headers_sent()) {
+            throw new \RuntimeException('Header sent');
+        }
+
         return setcookie($name, $value, $this->getOptions());
     }
 

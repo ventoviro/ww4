@@ -71,7 +71,7 @@ class FilesystemHandler extends AbstractHandler
      *
      * @return  string|null
      */
-    public function doRead(string $id): ?string
+    protected function doRead(string $id): ?string
     {
         $file = Filesystem::get($this->getFilePath($id));
 

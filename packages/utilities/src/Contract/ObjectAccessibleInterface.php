@@ -3,7 +3,7 @@
 /**
  * Part of ww4 project.
  *
- * @copyright  Copyright (C) 2019 __ORGANIZATION__.
+ * @copyright  Copyright (C) 2020 __ORGANIZATION__.
  * @license    __LICENSE__
  */
 
@@ -11,25 +11,10 @@ declare(strict_types=1);
 
 namespace Windwalker\Utilities\Contract;
 
-use ArrayAccess;
-use Countable;
-use IteratorAggregate;
-use JsonSerializable;
-
 /**
- * The AccessibleInterface class.
- *
- * @since  __DEPLOY_VERSION__
+ * Interface ObjectAccessibleInterface
  */
-interface AccessibleInterface extends
-    AccessorAccessibleInterface,
-    ArrayAccessibleInterface,
-    ObjectAccessibleInterface,
-    JsonSerializable,
-    DumpableInterface,
-    Countable,
-    IteratorAggregate,
-    NullableInterface
+interface ObjectAccessibleInterface
 {
     /**
      * Dynamically retrieve the value.

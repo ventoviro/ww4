@@ -24,9 +24,6 @@ class PhpBridge implements BridgeInterface
 {
     use OptionAccessTrait;
 
-    public const OPTION_AUTO_COMMIT = 'auto_commit';
-    public const OPTION_WITH_SUPER_GLOBAL = 'with_super_global';
-
     protected ?string $id = null;
 
     protected ?string $name = null;
@@ -162,16 +159,18 @@ class PhpBridge implements BridgeInterface
      *
      * @param  bool  $deleteOld
      *
+     * @param  bool  $saveOld
+     *
      * @return  bool
      * @throws \Exception
      */
-    public function regenerate(bool $deleteOld = false): bool
+    public function regenerate(bool $deleteOld = false, bool $saveOld = true): bool
     {
         $this->origin = $data = $this->encodeData($this->getStorage());
 
         if ($deleteOld) {
             $this->handler->destroy($this->getId());
-        } else {
+        } elseif ($saveOld) {
             $this->handler->write($this->getId(), $data);
         }
 
@@ -223,6 +222,18 @@ class PhpBridge implements BridgeInterface
         return $r;
     }
 
+    /**
+     * Close without write, only for Session::fork().
+     *
+     * @return  bool
+     */
+    public function close(): bool
+    {
+        $this->status = PHP_SESSION_NONE;
+
+        return true;
+    }
+
     public function gcEnabled(): bool
     {
         $probability = (int) $this->getOptionAndINI('gc_probability');
@@ -249,6 +260,18 @@ class PhpBridge implements BridgeInterface
         }
 
         $this->status = PHP_SESSION_NONE;
+    }
+
+    /**
+     * @param  array  $storage
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setStorage(array $storage)
+    {
+        $this->storage = $storage;
+
+        return $this;
     }
 
     /**
@@ -358,5 +381,19 @@ class PhpBridge implements BridgeInterface
         }
 
         return $this->serializer->dump($storage);
+    }
+
+    /**
+     * __clone
+     *
+     * @return  void
+     */
+    public function __clone()
+    {
+        $this->handler = clone $this->handler;
+
+        if ($this->serializer) {
+            $this->serializer = clone $this->serializer;
+        }
     }
 }

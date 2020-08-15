@@ -102,4 +102,15 @@ class BoundedHelper
 
         return sprintf($sql, ...$values);
     }
+
+    public static function forPDO($sql, array $bounded): array
+    {
+        if ($bounded === []) {
+            return [$sql, []];
+        }
+
+        [$sql, $params] = static::replaceParams($sql, '?', $bounded);
+
+        return [$sql, array_column($params, 'value')];
+    }
 }

@@ -34,8 +34,8 @@ class CallbackCookies implements CookiesInterface
      */
     public function __construct(?callable $getter = null, ?callable $setter = null)
     {
-        $this->getter = $getter;
-        $this->setter = $setter;
+        $this->getter = $getter ?? fn () => true;
+        $this->setter = $setter ?? fn () => null;
     }
 
     /**
@@ -48,13 +48,7 @@ class CallbackCookies implements CookiesInterface
      */
     public function set(string $name, string $value): bool
     {
-        $setter = $this->getSetter();
-
-        if (!$setter) {
-            return false;
-        }
-
-        return (bool) $setter($name, $value);
+        return (bool) $this->getSetter()($name, $value);
     }
 
     /**
@@ -66,13 +60,7 @@ class CallbackCookies implements CookiesInterface
      */
     public function get(string $name): ?string
     {
-        $getter = $this->getGetter();
-
-        if (!$getter) {
-            return null;
-        }
-
-        return $getter($name);
+        return $this->getGetter()($name);
     }
 
     /**

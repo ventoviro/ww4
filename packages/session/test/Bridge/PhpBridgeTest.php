@@ -18,30 +18,17 @@ use PHPUnit\Framework\TestCase;
 use Windwalker\Session\Bridge\PhpBridge;
 use Windwalker\Session\Handler\FilesystemHandler;
 use Windwalker\Session\Handler\HandlerInterface;
-
-use function Windwalker\arr;
+use Windwalker\Session\Test\SessionVfsTestTrait;
 
 /**
  * The PhpBridgeTest class.
  */
 class PhpBridgeTest extends TestCase
 {
+    use SessionVfsTestTrait;
     use MockeryPHPUnitIntegration;
 
     protected ?PhpBridge $instance;
-
-    protected static string $sess1 = '93cd6b3ec9f36b23d68e9385942dc41c';
-    protected static string $sess2 = 'fa0a731220e28af75afba7135723015e';
-
-    protected function resetSessions(): void
-    {
-        $this->prepareVfs();
-    }
-
-    protected static function getSessionPath(): string
-    {
-        return 'vfs://root/tmp';
-    }
 
     /**
      * @see  PhpBridge::start
@@ -413,23 +400,9 @@ class PhpBridgeTest extends TestCase
         );
     }
 
-    protected function prepareVfs(?array $structure = null): void
+    protected function resetSessions(): void
     {
-        $this->root = vfsStream::setup(
-            'root',
-            null,
-            $structure ?? [
-                'tmp' => [
-                    'sess_' . static::$sess1 => 'a:2:{s:6:"flower";s:6:"Sakura";s:6:"animal";s:3:"Cat";}',
-                    'sess_' . static::$sess2 => 'a:2:{s:6:"flower";s:4:"Rose";s:4:"tree";s:3:"Oak";}',
-                ]
-            ]
-        );
-    }
-
-    protected function inspectVfs(): \org\bovigo\vfs\visitor\vfsStreamVisitor
-    {
-        return vfsStream::inspect(new vfsStreamStructureVisitor());
+        $this->prepareVfs();
     }
 
     protected function tearDown(): void

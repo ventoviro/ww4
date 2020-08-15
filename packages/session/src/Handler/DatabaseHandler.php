@@ -74,7 +74,7 @@ class DatabaseHandler extends AbstractHandler
      * @throws \Exception
      * @since   2.0
      */
-    public function doRead(string $id): ?string
+    protected function doRead(string $id): ?string
     {
         return $this->db->select($this->getOption('columns')['data'])
             ->from($this->getOption('table'))
@@ -118,7 +118,7 @@ class DatabaseHandler extends AbstractHandler
             $sess = $this->db->createQuery()
                 ->select('*')
                 ->from($this->getOption('table'))
-                ->where('id', $id)
+                ->where($columns['id'], $id)
                 ->forUpdate()
                 ->get();
 
@@ -152,8 +152,10 @@ class DatabaseHandler extends AbstractHandler
      */
     public function destroy($id)
     {
+        $columns = $this->getOption('columns');
+
         $this->db->delete($this->getOption('table'))
-            ->where('id', $id)
+            ->where($columns['id'], $id)
             ->execute();
 
         return true;
@@ -176,6 +178,27 @@ class DatabaseHandler extends AbstractHandler
 
         $this->db->delete($this->getOption('table'))
             ->where($this->getOption('columns')['time'], '<', $past)
+            ->execute();
+
+        return true;
+    }
+
+    /**
+     * updateTimestamp
+     *
+     * @param  string  $session_id
+     * @param  string  $session_data
+     *
+     * @return  bool
+     */
+    public function updateTimestamp($session_id, $session_data)
+    {
+        $columns = $this->getOption('columns');
+
+        $this->db->createQuery()
+            ->update($this->getOption('table'))
+            ->set($columns['time'], time())
+            ->where($columns['id'], $session_id)
             ->execute();
 
         return true;
@@ -257,24 +280,5 @@ ON DUPLICATE KEY UPDATE %n = VALUES(%n), %n = VALUES(%n)",
         }
 
         return null;
-    }
-
-    /**
-     * updateTimestamp
-     *
-     * @param  string  $session_id
-     * @param  string  $session_data
-     *
-     * @return  bool
-     */
-    public function updateTimestamp($session_id, $session_data)
-    {
-        $this->db->createQuery()
-            ->update($this->getOption('table'))
-            ->set('time', time())
-            ->where('id', $session_id)
-            ->execute();
-
-        return true;
     }
 }

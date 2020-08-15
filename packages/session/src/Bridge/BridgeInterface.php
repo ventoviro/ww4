@@ -15,6 +15,9 @@ namespace Windwalker\Session\Bridge;
  */
 interface BridgeInterface
 {
+    public const OPTION_AUTO_COMMIT = 'auto_commit';
+    public const OPTION_WITH_SUPER_GLOBAL = 'with_super_global';
+
     /**
      * Starts the session.
      *
@@ -66,11 +69,13 @@ interface BridgeInterface
     /**
      * regenerate
      *
-     * @param bool  $deleteOld
+     * @param  bool  $deleteOld
+     *
+     * @param  bool  $saveOld
      *
      * @return  bool
      */
-    public function regenerate(bool $deleteOld = false): bool;
+    public function regenerate(bool $deleteOld = false, bool $saveOld = true): bool;
 
     /**
      * Force the session to be saved and closed.

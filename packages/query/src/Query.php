@@ -1551,7 +1551,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
      *
      * @return mixed|static
      */
-    public function debug(bool $pre = false, bool $format = true, bool $asString = true)
+    public function debug(bool $pre = false, bool $format = true, bool $asString = false)
     {
         $sql = $this->render(true);
 
@@ -1570,6 +1570,26 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
         echo $sql;
 
         return $this;
+    }
+
+    public function forPDO(?array &$bounded = []): string
+    {
+        $bounded = $bounded ?: [];
+
+        if (!$this->type) {
+            return '';
+        }
+
+        // Only top level query rendering should create sequence and get merged bounded
+        if (!$this->sequence) {
+            $bounded = $this->mergeBounded();
+        }
+
+        $sql = $this->getGrammar()->compile((string) $this->type, $this);
+
+        [$sql, $bounded] = BoundedHelper::forPDO($sql, $bounded);
+
+        return $sql;
     }
 
     public function getMergedBounded(): array

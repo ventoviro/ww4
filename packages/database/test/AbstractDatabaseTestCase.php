@@ -51,10 +51,10 @@ abstract class AbstractDatabaseTestCase extends AbstractDatabaseDriverTestCase
 
         $logFile = __DIR__ . '/../tmp/test-sql.sql';
 
-        if (!static::$logInited) {
+        if (!self::$logInited) {
             @unlink($logFile);
 
-            static::$logInited = true;
+            self::$logInited = true;
         }
 
         $db->on(QueryEndEvent::class, function (QueryEndEvent $event) use ($logFile) {

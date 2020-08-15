@@ -71,7 +71,7 @@ class RedisHandler extends AbstractHandler
      *
      * @return  string|null
      */
-    public function doRead(string $id): ?string
+    protected function doRead(string $id): ?string
     {
         $r = $this->getDriver()->get($this->getKey($id));
 

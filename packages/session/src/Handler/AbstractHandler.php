@@ -85,5 +85,5 @@ abstract class AbstractHandler implements HandlerInterface, \SessionUpdateTimest
         return (string) $data;
     }
 
-    abstract public function doRead(string $id): ?string;
+    abstract protected function doRead(string $id): ?string;
 }

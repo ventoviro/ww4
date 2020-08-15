@@ -18,13 +18,10 @@ class FlashBag
 {
     protected ?array $storage;
 
-    protected string $key;
-
     /**
      * FlashBag constructor.
      *
      * @param  array|null  $storage
-     * @param  string      $key
      */
     public function __construct(?array &$storage)
     {
@@ -58,7 +55,7 @@ class FlashBag
 
     public function all()
     {
-        $storage = $this->storage[$this->key];
+        $storage = $this->storage;
 
         $this->storage = [];
 

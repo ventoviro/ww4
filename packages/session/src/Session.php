@@ -15,25 +15,23 @@ use Windwalker\Session\Bridge\BridgeInterface;
 use Windwalker\Session\Bridge\NativeBridge;
 use Windwalker\Session\Cookie\Cookies;
 use Windwalker\Session\Cookie\CookiesInterface;
-use Windwalker\Session\Handler\HandlerInterface;
 use Windwalker\Utilities\Accessible\SimpleAccessibleTrait;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
+
+use Windwalker\Utilities\Contract\ArrayAccessibleInterface;
+
+use function Windwalker\tap;
 
 /**
  * The Session class.
  */
-class Session implements SessionInterface
+class Session implements SessionInterface, ArrayAccessibleInterface
 {
     use OptionAccessTrait;
     use SimpleAccessibleTrait;
 
-    protected ?HandlerInterface $handler = null;
-
     protected ?BridgeInterface $bridge = null;
 
-    /**
-     * @var Cookies|null
-     */
     protected ?CookiesInterface $cookies;
 
     protected ?FlashBag $flashBag = null;
@@ -49,7 +47,7 @@ class Session implements SessionInterface
     {
         $this->prepareOptions(
             [
-                'auto_commit' => true,
+                static::OPTION_AUTO_COMMIT => true,
                 'ini' => [
                     //
                 ]
@@ -92,6 +90,18 @@ class Session implements SessionInterface
         return $this->bridge->getSessionName();
     }
 
+    public function setId(string $id)
+    {
+        $this->bridge->setId($id);
+
+        return $this;
+    }
+
+    public function getId(): ?string
+    {
+        return $this->bridge->getId();
+    }
+
     public function start(): bool
     {
         if ($this->bridge->isStarted()) {
@@ -100,31 +110,39 @@ class Session implements SessionInterface
 
         $this->registerINI();
 
-        if ($this->getOptionAndINI('use_cookies')) {
+        if (
+            $this->bridge instanceof NativeBridge
+            && $this->cookies instanceof Cookies
+            && $this->getOptionAndINI('use_cookies')
+        ) {
             // If use auto cookie, we set cookie params first.
+            // Only Native session bridge with native cookies use this.
             $this->setCookieParams();
         } else {
             // Otherwise set session ID from $_COOKIE.
-            $this->bridge->setId(
-                $this->cookies->get(
-                    $this->bridge->getSessionName()
-                )
-            );
+            $id = $this->cookies->get($this->bridge->getSessionName());
+
+            if ($id !== null) {
+                $this->bridge->setId($id);
+            }
 
             // Must set cookie and update expires after session end.
             register_shutdown_function(function () {
                 if ($this->getOption('auto_commit')) {
                     $this->stop(true);
                 }
-
-                $this->cookies->set(
-                    $this->bridge->getSessionName(),
-                    $this->bridge->getId()
-                );
             });
         }
 
-        return $this->bridge->start();
+        return tap(
+            $this->bridge->start(),
+
+            // Send Cookies after started
+            fn () => $this->cookies->set(
+                $this->bridge->getSessionName(),
+                $this->bridge->getId()
+            )
+        );
     }
 
     public function stop(bool $unset = true): bool
@@ -132,9 +150,44 @@ class Session implements SessionInterface
         return $this->bridge->writeClose($unset);
     }
 
-    public function fork(): bool
+    public function fork(?string $newId = null): Session
     {
-        return $this->bridge->regenerate();
+        if (!$this->isStarted()) {
+            throw new \LogicException(
+                static::class
+                . '::fork() only work after started, before started, you can use clone to copy it.'
+            );
+        }
+
+        $new = clone $this;
+
+        $bridge = $new->bridge;
+
+        if ($newId === null) {
+            // If use native php session, we can only regenerate new ID
+            $bridge->regenerate(false, true);
+        } else {
+            // If use our implemented php bridge, we can fork it with specific ID.
+            if ($this->bridge instanceof NativeBridge) {
+                throw new \LogicException('Fork with specific ID does not supports NativeBridge');
+            }
+
+            $data = $new->getStorage();
+
+            $bridge->close();
+            $bridge->unset();
+
+            $bridge->setId($newId);
+            $bridge->start();
+            $bridge->setStorage($data);
+        }
+
+        return $new;
+    }
+
+    public function regenerate(bool $deleteOld = false): bool
+    {
+        return $this->bridge->regenerate($deleteOld);
     }
 
     public function restart(): bool
@@ -199,25 +252,25 @@ class Session implements SessionInterface
      */
     public function setCookieParams(?array $options = null): void
     {
-        if (headers_sent()) {
+        if (headers_sent() && $this->getCookies() instanceof Cookies) {
             session_set_cookie_params($options ?? $this->cookies->getOptions());
         }
     }
 
     /**
-     * @return Cookies|null
+     * @return CookiesInterface|null
      */
-    public function getCookies(): ?Cookies
+    public function getCookies(): ?CookiesInterface
     {
         return $this->cookies;
     }
 
     /**
-     * @param  Cookies|null  $cookies
+     * @param  CookiesInterface|null  $cookies
      *
      * @return  static  Return self to support chaining.
      */
-    public function setCookies(?Cookies $cookies)
+    public function setCookies(?CookiesInterface $cookies)
     {
         $this->cookies = $cookies;
 
@@ -226,7 +279,7 @@ class Session implements SessionInterface
 
     protected function getOptionAndINI(string $name)
     {
-        return $this->getOption($name) ?? ini_get('session.' . $name);
+        return $this->getOption('ini')[$name] ?? ini_get('session.' . $name);
     }
 
     /**
@@ -285,5 +338,96 @@ class Session implements SessionInterface
     public function getFlashes()
     {
         return $this->getFlashBag()->all();
+    }
+
+    /**
+     * @return BridgeInterface
+     */
+    public function getBridge(): BridgeInterface
+    {
+        return $this->bridge;
+    }
+
+    /**
+     * @param  BridgeInterface  $bridge
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setBridge(BridgeInterface $bridge)
+    {
+        $this->bridge = $bridge;
+
+        return $this;
+    }
+
+    /**
+     * offsetExists
+     *
+     * @param  mixed  $key
+     *
+     * @return  bool
+     */
+    public function offsetExists($key): bool
+    {
+        return $this->has($key);
+    }
+
+    /**
+     * offsetGet
+     *
+     * @param  mixed  $key
+     *
+     * @return  mixed
+     */
+    public function &offsetGet($key)
+    {
+        return $this->get($key);
+    }
+
+    /**
+     * offsetSet
+     *
+     * @param  mixed  $key
+     * @param  mixed  $value
+     *
+     * @return  void
+     */
+    public function offsetSet($key, $value): void
+    {
+        $this->set($key, $value);
+    }
+
+    /**
+     * offsetUnset
+     *
+     * @param  mixed  $key
+     *
+     * @return  void
+     */
+    public function offsetUnset($key): void
+    {
+        $this->remove($key);
+    }
+
+    /**
+     * __clone
+     *
+     * @return  void
+     */
+    public function __clone()
+    {
+        $this->bridge = clone $this->bridge;
+        $this->cookies = clone $this->cookies;
+        $this->flashBag = $this->flashBag ? clone $this->flashBag : $this->flashBag;
+    }
+
+    /**
+     * isStarted
+     *
+     * @return  bool
+     */
+    public function isStarted(): bool
+    {
+        return $this->bridge->isStarted();
     }
 }

@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Utilities\Contract;
 
 /**
- * Interface SimpleAccessibleInterface
+ * Interface AccessorAccessibleInterface
  */
-interface SimpleAccessibleInterface
+interface AccessorAccessibleInterface
 {
     /**
      * Get value from this object.

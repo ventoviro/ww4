@@ -144,9 +144,11 @@ class NativeBridge implements BridgeInterface
      *
      * @param  bool  $deleteOld
      *
+     * @param  bool  $saveOld
+     *
      * @return  bool
      */
-    public function regenerate(bool $deleteOld = false): bool
+    public function regenerate(bool $deleteOld = false, bool $saveOld = true): bool
     {
         return session_regenerate_id($deleteOld);
     }
@@ -210,5 +212,15 @@ class NativeBridge implements BridgeInterface
     public function unset(): bool
     {
         return session_unset();
+    }
+
+    /**
+     * __clone
+     *
+     * @return  void
+     */
+    public function __clone()
+    {
+        $this->handler = clone $this->handler;
     }
 }

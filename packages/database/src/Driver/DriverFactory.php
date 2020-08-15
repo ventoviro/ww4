@@ -37,4 +37,11 @@ class DriverFactory
 
         return $driver;
     }
+
+    public static function getPlatformName($name): string
+    {
+        $names = explode('_', $name, 2);
+
+        return $names[1] ?? $names[0];
+    }
 }
