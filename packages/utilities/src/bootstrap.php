@@ -18,5 +18,5 @@ if (
     && class_exists(SerializableClosure::class)
     && class_exists(\FFI::class)
 ) {
-    SerializableClosure::init();
+    // SerializableClosure::init();
 }

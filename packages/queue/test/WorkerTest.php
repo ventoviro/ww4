@@ -36,6 +36,10 @@ class WorkerTest extends AbstractDatabaseTestCase
      */
     public function testLoop(): void
     {
+        if (!in_array('closure', stream_get_wrappers(), true)) {
+            self::markTestSkipped('Closure serialize not supported now.');
+        }
+
         $this->instance->getQueue()->push(
             static function () {
                 static::$logs[] = 'Job executed.';
