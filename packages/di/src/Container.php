@@ -11,14 +11,18 @@ declare(strict_types=1);
 
 namespace Windwalker\DI;
 
+use DI\Definition\ObjectDefinition;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Windwalker\Data\Collection;
+use Windwalker\DI\Builder\ObjectBuilder;
 use Windwalker\DI\Definition\DefinitionFactory;
 use Windwalker\DI\Definition\DefinitionInterface;
 use Windwalker\DI\Definition\NoCacheDefinition;
+use Windwalker\DI\Definition\ObjectBuilderDefinition;
 use Windwalker\DI\Exception\DefinitionNotFoundException;
+use Windwalker\DI\Exception\DependencyResolutionException;
 
 /**
  * The Container class.
@@ -48,6 +52,11 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
      * @var Collection
      */
     protected Collection $parameters;
+
+    /**
+     * @var ObjectBuilder[]
+     */
+    protected array $builders = [];
 
     /**
      * Container constructor.
@@ -89,13 +98,6 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
         return $this;
     }
 
-    public function singleton(string $key, $value, bool)
-    {
-        $this->set($key, DefinitionFactory::create($value));
-
-        return $this;
-    }
-
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
@@ -107,7 +109,7 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
      *
      * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
      */
-    public function get($id, $forceNew = false)
+    public function get($id, bool $forceNew = false)
     {
         $definition = $this->getDefinition($id);
 
@@ -118,6 +120,15 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
         }
 
         return $definition->resolve($this, $forceNew);
+    }
+
+    public function resolve($idOrDefinition, bool $forceNew = false)
+    {
+        if ($idOrDefinition instanceof DefinitionInterface) {
+            return $idOrDefinition->resolve($this, $forceNew);
+        }
+
+        return $this->get($idOrDefinition, $forceNew);
     }
 
     /**
@@ -197,6 +208,70 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
 
         return null;
     }
+
+    public function bind(string $name, $value)
+    {
+
+    }
+
+    public function singleton(string $key, $value)
+    {
+        if (is_string($value)) {
+            $value = fn (Container $container) => $container->newInstance($key);
+        }
+
+        $this->set($key, DefinitionFactory::create($value));
+
+        return $this;
+    }
+
+    /**
+     * Execute a callable with dependencies.
+     *
+     * @param callable $callable
+     * @param array    $args
+     * @param object   $context
+     *
+     * @return  mixed
+     *
+     * @throws DependencyResolutionException
+     * @throws \ReflectionException
+     */
+    public function call(callable $callable, array $args = [], object $context = null)
+    {
+        return DependencyResolver::call($this, $callable, $args, $context);
+    }
+
+    /**
+     * whenCreating
+     *
+     * @param   string $class
+     *
+     * @return  ObjectBuilder
+     */
+    public function whenCreating(string $class): ObjectBuilder
+    {
+        $builder = $this->builders[$class] ??= new ObjectBuilder($class, $this);
+
+        if (!$this->has($class)) {
+            $this->setDefinition($class, new ObjectBuilderDefinition($builder));
+        }
+
+        return $builder;
+    }
+
+    public function newInstance($class, array $args = [])
+    {
+        return DependencyResolver::newInstance($this, $class, $args);
+    }
+
+    // protected function resolveBuilderDefinition(ObjectBuilderDefinition $def, array $args)
+    // {
+    //     $def = clone $def;
+    //     $def->setArguments($args);
+    //
+    //     return $this->resolve($def);
+    // }
 
     /**
      * Create an alias for a given key for easy access.
