@@ -11,7 +11,16 @@ declare(strict_types=1);
 
 namespace Windwalker\DI;
 
+use Closure;
+use InvalidArgumentException;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionObject;
+use Windwalker\Data\Collection;
 use Windwalker\DI\Builder\ObjectBuilder;
+use Windwalker\DI\Definition\DefinitionInterface;
+use Windwalker\DI\Definition\ObjectBuilderDefinition;
 use Windwalker\DI\Exception\DependencyResolutionException;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\ValueReference;
@@ -21,16 +30,32 @@ use Windwalker\Utilities\Wrapper\ValueReference;
  */
 class DependencyResolver
 {
-    public static function newInstance(Container $container, $class, array $args = [])
+    protected Container $container;
+
+    /**
+     * DependencyResolver constructor.
+     *
+     * @param  Container  $container
+     */
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+    }
+
+    public function newInstance($class, array $args = [])
     {
         if ($class instanceof ObjectBuilder) {
-            return $container->resolve($class->fork($args));
+            $class = new ObjectBuilderDefinition($class->fork($args));
+        }
+
+        if ($class instanceof DefinitionInterface) {
+            return $this->container->resolve($class);
         }
 
         if (is_string($class)) {
             try {
-                $reflection = new \ReflectionClass($class);
-            } catch (\ReflectionException $e) {
+                $reflection = new ReflectionClass($class);
+            } catch (ReflectionException $e) {
                 return false;
             }
 
@@ -41,9 +66,9 @@ class DependencyResolver
                 $instance = new $class();
             } else {
                 try {
-                    $args = array_merge($container->whenCreating($class)->getArguments(), $args);
+                    $args = array_merge($this->container->whenCreating($class)->getArguments(), $args);
 
-                    $newInstanceArgs = static::getMethodArgs($container, $constructor, $args);
+                    $newInstanceArgs = $this->getMethodArgs($constructor, $args);
                 } catch (DependencyResolutionException $e) {
                     throw new DependencyResolutionException(
                         $e->getMessage() . ' / Target class: ' . $class,
@@ -56,9 +81,9 @@ class DependencyResolver
                 $instance = $reflection->newInstanceArgs($newInstanceArgs);
             }
         } elseif (is_callable($class)) {
-            $instance = $class($container, $args);
+            $instance = $class($this->container, $args);
         } else {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'New instance must get first argument as class name, callable or ClassMeta object.'
             );
         }
@@ -69,16 +94,15 @@ class DependencyResolver
     /**
      * Build an array of constructor parameters.
      *
-     * @param  Container          $container
-     * @param  \ReflectionMethod  $method  Method for which to build the argument array.
+     * @param  ReflectionMethod  $method  Method for which to build the argument array.
      * @param  array              $args    The default args if class hint not provided.
      *
      * @return array Array of arguments to pass to the method.
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @since   2.0
      */
-    protected static function getMethodArgs(Container $container, \ReflectionMethod $method, array $args = []): array
+    protected function getMethodArgs(ReflectionMethod $method, array $args = []): array
     {
         $methodArgs = [];
 
@@ -92,7 +116,7 @@ class DependencyResolver
 
                 foreach ($args as $key => $value) {
                     if (is_numeric($key)) {
-                        $trailing[] = static::resolveArgumentValue($container, $value);
+                        $trailing[] = $this->resolveArgumentValue($value);
                     }
                 }
 
@@ -103,13 +127,13 @@ class DependencyResolver
 
             // Prior (2): Argument with numeric keys.
             if (array_key_exists($i, $args)) {
-                $methodArgs[] = static::resolveArgumentValue($container, $args[$i]);
+                $methodArgs[] = $this->resolveArgumentValue($args[$i]);
                 continue;
             }
 
             // Prior (3): Argument with named keys.
             if (array_key_exists($dependencyVarName, $args)) {
-                $methodArgs[] = static::resolveArgumentValue($container, $args[$dependencyVarName]);
+                $methodArgs[] = $this->resolveArgumentValue($args[$dependencyVarName]);
 
                 continue;
             }
@@ -120,11 +144,11 @@ class DependencyResolver
                 $dependencyClassName = $dependency->getName();
 
                 // If the dependency class name is registered with this container or a parent, use it.
-                if ($container->has($dependencyClassName)) {
-                    $depObject = $container->get($dependencyClassName);
+                if ($this->container->has($dependencyClassName)) {
+                    $depObject = $this->container->get($dependencyClassName);
                 } elseif (array_key_exists($dependencyVarName, $args)) {
                     // If an arg provided, use it.
-                    $methodArgs[] = static::resolveArgumentValue($container, $args[$dependencyVarName]);
+                    $methodArgs[] = $this->resolveArgumentValue($args[$dependencyVarName]);
 
                     continue;
                 } elseif (!$dependency->isAbstract() && !$dependency->isInterface() && !$dependency->isTrait()) {
@@ -137,7 +161,7 @@ class DependencyResolver
                         $childArgs = [];
                     }
 
-                    $depObject = $container->newInstance($dependencyClassName, $childArgs);
+                    $depObject = $this->container->newInstance($dependencyClassName, $childArgs);
                 }
 
                 if ($depObject instanceof $dependencyClassName) {
@@ -166,27 +190,26 @@ class DependencyResolver
     /**
      * resolveArgumentValue
      *
-     * @param  Container  $container
      * @param  mixed      $value
      *
-     * @return mixed|\Windwalker\Data\Collection
+     * @return mixed|Collection
      *
      * @since  3.5.1
      */
-    protected static function resolveArgumentValue(Container $container, $value)
+    protected function resolveArgumentValue($value)
     {
         if ($value instanceof ObjectBuilder) {
-            $value = $value->setContainer($container)->newInstance();
+            $value = $this->container->resolve($value);
         } elseif ($value instanceof ValueReference) {
-            $v = $container->get($container->getParameters());
+            $v = $value($this->container->getParameters());
 
-            if ($v === null && $container->getParent() instanceof Container) {
-                $v = $container->get($container->getParent()->getParameters());
+            if ($v === null && $this->container->getParent() instanceof Container) {
+                $v = $value($this->container->getParent()->getParameters());
             }
 
             $value = $v;
         } elseif ($value instanceof RawWrapper) {
-            $value = $value->get();
+            $value = $value();
         }
 
         return $value;
@@ -195,24 +218,23 @@ class DependencyResolver
     /**
      * Execute a callable with dependencies.
      *
-     * @param  Container    $container
      * @param  callable     $callable
      * @param  array        $args
      * @param  object|null  $context
      *
      * @return mixed
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public static function call(Container $container, callable $callable, array $args = [], object $context = null)
+    public function call(callable $callable, array $args = [], object $context = null)
     {
         $object = null;
         $method = null;
 
-        if ($callable instanceof \Closure) {
-            $ref = new \ReflectionObject($callable);
+        if ($callable instanceof Closure) {
+            $ref = new ReflectionObject($callable);
 
-            $args = static::getMethodArgs($container, $ref->getMethod('__invoke'), $args);
+            $args = $this->getMethodArgs($ref->getMethod('__invoke'), $args);
         } else {
             if (is_string($callable)) {
                 $callable = explode('::', $callable);
@@ -220,12 +242,12 @@ class DependencyResolver
 
             [$object, $method] = $callable;
 
-            $ref = new \ReflectionClass($object);
+            $ref = new ReflectionClass($object);
 
-            $args = static::getMethodArgs($container, $ref->getMethod($method), $args);
+            $args = $this->getMethodArgs($ref->getMethod($method), $args);
         }
 
-        $callable = \Closure::fromCallable($callable);
+        $callable = Closure::fromCallable($callable);
 
         if ($callable) {
             $callable = $callable->bindTo($context, $context);
