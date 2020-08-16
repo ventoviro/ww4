@@ -14,6 +14,7 @@ namespace Windwalker\Utilities\Test\Assert;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 use TypeError;
+use Windwalker\Utilities\Assert\Assert;
 use Windwalker\Utilities\Assert\TypeAssert;
 
 /**
@@ -23,6 +24,27 @@ use Windwalker\Utilities\Assert\TypeAssert;
  */
 class TypeAssertTest extends TestCase
 {
+    /**
+     * @var Assert
+     */
+    protected ?Assert $instance;
+
+    public function testStaticAssert()
+    {
+        try {
+            TypeAssert::assert(
+                false,
+                '{caller} with wrong type %s.',
+                123
+            );
+        } catch (\TypeError $e) {
+            self::assertEquals(
+                'Windwalker\Utilities\Assert\TypeAssert::assert() with wrong type integer(123).',
+                $e->getMessage()
+            );
+        }
+    }
+
     /**
      * testThrowException
      *
@@ -39,8 +61,8 @@ class TypeAssertTest extends TestCase
     public function testThrowException(string $class, string $message, $value, ?string $caller, string $expected): void
     {
         try {
-            TypeAssert::throwException($message, $value, $caller);
-        } catch (Throwable $e) {
+            self::createInstance($caller)->throwException($message, $value);
+        } catch (\TypeError $e) {
             self::assertEquals($expected, $e->getMessage());
         }
     }
@@ -50,7 +72,7 @@ class TypeAssertTest extends TestCase
         return [
             'Auto get caller' => [
                 TypeError::class,
-                'Method %s must with type X, %s given.',
+                'Method {caller} must with type X, %s given.',
                 5,
                 null,
                 'Method Windwalker\Utilities\Test\Assert\TypeAssertTest::testThrowException() ' .
@@ -58,14 +80,14 @@ class TypeAssertTest extends TestCase
             ],
             'Custom caller' => [
                 TypeError::class,
-                'Method %s must with type X, %s given.',
+                'Method {caller} must with type X, %s given.',
                 5,
                 'Foo::bar()',
                 'Method Foo::bar() must with type X, integer(5) given.',
             ],
             'Custom arguments ordering' => [
                 TypeError::class,
-                'Got %2$s in %1$s',
+                'Got %s in {caller}',
                 5,
                 'Foo::bar()',
                 'Got integer(5) in Foo::bar()',
@@ -78,5 +100,17 @@ class TypeAssertTest extends TestCase
                 'Method wrong.',
             ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        // $this->instance = new Assert(fn ($msg) => new TypeError($msg));
+    }
+
+    protected static function createInstance(?string $caller): Assert
+    {
+        $caller ??= Assert::getCaller(2);
+
+        return new Assert(fn ($msg) => new TypeError($msg), $caller);
     }
 }

@@ -439,7 +439,7 @@ class FileObject extends \SplFileInfo
     {
         ArgumentsAssert::assert(
             is_stringable($buffer),
-            '%s argument 1 should be string or stringable object, %s given.',
+            '{caller} argument 1 should be string or stringable object, %s given.',
             $buffer
         );
 

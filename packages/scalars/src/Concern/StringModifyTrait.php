@@ -34,7 +34,7 @@ trait StringModifyTrait
      */
     public function chop($length = 1)
     {
-        ArgumentsAssert::assert($length >= 1, '%s $length must larger than 1, %s given', $length);
+        ArgumentsAssert::assert($length >= 1, '{caller} $length must larger than 1, %s given', $length);
 
         return new ArrayObject(Utf8String::strSplit($this->string, $length, $this->encoding) ?: []);
     }

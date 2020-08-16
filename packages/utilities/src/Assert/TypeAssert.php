@@ -21,27 +21,18 @@ use TypeError;
 class TypeAssert
 {
     /**
-     * @var  string
-     */
-    protected static string $exceptionClass = TypeError::class;
-
-    protected static int $exceptionCode = 0;
-
-    /**
      * assert
      *
      * @param  bool|callable  $assertion
      * @param  string         $message
      * @param  mixed          $value
-     * @param  string|null    $caller
+     * @param  callable|null  $exception
      *
      * @return  void
      *
-     * @throws TypeError
-     *
      * @since  __DEPLOY_VERSION__
      */
-    public static function assert(bool|callable $assertion, string $message, $value = null, ?string $caller = null): void
+    public static function assert(bool|callable $assertion, string $message, $value = null, ?callable $exception = null): void
     {
         if (is_callable($assertion)) {
             $result = $assertion();
@@ -50,73 +41,22 @@ class TypeAssert
         }
 
         if (!$result) {
-            $caller = $caller ?? static::getCaller();
-
-            static::throwException($message, $value, $caller);
+            static::createAssert($exception)->throwException($message, $value);
         }
     }
 
-    public static function invalidArguments(string $message, $value = null, ?string $caller = null): void
+    public static function createAssert(?callable $exception = null): Assert
     {
-        $caller = $caller ?? static::getCaller();
-
-        static::throwException($message, $value, $caller);
+        return new Assert($exception ?? static::exception(), Assert::getCaller(2));
     }
 
-    public static function throwException(string $message, $value = null, ?string $caller = null): void
+    protected static function exception(): callable
     {
-        $caller = $caller ?? static::getCaller();
-
-        throw static::exception($message, $value, $caller);
-    }
-
-    public static function exception(string $message, $value = null, ?string $caller = null)
-    {
-        $caller = $caller ?? static::getCaller();
-
-        return new (static::$exceptionClass)(
-            sprintf($message, $caller, static::describeValue($value)),
-            static::$exceptionCode
-        );
-    }
-
-    public static function getCaller(int $backSteps = 2): string
-    {
-        $trace = debug_backtrace()[$backSteps];
-
-        return trim(($trace['class'] ?? '') . '::' . ($trace['function']), ':') . '()';
+        return fn (string $msg) => new TypeError($msg);
     }
 
     public static function describeValue($value): string
     {
-        if ($value === null) {
-            return '(NULL)';
-        }
-
-        if ($value === true) {
-            return 'BOOL (TRUE)';
-        }
-
-        if ($value === false) {
-            return 'BOOL (FALSE)';
-        }
-
-        if (is_object($value)) {
-            return get_class($value);
-        }
-
-        if (is_array($value)) {
-            return 'array';
-        }
-
-        if (is_string($value)) {
-            return sprintf('string(%s) "%s"', strlen($value), $value);
-        }
-
-        if (is_numeric($value)) {
-            return sprintf('%s(%s)', gettype($value), $value);
-        }
-
-        return (string) $value;
+        return Assert::describeValue($value);
     }
 }

@@ -38,7 +38,7 @@ class RedisHandler extends AbstractHandler
             $driver instanceof \Redis
             || $driver instanceof \RedisArray
             || $driver instanceof \Predis\ClientInterface,
-            '%s argument 1 should be Redis instance, %s given.',
+            '{caller} argument 1 should be Redis instance, %s given.',
             $driver
         );
 

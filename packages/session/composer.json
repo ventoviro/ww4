@@ -12,12 +12,12 @@
     "require": {
         "php": ">=8.0.0",
         "windwalker/cache": "dev-master",
-        "windwalker/utilities": "dev-master"
+        "windwalker/utilities": "^4.0"
     },
     "require-dev": {
-        "windwalker/test": "~4.0",
-        "windwalker/database": "~4.0",
-        "windwalker/filesystem": "~4.0"
+        "windwalker/test": "^4.0",
+        "windwalker/database": "^4.0",
+        "windwalker/filesystem": "^4.0"
     },
     "suggest": {
     },

@@ -199,7 +199,7 @@ trait ArrConverterTrait
 
             TypeAssert::assert(
                 is_array($r),
-                'Return value of %s should be array, got %s',
+                'Return value of {caller} should be array, got %s',
                 $r
             );
 

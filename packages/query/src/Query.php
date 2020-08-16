@@ -267,7 +267,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
             foreach ($tables as $table) {
                 ArgumentsAssert::assert(
                     is_array($table),
-                    '%s if use array as argument 1, every element should be a sub-array, '
+                    '{caller} if use array as argument 1, every element should be a sub-array, '
                     . ' example: [\'foo\', \'f\'], got: %s.',
                     $table
                 );
@@ -317,7 +317,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
         } else {
             ArgumentsAssert::assert(
                 count($on) % 3 === 0,
-                '%s if on is not callback, it must be 3 times as many, currently is %s.',
+                '{caller} if on is not callback, it must be 3 times as many, currently is %s.',
                 count($on)
             );
 
@@ -676,7 +676,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
         ArgumentsAssert::assert(
             $wheres instanceof \Closure,
-            '%s argument should be array or Closure, %s given.',
+            '{caller} argument should be array or Closure, %s given.',
             $wheres
         );
 
@@ -761,7 +761,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
         ArgumentsAssert::assert(
             $wheres instanceof \Closure,
-            '%s argument should be array or Closure, %s given.',
+            '{caller} argument should be array or Closure, %s given.',
             $wheres
         );
 
@@ -831,7 +831,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
         if ($dir !== null) {
             ArgumentsAssert::assert(
                 in_array($dir = strtoupper($dir), ['ASC', 'DESC'], true),
-                '%s argument 2 should be one of ASC/DESC, %s given',
+                '{caller} argument 2 should be one of ASC/DESC, %s given',
                 $dir
             );
 
@@ -983,7 +983,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
                 ArgumentsAssert::assert(
                     $this->values instanceof static,
-                    'You must set sub query as values to %s since current mode is INSERT ... SELECT ..., %s given',
+                    'You must set sub query as values to {caller} since current mode is INSERT ... SELECT ..., %s given',
                     $value
                 );
 
@@ -995,7 +995,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
                 ArgumentsAssert::assert(
                     $this->values instanceof Clause,
-                    'You must set array as values to %s since current mode is VALUES (...), %s given',
+                    'You must set array as values to {caller} since current mode is VALUES (...), %s given',
                     $value
                 );
 
@@ -1007,7 +1007,7 @@ class Query implements QueryInterface, BindableInterface, \IteratorAggregate
 
                 ArgumentsAssert::assert(
                     is_iterable($value),
-                    '%s values element should always be array or iterable, %s given.'
+                    '{caller} values element should always be array or iterable, %s given.'
                 );
 
                 $this->values->append($clause);

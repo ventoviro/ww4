@@ -75,13 +75,13 @@ class Collection extends ArrayObject
 
         TypeAssert::assert(
             !($reference && !is_array($new->storage)),
-            'Method: %s Proxy to sub element should be array, got %s.',
+            'Method: {caller} Proxy to sub element should be array, got %s.',
             $new->storage
         );
 
         TypeAssert::assert(
             is_array($new->storage) || is_object($new->storage) || $new->storage === null,
-            'Method: %s extract to sub element should be array, object or NULL, got %s.',
+            'Method: {caller} extract to sub element should be array, object or NULL, got %s.',
             $new->storage
         );
 

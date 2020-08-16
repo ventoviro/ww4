@@ -48,7 +48,7 @@ abstract class AbstractEvent implements EventInterface
     {
         ArgumentsAssert::assert(
             is_string($event) || $event instanceof EventInterface,
-            '%s argument 1 should be string or EventInterface, %s given.',
+            '{caller} argument 1 should be string or EventInterface, %s given.',
             $event
         );
 

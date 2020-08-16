@@ -20,8 +20,8 @@ use InvalidArgumentException;
  */
 class ArgumentsAssert extends TypeAssert
 {
-    /**
-     * @var  string
-     */
-    protected static string $exceptionClass = InvalidArgumentException::class;
+    protected static function exception(): callable
+    {
+        return fn (string $msg) => new InvalidArgumentException($msg);
+    }
 }

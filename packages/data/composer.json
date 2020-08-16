@@ -15,7 +15,7 @@
     "require-dev": {
         "windwalker/test": "dev-master",
         "windwalker/scalars": "dev-master",
-        "windwalker/utilities": "dev-master"
+        "windwalker/utilities": "^4.0"
     },
     "suggest": {
     },

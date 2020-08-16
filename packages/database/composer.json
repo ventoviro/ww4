@@ -20,7 +20,7 @@
         "windwalker/event": "dev-master",
         "windwalker/data": "dev-master",
         "windwalker/cache": "dev-master",
-        "windwalker/utilities": "dev-master"
+        "windwalker/utilities": "^4.0"
     },
     "require-dev": {
         "windwalker/test": "dev-master"

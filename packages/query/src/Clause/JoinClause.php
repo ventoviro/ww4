@@ -247,7 +247,7 @@ class JoinClause implements ClauseInterface
 
         ArgumentsAssert::assert(
             $wheres instanceof \Closure,
-            '%s argument should be array or Closure, %s given.',
+            '{caller} argument should be array or Closure, %s given.',
             $wheres
         );
 
