@@ -70,8 +70,8 @@ class WhereWrapper implements WrapperInterface
     {
         return CompareHelper::compare(
             Arr::get($src, $this->var1, ''),
-            $this->operator,
             $this->var2,
+            $this->operator,
             $this->strict
         );
     }

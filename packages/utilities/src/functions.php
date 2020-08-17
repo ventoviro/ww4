@@ -265,18 +265,6 @@ namespace Windwalker {
 
     function value_compare(mixed $a, mixed $b, ?string $operator = null): int|bool
     {
-        if ($operator) {
-            return CompareHelper::compare($a, $operator, $b);
-        }
-
-        if ($a > $b) {
-            return 1;
-        }
-
-        if ($a < $b) {
-            return -1;
-        }
-
-        return 0;
+        return CompareHelper::compare($a, $b, $operator);
     }
 }

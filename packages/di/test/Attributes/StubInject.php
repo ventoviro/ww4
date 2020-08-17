@@ -22,7 +22,7 @@ class StubInject
      *
      * @var StubService
      */
-<<Inject>>
+    <<Inject>>
     public StubService $foo;
 
     /**
@@ -30,8 +30,8 @@ class StubInject
      *
      * @var StubService
      */
-<<Inject>>
-    protected StubService $bar;
+    <<Inject>>
+    protected ?StubService $bar;
 
     /**
      * @Inject(key="stub")
