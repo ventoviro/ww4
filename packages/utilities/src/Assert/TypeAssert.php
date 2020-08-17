@@ -41,13 +41,13 @@ class TypeAssert
         }
 
         if (!$result) {
-            static::createAssert($exception)->throwException($message, $value);
+            static::createAssert($exception, Assert::getCaller(2))->throwException($message, $value);
         }
     }
 
-    public static function createAssert(?callable $exception = null): Assert
+    public static function createAssert(?callable $exception = null, ?string $caller = null): Assert
     {
-        return new Assert($exception ?? static::exception(), Assert::getCaller(2));
+        return new Assert($exception ?? static::exception(), $caller ?? Assert::getCaller(2));
     }
 
     protected static function exception(): callable

@@ -35,8 +35,8 @@ class AttributesResolver
         foreach ($ref->getProperties() as $property) {
             foreach ($property->getAttributes() as $attribute) {
                 // todo: use built-in newInstance after Attribute stable
-                // $attribute->newInstance();
-                $attrInstance = new ($attribute->getName());
+
+                $attrInstance = $attribute->newInstance();
 
                 if (!is_callable($attrInstance)) {
                     $class = get_debug_type($attrInstance);

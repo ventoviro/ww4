@@ -8,6 +8,7 @@
 
 namespace Windwalker\DI\Attributes;
 
+use Attribute;
 use Windwalker\DI\Container;
 use Windwalker\DI\Exception\DependencyResolutionException;
 
@@ -16,7 +17,7 @@ use Windwalker\DI\Exception\DependencyResolutionException;
  *
  * @since  3.4.4
  */
-<<PhpAttribute>>
+@@Attribute
 class Inject extends AbstractAttribute implements PropertyAttributeInterface
 {
     public function __invoke(Container $container, $instance, \ReflectionProperty $property)
