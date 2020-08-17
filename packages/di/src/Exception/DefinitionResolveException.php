@@ -16,6 +16,6 @@ use Psr\Container\ContainerExceptionInterface;
 /**
  * The DefinitionResolveException class.
  */
-class DefinitionResolveException extends \LogicException implements ContainerExceptionInterface
+class DefinitionResolveException extends DefinitionException
 {
 }

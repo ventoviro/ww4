@@ -37,12 +37,11 @@ class ObjectBuilderDefinition implements DefinitionInterface
      * Resolve this definition.
      *
      * @param  Container  $container  The Container object.
-     * @param  bool       $forceNew   Refresh the cache.
      *
-     * @return mixed
+     * @return callable|false|mixed|object|string|ObjectBuilderDefinition
      * @throws \ReflectionException
      */
-    public function resolve(Container $container, bool $forceNew = false)
+    public function resolve(Container $container)
     {
         return $container->newInstance(
             $this->builder->getClass(),

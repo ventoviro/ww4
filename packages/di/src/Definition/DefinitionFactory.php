@@ -16,17 +16,21 @@ namespace Windwalker\DI\Definition;
  */
 class DefinitionFactory
 {
-    public static function create($value): DefinitionInterface
+    public static function create($value, int $options = 0): StoreDefinitionInterface
     {
-        if ($value instanceof DefinitionInterface) {
+        if ($value instanceof StoreDefinitionInterface) {
             return $value;
         }
 
-        if ($value instanceof \Closure) {
-            $value = fn () => $value;
+        if (!$value instanceof DefinitionInterface) {
+            if (!$value instanceof \Closure) {
+                $value = fn () => $value;
+            }
+
+            $value = new ClosureDefinition($value);
         }
 
-        return new ClosureDefinition($value);
+        return new StoreDefinition($value, $options);
     }
 
     public static function wrap($value)

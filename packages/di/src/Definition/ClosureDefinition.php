@@ -21,11 +21,6 @@ class ClosureDefinition implements DefinitionInterface
     protected \Closure $handler;
 
     /**
-     * @var mixed
-     */
-    protected $cache = null;
-
-    /**
      * CallbackDefinition constructor.
      *
      * @param  \Closure  $handler
@@ -39,17 +34,12 @@ class ClosureDefinition implements DefinitionInterface
      * resolve
      *
      * @param  Container  $container
-     * @param  bool       $forceNew
      *
-     * @return  mixed
+     * @return mixed
      */
-    public function resolve(Container $container, bool $forceNew = false)
+    public function resolve(Container $container)
     {
-        if ($forceNew) {
-            $this->cache = null;
-        }
-
-        return $this->cache ??= ($this->handler)($container);
+        return ($this->handler)($container);
     }
 
     /**

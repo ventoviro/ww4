@@ -42,8 +42,10 @@ class DependencyResolver
         $this->container = $container;
     }
 
-    public function newInstance($class, array $args = [])
+    public function newInstance($class, array $args = [], int $options = 0)
     {
+        $options |= $this->container->getOptions();
+
         if ($class instanceof ObjectBuilder) {
             $class = new ObjectBuilderDefinition($class->fork($args));
         }
@@ -68,10 +70,10 @@ class DependencyResolver
                 try {
                     $args = array_merge($this->container->whenCreating($class)->getArguments(), $args);
 
-                    $newInstanceArgs = $this->getMethodArgs($constructor, $args);
+                    $newInstanceArgs = $this->getMethodArgs($constructor, $args, $options);
                 } catch (DependencyResolutionException $e) {
                     throw new DependencyResolutionException(
-                        $e->getMessage() . ' / Target class: ' . $class,
+                        $e->getMessage() . ' - Target class: ' . $class,
                         $e->getCode(),
                         $e
                     );
@@ -88,6 +90,13 @@ class DependencyResolver
             );
         }
 
+        $options |= $this->container->getOptions();
+
+        if (!($options & Container::IGNORE_ATTRIBUTES)) {
+            $this->container->getAttributesResolver()
+                ->resolvePropertiesAttributes($instance);
+        }
+
         return $instance;
     }
 
@@ -95,19 +104,30 @@ class DependencyResolver
      * Build an array of constructor parameters.
      *
      * @param  ReflectionMethod  $method  Method for which to build the argument array.
-     * @param  array              $args    The default args if class hint not provided.
+     * @param  array             $args    The default args if class hint not provided.
+     * @param  int               $options
      *
      * @return array Array of arguments to pass to the method.
      *
+     * @throws DependencyResolutionException
      * @throws ReflectionException
      * @since   2.0
      */
-    protected function getMethodArgs(ReflectionMethod $method, array $args = []): array
+    protected function getMethodArgs(ReflectionMethod $method, array $args = [], int $options = 0): array
     {
         $methodArgs = [];
 
+        $defaultOptions = $this->container->getOptions();
+
+        $autowire = $defaultOptions & Container::ENABLE_AUTO_WIRE;
+        $autowire = $autowire && ($autowire = Container::DISABLE_AUTO_WIRE);
+
+        if ($options & Container::ENABLE_AUTO_WIRE || $options & Container::DISABLE_AUTO_WIRE) {
+            $autowire = $options & Container::ENABLE_AUTO_WIRE;
+            $autowire = $autowire && ($autowire = Container::DISABLE_AUTO_WIRE);
+        }
+
         foreach ($method->getParameters() as $i => $param) {
-            $dependency        = $param->getClass();
             $dependencyVarName = $param->getName();
 
             // Prior (1): Handler ...$args
@@ -139,35 +159,59 @@ class DependencyResolver
             }
 
             // // Prior (4): Argument with numeric keys.
-            if (null !== $dependency) {
-                $depObject           = null;
-                $dependencyClassName = $dependency->getName();
+            $type = $param->getType();
 
-                // If the dependency class name is registered with this container or a parent, use it.
-                if ($this->container->has($dependencyClassName)) {
-                    $depObject = $this->container->get($dependencyClassName);
-                } elseif (array_key_exists($dependencyVarName, $args)) {
-                    // If an arg provided, use it.
-                    $methodArgs[] = $this->resolveArgumentValue($args[$dependencyVarName]);
+            if ($type instanceof \ReflectionUnionType) {
+                $dependencies = $type->getTypes();
+            } elseif ($type) {
+                $dependencies = [$type];
+            } else {
+                $dependencies = [];
+            }
 
-                    continue;
-                } elseif (!$dependency->isAbstract() && !$dependency->isInterface() && !$dependency->isTrait()) {
-                    // Otherwise we create this object recursive
+            if ([] !== $dependencies) {
+                foreach ($dependencies as $type) {
+                    $depObject           = null;
+                    $dependencyClassName = $type->getName();
 
-                    // Find child args if set
-                    if (isset($args[$dependencyClassName]) && is_array($args[$dependencyClassName])) {
-                        $childArgs = $args[$dependencyClassName];
-                    } else {
-                        $childArgs = [];
+                    if (!class_exists($dependencyClassName)) {
+                        // Next dependency
+                        continue;
                     }
 
-                    $depObject = $this->container->newInstance($dependencyClassName, $childArgs);
-                }
+                    $dependency = new ReflectionClass($dependencyClassName);
 
-                if ($depObject instanceof $dependencyClassName) {
-                    $methodArgs[] = $depObject;
+                    // If the dependency class name is registered with this container or a parent, use it.
+                    if ($this->container->has($dependencyClassName)) {
+                        $depObject = $this->container->get($dependencyClassName);
+                    } elseif (array_key_exists($dependencyVarName, $args)) {
+                        // If an arg provided, use it.
+                        $methodArgs[] = $this->resolveArgumentValue($args[$dependencyVarName]);
 
-                    continue;
+                        continue 2;
+                    } elseif (
+                        $autowire
+                        && !$dependency->isAbstract()
+                        && !$dependency->isInterface()
+                        && !$dependency->isTrait()
+                    ) {
+                        // Otherwise we create this object recursive
+
+                        // Find child args if set
+                        if (isset($args[$dependencyClassName]) && is_array($args[$dependencyClassName])) {
+                            $childArgs = $args[$dependencyClassName];
+                        } else {
+                            $childArgs = [];
+                        }
+
+                        $depObject = $this->newInstance($dependencyClassName, $childArgs, $options);
+                    }
+
+                    if ($depObject instanceof $dependencyClassName) {
+                        $methodArgs[] = $depObject;
+
+                        continue 2;
+                    }
                 }
             }
 
@@ -221,12 +265,13 @@ class DependencyResolver
      * @param  callable     $callable
      * @param  array        $args
      * @param  object|null  $context
+     * @param  int          $options
      *
      * @return mixed
      *
      * @throws ReflectionException
      */
-    public function call(callable $callable, array $args = [], object $context = null)
+    public function call(callable $callable, array $args = [], ?object $context = null, int $options = 0)
     {
         $object = null;
         $method = null;
@@ -234,7 +279,7 @@ class DependencyResolver
         if ($callable instanceof Closure) {
             $ref = new ReflectionObject($callable);
 
-            $args = $this->getMethodArgs($ref->getMethod('__invoke'), $args);
+            $args = $this->getMethodArgs($ref->getMethod('__invoke'), $args, $options);
         } else {
             if (is_string($callable)) {
                 $callable = explode('::', $callable);
@@ -244,7 +289,7 @@ class DependencyResolver
 
             $ref = new ReflectionClass($object);
 
-            $args = $this->getMethodArgs($ref->getMethod($method), $args);
+            $args = $this->getMethodArgs($ref->getMethod($method), $args, $options);
         }
 
         $callable = Closure::fromCallable($callable);

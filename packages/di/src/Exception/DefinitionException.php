@@ -11,11 +11,11 @@ declare(strict_types=1);
 
 namespace Windwalker\DI\Exception;
 
-use Psr\Container\NotFoundExceptionInterface;
+use Psr\Container\ContainerExceptionInterface;
 
 /**
- * The DefinitionNotFoundException class.
+ * The DefinitionException class.
  */
-class DefinitionNotFoundException extends DefinitionException implements NotFoundExceptionInterface
+class DefinitionException extends \Exception implements ContainerExceptionInterface
 {
 }

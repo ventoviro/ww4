@@ -38,15 +38,14 @@ class DecoratorDefinition implements DefinitionInterface
      * Resolve this definition.
      *
      * @param  Container  $container  The Container object.
-     * @param  bool       $forceNew   Refresh the cache.
      *
      * @return mixed
      */
-    public function resolve(Container $container, bool $forceNew = false)
+    public function resolve(Container $container)
     {
-        $handler = $this->handler ?? fn ($container, $value) => $value;
+        $handler = $this->handler ?? fn ($value, Container $container) => $value;
 
-        return $handler($container, $this->definition->resolve($container, $forceNew));
+        return $handler($this->definition->resolve($container), $container);
     }
 
     /**

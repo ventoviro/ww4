@@ -37,11 +37,10 @@ class ValueDefinition implements DefinitionInterface
      * resolve
      *
      * @param  Container  $container
-     * @param  bool       $forceNew
      *
-     * @return  mixed
+     * @return mixed
      */
-    public function resolve(Container $container, bool $forceNew = false)
+    public function resolve(Container $container)
     {
         return $this->value;
     }

@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Windwalker\DI;
 
-use DI\Definition\ObjectDefinition;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -19,16 +18,24 @@ use Windwalker\Data\Collection;
 use Windwalker\DI\Builder\ObjectBuilder;
 use Windwalker\DI\Definition\DefinitionFactory;
 use Windwalker\DI\Definition\DefinitionInterface;
-use Windwalker\DI\Definition\NoCacheDefinition;
-use Windwalker\DI\Definition\ObjectBuilderDefinition;
+use Windwalker\DI\Definition\StoreDefinitionInterface;
+use Windwalker\DI\Exception\DefinitionException;
 use Windwalker\DI\Exception\DefinitionNotFoundException;
-use Windwalker\DI\Exception\DependencyResolutionException;
+use Windwalker\Utilities\Contract\ArrayAccessibleInterface;
 
 /**
  * The Container class.
  */
-class Container implements ContainerInterface, \IteratorAggregate, \Countable
+class Container implements ContainerInterface, \IteratorAggregate, \Countable, ArrayAccessibleInterface
 {
+    public const SHARED = 1 << 0;
+    public const PROTECTED = 1 << 1;
+    public const ENABLE_AUTO_WIRE = 1 << 2;
+    public const DISABLE_AUTO_WIRE = 1 << 3;
+    public const IGNORE_ATTRIBUTES = 1 << 4;
+
+    protected int $options = 0;
+
     /**
      * Holds the key aliases.
      *
@@ -58,42 +65,97 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
      */
     protected array $builders = [];
 
+    protected DependencyResolver $dependencyResolver;
+
+    protected AttributesResolver $attributesResolver;
+
     /**
      * Container constructor.
      *
      * @param  Container|null  $parent
+     * @param  int             $options
      */
-    public function __construct(?Container $parent)
+    public function __construct(?Container $parent = null, int $options = self::ENABLE_AUTO_WIRE)
     {
         $this->parent = $parent;
+        $this->options = $options;
+
+        $this->dependencyResolver = new DependencyResolver($this);
+        $this->attributesResolver = new AttributesResolver($this);
     }
 
     /**
      * set
      *
-     * @param  string  $key
+     * @param  string  $id
      * @param  mixed   $value
+     * @param  int     $options
      *
-     * @return  static
+     * @return Container
+     * @throws DefinitionException
      */
-    public function set(string $key, $value)
+    public function set(string $id, $value, int $options = 0)
     {
-        $this->setDefinition(
-            $key,
-            new NoCacheDefinition(
-                DefinitionFactory::create($value),
-            )
-        );
+        $definition = $this->getDefinition($id);
 
-        // 3.2 Remove alias
-        $this->removeAlias($key);
+        if ($definition && $definition->isProtected()) {
+            throw new DefinitionException(
+                sprintf(
+                    'Container id: %s is protected.',
+                    $id
+                )
+            );
+        }
+
+        $this->setDefinition($id, DefinitionFactory::create($value, $options));
 
         return $this;
     }
 
-    public function setDefinition(string $key, DefinitionInterface $value)
+    /**
+     * share
+     *
+     * @param  string  $key
+     * @param  mixed   $value
+     * @param  int     $options
+     *
+     * @return static
+     * @throws DefinitionException
+     */
+    public function share(string $key, $value, int $options = 0)
+    {
+        return $this->set($key, $value, $options | static::SHARED);
+    }
+
+    /**
+     * protect
+     *
+     * @param  string  $key
+     * @param  mixed   $value
+     * @param  int     $options
+     *
+     * @return static
+     * @throws DefinitionException
+     */
+    public function protect(string $key, $value, int $options = 0)
+    {
+        return $this->set($key, $value, $options | static::PROTECTED);
+    }
+
+    /**
+     * setDefinition
+     *
+     * @param  string               $key
+     * @param  StoreDefinitionInterface  $value
+     *
+     * @return  $this
+     */
+    public function setDefinition(string $key, StoreDefinitionInterface $value)
     {
         $this->storage[$key] = $value;
+
+        // 3.2 Remove alias
+        $this->removeAlias($key);
 
         return $this;
     }
@@ -119,13 +181,17 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
             );
         }
 
-        return $definition->resolve($this, $forceNew);
+        if ($forceNew) {
+            $definition->reset();
+        }
+
+        return $definition->resolve($this);
     }
 
     public function resolve($idOrDefinition, bool $forceNew = false)
     {
         if ($idOrDefinition instanceof DefinitionInterface) {
-            return $idOrDefinition->resolve($this, $forceNew);
+            return $idOrDefinition->resolve($this);
         }
 
         return $this->get($idOrDefinition, $forceNew);
@@ -190,11 +256,11 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
      *
      * @param  string  $key  The key for which to get the stored item.
      *
-     * @return  ?DefinitionInterface
+     * @return  ?StoreDefinitionInterface
      *
      * @since   2.0
      */
-    protected function getDefinition($key): ?DefinitionInterface
+    public function getDefinition($key): ?StoreDefinitionInterface
     {
         $key = $this->resolveAlias($key);
 
@@ -209,43 +275,196 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
         return null;
     }
 
-    public function bind(string $name, $value)
-    {
+    /**
+     * wrapDefinition
+     *
+     * @param  string                               $id
+     * @param  DefinitionInterface|string|\Closure  $definition
+     *
+     * @return  $this
+     */
+    // public function wrapDefinition(string $id, DefinitionInterface|\Closure|string $definition)
+    // {
+    //     $def = $this->getDefinition($id);
+    //
+    //     if (!$id) {
+    //         throw new DefinitionNotFoundException("Key: $id not found in container.");
+    //     }
+    //
+    //     if ($definition instanceof \Closure) {
+    //         $definition = $definition($def, $this);
+    //     } elseif (is_string($definition) && class_exists($definition)) {
+    //         $definition = new $definition($def);
+    //     }
+    //
+    //     $this->setDefinition($id, $definition);
+    //
+    //     return $this;
+    // }
 
+    /**
+     * Bind a class or key to another instance, container will return instance if it has been set
+     * or created, otherwise it will create new one.
+     *
+     * @param  string  $id
+     * @param  mixed   $class
+     * @param  int     $options
+     *
+     * @return Container
+     *
+     * @throws DefinitionException
+     * @since   3.0
+     */
+    public function bind(string $id, string $class, int $options = 0)
+    {
+        $class = static fn(Container $container) => $container->newInstance($class, [], $options);
+
+        return $this->set($id, $class, $options);
     }
 
-    public function singleton(string $key, $value)
+    /**
+     * bindShared
+     *
+     * @param  string  $id
+     * @param  mixed   $class
+     * @param  int     $options
+     *
+     * @return Container
+     *
+     * @throws DefinitionException
+     * @since   3.0
+     */
+    public function bindShared(string $id, string $class, int $options = 0)
     {
-        if (is_string($value)) {
-            $value = fn (Container $container) => $container->newInstance($key);
-        }
+        return $this->bind($id, $class, $options | static::SHARED);
+    }
 
-        $this->set($key, DefinitionFactory::create($value));
+    /**
+     * prepareObject
+     *
+     * @param  string         $class
+     * @param  \Closure|null  $extend
+     * @param  int            $options
+     *
+     * @return Container
+     *
+     * @throws DefinitionException
+     * @since   3.0
+     */
+    public function prepareObject(string $class, \Closure $extend = null, int $options = 0)
+    {
+        $handler = static fn(Container $container) => $container->newInstance($class, [], $options);
+
+        $this->set($class, $handler, $options);
+
+        if (is_callable($extend)) {
+            $this->extend($class, $extend);
+        }
 
         return $this;
     }
 
     /**
+     * prepareSharedObject
+     *
+     * @param  string         $class
+     * @param  \Closure|null  $extend
+     * @param  int            $options
+     *
+     * @return Container
+     *
+     * @throws DefinitionException
+     * @since   3.0
+     */
+    public function prepareSharedObject(string $class, \Closure $extend = null, int $options = 0)
+    {
+        return $this->prepareObject($class, $extend, $options | static::SHARED);
+    }
+
+    /**
+     * Extend a defined service Closure by wrapping the existing one with a new Closure.  This
+     * works very similar to a decorator pattern.  Note that this only works on service Closures
+     * that have been defined in the current Provider, not parent providers.
+     *
+     * @param  string    $id       The unique identifier for the Closure or property.
+     * @param  \Closure  $closure  A Closure to wrap the original service Closure.
+     *
+     * @return  static
+     *
+     * @throws  \InvalidArgumentException
+     * @since   2.0
+     */
+    public function extend(string $id, \Closure $closure)
+    {
+        $definition = $this->getDefinition($id);
+
+        if ($definition === null) {
+            throw new \UnexpectedValueException(
+                sprintf('The requested id %s does not exist to extend.', $id)
+            );
+        }
+
+        $definition->extend($closure);
+
+        return $this;
+    }
+
+    /**
+     * createObject
+     *
+     * @param  string  $class
+     * @param  array   $args
+     * @param  int     $options
+     *
+     * @return mixed
+     * @throws DefinitionException
+     * @since   3.0
+     */
+    public function createObject(string $class, array $args = [], int $options = 0)
+    {
+        $callback = fn(Container $container) => $container->newInstance($class, $args, $options);
+
+        return $this->set($class, $callback, $options)->get($class);
+    }
+
+    /**
+     * createSharedObject
+     *
+     * @param  string  $class
+     * @param  array   $args
+     * @param  int     $options
+     *
+     * @return mixed
+     *
+     * @throws DefinitionException
+     * @since   3.0
+     */
+    public function createSharedObject(string $class, array $args = [], int $options = 0)
+    {
+        return $this->createObject($class, $args, $options | static::SHARED);
+    }
+
+    /**
      * Execute a callable with dependencies.
      *
-     * @param callable $callable
-     * @param array    $args
-     * @param object   $context
+     * @param  callable     $callable
+     * @param  array        $args
+     * @param  object|null  $context
+     * @param  int          $options
      *
-     * @return  mixed
+     * @return mixed
      *
-     * @throws DependencyResolutionException
      * @throws \ReflectionException
      */
-    public function call(callable $callable, array $args = [], object $context = null)
+    public function call(callable $callable, array $args = [], ?object $context = null, int $options = 0)
     {
-        return DependencyResolver::call($this, $callable, $args, $context);
+        return $this->dependencyResolver->call($callable, $args, $context, $options);
     }
 
     /**
      * whenCreating
      *
-     * @param   string $class
+     * @param  string  $class
      *
      * @return  ObjectBuilder
      */
@@ -253,25 +472,33 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
     {
         $builder = $this->builders[$class] ??= new ObjectBuilder($class, $this);
 
-        if (!$this->has($class)) {
-            $this->setDefinition($class, new ObjectBuilderDefinition($builder));
-        }
+        // if (!$this->has($class)) {
+        //     $this->setDefinition($class, new ObjectBuilderDefinition($builder));
+        // }
 
         return $builder;
     }
 
-    public function newInstance($class, array $args = [])
+    public function newInstance($class, array $args = [], int $options = 0)
     {
-        return DependencyResolver::newInstance($this, $class, $args);
+        return $this->dependencyResolver->newInstance($class, $args, $options);
     }
 
-    // protected function resolveBuilderDefinition(ObjectBuilderDefinition $def, array $args)
-    // {
-    //     $def = clone $def;
-    //     $def->setArguments($args);
-    //
-    //     return $this->resolve($def);
-    // }
+    /**
+     * Register a service provider to the container.
+     *
+     * @param   ServiceProviderInterface $provider The service provider to register.w
+     *
+     * @return  static  This object for chaining.
+     *
+     * @since   2.0
+     */
+    public function registerServiceProvider(ServiceProviderInterface $provider)
+    {
+        $provider->register($this);
+
+        return $this;
+    }
 
     /**
      * Create an alias for a given key for easy access.
@@ -331,11 +558,24 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
      *
      * @since   2.1
      */
-    public function getIterator(): \Generator
+    public function &getIterator(): \Generator
     {
-        foreach ($this->storage as $id => $definition) {
+        foreach ($this->storage as $id => &$definition) {
             yield $id => $definition;
         }
+    }
+
+    /**
+     * Create a child Container with a new property scope that
+     * that has the ability to access the parent scope when resolving.
+     *
+     * @return  static  The new container object.
+     *
+     * @since   2.0
+     */
+    public function createChild()
+    {
+        return new static($this);
     }
 
     /**
@@ -405,5 +645,84 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable
     public function count(): int
     {
         return count($this->storage);
+    }
+
+    /**
+     * @return int
+     */
+    public function getOptions(): int
+    {
+        return $this->options;
+    }
+
+    /**
+     * @param  int  $options
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setOptions(int $options)
+    {
+        $this->options = $options;
+
+        return $this;
+    }
+
+    /**
+     * @return AttributesResolver
+     */
+    public function getAttributesResolver(): AttributesResolver
+    {
+        return $this->attributesResolver;
+    }
+
+    /**
+     * Returns whether the requested key exists
+     *
+     * @param  mixed  $key
+     *
+     * @return bool
+     */
+    public function offsetExists($key): bool
+    {
+        return $this->has($key);
+    }
+
+    /**
+     * Returns the value at the specified key
+     *
+     * @param  mixed  $key
+     *
+     * @return mixed
+     */
+    public function &offsetGet($key)
+    {
+        $item = $this->get($key);
+
+        return $item;
+    }
+
+    /**
+     * Sets the value at the specified key to value
+     *
+     * @param  mixed  $key
+     * @param  mixed  $value
+     *
+     * @return void
+     */
+    public function offsetSet($key, $value): void
+    {
+        $this->set($key, $value);
+    }
+
+    /**
+     * Unsets the value at the specified key
+     *
+     * @param  mixed  $key
+     *
+     * @return void
+     */
+    public function offsetUnset($key): void
+    {
+        $this->remove($key);
     }
 }

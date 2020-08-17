@@ -16,6 +16,6 @@ use Psr\Container\ContainerExceptionInterface;
 /**
  * The DependencyResolutionException class.
  */
-class DependencyResolutionException extends \LogicException implements ContainerExceptionInterface
+class DependencyResolutionException extends \Exception implements ContainerExceptionInterface
 {
 }

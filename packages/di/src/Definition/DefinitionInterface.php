@@ -21,12 +21,11 @@ interface DefinitionInterface
     /**
      * Resolve this definition.
      *
-     * @param  Container  $container The Container object.
-     * @param  bool       $forceNew  Refresh the cache.
+     * @param  Container  $container  The Container object.
      *
-     * @return mixed
+     * @return
      */
-    public function resolve(Container $container, bool $forceNew = false);
+    public function resolve(Container $container);
 
     /**
      * Set new value or factory callback to this definition.
