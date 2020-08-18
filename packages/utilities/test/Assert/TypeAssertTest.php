@@ -39,7 +39,7 @@ class TypeAssertTest extends TestCase
             );
         } catch (\TypeError $e) {
             self::assertEquals(
-                'Windwalker\Utilities\Assert\TypeAssert::assert() with wrong type integer(123).',
+                'Windwalker\Utilities\Test\Assert\TypeAssertTest::testStaticAssert() with wrong type integer(123).',
                 $e->getMessage()
             );
         }
