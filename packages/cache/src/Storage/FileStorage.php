@@ -24,7 +24,7 @@ class FileStorage implements StorageInterface
     /**
      * @var string
      */
-    protected $root;
+    protected string $root;
 
     /**
      * AbstractFormatterStorage constructor.

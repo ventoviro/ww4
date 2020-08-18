@@ -21,7 +21,7 @@ class MemcachedStorage implements StorageInterface
     /**
      * @var \Memcached
      */
-    protected $driver;
+    protected \Memcached $driver;
 
     /**
      * MemcachedStorage constructor.

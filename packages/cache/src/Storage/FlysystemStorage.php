@@ -21,7 +21,7 @@ class FlysystemStorage extends FileStorage
     /**
      * @var Filesystem
      */
-    protected $driver;
+    protected Filesystem $driver;
 
     /**
      * FlysystemStorage constructor.

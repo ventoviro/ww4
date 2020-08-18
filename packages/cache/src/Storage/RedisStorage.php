@@ -23,19 +23,19 @@ class RedisStorage implements StorageInterface
      *
      * @var  string
      */
-    protected $defaultHost = '127.0.0.1';
+    protected string $defaultHost = '127.0.0.1';
 
     /**
      * Property defaultPort.
      *
      * @var  int
      */
-    protected $defaultPort = 6379;
+    protected int $defaultPort = 6379;
 
     /**
      * @var Redis
      */
-    protected $driver;
+    protected ?Redis $driver = null;
 
     /**
      * RedisStorage constructor.
