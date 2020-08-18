@@ -15,6 +15,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Windwalker\Data\Collection;
+use Windwalker\DI\Attributes\Inject;
 use Windwalker\DI\Builder\ObjectBuilder;
 use Windwalker\DI\Definition\DefinitionFactory;
 use Windwalker\DI\Definition\DefinitionInterface;
@@ -82,6 +83,8 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
 
         $this->dependencyResolver = new DependencyResolver($this);
         $this->attributesResolver = new AttributesResolver($this);
+
+        $this->attributesResolver->registerAttribute(Inject::class, AttributesResolver::PROPERTIES);
     }
 
     /**

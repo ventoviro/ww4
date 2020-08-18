@@ -23,7 +23,7 @@ class StubInject
      * @var StubService
      */
     @@Inject
-    public StubService $foo;
+    public ?StubService $foo = null;
 
     /**
      * @Inject
@@ -31,14 +31,14 @@ class StubInject
      * @var StubService
      */
     @@Inject
-    protected StubService $bar;
+    protected ?StubService $bar = null;
 
     /**
      * @Inject(key="stub")
      *
      * @var StubService
      */
-    @@Inject(['id' => 'stub'])
+    @@Inject('stub')
     public StubService $baz;
 
     /**
@@ -46,6 +46,6 @@ class StubInject
      *
      * @var StubService
      */
-    @@Inject(['id' => 'stub', 'new' => true])
+    @@Inject('stub', true)
     public StubService $yoo;
 }

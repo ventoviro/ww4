@@ -94,7 +94,7 @@ class DependencyResolver
 
         if (!($options & Container::IGNORE_ATTRIBUTES)) {
             $this->container->getAttributesResolver()
-                ->resolvePropertiesAttributes($instance);
+                ->resolveProperties($instance);
         }
 
         return $instance;
@@ -161,15 +161,13 @@ class DependencyResolver
             // // Prior (4): Argument with numeric keys.
             $type = $param->getType();
 
-            if ($type instanceof \ReflectionUnionType) {
-                $dependencies = $type->getTypes();
-            } elseif ($type) {
-                $dependencies = [$type];
-            } else {
-                $dependencies = [];
-            }
+            if ($type) {
+                if ($type instanceof \ReflectionUnionType) {
+                    $dependencies = $type->getTypes();
+                } else {
+                    $dependencies = [$type];
+                }
 
-            if ([] !== $dependencies) {
                 foreach ($dependencies as $type) {
                     $depObject           = null;
                     $dependencyClassName = $type->getName();
@@ -294,7 +292,7 @@ class DependencyResolver
 
         $callable = Closure::fromCallable($callable);
 
-        if ($callable) {
+        if ($context) {
             $callable = $callable->bindTo($context, $context);
         }
 
@@ -314,6 +312,9 @@ class DependencyResolver
                     return call_user_func_array($callable, $args);
             }
         };
+
+        $closure = $this->container->getAttributesResolver()
+            ->resolveMethod($method, $closure);
 
         return $closure();
     }

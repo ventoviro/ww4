@@ -13,8 +13,6 @@ use Windwalker\DI\Container;
 
 /**
  * Interface PropertyAnnotationInterface
- *
- * @since  3.5.19
  */
 interface PropertyAttributeInterface
 {
@@ -26,8 +24,6 @@ interface PropertyAttributeInterface
      * @param \ReflectionProperty $property
      *
      * @return  object
-     *
-     * @since  3.5.19
      */
     public function __invoke(Container $container, object $instance, \ReflectionProperty $property);
 }

@@ -18,9 +18,36 @@ use Windwalker\DI\Exception\DependencyResolutionException;
  * @since  3.4.4
  */
 @@Attribute
-class Inject extends AbstractAttribute implements PropertyAttributeInterface
+class Inject implements PropertyAttributeInterface
 {
-    public function __invoke(Container $container, $instance, \ReflectionProperty $property)
+    protected ?string $id = null;
+
+    protected bool $forceNew = false;
+
+    /**
+     * Inject constructor.
+     *
+     * @param  string|null  $id
+     * @param  bool         $forceNew
+     */
+    public function __construct(?string $id = null, bool $forceNew = false)
+    {
+        $this->id       = $id;
+        $this->forceNew = $forceNew;
+    }
+
+    /**
+     * __invoke
+     *
+     * @param  Container            $container
+     * @param  object               $instance
+     * @param  \ReflectionProperty  $property
+     *
+     * @return  object
+     *
+     * @throws DependencyResolutionException
+     */
+    public function __invoke(Container $container, object $instance, \ReflectionProperty $property)
     {
         if (!$property instanceof \ReflectionProperty) {
             return $instance;
@@ -78,22 +105,19 @@ class Inject extends AbstractAttribute implements PropertyAttributeInterface
     /**
      * getInjectable
      *
-     * @param Container $container
-     * @param string    $class
+     * @param  Container  $container
+     * @param  string     $class
      *
      * @return  mixed
      *
-     * @throws \ReflectionException
-     * @throws \Windwalker\DI\Exception\DependencyResolutionException
-     *
-     * @since  3.4.4
+     * @throws DependencyResolutionException
      */
     public function resolveInjectable(Container $container, $class)
     {
-        $id = $this->getOption('id') ?? $class;
+        $id = $this->id ?? $class;
 
         if ($container->has($id)) {
-            return $container->get($id, (bool) $this->getOption('new'));
+            return $container->get($id, $this->forceNew);
         }
 
         if (!class_exists($id)) {
