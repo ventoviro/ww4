@@ -41,7 +41,7 @@ class TypeAssert
         }
 
         if (!$result) {
-            static::createAssert($exception, Assert::getCaller(2))->throwException($message, $value);
+            static::createAssert($exception, Assert::getCaller(1))->throwException($message, $value);
         }
     }
 
