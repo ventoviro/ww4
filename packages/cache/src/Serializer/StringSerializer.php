@@ -23,10 +23,10 @@ class StringSerializer implements SerializerInterface
      *
      * @param  mixed  $data
      *
-     * @return  string
+     * @return string|null
      * @throws \InvalidArgumentException
      */
-    public function serialize($data)
+    public function serialize($data): ?string
     {
         if (!is_stringable($data)) {
             throw new \InvalidArgumentException(__CLASS__ . ' can not handle an array or non-stringable object.');
@@ -40,9 +40,9 @@ class StringSerializer implements SerializerInterface
      *
      * @param  string  $data
      *
-     * @return  mixed
+     * @return string|null
      */
-    public function unserialize($data)
+    public function unserialize(string $data)
     {
         return $data;
     }

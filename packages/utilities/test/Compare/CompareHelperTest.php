@@ -102,15 +102,22 @@ class CompareHelperTest extends TestCase
             ['1', 'nin', [1, 2, 3], self::NOT_STRICT, false],
             ['1', 'nin', [1, 2, 3], self::STRICT, true],
             [9, 'nin', [1, 2, 3], self::NOT_STRICT, true],
+
+            // No operator
+            [1, null, 1, self::NOT_STRICT, 0],
+            [1, null, 2, self::NOT_STRICT, -1],
+            [2, null, 1, self::NOT_STRICT, 1],
+            [1, null, '1', self::NOT_STRICT, 0],
+            [1, null, '1', self::STRICT, 0],
         ];
     }
 
     /**
      * Method to test compare().
      *
-     * @param  mixed   $compare1
+     * @param  mixed   $a
      * @param  string  $operator
-     * @param  mixed   $compare2
+     * @param  mixed   $b
      * @param  bool    $strict
      * @param  bool    $result
      *
@@ -118,8 +125,8 @@ class CompareHelperTest extends TestCase
      *
      * @dataProvider getCompareData
      */
-    public function testCompare($compare1, $operator, $compare2, $strict, $result): void
+    public function testCompare($a, $operator, $b, $strict, $result): void
     {
-        $this->assertEquals($result, CompareHelper::compare($compare1, $operator, $compare2, $strict));
+        self::assertEquals($result, CompareHelper::compare($a, $b, $operator, $strict));
     }
 }

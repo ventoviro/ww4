@@ -24,69 +24,63 @@ class CompareHelper
     /**
      * Compare two values.
      *
-     * @param  mixed   $compare1  The compare1 value.
-     * @param  string  $operator  The compare operator.
-     * @param  mixed   $compare2  The compare2 calue.
-     * @param  bool    $strict    Use strict compare.
+     * @param  mixed        $a         The compare1 value.
+     * @param  mixed        $b         The compare2 calue.
+     * @param  string|null  $operator  The compare operator.
+     * @param  bool         $strict    Use strict compare.
      *
-     * @return  bool
+     * @return  bool|int
      *
      * @throws InvalidArgumentException
      */
-    public static function compare($compare1, string $operator, $compare2, $strict = false): bool
+    public static function compare($a, $b, ?string $operator = null, $strict = false): int|bool
     {
+        if ($operator === null) {
+            return $a <=> $b;
+        }
+
         $operator = strtolower(trim($operator));
 
         switch ($operator) {
             case '=':
             case '==':
             case 'eq':
-                return $strict ? $compare1 === $compare2 : $compare1 == $compare2;
-                break;
+                return $strict ? $a === $b : $a == $b;
 
             case '===':
-                return $compare1 === $compare2;
-                break;
+                return $a === $b;
 
             case '!=':
             case 'neq':
-                return $strict ? $compare1 !== $compare2 : $compare1 != $compare2;
-                break;
+                return $strict ? $a !== $b : $a != $b;
 
             case '!==':
-                return $compare1 !== $compare2;
-                break;
+                return $a !== $b;
 
             case '>':
             case 'gt':
-                return $compare1 > $compare2;
-                break;
+                return $a > $b;
 
             case '>=':
             case 'gte':
-                return $compare1 >= $compare2;
-                break;
+                return $a >= $b;
 
             case '<':
             case 'lt':
-                return $compare1 < $compare2;
-                break;
+                return $a < $b;
 
             case '<=':
             case 'lte':
-                return $compare1 <= $compare2;
-                break;
+                return $a <= $b;
 
             case 'in':
-                return in_array($compare1, TypeCast::toArray($compare2), $strict);
-                break;
+                return in_array($a, TypeCast::toArray($b), $strict);
 
             case 'not in':
             case 'not-in':
             case 'notin':
             case 'nin':
-                return !in_array($compare1, TypeCast::toArray($compare2), $strict);
-                break;
+                return !in_array($a, TypeCast::toArray($b), $strict);
 
             default:
                 throw new InvalidArgumentException('Invalid compare operator: ' . $operator);

@@ -16,6 +16,7 @@ use Windwalker\Event\EventSubscriberInterface;
 use Windwalker\Event\Listener\ListenerPriority;
 use Windwalker\Event\Listener\ListenersQueue;
 use Windwalker\Utilities\Assert\ArgumentsAssert;
+use Windwalker\Utilities\Assert\TypeAssert;
 use Windwalker\Utilities\StrNormalise;
 
 /**
@@ -162,9 +163,11 @@ class SubscribableListenerProvider implements SubscribableListenerProviderInterf
             return [$subscriber, $methodName];
         }
 
-        throw ArgumentsAssert::exception(
-            'MethodName should be callable, %2$s got',
-            $methodName
+        throw new \InvalidArgumentException(
+            sprintf(
+                'MethodName should be callable, %s got',
+                TypeAssert::describeValue($methodName)
+            )
         );
     }
 }

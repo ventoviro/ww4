@@ -21,16 +21,16 @@ interface SerializerInterface
      *
      * @param  mixed  $data
      *
-     * @return  mixed
+     * @return string|null
      */
-    public function serialize($data);
+    public function serialize($data): ?string;
 
     /**
      * Decode data.
      *
      * @param  mixed  $data
      *
-     * @return  mixed
+     * @return
      */
-    public function unserialize($data);
+    public function unserialize(string $data);
 }
