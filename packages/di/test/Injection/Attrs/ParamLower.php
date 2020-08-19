@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\DI\Test\Injection\Attrs;
 
-use Windwalker\DI\Attributes\ParameterAttributeInterface;
+use Windwalker\DI\Attributes\ParameterDecoratorInterface;
 use Windwalker\DI\Container;
 use Windwalker\Scalars\StringObject;
 
@@ -19,7 +19,7 @@ use Windwalker\Scalars\StringObject;
  * The ParamLower class.
  */
 @@\Attribute(\Attribute::TARGET_PARAMETER)
-class ParamLower implements ParameterAttributeInterface
+class ParamLower implements ParameterDecoratorInterface
 {
     /**
      * handle

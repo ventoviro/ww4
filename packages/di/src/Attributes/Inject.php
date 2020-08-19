@@ -18,7 +18,7 @@ use Windwalker\DI\Exception\DependencyResolutionException;
  * @since  3.4.4
  */
 @@Attribute
-class Inject implements PropertyAttributeInterface
+class Inject implements PropertyDecoratorInterface
 {
     protected ?string $id = null;
 

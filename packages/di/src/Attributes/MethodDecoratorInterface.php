@@ -16,7 +16,7 @@ use Windwalker\DI\Container;
 /**
  * Interface MethodAttributeInterface
  */
-interface MethodAttributeInterface
+interface MethodDecoratorInterface
 {
     /**
      * handle

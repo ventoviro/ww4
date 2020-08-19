@@ -31,9 +31,8 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
 {
     public const SHARED = 1 << 0;
     public const PROTECTED = 1 << 1;
-    public const ENABLE_AUTO_WIRE = 1 << 2;
-    public const DISABLE_AUTO_WIRE = 1 << 3;
-    public const IGNORE_ATTRIBUTES = 1 << 4;
+    public const AUTO_WIRE = 1 << 2;
+    public const IGNORE_ATTRIBUTES = 1 << 3;
 
     protected int $options = 0;
 
@@ -76,10 +75,11 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
      * @param  Container|null  $parent
      * @param  int             $options
      */
-    public function __construct(?Container $parent = null, int $options = self::ENABLE_AUTO_WIRE)
+    public function __construct(?Container $parent = null, int $options = 0)
     {
         $this->parent = $parent;
         $this->options = $options;
+        $this->parameters = new Collection();
 
         $this->dependencyResolver = new DependencyResolver($this);
         $this->attributesResolver = new AttributesResolver($this);
@@ -278,6 +278,14 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
         return null;
     }
 
+    public function clear(): void
+    {
+        $this->storage = [];
+        $this->builders = [];
+        $this->aliases = [];
+        $this->parameters->reset();
+    }
+
     /**
      * wrapDefinition
      *
@@ -354,7 +362,7 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
      * @throws DefinitionException
      * @since   3.0
      */
-    public function prepareObject(string $class, \Closure $extend = null, int $options = 0)
+    public function prepareObject(string $class, ?\Closure $extend = null, int $options = 0)
     {
         $handler = static fn(Container $container) => $container->newInstance($class, [], $options);
 
@@ -727,5 +735,13 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     public function offsetUnset($key): void
     {
         $this->remove($key);
+    }
+
+    /**
+     * @return DependencyResolver
+     */
+    public function getDependencyResolver(): DependencyResolver
+    {
+        return $this->dependencyResolver;
     }
 }

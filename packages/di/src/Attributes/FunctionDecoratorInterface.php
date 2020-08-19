@@ -16,7 +16,7 @@ use Windwalker\DI\Container;
 /**
  * Interface FunctionAttributeInterface
  */
-interface FunctionAttributeInterface
+interface FunctionDecoratorInterface
 {
     /**
      * handle

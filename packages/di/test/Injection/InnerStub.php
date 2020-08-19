@@ -11,12 +11,12 @@ declare(strict_types=1);
 
 namespace Windwalker\DI\Test\Injection;
 
-use Windwalker\DI\Test\Injection\Attrs\Wrapped;
+use Windwalker\DI\Attributes\Decorator;
 
 /**
  * The InnerStub class.
  */
-@@Wrapped
+@@Decorator(Wrapped::class)
 class InnerStub
 {
 }

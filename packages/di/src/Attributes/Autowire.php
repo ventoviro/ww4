@@ -16,11 +16,34 @@ use Windwalker\DI\Container;
 /**
  * The Autowire class.
  */
-class Autowire implements ObjectDecoratorAttributeInterface
+@@\Attribute
+class Autowire implements ContainerAttributeInterface
 {
-    public function __invoke(Container $container, \Closure $builder, array $args, \ReflectionClass $reflector)
+    /**
+     * __invoke
+     *
+     * @param  Container   $container
+     * @param  \Closure    $closure
+     * @param  \Reflector  $reflector
+     *
+     * @return  \Closure
+     */
+    public function __invoke(Container $container, $closure, \Reflector $reflector)
     {
-        show($args);
-        exit(' @Checkpoint');
+        if ($closure === null && $reflector instanceof \ReflectionParameter && $reflector->getType()) {
+            $resolver = $container->getDependencyResolver();
+
+            return $resolver->resolveParameterValue(
+                $resolver->resolveParameterDependency($reflector, [], Container::AUTO_WIRE),
+                $reflector,
+                Container::IGNORE_ATTRIBUTES
+            );
+        }
+
+        return fn(
+            Container $container,
+            array $args,
+            int $options
+        ) => $closure($container, $args, $options | Container::AUTO_WIRE);
     }
 }

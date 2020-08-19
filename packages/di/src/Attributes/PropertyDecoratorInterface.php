@@ -16,7 +16,7 @@ use Windwalker\DI\Container;
 /**
  * Interface PropertyAnnotationInterface
  */
-interface PropertyAttributeInterface
+interface PropertyDecoratorInterface
 {
     /**
      * handle

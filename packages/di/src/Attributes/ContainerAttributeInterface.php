@@ -18,5 +18,5 @@ use Windwalker\DI\Container;
  */
 interface ContainerAttributeInterface
 {
-    public function __invoke(Container $container, object $instance, \Reflector $reflector);
+    public function __invoke(Container $container, $instance, \Reflector $reflector);
 }

@@ -18,7 +18,7 @@ class AttributesResolver
 {
     public const CLASSES = 'classes';
     public const PROPERTIES = 'properties';
-    public const METHODS = 'methods';
+    public const FUNCTION_METHOD = 'function_method';
     public const PARAMETERS = 'parameters';
 
     protected Container $container;
@@ -26,7 +26,7 @@ class AttributesResolver
     protected array $registry = [
         self::CLASSES => [],
         self::PROPERTIES => [],
-        self::METHODS => [],
+        self::FUNCTION_METHOD => [],
         self::PARAMETERS => [],
     ];
 
@@ -40,11 +40,11 @@ class AttributesResolver
         $this->container = $container;
     }
 
-    public function resolveObjectDecorate(\ReflectionClass $ref, \Closure $builder, array $args = []): \Closure
+    public function resolveObjectDecorate(\ReflectionClass $ref, \Closure $builder): \Closure
     {
         foreach ($ref->getAttributes() as $attribute) {
             if ($this->hasAttribute($attribute->getName(), static::CLASSES)) {
-                $builder = $this->runAttribute($attribute, $builder, $args, $ref) ?? $builder;
+                $builder = $this->runAttribute($attribute, $builder, $ref) ?? $builder;
             }
         }
 
@@ -54,7 +54,7 @@ class AttributesResolver
     public function resolveCallable(\ReflectionFunctionAbstract $ref, \Closure $closure): \Closure
     {
         foreach ($ref->getAttributes() as $attribute) {
-            if ($this->hasAttribute($attribute->getName(), static::METHODS)) {
+            if ($this->hasAttribute($attribute->getName(), static::FUNCTION_METHOD)) {
                 $closure = $this->runAttribute($attribute, $closure, $ref) ?? $closure;
             }
         }
@@ -93,11 +93,20 @@ class AttributesResolver
         return in_array(strtolower($attributeClass), $this->registry[$type], true);
     }
 
-    public function registerAttribute(string $attributeClass, string $type): void
+    public function registerAttribute(string $attributeClass, array|string $types): void
     {
-        if (!$this->hasAttribute($attributeClass, $type)) {
-            $this->registry[$type][] = strtolower($attributeClass);
+        $types = (array) $types;
+
+        foreach ($types as $type) {
+            if (!$this->hasAttribute($attributeClass, $type)) {
+                $this->registry[$type][] = strtolower($attributeClass);
+            }
         }
+    }
+
+    public function removeAttribute(string $attributeClass, string $type): void
+    {
+        unset($this->registry[$type][strtolower($attributeClass)]);
     }
 
     protected function runAttribute(\ReflectionAttribute $attribute, ...$args)
@@ -107,7 +116,7 @@ class AttributesResolver
 
         if (!is_callable($attrInstance)) {
             $class = get_class($attribute);
-            throw new \LogicException("Annotation: {$class} is not invokable.");
+            throw new \LogicException("Attribute: {$class} is not invokable.");
         }
 
         return $attrInstance($this->container, ...$args);

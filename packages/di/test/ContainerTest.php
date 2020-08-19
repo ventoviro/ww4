@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\DI\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\Data\Collection;
 use Windwalker\DI\Container;
 use Windwalker\DI\Exception\DefinitionException;
 use Windwalker\DI\Exception\DependencyResolutionException;
@@ -19,6 +20,7 @@ use Windwalker\DI\Test\Injection\StubInject;
 use Windwalker\DI\Test\Injection\StubService;
 use Windwalker\DI\Test\Mock\UnionTypeStub;
 use Windwalker\DI\Test\Stub\StubServiceProvider;
+use Windwalker\Scalars\ArrayObject;
 use Windwalker\Test\TestHelper;
 use Windwalker\DI\Test\Mock\Foo;
 use Windwalker\DI\Test\Mock\Bar;
@@ -235,7 +237,7 @@ class ContainerTest extends TestCase
      */
     public function testCreateObject()
     {
-        $container = new Container();
+        $container = new Container(null, Container::AUTO_WIRE);
 
         $foo = $container->createObject(Foo::class);
 
@@ -245,7 +247,7 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(\SplStack::class, $foo->bar->stack);
 
         // Bind a sub class
-        $container = new Container();
+        $container->clear();
 
         $container->share('SplStack', new StubStack());
 
@@ -254,7 +256,7 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(StubStack::class, $foo->bar->stack);
 
         // Bind not shared classes
-        $container = new Container();
+        $container->clear();
 
         $container->set(
             'SplPriorityQueue',
@@ -268,7 +270,7 @@ class ContainerTest extends TestCase
         self::assertNotSame($queue, $foo->bar->queue, 'Non shared class should be not same.');
 
         // Auto created classes should be not shared
-        $container = new Container();
+        $container->clear();
 
         $bar1 = $container->createObject(Bar::class);
         $bar2 = $container->createObject(Bar2::class);
@@ -276,7 +278,7 @@ class ContainerTest extends TestCase
         self::assertNotSame($bar1->queue, $bar2->queue);
 
         // Not shared object
-        $container = new Container();
+        $container->clear();
 
         $foo = $container->createObject(Foo::class);
         $foo2 = $container->get(Foo::class);
@@ -284,7 +286,7 @@ class ContainerTest extends TestCase
         self::assertNotSame($foo, $foo2);
 
         // Shared object
-        $container = new Container();
+        $container->clear();
 
         $foo = $container->createSharedObject(Foo::class);
         $foo2 = $container->get(Foo::class);
@@ -294,12 +296,12 @@ class ContainerTest extends TestCase
 
     public function testNewInstanceWithUnionTypes()
     {
-        $container = new Container();
+        $container = new Container(null, Container::AUTO_WIRE);
 
         $obj = $container->newInstance(UnionTypeStub::class);
 
         self::assertInstanceOf(
-            \ArrayObject::class,
+            ArrayObject::class,
             $obj->iter,
         );
     }
@@ -309,7 +311,7 @@ class ContainerTest extends TestCase
      */
     public function testNewInstanceWithoutAutowire(): void
     {
-        $container = new Container();
+        $container = new Container(null, Container::AUTO_WIRE);
 
         try {
             $foo = $container->newInstance(Foo::class, [], 0);
@@ -324,7 +326,7 @@ class ContainerTest extends TestCase
         self::assertInstanceOf(Foo::class, $foo);
 
         // No autowire on default options
-        $container = new Container(null, Container::DISABLE_AUTO_WIRE);
+        $container = new Container();
 
         try {
             $foo = $container->newInstance(Foo::class, []);
@@ -333,7 +335,7 @@ class ContainerTest extends TestCase
         }
 
         // force autowire at calling
-        $foo = $container->newInstance(Foo::class, [], Container::ENABLE_AUTO_WIRE);
+        $foo = $container->newInstance(Foo::class, [], Container::AUTO_WIRE);
     }
 
     /**
@@ -347,7 +349,7 @@ class ContainerTest extends TestCase
     {
         $container = new Container();
 
-        $container->prepareObject(Foo::class);
+        $container->prepareObject(Foo::class, null, Container::AUTO_WIRE);
 
         $foo = $container->get(Foo::class);
 
@@ -365,7 +367,7 @@ class ContainerTest extends TestCase
     {
         $container = new Container();
 
-        $container->prepareSharedObject(Foo::class);
+        $container->prepareSharedObject(Foo::class, null, Container::AUTO_WIRE);
 
         $foo = $container->get(Foo::class);
         $foo2 = $container->get(Foo::class);
@@ -386,13 +388,13 @@ class ContainerTest extends TestCase
     {
         $container = new Container();
 
-        $obj = $container->newInstance(\ArrayIterator::class);
+        $obj = $container->newInstance(Collection::class);
 
-        self::assertInstanceOf(\ArrayIterator::class, $obj);
+        self::assertInstanceOf(Collection::class, $obj);
     }
 
     /**
-     * testNewInstanceWithPropertyAnnotations
+     * testNewInstanceWithPropertyAttributes
      *
      * @return  void
      *
@@ -401,9 +403,10 @@ class ContainerTest extends TestCase
      *
      * @since  3.4.4
      */
-    public function testNewInstanceWithPropertyAnnotations()
+    public function testNewInstanceWithPropertyAttributes()
     {
         $container = new Container();
+        StubService::$counter = 0;
 
         $container->share('stub', function () {
             return new StubService();

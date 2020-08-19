@@ -28,7 +28,7 @@ class WiredClass
      * @param  array              $logs
      * @param  StringObject|null  $foo
      */
-    public function __construct(array $logs = [], ?StringObject $foo = null)
+    public function __construct(StringObject $foo, array $logs = [])
     {
         $this->logs[] = $foo;
     }

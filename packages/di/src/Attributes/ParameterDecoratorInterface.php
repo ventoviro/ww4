@@ -16,7 +16,7 @@ use Windwalker\DI\Container;
 /**
  * Interface ParameterAttributeInterface
  */
-interface ParameterAttributeInterface
+interface ParameterDecoratorInterface
 {
     /**
      * handle

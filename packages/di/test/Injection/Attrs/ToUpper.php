@@ -12,14 +12,14 @@ declare(strict_types=1);
 namespace Windwalker\DI\Test\Injection\Attrs;
 
 use Attribute;
-use Windwalker\DI\Attributes\MethodAttributeInterface;
+use Windwalker\DI\Attributes\MethodDecoratorInterface;
 use Windwalker\DI\Container;
 
 /**
  * The ToUpper class.
  */
 @@Attribute
-class ToUpper implements MethodAttributeInterface
+class ToUpper implements MethodDecoratorInterface
 {
     /**
      * __invoke
@@ -32,6 +32,6 @@ class ToUpper implements MethodAttributeInterface
      */
     public function __invoke(Container $container, \Closure $instance, \ReflectionMethod $property): object
     {
-        return fn () => strtoupper($instance());
+        return fn (...$args) => strtoupper($instance(...$args));
     }
 }

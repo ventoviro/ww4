@@ -17,6 +17,7 @@ use ReflectionException;
 use ReflectionFunctionAbstract;
 use Windwalker\DI\Definition\DefinitionInterface;
 use Windwalker\DI\Definition\ObjectBuilderDefinition;
+use Windwalker\DI\Exception\DefinitionResolveException;
 use Windwalker\DI\Exception\DependencyResolutionException;
 use Windwalker\DI\Reflection\ReflectionCallable;
 use Windwalker\Utilities\Assert\ArgumentsAssert;
@@ -49,38 +50,16 @@ class DependencyResolver
         $options |= $this->container->getOptions();
 
         if (is_string($class)) {
-            $reflection = new ReflectionClass($class);
-
-            $constructor = $reflection->getConstructor();
-
-            // If there are no parameters, just return a new object.
-            if (null === $constructor) {
-                $builder = fn ($container, $args) => new $class();
-            } else {
-                try {
-                    $args = array_merge($this->container->whenCreating($class)->getArguments(), $args);
-
-                    $args = $this->getMethodArgs($constructor, $args, $options);
-                } catch (DependencyResolutionException $e) {
-                    throw new DependencyResolutionException(
-                        $e->getMessage() . ' - Target class: ' . $class,
-                        $e->getCode(),
-                        $e
-                    );
-                }
-
-                // Create a callable for the dataStore
-                $builder = fn ($container, $args) => $reflection->newInstanceArgs($args);
-            }
+            $builder = fn ($container, array $args, int $options) => $this->newInstanceByClassName($class, $args, $options);
 
             if (!($options & Container::IGNORE_ATTRIBUTES)) {
                 $builder = $this->container->getAttributesResolver()
-                    ->resolveObjectDecorate($reflection, $builder, $args);
+                    ->resolveObjectDecorate(new ReflectionClass($class), $builder);
 
-                $instance = $builder($this->container, $args);
+                $instance = $builder($this->container, $args, $options);
             }
         } elseif (is_callable($class)) {
-            $instance = $class($this->container, $args);
+            $instance = $class($this->container, $args, $options);
         } else {
             throw new InvalidArgumentException(
                 'New instance must get first argument as class name, callable or DefinitionInterface object.'
@@ -93,6 +72,37 @@ class DependencyResolver
         }
 
         return $instance;
+    }
+
+    public function newInstanceByClassName(string $class, array $args = [], $options = 0): object
+    {
+        $reflection = new ReflectionClass($class);
+
+        $constructor = $reflection->getConstructor();
+
+        // If there are no parameters, just return a new object.
+        if (null === $constructor) {
+            return new $class();
+        }
+
+        try {
+            $args = array_merge($this->container->whenCreating($class)->getArguments(), $args);
+
+            $args = $this->getMethodArgs($constructor, $args, $options);
+        } catch (DependencyResolutionException $e) {
+            throw new DependencyResolutionException(
+                $e->getMessage() . ' - Target class: ' . $class,
+                $e->getCode(),
+                $e
+            );
+        }
+
+        try {
+            // Create a callable for the dataStore
+            return $reflection->newInstanceArgs($args);
+        } catch (\TypeError $e) {
+            throw new DependencyResolutionException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
@@ -121,7 +131,7 @@ class DependencyResolver
 
                 foreach ($args as $key => $value) {
                     if (is_numeric($key)) {
-                        $trailing[] = &$this->resolveArgumentValue($value, $param);
+                        $trailing[] = &$this->resolveParameterValue($value, $param);
                     }
                 }
 
@@ -132,19 +142,22 @@ class DependencyResolver
 
             // Prior (2): Argument with numeric keys.
             if (array_key_exists($i, $args)) {
-                $methodArgs[] = &$this->resolveArgumentValue($args[$i], $param);
+                $methodArgs[] = &$this->resolveParameterValue($args[$i], $param);
                 continue;
             }
 
             // Prior (3): Argument with named keys.
             if (array_key_exists($dependencyVarName, $args)) {
-                $methodArgs[] = &$this->resolveArgumentValue($args[$dependencyVarName], $param);
+                $methodArgs[] = &$this->resolveParameterValue($args[$dependencyVarName], $param);
 
                 continue;
             }
 
-            // // Prior (4): Argument with numeric keys.
-            $value = &$this->resolveParameterDependency($param, $args, $options);
+            // Prior (4): Argument with numeric keys.
+            $value = &$this->resolveParameterValue(
+                $this->resolveParameterDependency($param, $args, $options),
+                $param
+            );
 
             if ($value !== null) {
                 $methodArgs[] = &$value;
@@ -160,8 +173,7 @@ class DependencyResolver
                 continue;
             }
 
-            // Couldn't resolve dependency, and no default was provided.
-            throw new DependencyResolutionException(sprintf('Could not resolve dependency: $%s', $dependencyVarName));
+            $methodArgs[] = null;
         }
 
         return $methodArgs;
@@ -170,15 +182,9 @@ class DependencyResolver
     public function &resolveParameterDependency(\ReflectionParameter $param, array $args = [], int $options = 0)
     {
         $nope = null;
-        $defaultOptions = $this->container->getOptions();
+        $options |= $this->container->getOptions();
 
-        $autowire = $defaultOptions & Container::ENABLE_AUTO_WIRE;
-        $autowire = $autowire && ($autowire = Container::DISABLE_AUTO_WIRE);
-
-        if ($options & Container::ENABLE_AUTO_WIRE || $options & Container::DISABLE_AUTO_WIRE) {
-            $autowire = $options & Container::ENABLE_AUTO_WIRE;
-            $autowire = $autowire && ($autowire = Container::DISABLE_AUTO_WIRE);
-        }
+        $autowire = $options & Container::AUTO_WIRE;
 
         $type = $param->getType();
         $dependencyVarName = $param->getName();
@@ -209,7 +215,7 @@ class DependencyResolver
                 $depObject = $this->container->get($dependencyClassName);
             } elseif (array_key_exists($dependencyVarName, $args)) {
                 // If an arg provided, use it.
-                return $this->resolveArgumentValue($args[$dependencyVarName], $param);
+                return $args[$dependencyVarName];
             } elseif (
                 $autowire
                 && !$dependency->isAbstract()
@@ -229,7 +235,7 @@ class DependencyResolver
             }
 
             if ($depObject instanceof $dependencyClassName) {
-                return $this->resolveArgumentValue($depObject, $param);
+                return $depObject;
             }
         }
 
@@ -239,14 +245,15 @@ class DependencyResolver
     /**
      * resolveArgumentValue
      *
-     * @param  mixed                $value
+     * @param  mixed                 $value
      * @param  \ReflectionParameter  $param
+     * @param  int                   $options
      *
      * @return mixed
      *
      * @since  3.5.1
      */
-    protected function &resolveArgumentValue(&$value, \ReflectionParameter $param)
+    public function &resolveParameterValue(&$value, \ReflectionParameter $param, int $options = 0)
     {
         if ($value instanceof ObjectBuilderDefinition) {
             $value = $this->container->resolve($value);
@@ -262,7 +269,9 @@ class DependencyResolver
             $value = $value();
         }
 
-        if ($param->getAttributes()) {
+        $options |= $this->container->getOptions();
+
+        if (!($options & Container::IGNORE_ATTRIBUTES) && $param->getAttributes()) {
             $value = $this->container->getAttributesResolver()
                 ->resolveParameter($value, $param);
         }
@@ -286,15 +295,15 @@ class DependencyResolver
     {
         $ref = new ReflectionCallable($callable);
 
-        $args = $this->getMethodArgs($ref->getReflector(), $args, $options);
-
         $callable = $ref->getClosure();
 
         if ($context) {
             $callable = $callable->bindTo($context, $context);
         }
 
-        $closure = static function () use ($args, $callable) {
+        $closure = function (Container $container, array $args, int $options) use ($callable, $ref) {
+            $args = $this->getMethodArgs($ref->getReflector(), $args, $options);
+
             switch (count($args)) {
                 case 0:
                     return $callable();
@@ -311,9 +320,13 @@ class DependencyResolver
             }
         };
 
-        $closure = $this->container->getAttributesResolver()
-            ->resolveCallable($ref->getReflector(), $closure);
+        $options |= $this->container->getOptions();
 
-        return $closure();
+        if (!($options & Container::IGNORE_ATTRIBUTES)) {
+            $closure = $this->container->getAttributesResolver()
+                ->resolveCallable($ref->getReflector(), $closure);
+        }
+
+        return $closure($this->container, $args, $options);
     }
 }
