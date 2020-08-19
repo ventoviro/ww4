@@ -6,7 +6,7 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\DI\Test\Attributes;
+namespace Windwalker\DI\Test\Injection;
 
 use Windwalker\DI\Attributes\Inject;
 
@@ -34,16 +34,12 @@ class StubInject
     protected ?StubService $bar = null;
 
     /**
-     * @Inject(key="stub")
-     *
      * @var StubService
      */
     @@Inject('stub')
     public StubService $baz;
 
     /**
-     * @Inject(key="stub", new=true)
-     *
      * @var StubService
      */
     @@Inject('stub', true)

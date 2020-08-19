@@ -40,9 +40,9 @@ class AttributesResolver
         $this->container = $container;
     }
 
-    public function resolveClass(object $instance): object
+    public function resolveObjectDecorate(object $instance): object
     {
-        $ref = new \ReflectionClass($instance);
+        $ref = new \ReflectionObject($instance);
 
         foreach ($ref->getAttributes() as $attribute) {
             if ($this->hasAttribute($attribute->getName(), static::CLASSES)) {
@@ -53,25 +53,8 @@ class AttributesResolver
         return $instance;
     }
 
-    public function resolveMethod(string $methodName, \Closure $closure): \Closure
+    public function resolveCallable(\ReflectionFunctionAbstract $ref, \Closure $closure): \Closure
     {
-        $ref = new \ReflectionFunction($closure);
-
-        $method = new \ReflectionMethod($ref->getClosureThis(), $methodName);
-
-        foreach ($method->getAttributes() as $attribute) {
-            if ($this->hasAttribute($attribute->getName(), static::METHODS)) {
-                $closure = $this->runAttribute($attribute, $closure, $method) ?? $closure;
-            }
-        }
-
-        return $closure;
-    }
-
-    public function resolveParameter(object $instance, string $parameterName, \Closure $closure): \Closure
-    {
-        $ref = new \ReflectionParameter($closure, $parameterName);
-
         foreach ($ref->getAttributes() as $attribute) {
             if ($this->hasAttribute($attribute->getName(), static::METHODS)) {
                 $closure = $this->runAttribute($attribute, $closure, $ref) ?? $closure;
@@ -79,6 +62,17 @@ class AttributesResolver
         }
 
         return $closure;
+    }
+
+    public function resolveParameter($value, \ReflectionParameter $ref)
+    {
+        foreach ($ref->getAttributes() as $attribute) {
+            if ($this->hasAttribute($attribute->getName(), static::PARAMETERS)) {
+                $value = $this->runAttribute($attribute, $value, $ref);
+            }
+        }
+
+        return $value;
     }
 
     public function resolveProperties(object $instance): object

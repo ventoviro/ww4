@@ -15,13 +15,13 @@ use Closure;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionMethod;
-use ReflectionObject;
+use ReflectionFunctionAbstract;
 use Windwalker\Data\Collection;
 use Windwalker\DI\Builder\ObjectBuilder;
 use Windwalker\DI\Definition\DefinitionInterface;
 use Windwalker\DI\Definition\ObjectBuilderDefinition;
 use Windwalker\DI\Exception\DependencyResolutionException;
+use Windwalker\DI\Reflection\ReflectionCallable;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\ValueReference;
 
@@ -93,8 +93,11 @@ class DependencyResolver
         $options |= $this->container->getOptions();
 
         if (!($options & Container::IGNORE_ATTRIBUTES)) {
-            $this->container->getAttributesResolver()
+            $instance = $this->container->getAttributesResolver()
                 ->resolveProperties($instance);
+
+            $instance = $this->container->getAttributesResolver()
+                ->resolveObjectDecorate($instance);
         }
 
         return $instance;
@@ -103,9 +106,9 @@ class DependencyResolver
     /**
      * Build an array of constructor parameters.
      *
-     * @param  ReflectionMethod  $method  Method for which to build the argument array.
-     * @param  array             $args    The default args if class hint not provided.
-     * @param  int               $options
+     * @param  ReflectionFunctionAbstract  $method  Method for which to build the argument array.
+     * @param  array                       $args    The default args if class hint not provided.
+     * @param  int                         $options
      *
      * @return array Array of arguments to pass to the method.
      *
@@ -113,19 +116,9 @@ class DependencyResolver
      * @throws ReflectionException
      * @since   2.0
      */
-    protected function getMethodArgs(ReflectionMethod $method, array $args = [], int $options = 0): array
+    protected function getMethodArgs(ReflectionFunctionAbstract $method, array $args = [], int $options = 0): array
     {
         $methodArgs = [];
-
-        $defaultOptions = $this->container->getOptions();
-
-        $autowire = $defaultOptions & Container::ENABLE_AUTO_WIRE;
-        $autowire = $autowire && ($autowire = Container::DISABLE_AUTO_WIRE);
-
-        if ($options & Container::ENABLE_AUTO_WIRE || $options & Container::DISABLE_AUTO_WIRE) {
-            $autowire = $options & Container::ENABLE_AUTO_WIRE;
-            $autowire = $autowire && ($autowire = Container::DISABLE_AUTO_WIRE);
-        }
 
         foreach ($method->getParameters() as $i => $param) {
             $dependencyVarName = $param->getName();
@@ -136,7 +129,7 @@ class DependencyResolver
 
                 foreach ($args as $key => $value) {
                     if (is_numeric($key)) {
-                        $trailing[] = $this->resolveArgumentValue($value);
+                        $trailing[] = &$this->resolveArgumentValue($value, $param);
                     }
                 }
 
@@ -147,70 +140,23 @@ class DependencyResolver
 
             // Prior (2): Argument with numeric keys.
             if (array_key_exists($i, $args)) {
-                $methodArgs[] = $this->resolveArgumentValue($args[$i]);
+                $methodArgs[] = &$this->resolveArgumentValue($args[$i], $param);
                 continue;
             }
 
             // Prior (3): Argument with named keys.
             if (array_key_exists($dependencyVarName, $args)) {
-                $methodArgs[] = $this->resolveArgumentValue($args[$dependencyVarName]);
+                $methodArgs[] = &$this->resolveArgumentValue($args[$dependencyVarName], $param);
 
                 continue;
             }
 
             // // Prior (4): Argument with numeric keys.
-            $type = $param->getType();
+            $value = &$this->resolveParameterDependency($param, $args, $options);
 
-            if ($type) {
-                if ($type instanceof \ReflectionUnionType) {
-                    $dependencies = $type->getTypes();
-                } else {
-                    $dependencies = [$type];
-                }
-
-                foreach ($dependencies as $type) {
-                    $depObject           = null;
-                    $dependencyClassName = $type->getName();
-
-                    if (!class_exists($dependencyClassName)) {
-                        // Next dependency
-                        continue;
-                    }
-
-                    $dependency = new ReflectionClass($dependencyClassName);
-
-                    // If the dependency class name is registered with this container or a parent, use it.
-                    if ($this->container->has($dependencyClassName)) {
-                        $depObject = $this->container->get($dependencyClassName);
-                    } elseif (array_key_exists($dependencyVarName, $args)) {
-                        // If an arg provided, use it.
-                        $methodArgs[] = $this->resolveArgumentValue($args[$dependencyVarName]);
-
-                        continue 2;
-                    } elseif (
-                        $autowire
-                        && !$dependency->isAbstract()
-                        && !$dependency->isInterface()
-                        && !$dependency->isTrait()
-                    ) {
-                        // Otherwise we create this object recursive
-
-                        // Find child args if set
-                        if (isset($args[$dependencyClassName]) && is_array($args[$dependencyClassName])) {
-                            $childArgs = $args[$dependencyClassName];
-                        } else {
-                            $childArgs = [];
-                        }
-
-                        $depObject = $this->newInstance($dependencyClassName, $childArgs, $options);
-                    }
-
-                    if ($depObject instanceof $dependencyClassName) {
-                        $methodArgs[] = $depObject;
-
-                        continue 2;
-                    }
-                }
+            if ($value !== null) {
+                $methodArgs[] = &$value;
+                continue;
             }
 
             if ($param->isOptional()) {
@@ -229,16 +175,83 @@ class DependencyResolver
         return $methodArgs;
     }
 
+    public function &resolveParameterDependency(\ReflectionParameter $param, array $args = [], int $options = 0)
+    {
+        $defaultOptions = $this->container->getOptions();
+
+        $autowire = $defaultOptions & Container::ENABLE_AUTO_WIRE;
+        $autowire = $autowire && ($autowire = Container::DISABLE_AUTO_WIRE);
+
+        if ($options & Container::ENABLE_AUTO_WIRE || $options & Container::DISABLE_AUTO_WIRE) {
+            $autowire = $options & Container::ENABLE_AUTO_WIRE;
+            $autowire = $autowire && ($autowire = Container::DISABLE_AUTO_WIRE);
+        }
+
+        $type = $param->getType();
+        $dependencyVarName = $param->getName();
+
+        if (!$type) {
+            return;
+        }
+
+        if ($type instanceof \ReflectionUnionType) {
+            $dependencies = $type->getTypes();
+        } else {
+            $dependencies = [$type];
+        }
+
+        foreach ($dependencies as $type) {
+            $depObject           = null;
+            $dependencyClassName = $type->getName();
+
+            if (!class_exists($dependencyClassName)) {
+                // Next dependency
+                continue;
+            }
+
+            $dependency = new ReflectionClass($dependencyClassName);
+
+            // If the dependency class name is registered with this container or a parent, use it.
+            if ($this->container->has($dependencyClassName)) {
+                $depObject = $this->container->get($dependencyClassName);
+            } elseif (array_key_exists($dependencyVarName, $args)) {
+                // If an arg provided, use it.
+                return $this->resolveArgumentValue($args[$dependencyVarName], $param);
+            } elseif (
+                $autowire
+                && !$dependency->isAbstract()
+                && !$dependency->isInterface()
+                && !$dependency->isTrait()
+            ) {
+                // Otherwise we create this object recursive
+
+                // Find child args if set
+                if (isset($args[$dependencyClassName]) && is_array($args[$dependencyClassName])) {
+                    $childArgs = $args[$dependencyClassName];
+                } else {
+                    $childArgs = [];
+                }
+
+                $depObject = $this->newInstance($dependencyClassName, $childArgs, $options);
+            }
+
+            if ($depObject instanceof $dependencyClassName) {
+                return $this->resolveArgumentValue($depObject, $param);
+            }
+        }
+    }
+
     /**
      * resolveArgumentValue
      *
-     * @param  mixed      $value
+     * @param  mixed                $value
+     * @param  \ReflectionParameter  $param
      *
-     * @return mixed|Collection
+     * @return mixed
      *
      * @since  3.5.1
      */
-    protected function resolveArgumentValue($value)
+    protected function &resolveArgumentValue(&$value, \ReflectionParameter $param)
     {
         if ($value instanceof ObjectBuilder) {
             $value = $this->container->resolve($value);
@@ -252,6 +265,11 @@ class DependencyResolver
             $value = $v;
         } elseif ($value instanceof RawWrapper) {
             $value = $value();
+        }
+
+        if ($param->getAttributes()) {
+            $value = $this->container->getAttributesResolver()
+                ->resolveParameter($value, $param);
         }
 
         return $value;
@@ -271,26 +289,11 @@ class DependencyResolver
      */
     public function call(callable $callable, array $args = [], ?object $context = null, int $options = 0)
     {
-        $object = null;
-        $method = null;
+        $ref = new ReflectionCallable($callable);
 
-        if ($callable instanceof Closure) {
-            $ref = new ReflectionObject($callable);
+        $args = $this->getMethodArgs($ref->getReflector(), $args, $options);
 
-            $args = $this->getMethodArgs($ref->getMethod('__invoke'), $args, $options);
-        } else {
-            if (is_string($callable)) {
-                $callable = explode('::', $callable);
-            }
-
-            [$object, $method] = $callable;
-
-            $ref = new ReflectionClass($object);
-
-            $args = $this->getMethodArgs($ref->getMethod($method), $args, $options);
-        }
-
-        $callable = Closure::fromCallable($callable);
+        $callable = $ref->getClosure();
 
         if ($context) {
             $callable = $callable->bindTo($context, $context);
@@ -314,7 +317,7 @@ class DependencyResolver
         };
 
         $closure = $this->container->getAttributesResolver()
-            ->resolveMethod($method, $closure);
+            ->resolveCallable($ref->getReflector(), $closure);
 
         return $closure();
     }

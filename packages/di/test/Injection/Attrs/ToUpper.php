@@ -9,14 +9,16 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\DI\Test\Attributes\Methods;
+namespace Windwalker\DI\Test\Injection\Attrs;
 
+use Attribute;
 use Windwalker\DI\Attributes\MethodAttributeInterface;
 use Windwalker\DI\Container;
 
 /**
  * The ToUpper class.
  */
+@@Attribute
 class ToUpper implements MethodAttributeInterface
 {
     /**

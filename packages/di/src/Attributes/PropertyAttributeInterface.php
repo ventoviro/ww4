@@ -7,6 +7,8 @@
  * @license    LGPL-2.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace Windwalker\DI\Attributes;
 
 use Windwalker\DI\Container;
@@ -19,11 +21,11 @@ interface PropertyAttributeInterface
     /**
      * handle
      *
-     * @param Container           $container
-     * @param object              $instance
-     * @param \ReflectionProperty $property
+     * @param Container            $container
+     * @param object               $instance
+     * @param \ReflectionProperty  $reflector
      *
      * @return  object
      */
-    public function __invoke(Container $container, object $instance, \ReflectionProperty $property);
+    public function __invoke(Container $container, object $instance, \ReflectionProperty $reflector);
 }

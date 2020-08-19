@@ -41,26 +41,26 @@ class Inject implements PropertyAttributeInterface
      *
      * @param  Container            $container
      * @param  object               $instance
-     * @param  \ReflectionProperty  $property
+     * @param  \ReflectionProperty  $reflector
      *
      * @return  object
      *
      * @throws DependencyResolutionException
      */
-    public function __invoke(Container $container, object $instance, \ReflectionProperty $property)
+    public function __invoke(Container $container, object $instance, \ReflectionProperty $reflector)
     {
-        if (!$property instanceof \ReflectionProperty) {
+        if (!$reflector instanceof \ReflectionProperty) {
             return $instance;
         }
 
-        $type = $property->getType();
+        $type = $reflector->getType();
 
         if (!$type) {
             throw new DependencyResolutionException(
                 sprintf(
                     'Property: %s->%s inject with no type.',
-                    $property->getDeclaringClass()->getName(),
-                    $property->getName()
+                    $reflector->getDeclaringClass()->getName(),
+                    $reflector->getName()
                 )
             );
         }
@@ -82,21 +82,21 @@ class Inject implements PropertyAttributeInterface
 
         if (!$varClass) {
             throw new DependencyResolutionException(
-                sprintf('unable to resolve injection of property: "%s".', $property->getName())
+                sprintf('unable to resolve injection of property: "%s".', $reflector->getName())
             );
         }
 
-        if ($property->isProtected() || $property->isPrivate()) {
-            $property->setAccessible(true);
+        if ($reflector->isProtected() || $reflector->isPrivate()) {
+            $reflector->setAccessible(true);
         }
 
-        $property->setValue(
+        $reflector->setValue(
             $instance,
             $this->resolveInjectable($container, $varClass)
         );
 
-        if ($property->isProtected() || $property->isPrivate()) {
-            $property->setAccessible(false);
+        if ($reflector->isProtected() || $reflector->isPrivate()) {
+            $reflector->setAccessible(false);
         }
 
         return $instance;

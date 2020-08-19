@@ -6,7 +6,7 @@
  * @license    LGPL-2.0-or-later
  */
 
-namespace Windwalker\DI\Test\Attributes;
+namespace Windwalker\DI\Test\Injection;
 
 /**
  * The StubService class.

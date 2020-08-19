@@ -23,9 +23,9 @@ interface MethodAttributeInterface
      *
      * @param  Container          $container
      * @param  \Closure           $instance
-     * @param  \ReflectionMethod  $property
+     * @param  \ReflectionMethod  $reflector
      *
      * @return  object
      */
-    public function __invoke(Container $container, \Closure $instance, \ReflectionMethod $property): object;
+    public function __invoke(Container $container, \Closure $instance, \ReflectionMethod $reflector): object;
 }
