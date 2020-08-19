@@ -21,13 +21,16 @@ use Windwalker\DI\Container;
 class Wrapped implements ObjectDecoratorAttributeInterface
 {
     public object $instance;
-    public \ReflectionObject $reflector;
+    public \ReflectionClass $reflector;
 
-    public function __invoke(Container $container, object $instance, \ReflectionObject $reflector)
+    public function __invoke(Container $container, \Closure $builder, array $args, \ReflectionClass $reflector)
     {
-        $this->instance = $instance;
+        $this->instance = $builder;
         $this->reflector = $reflector;
 
-        return $this;
+        return function () use ($container, $args, $builder) {
+            $this->instance = $builder($container, $args);
+            return $this;
+        };
     }
 }

@@ -40,17 +40,15 @@ class AttributesResolver
         $this->container = $container;
     }
 
-    public function resolveObjectDecorate(object $instance): object
+    public function resolveObjectDecorate(\ReflectionClass $ref, \Closure $builder, array $args = []): \Closure
     {
-        $ref = new \ReflectionObject($instance);
-
         foreach ($ref->getAttributes() as $attribute) {
             if ($this->hasAttribute($attribute->getName(), static::CLASSES)) {
-                $instance = $this->runAttribute($attribute, $instance, $ref) ?? $instance;
+                $builder = $this->runAttribute($attribute, $builder, $args, $ref) ?? $builder;
             }
         }
 
-        return $instance;
+        return $builder;
     }
 
     public function resolveCallable(\ReflectionFunctionAbstract $ref, \Closure $closure): \Closure

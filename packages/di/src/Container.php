@@ -16,9 +16,9 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Windwalker\Data\Collection;
 use Windwalker\DI\Attributes\Inject;
-use Windwalker\DI\Builder\ObjectBuilder;
 use Windwalker\DI\Definition\DefinitionFactory;
 use Windwalker\DI\Definition\DefinitionInterface;
+use Windwalker\DI\Definition\ObjectBuilderDefinition;
 use Windwalker\DI\Definition\StoreDefinitionInterface;
 use Windwalker\DI\Exception\DefinitionException;
 use Windwalker\DI\Exception\DefinitionNotFoundException;
@@ -62,7 +62,7 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     protected Collection $parameters;
 
     /**
-     * @var ObjectBuilder[]
+     * @var ObjectBuilderDefinition[]
      */
     protected array $builders = [];
 
@@ -469,11 +469,11 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
      *
      * @param  string  $class
      *
-     * @return  ObjectBuilder
+     * @return  ObjectBuilderDefinition
      */
-    public function whenCreating(string $class): ObjectBuilder
+    public function whenCreating(string $class): ObjectBuilderDefinition
     {
-        $builder = $this->builders[$class] ??= new ObjectBuilder($class, $this);
+        $builder = $this->builders[$class] ??= new ObjectBuilderDefinition($class, $this);
 
         // if (!$this->has($class)) {
         //     $this->setDefinition($class, new ObjectBuilderDefinition($builder));

@@ -18,5 +18,5 @@ use Windwalker\DI\Container;
  */
 interface ObjectDecoratorAttributeInterface
 {
-    public function __invoke(Container $container, object $instance, \ReflectionObject $reflector);
+    public function __invoke(Container $container, \Closure $builder, array $args, \ReflectionClass $reflector);
 }

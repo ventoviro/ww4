@@ -20,6 +20,7 @@ use Windwalker\DI\Test\Injection\Attrs\Wrapped;
 use Windwalker\DI\Test\Injection\InnerStub;
 use Windwalker\DI\Test\Injection\StubInject;
 use Windwalker\DI\Test\Injection\StubService;
+use Windwalker\DI\Test\Injection\WiredClass;
 use Windwalker\Scalars\StringObject;
 
 use function Windwalker\str;
@@ -31,7 +32,7 @@ class AttributeTest extends TestCase
 {
     protected ?Container $instance;
 
-    public function testDecorateAttributes()
+    public function testObjectDecorate()
     {
         $this->instance->getAttributesResolver()
             ->registerAttribute(Wrapped::class, AttributesResolver::CLASSES);
@@ -40,6 +41,16 @@ class AttributeTest extends TestCase
 
         self::assertInstanceOf(Wrapped::class, $result);
         self::assertInstanceOf(InnerStub::class, $result->instance);
+    }
+
+    public function testObjectWrapCreator()
+    {
+        $this->instance->getAttributesResolver()
+            ->registerAttribute(Wrapped::class, AttributesResolver::CLASSES);
+
+        $result = $this->instance->newInstance(WiredClass::class);
+
+        show($result);
     }
 
     public function testMethodAttributes()

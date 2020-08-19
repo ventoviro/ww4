@@ -11,17 +11,15 @@ declare(strict_types=1);
 
 namespace Windwalker\DI;
 
-use Closure;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunctionAbstract;
-use Windwalker\Data\Collection;
-use Windwalker\DI\Builder\ObjectBuilder;
 use Windwalker\DI\Definition\DefinitionInterface;
 use Windwalker\DI\Definition\ObjectBuilderDefinition;
 use Windwalker\DI\Exception\DependencyResolutionException;
 use Windwalker\DI\Reflection\ReflectionCallable;
+use Windwalker\Utilities\Assert\ArgumentsAssert;
 use Windwalker\Utilities\Wrapper\RawWrapper;
 use Windwalker\Utilities\Wrapper\ValueReference;
 
@@ -44,33 +42,25 @@ class DependencyResolver
 
     public function newInstance($class, array $args = [], int $options = 0)
     {
-        $options |= $this->container->getOptions();
-
-        if ($class instanceof ObjectBuilder) {
-            $class = new ObjectBuilderDefinition($class->fork($args));
-        }
-
         if ($class instanceof DefinitionInterface) {
             return $this->container->resolve($class);
         }
 
+        $options |= $this->container->getOptions();
+
         if (is_string($class)) {
-            try {
-                $reflection = new ReflectionClass($class);
-            } catch (ReflectionException $e) {
-                return false;
-            }
+            $reflection = new ReflectionClass($class);
 
             $constructor = $reflection->getConstructor();
 
             // If there are no parameters, just return a new object.
             if (null === $constructor) {
-                $instance = new $class();
+                $builder = fn ($container, $args) => new $class();
             } else {
                 try {
                     $args = array_merge($this->container->whenCreating($class)->getArguments(), $args);
 
-                    $newInstanceArgs = $this->getMethodArgs($constructor, $args, $options);
+                    $args = $this->getMethodArgs($constructor, $args, $options);
                 } catch (DependencyResolutionException $e) {
                     throw new DependencyResolutionException(
                         $e->getMessage() . ' - Target class: ' . $class,
@@ -80,24 +70,26 @@ class DependencyResolver
                 }
 
                 // Create a callable for the dataStore
-                $instance = $reflection->newInstanceArgs($newInstanceArgs);
+                $builder = fn ($container, $args) => $reflection->newInstanceArgs($args);
+            }
+
+            if (!($options & Container::IGNORE_ATTRIBUTES)) {
+                $builder = $this->container->getAttributesResolver()
+                    ->resolveObjectDecorate($reflection, $builder, $args);
+
+                $instance = $builder($this->container, $args);
             }
         } elseif (is_callable($class)) {
             $instance = $class($this->container, $args);
         } else {
             throw new InvalidArgumentException(
-                'New instance must get first argument as class name, callable or ClassMeta object.'
+                'New instance must get first argument as class name, callable or DefinitionInterface object.'
             );
         }
-
-        $options |= $this->container->getOptions();
 
         if (!($options & Container::IGNORE_ATTRIBUTES)) {
             $instance = $this->container->getAttributesResolver()
                 ->resolveProperties($instance);
-
-            $instance = $this->container->getAttributesResolver()
-                ->resolveObjectDecorate($instance);
         }
 
         return $instance;
@@ -177,6 +169,7 @@ class DependencyResolver
 
     public function &resolveParameterDependency(\ReflectionParameter $param, array $args = [], int $options = 0)
     {
+        $nope = null;
         $defaultOptions = $this->container->getOptions();
 
         $autowire = $defaultOptions & Container::ENABLE_AUTO_WIRE;
@@ -191,7 +184,7 @@ class DependencyResolver
         $dependencyVarName = $param->getName();
 
         if (!$type) {
-            return;
+            return $nope;
         }
 
         if ($type instanceof \ReflectionUnionType) {
@@ -239,6 +232,8 @@ class DependencyResolver
                 return $this->resolveArgumentValue($depObject, $param);
             }
         }
+
+        return $nope;
     }
 
     /**
@@ -253,7 +248,7 @@ class DependencyResolver
      */
     protected function &resolveArgumentValue(&$value, \ReflectionParameter $param)
     {
-        if ($value instanceof ObjectBuilder) {
+        if ($value instanceof ObjectBuilderDefinition) {
             $value = $this->container->resolve($value);
         } elseif ($value instanceof ValueReference) {
             $v = $value($this->container->getParameters());
