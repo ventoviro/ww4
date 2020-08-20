@@ -381,7 +381,7 @@ class HttpClient implements HttpClientInterface
     ): RequestInterface {
         // If is GET, we merge data into URL.
         if (is_array($data) && strtoupper($method) === 'GET') {
-            $url = new Uri($url);
+            $url = Uri::wrap($url);
 
             foreach ($data as $k => $v) {
                 $url = $url->withVar($k, $v);
@@ -403,7 +403,7 @@ class HttpClient implements HttpClientInterface
 
         // If not GET, convert data to query string.
         if (is_array($data)) {
-            if (strpos($request->getHeaderLine('Content-Type'), 'multipart/form-data') === 0) {
+            if (str_starts_with($request->getHeaderLine('Content-Type'), 'multipart/form-data')) {
                 $data = serialize($data);
             } else {
                 $data = UriHelper::buildQuery($data);

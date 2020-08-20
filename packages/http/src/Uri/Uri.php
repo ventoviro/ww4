@@ -69,6 +69,22 @@ class Uri implements UriInterface
     ];
 
     /**
+     * wrap
+     *
+     * @param  UriInterface|string|null  $uri
+     *
+     * @return  static
+     */
+    public static function wrap(UriInterface|string|null $uri)
+    {
+        if ($uri instanceof UriInterface) {
+            return new static((string) $uri);
+        }
+
+        return new static((string) $uri);
+    }
+
+    /**
      * Constructor.
      * You can pass a URI string to the constructor to initialise a specific URI.
      *

@@ -18,6 +18,7 @@
         "psr/http-factory": "^1.0",
         "psr/http-server-handler": "^1.0",
         "psr/http-server-middleware": "^1.0",
+        "composer/ca-bundle": "^1.2",
         "windwalker/utilities": "^4.0"
     },
     "require-dev": {

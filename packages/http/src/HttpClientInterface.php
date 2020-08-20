@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Windwalker\Http;
 
 use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -35,13 +34,4 @@ interface HttpClientInterface extends ClientInterface
      * @return  ResponseInterface
      */
     public function request($method, $url, $data = null, $headers = []);
-
-    /**
-     * Send a request to remote.
-     *
-     * @param   RequestInterface $request The Psr Request object.
-     *
-     * @return  ResponseInterface
-     */
-    public function sendRequest(RequestInterface $request);
 }
