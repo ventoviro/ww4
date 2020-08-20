@@ -17,7 +17,7 @@ use Windwalker\DI\Exception\DefinitionException;
 /**
  * The StoreDefinition class.
  */
-class StoreDefinition extends DecoratorDefinition implements StoreDefinitionInterface
+class StoreDefinition extends DelegateDefinition implements StoreDefinitionInterface
 {
     /**
      * @var mixed
@@ -89,7 +89,7 @@ class StoreDefinition extends DecoratorDefinition implements StoreDefinitionInte
 
     public function extend(\Closure $closure)
     {
-        $this->definition = new DecoratorDefinition(
+        $this->definition = new DelegateDefinition(
             $this->definition,
             $closure
         );

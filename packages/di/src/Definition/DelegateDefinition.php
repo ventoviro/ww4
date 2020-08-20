@@ -14,9 +14,9 @@ namespace Windwalker\DI\Definition;
 use Windwalker\DI\Container;
 
 /**
- * The DecoratorDefinition class.
+ * The DelegateDefinition class.
  */
-class DecoratorDefinition implements DefinitionInterface
+class DelegateDefinition implements DefinitionInterface
 {
     protected DefinitionInterface $definition;
 

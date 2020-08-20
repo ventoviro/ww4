@@ -118,47 +118,47 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     /**
      * share
      *
-     * @param  string  $key
+     * @param  string  $id
      * @param  mixed   $value
      * @param  int     $options
      *
      * @return static
      * @throws DefinitionException
      */
-    public function share(string $key, $value, int $options = 0)
+    public function share(string $id, $value, int $options = 0)
     {
-        return $this->set($key, $value, $options | static::SHARED);
+        return $this->set($id, $value, $options | static::SHARED);
     }
 
     /**
      * protect
      *
-     * @param  string  $key
+     * @param  string  $id
      * @param  mixed   $value
      * @param  int     $options
      *
      * @return static
      * @throws DefinitionException
      */
-    public function protect(string $key, $value, int $options = 0)
+    public function protect(string $id, $value, int $options = 0)
     {
-        return $this->set($key, $value, $options | static::PROTECTED);
+        return $this->set($id, $value, $options | static::PROTECTED);
     }
 
     /**
      * setDefinition
      *
-     * @param  string               $key
+     * @param  string                    $id
      * @param  StoreDefinitionInterface  $value
      *
      * @return  $this
      */
-    public function setDefinition(string $key, StoreDefinitionInterface $value)
+    public function setDefinition(string $id, StoreDefinitionInterface $value)
     {
-        $this->storage[$key] = $value;
+        $this->storage[$id] = $value;
 
         // 3.2 Remove alias
-        $this->removeAlias($key);
+        $this->removeAlias($id);
 
         return $this;
     }
@@ -219,7 +219,7 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     /**
      * Remove an item from container.
      *
-     * @param  string  $key  Name of the dataStore key to get.
+     * @param  string  $id  Name of the dataStore key to get.
      *
      * @return  static  This object for chaining.
      *
@@ -257,22 +257,22 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     /**
      * Get the raw data assigned to a key.
      *
-     * @param  string  $key  The key for which to get the stored item.
+     * @param  string  $id  The key for which to get the stored item.
      *
      * @return  ?StoreDefinitionInterface
      *
      * @since   2.0
      */
-    public function getDefinition($key): ?StoreDefinitionInterface
+    public function getDefinition($id): ?StoreDefinitionInterface
     {
-        $key = $this->resolveAlias($key);
+        $id = $this->resolveAlias($id);
 
-        if ($this->storage[$key] ?? null) {
-            return $this->storage[$key];
+        if ($this->storage[$id] ?? null) {
+            return $this->storage[$id];
         }
 
         if ($this->parent instanceof static) {
-            return $this->parent->getDefinition($key);
+            return $this->parent->getDefinition($id);
         }
 
         return null;
@@ -515,15 +515,15 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
      * Create an alias for a given key for easy access.
      *
      * @param  string  $alias  The alias name
-     * @param  string  $key    The key to alias
+     * @param  string  $id     The key to alias
      *
      * @return  static  This object for chaining.
      *
      * @since   2.0
      */
-    public function alias(string $alias, string $key)
+    public function alias(string $alias, string $id)
     {
-        $this->aliases[$alias] = $key;
+        $this->aliases[$alias] = $id;
 
         return $this;
     }
@@ -531,19 +531,19 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     /**
      * Search the aliases property for a matching alias key.
      *
-     * @param  string  $key  The key to search for.
+     * @param  string  $id  The key to search for.
      *
      * @return  string
      *
      * @since   2.0
      */
-    protected function resolveAlias($key)
+    protected function resolveAlias($id)
     {
-        while (isset($this->aliases[$key])) {
-            $key = $this->aliases[$key];
+        while (isset($this->aliases[$id])) {
+            $id = $this->aliases[$id];
         }
 
-        return $key;
+        return $id;
     }
 
     /**
@@ -689,25 +689,25 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     /**
      * Returns whether the requested key exists
      *
-     * @param  mixed  $key
+     * @param  mixed  $id
      *
      * @return bool
      */
-    public function offsetExists($key): bool
+    public function offsetExists($id): bool
     {
-        return $this->has($key);
+        return $this->has($id);
     }
 
     /**
      * Returns the value at the specified key
      *
-     * @param  mixed  $key
+     * @param  mixed  $id
      *
      * @return mixed
      */
-    public function &offsetGet($key)
+    public function &offsetGet($id)
     {
-        $item = $this->get($key);
+        $item = $this->get($id);
 
         return $item;
     }
@@ -715,26 +715,26 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     /**
      * Sets the value at the specified key to value
      *
-     * @param  mixed  $key
+     * @param  mixed  $id
      * @param  mixed  $value
      *
      * @return void
      */
-    public function offsetSet($key, $value): void
+    public function offsetSet($id, $value): void
     {
-        $this->set($key, $value);
+        $this->set($id, $value);
     }
 
     /**
      * Unsets the value at the specified key
      *
-     * @param  mixed  $key
+     * @param  mixed  $id
      *
      * @return void
      */
-    public function offsetUnset($key): void
+    public function offsetUnset($id): void
     {
-        $this->remove($key);
+        $this->remove($id);
     }
 
     /**
