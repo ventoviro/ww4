@@ -25,7 +25,11 @@
         "masterminds/html5": "^2.7",
         "ext-json": "*",
         "ext-dom": "*",
-        "composer/semver": "^3.0"
+        "composer/semver": "^3.0",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-server-handler": "^1.0",
+        "psr/http-server-middleware": "^1.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -78,6 +82,7 @@
             "Windwalker\\DOM\\": "packages/dom/src",
             "Windwalker\\Event\\": "packages/event/src",
             "Windwalker\\Filesystem\\": "packages/filesystem/src",
+            "Windwalker\\Http\\": "packages/http/src",
             "Windwalker\\Promise\\": "packages/promise/src",
             "Windwalker\\Query\\": "packages/query/src",
             "Windwalker\\Queue\\": "packages/queue/src",
@@ -100,6 +105,7 @@
             "packages/dom/src/bootstrap.php",
             "packages/event/src/bootstrap.php",
             "packages/filesystem/src/bootstrap.php",
+            "packages/http/src/bootstrap.php",
             "packages/promise/src/bootstrap.php",
             "packages/query/src/bootstrap.php",
             "packages/queue/src/bootstrap.php",
@@ -121,6 +127,7 @@
             "Windwalker\\DOM\\Test\\": "packages/dom/test",
             "Windwalker\\Event\\Test\\": "packages/event/test",
             "Windwalker\\Filesystem\\Test\\": "packages/filesystem/test",
+            "Windwalker\\Http\\Test\\": "packages/http/test",
             "Windwalker\\Promise\\Test\\": "packages/promise/test",
             "Windwalker\\Query\\Test\\": "packages/query/test",
             "Windwalker\\Queue\\Test\\": "packages/queue/test",

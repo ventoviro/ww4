@@ -33,6 +33,8 @@ class Collection extends ArrayObject
 {
     use StructureTrait;
 
+    protected bool $isProxy = false;
+
     /**
      * Structure constructor.
      *
@@ -88,6 +90,10 @@ class Collection extends ArrayObject
         // Force object to array
         if (!$reference) {
             $new->storage = TypeCast::toArray($new->storage);
+        }
+
+        if ($reference) {
+            $this->isProxy = true;
         }
 
         return $new;
@@ -218,6 +224,14 @@ class Collection extends ArrayObject
         $new->storage = Arr::remove($new->storage, $path);
 
         return $new;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isProxy(): bool
+    {
+        return $this->isProxy;
     }
 
     /**

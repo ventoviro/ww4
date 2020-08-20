@@ -111,7 +111,8 @@ class MergeComposer extends \Asika\SimpleConsole\Console
                     ->sort()
                     ->values();
             } else {
-                $target->set($key, "packages/$name/$dir");
+                $target->set($key, "packages/$name/$dir")
+                    ->sortKeys();
             }
         }
     }
