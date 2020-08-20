@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Http\Request;
 
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Windwalker\Http\Helper\ServerHelper;
@@ -39,7 +40,7 @@ use Windwalker\Stream\PhpInputStream;
  *
  * @since  2.1
  */
-class ServerRequest extends AbstractRequest
+class ServerRequest extends AbstractRequest implements ServerRequestInterface
 {
     /**
      * Property attributes.
@@ -323,7 +324,7 @@ class ServerRequest extends AbstractRequest
      * @throws \InvalidArgumentException if an unsupported argument type is
      *     provided.
      */
-    public function withParsedBody(array|object|null $data)
+    public function withParsedBody($data)
     {
         $new = clone $this;
 

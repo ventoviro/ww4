@@ -8,6 +8,8 @@
 
 namespace Windwalker\Http\Test\Transport;
 
+use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
 use Psr\Http\Message\StreamInterface;
 use Windwalker\Http\Request\Request;
 use Windwalker\Http\Transport\AbstractTransport;
@@ -15,6 +17,7 @@ use Windwalker\Http\Uri\Uri;
 use Windwalker\Http\Uri\UriHelper;
 use Windwalker\Stream\Stream;
 use Windwalker\Stream\StringStream;
+use Windwalker\Test\Traits\BaseAssertionTrait;
 
 /**
  * Test class of CurlTransport
@@ -23,12 +26,14 @@ use Windwalker\Stream\StringStream;
  */
 abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
 {
+    use BaseAssertionTrait;
+
     /**
      * Property options.
      *
      * @var  array
      */
-    protected $options = [
+    protected array $options = [
         'options' => [],
     ];
 
@@ -38,13 +43,6 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
      * @var AbstractTransport
      */
     protected $instance;
-
-    /**
-     * Property downloadFile.
-     *
-     * @var  string
-     */
-    protected $destFile;
 
     /**
      * setUpBeforeClass
@@ -69,8 +67,6 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
         if (!$this->instance->isSupported()) {
             $this->markTestSkipped(get_class($this->instance) . ' driver not supported.');
         }
-
-        $this->destFile = __DIR__ . '/downloaded.tmp';
     }
 
     /**
@@ -94,7 +90,7 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
     {
         $request = $this->createRequest();
 
-        $request = $request->withUri(new Uri(WINDWALKER_TEST_HTTP_URL))
+        $request = $request->withUri(new Uri(WINDWALKER_TEST_HTTP_URL . '/json?foo=bar'))
             ->withMethod('GET');
 
         $response = $this->instance->request($request);
@@ -104,13 +100,13 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
 
         $request = $this->createRequest();
 
-        $request = $request->withUri(new Uri(WINDWALKER_TEST_HTTP_URL . '?foo=bar&baz[3]=yoo'))
+        $request = $request->withUri(new Uri(WINDWALKER_TEST_HTTP_URL . '/json?foo=bar&baz[3]=yoo'))
             ->withMethod('GET');
 
         $response = $this->instance->request($request);
 
         $data = json_decode($response->getBody()->getContents(), true);
-        self::assertEquals(['foo' => 'bar', 'baz' => [3 => 'yoo']], $data['_GET']);
+        self::assertEquals(['foo' => 'bar', 'baz' => [3 => 'yoo']], $data);
     }
 
     /**
@@ -139,7 +135,7 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
     {
         $request = $this->createRequest();
 
-        $request = $request->withUri(new Uri(dirname(WINDWALKER_TEST_HTTP_URL) . '/wrong.php'))
+        $request = $request->withUri(new Uri(WINDWALKER_TEST_HTTP_URL . '/wrong'))
             ->withMethod('POST');
 
         $request->getBody()->write(UriHelper::buildQuery(['foo' => 'bar']));
@@ -166,9 +162,18 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->instance->request($request);
 
-        $data = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertStringSafeEquals(
+            <<<BODY
+            POST http://localhost:8163/
+            host: localhost:8163
+            accept: */*
+            content-type: application/x-www-form-urlencoded; charset=utf-8
+            content-length: 7
 
-        self::assertEquals(['foo' => 'bar'], $data['_POST']);
+            foo=bar
+            BODY,
+            $response->getBody()->getContents()
+        );
     }
 
     /**
@@ -187,10 +192,18 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->instance->request($request);
 
-        $data = json_decode($response->getBody()->getContents(), true);
+        self::assertStringSafeEquals(
+            <<<BODY
+            PUT http://localhost:8163/
+            host: localhost:8163
+            accept: */*
+            content-type: application/x-www-form-urlencoded; charset=utf-8
+            content-length: 7
 
-        self::assertEquals(['foo' => 'bar'], $data['data']);
-        self::assertEquals('PUT', $data['_SERVER']['REQUEST_METHOD']);
+            foo=bar
+            BODY,
+            $response->getBody()->getContents()
+        );
     }
 
     /**
@@ -210,10 +223,16 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->instance->request($request);
 
-        $data = json_decode($response->getBody()->getContents(), true);
-
-        self::assertEquals('username', $data['_SERVER']['PHP_AUTH_USER']);
-        self::assertEquals('pass1234', $data['_SERVER']['PHP_AUTH_PW']);
+        self::assertStringSafeEquals(
+            <<<BODY
+            GET http://localhost:8163/
+            host: localhost:8163
+            authorization: Basic dXNlcm5hbWU6cGFzczEyMzQ=
+            accept: */*
+            content-type: application/x-www-form-urlencoded; charset=utf-8
+            BODY,
+            $response->getBody()->getContents()
+        );
     }
 
     /**
@@ -232,10 +251,18 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->instance->request($request);
 
-        $data = json_decode($response->getBody()->getContents(), true);
+        self::assertStringSafeEquals(
+            <<<BODY
+            POST http://localhost:8163/?foo=bar
+            host: localhost:8163
+            accept: */*
+            content-type: application/x-www-form-urlencoded; charset=utf-8
+            content-length: 13
 
-        self::assertEquals(['foo' => 'bar'], $data['_GET']);
-        self::assertEquals(['flower' => 'sakura'], $data['_POST']);
+            flower=sakura
+            BODY,
+            $response->getBody()->getContents()
+        );
     }
 
     /**
@@ -245,31 +272,35 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
      */
     public function testDownload()
     {
-        $this->unlinkDownloaded();
+        $root = vfsStream::setup(
+            'root',
+            0755,
+            [
+                'download' => []
+            ]
+        );
 
-        self::assertFileNotExists((string) $this->destFile);
+        $dest = 'vfs://root/download/downloaded.tmp';
+
+        self::assertFileDoesNotExist($dest);
 
         $request = $this->createRequest(new Stream());
 
-        $src = dirname(WINDWALKER_TEST_HTTP_URL) . '/download_stub.txt';
+        $src = WINDWALKER_TEST_HTTP_URL;
 
         $request = $request->withUri(new Uri($src))
             ->withMethod('GET');
 
-        $response = $this->instance->download($request, $this->destFile);
+        $response = $this->instance->download($request, $dest);
 
-        self::assertEquals('This is test download file.', trim(file_get_contents($this->destFile)));
-    }
-
-    /**
-     * unlinkDownloaded
-     *
-     * @return  void
-     */
-    protected function unlinkDownloaded()
-    {
-        if (is_file($this->destFile)) {
-            @unlink($this->destFile);
-        }
+        self::assertStringSafeEquals(
+            <<<BODY
+            GET http://localhost:8163/
+            host: localhost:8163
+            accept: */*
+            content-type: application/x-www-form-urlencoded; charset=utf-8
+            BODY,
+            trim(file_get_contents($dest))
+        );
     }
 }

@@ -18,6 +18,7 @@ use Psr\Http\Message\StreamInterface;
 use Windwalker\Http\CurlFile;
 use Windwalker\Http\Exception\HttpRequestException;
 use Windwalker\Http\Helper\HeaderHelper;
+use Windwalker\Http\Helper\ResponseHelper;
 use Windwalker\Http\Response\Response;
 use Windwalker\Utilities\Arr;
 

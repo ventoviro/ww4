@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection CallableParameterUseCaseInTypeContextInspection */
 
 /**
  * Part of Windwalker project.
@@ -14,6 +14,7 @@ namespace Windwalker\Http;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Windwalker\Data\Collection;
 use Windwalker\Http\Helper\ServerHelper;
 use Windwalker\Http\Output\HttpCompressor;
 use Windwalker\Http\Output\OutputInterface;
@@ -101,7 +102,7 @@ class WebHttpServer extends HttpServer
     ) {
         parent::__construct($handler, $request, $response, $output);
 
-        $this->uriData = new UriData();
+        $this->uriData = new Collection();
 
         $this->loadSystemUris();
 
@@ -181,7 +182,8 @@ class WebHttpServer extends HttpServer
             // Force uncachable
 
             // Expires in the past.
-            $response = $response->withoutHeader('Expires')->withHeader('Expires', 'Mon, 1 Jan 2001 00:00:00 GMT');
+            $response = $response->withoutHeader('Expires')
+                ->withHeader('Expires', 'Mon, 1 Jan 2001 00:00:00 GMT');
 
             // Always modified.
             $response = $response->withoutHeader('Last-Modified')->withHeader(

@@ -282,7 +282,7 @@ trait MessageTrait
      *
      * @param string $name Case-insensitive header field name to remove.
      *
-     * @return static
+     * @return $this
      */
     public function withoutHeader($name)
     {
