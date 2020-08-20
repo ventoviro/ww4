@@ -13,6 +13,7 @@ namespace Windwalker\Database\Test\Platform;
 
 use Windwalker\Database\Platform\SQLServerPlatform;
 use Windwalker\Test\Helper\TestStringHelper;
+use Windwalker\Utilities\Str;
 
 /**
  * The SQLServerPlatformTest class.
@@ -110,7 +111,7 @@ class SQLServerPlatformTest extends AbstractPlatformTest
                     'TABLE_NAME' => 'ww_articles_view',
                     'TABLE_SCHEMA' => 'dbo',
                     'TABLE_TYPE' => 'VIEW',
-                    'VIEW_DEFINITION' => TestStringHelper::removeCRLF('
+                    'VIEW_DEFINITION' => Str::replaceCRLF('
 
 CREATE VIEW ww_articles_view AS SELECT * FROM ww_articles;'),
                     'CHECK_OPTION' => 'NONE',

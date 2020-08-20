@@ -14,6 +14,7 @@ namespace Windwalker\Test\Traits;
 use Throwable;
 use Windwalker\Data\Format\PhpFormat;
 use Windwalker\Test\Helper\TestStringHelper;
+use Windwalker\Utilities\Str;
 use Windwalker\Utilities\TypeCast;
 
 /**
@@ -38,8 +39,8 @@ trait BaseAssertionTrait
         string $message = ''
     ): void {
         static::assertEquals(
-            TestStringHelper::clean($expected),
-            TestStringHelper::clean($actual),
+            Str::collapseWhitespaces($expected),
+            Str::collapseWhitespaces($actual),
             $message
         );
     }
@@ -59,8 +60,8 @@ trait BaseAssertionTrait
         string $message = ''
     ): void {
         static::assertEquals(
-            trim(TestStringHelper::removeCRLF($expected)),
-            trim(TestStringHelper::removeCRLF($actual)),
+            trim(Str::replaceCRLF($expected)),
+            trim(Str::replaceCRLF($actual)),
             $message
         );
     }

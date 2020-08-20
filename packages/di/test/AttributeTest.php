@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\DI\Test;
 
 use PHPUnit\Framework\TestCase;
+use Windwalker\DI\Attributes\AttributeType;
 use Windwalker\DI\Attributes\Autowire;
 use Windwalker\DI\Attributes\Decorator;
-use Windwalker\DI\AttributesResolver;
 use Windwalker\DI\Container;
 use Windwalker\DI\Test\Injection\Attrs\ParamLower;
 use Windwalker\DI\Test\Injection\Attrs\ToUpper;
@@ -36,7 +36,7 @@ class AttributeTest extends TestCase
     public function testObjectDecorate()
     {
         $this->instance->getAttributesResolver()
-            ->registerAttribute(Decorator::class, AttributesResolver::CLASSES);
+            ->registerAttribute(Decorator::class, AttributeType::CLASSES);
 
         $result = $this->instance->newInstance(InnerStub::class);
 
@@ -47,7 +47,7 @@ class AttributeTest extends TestCase
     public function testObjectWrapCreator()
     {
         $this->instance->getAttributesResolver()
-            ->registerAttribute(Autowire::class, AttributesResolver::CLASSES);
+            ->registerAttribute(Autowire::class, AttributeType::CLASSES);
 
         $result = $this->instance->newInstance(WiredClass::class);
 
@@ -60,7 +60,7 @@ class AttributeTest extends TestCase
         $this->instance->set('stub', fn () => new StubService());
 
         $this->instance->getAttributesResolver()
-            ->registerAttribute(ToUpper::class, AttributesResolver::FUNCTION_METHOD);
+            ->registerAttribute(ToUpper::class, AttributeType::FUNCTION_METHOD);
 
         $obj = new class {
             @@ToUpper
@@ -83,7 +83,7 @@ class AttributeTest extends TestCase
         $this->instance->set('stub', fn () => new StubService());
 
         $this->instance->getAttributesResolver()
-            ->registerAttribute(ParamLower::class, AttributesResolver::PARAMETERS);
+            ->registerAttribute(ParamLower::class, AttributeType::PARAMETERS);
 
         $obj = new class {
             public function foo(@@ParamLower StringObject $foo)
@@ -103,7 +103,7 @@ class AttributeTest extends TestCase
     public function testCallClosure()
     {
         $this->instance->getAttributesResolver()
-            ->registerAttribute(Autowire::class, AttributesResolver::PARAMETERS);
+            ->registerAttribute(Autowire::class, AttributeType::PARAMETERS);
 
         $closure = function (@@Autowire StubService $stub, array &$options = []): StubService {
             $options['foo'] = 'bar';

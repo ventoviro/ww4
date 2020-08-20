@@ -74,6 +74,11 @@ class Str
         return trim(preg_replace('/\s+/', ' ', $string));
     }
 
+    public static function replaceCRLF(string $string, string $replace = "\n"): string
+    {
+        return str_replace("\r\n", $replace, $string);
+    }
+
     public static function contains(
         string $string,
         string $search,

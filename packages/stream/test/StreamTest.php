@@ -13,7 +13,7 @@ namespace Windwalker\Stream\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Stream\Stream;
-use Windwalker\Test\TestHelper;
+use Windwalker\Utilities\Reflection\ReflectAccessor;
 
 /**
  * Test class of Stream
@@ -69,8 +69,8 @@ class StreamTest extends TestCase
 
         $stream = new Stream();
 
-        $this->assertIsResource(TestHelper::getValue($stream, 'resource'));
-        $this->assertEquals('php://memory', TestHelper::getValue($stream, 'stream'));
+        $this->assertIsResource(ReflectAccessor::getValue($stream, 'resource'));
+        $this->assertEquals('php://memory', ReflectAccessor::getValue($stream, 'stream'));
     }
 
     /**
@@ -118,7 +118,7 @@ class StreamTest extends TestCase
         $stream->close();
 
         $this->assertFalse(is_resource($resource));
-        $this->assertEmpty(TestHelper::getValue($stream, 'resource'));
+        $this->assertEmpty(ReflectAccessor::getValue($stream, 'resource'));
         $this->assertEquals('', (string) $stream);
     }
 
@@ -136,8 +136,8 @@ class StreamTest extends TestCase
         $stream   = new Stream($resource);
 
         $this->assertSame($resource, $stream->detach());
-        self::assertEmpty(TestHelper::getValue($stream, 'resource'));
-        self::assertEmpty(TestHelper::getValue($stream, 'stream'));
+        self::assertEmpty(ReflectAccessor::getValue($stream, 'resource'));
+        self::assertEmpty(ReflectAccessor::getValue($stream, 'stream'));
     }
 
     /**

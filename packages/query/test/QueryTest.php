@@ -18,7 +18,7 @@ use Windwalker\Query\Grammar\AbstractGrammar;
 use Windwalker\Query\Grammar\BaseGrammar;
 use Windwalker\Query\Query;
 use Windwalker\Query\Test\Mock\MockEscaper;
-use Windwalker\Test\TestHelper;
+use Windwalker\Utilities\Reflection\ReflectAccessor;
 
 use function Windwalker\Query\clause;
 use function Windwalker\raw;
@@ -1569,7 +1569,7 @@ SQL
             foreach (array_keys($clauses) as $clause2) {
                 if ($clause !== $clause2) {
                     $this->assertNotNull(
-                        TestHelper::getValue($query, $clause2),
+                        ReflectAccessor::getValue($query, $clause2),
                         $clause2 . ' Should not be NULL if we clear ' . $clause . '.'
                     );
                 }
@@ -1631,7 +1631,7 @@ SQL
             // Now check the claues have not been affected.
             foreach (array_keys($clauses) as $clause) {
                 $this->assertNotNull(
-                    TestHelper::getValue($query, $clause),
+                    ReflectAccessor::getValue($query, $clause),
                     $clause . ' should exists if we clear ' . $type
                 );
             }

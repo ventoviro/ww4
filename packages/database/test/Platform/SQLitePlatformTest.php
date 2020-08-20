@@ -96,7 +96,7 @@ class SQLitePlatformTest extends AbstractPlatformTest
     {
         $views = $this->instance->listViews(static::getTestSchema());
 
-        $views['ww_articles_view']['sql'] = TestStringHelper::removeCRLF($views['ww_articles_view']['sql']);
+        $views['ww_articles_view']['sql'] = Str::replaceCRLF($views['ww_articles_view']['sql']);
 
         self::assertEquals(
             [

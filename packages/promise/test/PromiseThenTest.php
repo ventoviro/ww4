@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use Windwalker\Promise\Promise;
-use Windwalker\Test\TestHelper;
 use Windwalker\Test\Traits\TestAccessorTrait;
+use Windwalker\Utilities\Reflection\ReflectAccessor;
 
 use function Windwalker\nope;
 
@@ -42,14 +42,14 @@ class PromiseThenTest extends AbstractPromiseTestCase
         self::assertNotSame($p2, $p);
 
         // Handlers
-        $handlers = TestHelper::getValue($p, 'handlers');
+        $handlers = ReflectAccessor::getValue($p, 'handlers');
 
         self::assertSame($handlers[0][0], $p2);
         self::assertSame($handlers[0][1], $rsv1);
         self::assertSame($handlers[0][2], $rej1);
         self::assertSame($handlers[1][1], $rsv2);
 
-        $handlers = TestHelper::getValue($p2, 'handlers');
+        $handlers = ReflectAccessor::getValue($p2, 'handlers');
 
         self::assertSame($handlers[0][0], $p3);
         self::assertSame($handlers[0][1], $rsv3);
@@ -68,7 +68,7 @@ class PromiseThenTest extends AbstractPromiseTestCase
             }
         );
 
-        $state = TestHelper::getValue($p, 'state');
+        $state = ReflectAccessor::getValue($p, 'state');
 
         self::assertEquals(Promise::FULFILLED, $state);
 
@@ -84,7 +84,7 @@ class PromiseThenTest extends AbstractPromiseTestCase
                 }
             );
 
-        self::assertEquals(3, TestHelper::getValue($p2, 'value'));
+        self::assertEquals(3, ReflectAccessor::getValue($p2, 'value'));
 
         // Test return new Promise
         $p3 = $p->then(
@@ -105,8 +105,8 @@ class PromiseThenTest extends AbstractPromiseTestCase
             }
         );
 
-        self::assertEquals('Hello', TestHelper::getValue($p3, 'value'));
-        self::assertNull(TestHelper::getValue($p4, 'value'));
+        self::assertEquals('Hello', ReflectAccessor::getValue($p3, 'value'));
+        self::assertNull(ReflectAccessor::getValue($p4, 'value'));
         self::assertEquals('Hello', $newValue);
     }
 

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Windwalker\Test\Traits;
 
-use Windwalker\Test\TestHelper;
+use Windwalker\Utilities\Reflection\ReflectAccessor;
 
 /**
  * The TestAccessorTrait class.
@@ -30,7 +30,7 @@ trait TestAccessorTrait
      */
     public function getValue($obj, string $name)
     {
-        return TestHelper::getValue($obj, $name);
+        return ReflectAccessor::getValue($obj, $name);
     }
 
     /**
@@ -46,7 +46,7 @@ trait TestAccessorTrait
      */
     public function setValue(object $obj, string $name, $value): void
     {
-        TestHelper::setValue($obj, $name, $value);
+        ReflectAccessor::setValue($obj, $name, $value);
     }
 
     /**
@@ -62,6 +62,6 @@ trait TestAccessorTrait
      */
     public function invoke(object $obj, string $method, ...$args)
     {
-        return TestHelper::invoke($obj, $method, ...$args);
+        return ReflectAccessor::invoke($obj, $method, ...$args);
     }
 }

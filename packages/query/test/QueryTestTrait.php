@@ -35,7 +35,7 @@ trait QueryTestTrait
 
     protected static function qn(string $text): string
     {
-        return TestStringHelper::quote($text, static::$nameQuote);
+        return Str::wrap($text, static::$nameQuote);
     }
 
     protected static function replaceQn(string $sql): string

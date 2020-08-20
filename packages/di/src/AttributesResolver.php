@@ -16,18 +16,13 @@ namespace Windwalker\DI;
  */
 class AttributesResolver
 {
-    public const CLASSES = 'classes';
-    public const PROPERTIES = 'properties';
-    public const FUNCTION_METHOD = 'function_method';
-    public const PARAMETERS = 'parameters';
-
     protected Container $container;
 
     protected array $registry = [
-        self::CLASSES => [],
-        self::PROPERTIES => [],
-        self::FUNCTION_METHOD => [],
-        self::PARAMETERS => [],
+        Attributes\AttributeType::CLASSES => [],
+        Attributes\AttributeType::PROPERTIES => [],
+        Attributes\AttributeType::FUNCTION_METHOD => [],
+        Attributes\AttributeType::PARAMETERS => [],
     ];
 
     /**
@@ -43,7 +38,7 @@ class AttributesResolver
     public function resolveObjectDecorate(\ReflectionClass $ref, \Closure $builder): \Closure
     {
         foreach ($ref->getAttributes() as $attribute) {
-            if ($this->hasAttribute($attribute->getName(), static::CLASSES)) {
+            if ($this->hasAttribute($attribute->getName(), Attributes\AttributeType::CLASSES)) {
                 $builder = $this->runAttribute($attribute, $builder, $ref) ?? $builder;
             }
         }
@@ -54,7 +49,7 @@ class AttributesResolver
     public function resolveCallable(\ReflectionFunctionAbstract $ref, \Closure $closure): \Closure
     {
         foreach ($ref->getAttributes() as $attribute) {
-            if ($this->hasAttribute($attribute->getName(), static::FUNCTION_METHOD)) {
+            if ($this->hasAttribute($attribute->getName(), Attributes\AttributeType::FUNCTION_METHOD)) {
                 $closure = $this->runAttribute($attribute, $closure, $ref) ?? $closure;
             }
         }
@@ -65,7 +60,7 @@ class AttributesResolver
     public function resolveParameter($value, \ReflectionParameter $ref)
     {
         foreach ($ref->getAttributes() as $attribute) {
-            if ($this->hasAttribute($attribute->getName(), static::PARAMETERS)) {
+            if ($this->hasAttribute($attribute->getName(), Attributes\AttributeType::PARAMETERS)) {
                 $value = $this->runAttribute($attribute, $value, $ref);
             }
         }
@@ -79,7 +74,7 @@ class AttributesResolver
 
         foreach ($ref->getProperties() as $property) {
             foreach ($property->getAttributes() as $attribute) {
-                if ($this->hasAttribute($attribute->getName(), static::PROPERTIES)) {
+                if ($this->hasAttribute($attribute->getName(), Attributes\AttributeType::PROPERTIES)) {
                     $instance = $this->runAttribute($attribute, $instance, $property) ?? $instance;
                 }
             }

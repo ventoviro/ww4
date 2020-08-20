@@ -13,19 +13,21 @@ namespace Windwalker\DI\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Data\Collection;
+use Windwalker\DI\Attributes\AttributeType;
+use Windwalker\DI\Attributes\Inject;
 use Windwalker\DI\Container;
 use Windwalker\DI\Exception\DefinitionException;
 use Windwalker\DI\Exception\DependencyResolutionException;
 use Windwalker\DI\Test\Injection\StubInject;
 use Windwalker\DI\Test\Injection\StubService;
+use Windwalker\DI\Test\Mock\Bar;
+use Windwalker\DI\Test\Mock\Bar2;
+use Windwalker\DI\Test\Mock\Foo;
+use Windwalker\DI\Test\Mock\StubStack;
 use Windwalker\DI\Test\Mock\UnionTypeStub;
 use Windwalker\DI\Test\Stub\StubServiceProvider;
 use Windwalker\Scalars\ArrayObject;
-use Windwalker\Test\TestHelper;
-use Windwalker\DI\Test\Mock\Foo;
-use Windwalker\DI\Test\Mock\Bar;
-use Windwalker\DI\Test\Mock\StubStack;
-use Windwalker\DI\Test\Mock\Bar2;
+use Windwalker\Utilities\Reflection\ReflectAccessor;
 
 /**
  * The ContainerTest class.
@@ -406,6 +408,8 @@ class ContainerTest extends TestCase
     public function testNewInstanceWithPropertyAttributes()
     {
         $container = new Container();
+        $container->getAttributesResolver()
+            ->registerAttribute(Inject::class, AttributeType::PROPERTIES);
         StubService::$counter = 0;
 
         $container->share('stub', function () {
@@ -416,7 +420,7 @@ class ContainerTest extends TestCase
         $obj = $container->newInstance(StubInject::class);
 
         self::assertInstanceOf(StubService::class, $obj->foo);
-        self::assertInstanceOf(StubService::class, TestHelper::getValue($obj, 'bar'));
+        self::assertInstanceOf(StubService::class, ReflectAccessor::getValue($obj, 'bar'));
         self::assertInstanceOf(StubService::class, $obj->baz);
         self::assertInstanceOf(StubService::class, $obj->yoo);
         self::assertEquals(4, $obj->yoo->getCounter());

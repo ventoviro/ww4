@@ -83,8 +83,6 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
 
         $this->dependencyResolver = new DependencyResolver($this);
         $this->attributesResolver = new AttributesResolver($this);
-
-        $this->attributesResolver->registerAttribute(Inject::class, AttributesResolver::PROPERTIES);
     }
 
     /**
@@ -743,5 +741,29 @@ class Container implements ContainerInterface, \IteratorAggregate, \Countable, A
     public function getDependencyResolver(): DependencyResolver
     {
         return $this->dependencyResolver;
+    }
+
+    /**
+     * @param  DependencyResolver  $dependencyResolver
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setDependencyResolver(DependencyResolver $dependencyResolver)
+    {
+        $this->dependencyResolver = $dependencyResolver;
+
+        return $this;
+    }
+
+    /**
+     * @param  AttributesResolver  $attributesResolver
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setAttributesResolver(AttributesResolver $attributesResolver)
+    {
+        $this->attributesResolver = $attributesResolver;
+
+        return $this;
     }
 }

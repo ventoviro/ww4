@@ -14,7 +14,6 @@ namespace Windwalker\DOM\Test;
 use Exception;
 use Windwalker\DOM\Format\DOMFormatter;
 use Windwalker\DOM\Format\HTMLFormatter;
-use Windwalker\Test\Helper\TestDomHelper;
 use Windwalker\Test\Traits\BaseAssertionTrait;
 
 /**
@@ -39,8 +38,8 @@ trait DOMTestTrait
         $message = ''
     ): void {
         self::assertEquals(
-            TestDomHelper::minify((string) $expected),
-            TestDomHelper::minify((string) $actual),
+            DOMFormatter::minify((string) $expected),
+            DOMFormatter::minify((string) $actual),
             $message
         );
     }

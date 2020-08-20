@@ -257,6 +257,41 @@ class DOMFormatter
     }
 
     /**
+     * A simple method to minify Dom and Html.
+     *
+     * Code from: http://stackoverflow.com/questions/6225351/how-to-minify-php-page-html-output
+     *
+     * @param  string  $buffer
+     *
+     * @return  mixed
+     */
+    public static function minify($buffer)
+    {
+        $search = [
+            // Strip whitespaces after tags, except space
+            '/\>[^\S ]+/s',
+
+            // Strip whitespaces before tags, except space
+            '/[^\S ]+\</s',
+
+            // Shorten multiple whitespace sequences
+            '/(\s)+/s',
+        ];
+
+        $replace = [
+            '>',
+            '<',
+            '\\1',
+        ];
+
+        $buffer = preg_replace($search, $replace, $buffer);
+
+        $buffer = str_replace([' <', '> '], ['<', '>'], $buffer);
+
+        return trim($buffer);
+    }
+
+    /**
      * Debugging utility. Get log for the last indent operation.
      *
      * @return array

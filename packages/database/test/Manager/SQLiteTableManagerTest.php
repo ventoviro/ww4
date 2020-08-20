@@ -17,6 +17,7 @@ use Windwalker\Database\Schema\Ddl\Constraint;
 use Windwalker\Database\Schema\Schema;
 use Windwalker\Database\Test\AbstractDatabaseTestCase;
 use Windwalker\Test\Helper\TestStringHelper;
+use Windwalker\Utilities\Str;
 
 class SQLiteTableManagerTest extends AbstractDatabaseTestCase
 {
@@ -138,7 +139,7 @@ class SQLiteTableManagerTest extends AbstractDatabaseTestCase
                 'VIEW_DEFINITION' => null,
                 'CHECK_OPTION' => null,
                 'IS_UPDATABLE' => null,
-                'sql' => TestStringHelper::removeCRLF(
+                'sql' => Str::replaceCRLF(
                     <<<SQL
                     CREATE TABLE `enterprise` (
                     `id` integer NOT NULL,

@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Windwalker\Promise\Test;
 
 use Windwalker\Promise\Promise;
-use Windwalker\Test\TestHelper;
+use Windwalker\Utilities\Reflection\ReflectAccessor;
 
 /**
  * The PromiseTest class.
@@ -41,8 +41,8 @@ class PromiseTest extends AbstractPromiseTestCase
             }
         );
 
-        self::assertEquals(Promise::FULFILLED, TestHelper::getValue($p, 'state'));
-        self::assertEquals('Flower', TestHelper::getValue($p, 'value'));
+        self::assertEquals(Promise::FULFILLED, ReflectAccessor::getValue($p, 'state'));
+        self::assertEquals('Flower', ReflectAccessor::getValue($p, 'value'));
 
         // Resolve with promise
         $p = new Promise(
@@ -57,7 +57,7 @@ class PromiseTest extends AbstractPromiseTestCase
             }
         );
 
-        self::assertEquals('Sakura', TestHelper::getValue($p, 'value'));
+        self::assertEquals('Sakura', ReflectAccessor::getValue($p, 'value'));
     }
 
     public function testConstructorCoroutine(): void

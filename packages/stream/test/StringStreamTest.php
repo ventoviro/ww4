@@ -16,7 +16,7 @@ use ReflectionException;
 use RuntimeException;
 use Windwalker\Stream\Stream;
 use Windwalker\Stream\StringStream;
-use Windwalker\Test\TestHelper;
+use Windwalker\Utilities\Reflection\ReflectAccessor;
 
 /**
  * Test class of Stream
@@ -80,8 +80,8 @@ class StringStreamTest extends TestCase
 
         $stream = new StringStream($stringObject);
 
-        $this->assertEquals('FOO', TestHelper::getValue($stream, 'resource'));
-        $this->assertIsObject(TestHelper::getValue($stream, 'stream'));
+        $this->assertEquals('FOO', ReflectAccessor::getValue($stream, 'resource'));
+        $this->assertIsObject(ReflectAccessor::getValue($stream, 'stream'));
     }
 
     /**
@@ -116,7 +116,7 @@ class StringStreamTest extends TestCase
         $stream->close();
 
         $this->assertEmpty($stream->getResource());
-        self::assertEmpty(TestHelper::getValue($stream, 'stream'));
+        self::assertEmpty(ReflectAccessor::getValue($stream, 'stream'));
         $this->assertEquals('', (string) $stream);
     }
 
@@ -133,8 +133,8 @@ class StringStreamTest extends TestCase
         $stream = new StringStream('flower');
 
         $this->assertEquals('flower', $stream->detach());
-        self::assertEmpty(TestHelper::getValue($stream, 'resource'));
-        self::assertEmpty(TestHelper::getValue($stream, 'stream'));
+        self::assertEmpty(ReflectAccessor::getValue($stream, 'resource'));
+        self::assertEmpty(ReflectAccessor::getValue($stream, 'stream'));
     }
 
     /**
