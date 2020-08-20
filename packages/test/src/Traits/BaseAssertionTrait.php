@@ -13,7 +13,6 @@ namespace Windwalker\Test\Traits;
 
 use Throwable;
 use Windwalker\Data\Format\PhpFormat;
-use Windwalker\Test\Helper\TestStringHelper;
 use Windwalker\Utilities\Str;
 use Windwalker\Utilities\TypeCast;
 
@@ -129,10 +128,17 @@ trait BaseAssertionTrait
         }
     }
 
-    public static function dumpArray($array, array $options = []): string
+    public static function dumpArray($array, array $options = [], bool $asString = false): ?string
     {
         $options['return'] = false;
 
-        return (new PhpFormat())->dump(TypeCast::toArray($array, true), $options);
+        $export = (new PhpFormat())->dump(TypeCast::toArray($array, true), $options);
+
+        if ($asString) {
+            return $export;
+        }
+
+        echo $export;
+        return null;
     }
 }

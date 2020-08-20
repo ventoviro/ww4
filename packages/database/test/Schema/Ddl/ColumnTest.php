@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Database\Test\Schema\Meta;
+namespace Windwalker\Database\Test\Schema\Ddl;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\Database\Schema\Ddl\Column;

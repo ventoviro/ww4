@@ -293,6 +293,10 @@ class PhpBridge implements BridgeInterface
      */
     protected function createId(): string
     {
+        if ($this->handler instanceof \SessionIdInterface) {
+            return $this->handler->create_sid();
+        }
+
         return session_create_id();
     }
 

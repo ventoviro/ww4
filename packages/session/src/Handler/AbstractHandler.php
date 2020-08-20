@@ -13,7 +13,7 @@ namespace Windwalker\Session\Handler;
  *
  * @since 2.0
  */
-abstract class AbstractHandler implements HandlerInterface, \SessionUpdateTimestampHandlerInterface
+abstract class AbstractHandler implements HandlerInterface, \SessionUpdateTimestampHandlerInterface, \SessionIdInterface
 {
     protected ?string $loadedData = null;
 
@@ -86,4 +86,14 @@ abstract class AbstractHandler implements HandlerInterface, \SessionUpdateTimest
     }
 
     abstract protected function doRead(string $id): ?string;
+
+    /**
+     * Create session ID
+     * @link https://php.net/manual/en/sessionidinterface.create-sid.php
+     * @return string
+     */
+    public function create_sid()
+    {
+        return session_create_id();
+    }
 }
