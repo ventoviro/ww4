@@ -67,7 +67,7 @@ class ServerRequestFactory
 
         $body = new PhpInputStream();
 
-        $method = ServerHelper::getValue($server, 'REQUEST_METHOD', 'GET');
+        $method = $server['REQUEST_METHOD'] ?? 'GET';
 
         $decodedBody = $_POST;
         $decodedFiles = $_FILES;
@@ -263,6 +263,10 @@ class ServerRequestFactory
             $scheme = 'https';
         }
 
+        // User Info
+        $user = $server['PHP_AUTH_USER'] ?? '';
+        $pass = $server['PHP_AUTH_PW'] ?? null;
+
         // URI host
         $host = '';
         $port = null;
@@ -288,6 +292,7 @@ class ServerRequestFactory
         }
 
         return $uri->withScheme($scheme)
+            ->withUserInfo($user, $pass)
             ->withHost($host)
             ->withPort($port)
             ->withPath($path)

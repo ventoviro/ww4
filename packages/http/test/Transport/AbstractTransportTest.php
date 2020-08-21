@@ -10,6 +10,7 @@ namespace Windwalker\Http\Test\Transport;
 
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
 use Windwalker\Http\Request\Request;
 use Windwalker\Http\Transport\AbstractTransport;
@@ -24,7 +25,7 @@ use Windwalker\Test\Traits\BaseAssertionTrait;
  *
  * @since 2.1
  */
-abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
+abstract class AbstractTransportTest extends TestCase
 {
     use BaseAssertionTrait;
 
@@ -64,7 +65,7 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
      */
     protected function setUp(): void
     {
-        if (!$this->instance->isSupported()) {
+        if (!$this->instance::isSupported()) {
             $this->markTestSkipped(get_class($this->instance) . ' driver not supported.');
         }
     }
@@ -163,15 +164,7 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
         $response = $this->instance->request($request);
 
         self::assertStringSafeEquals(
-            <<<BODY
-            POST http://localhost:8163/
-            host: localhost:8163
-            accept: */*
-            content-type: application/x-www-form-urlencoded; charset=utf-8
-            content-length: 7
-
-            foo=bar
-            BODY,
+            'foo=bar',
             $response->getBody()->getContents()
         );
     }
@@ -193,15 +186,7 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
         $response = $this->instance->request($request);
 
         self::assertStringSafeEquals(
-            <<<BODY
-            PUT http://localhost:8163/
-            host: localhost:8163
-            accept: */*
-            content-type: application/x-www-form-urlencoded; charset=utf-8
-            content-length: 7
-
-            foo=bar
-            BODY,
+            'foo=bar',
             $response->getBody()->getContents()
         );
     }
@@ -215,7 +200,7 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
     {
         $request = $this->createRequest();
 
-        $uri = new Uri(WINDWALKER_TEST_HTTP_URL);
+        $uri = new Uri(WINDWALKER_TEST_HTTP_URL . '/auth');
         $uri = $uri->withUserInfo('username', 'pass1234');
 
         $request = $request->withUri($uri)
@@ -224,13 +209,7 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
         $response = $this->instance->request($request);
 
         self::assertStringSafeEquals(
-            <<<BODY
-            GET http://localhost:8163/
-            host: localhost:8163
-            authorization: Basic dXNlcm5hbWU6cGFzczEyMzQ=
-            accept: */*
-            content-type: application/x-www-form-urlencoded; charset=utf-8
-            BODY,
+            'username:pass1234',
             $response->getBody()->getContents()
         );
     }
@@ -252,15 +231,7 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
         $response = $this->instance->request($request);
 
         self::assertStringSafeEquals(
-            <<<BODY
-            POST http://localhost:8163/?foo=bar
-            host: localhost:8163
-            accept: */*
-            content-type: application/x-www-form-urlencoded; charset=utf-8
-            content-length: 13
-
-            flower=sakura
-            BODY,
+            'flower=sakura',
             $response->getBody()->getContents()
         );
     }
@@ -288,19 +259,21 @@ abstract class AbstractTransportTest extends \PHPUnit\Framework\TestCase
 
         $src = WINDWALKER_TEST_HTTP_URL;
 
-        $request = $request->withUri(new Uri($src))
+        $request = $request->withUri(new Uri($src . '/json?foo=bar'))
             ->withMethod('GET');
 
         $response = $this->instance->download($request, $dest);
 
         self::assertStringSafeEquals(
-            <<<BODY
-            GET http://localhost:8163/
-            host: localhost:8163
-            accept: */*
-            content-type: application/x-www-form-urlencoded; charset=utf-8
-            BODY,
+            '{"foo":"bar"}',
             trim(file_get_contents($dest))
         );
+    }
+
+    protected function getHost(): string
+    {
+        $uri = new Uri(WINDWALKER_TEST_HTTP_URL);
+
+        return $uri->toString(Uri::HOST | Uri::PORT);
     }
 }

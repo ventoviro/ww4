@@ -21,8 +21,6 @@ return new class {
     {
         $uri  = $req->getUri();
 
-        echo "Request from: $uri\n";
-
         $path = trim($uri->getPath(), '/') ?: 'index';
 
         $this->req = $req;
@@ -52,13 +50,7 @@ return new class {
             $body = http_build_query($_POST);
         }
 
-        $output = <<<BODY
-                {$this->req->getMethod()} {$this->req->getUri()}
-                {$head}
-                {$body}
-                BODY;
-
-        return $this->response($output);
+        return $this->response($body);
     }
 
     public function json()
@@ -67,6 +59,13 @@ return new class {
         $query = $uri->getQueryValues();
 
         return $this->response(json_encode($query));
+    }
+
+    public function auth()
+    {
+        $uri = $this->req->getUri();
+
+        return $this->response($uri->getUserInfo());
     }
 
     public function server()

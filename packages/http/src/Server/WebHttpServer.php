@@ -18,6 +18,8 @@ use Windwalker\Http\Uri\Uri;
  * The WebServer class.
  *
  * @since  3.0
+ *
+ * @deprecated
  */
 class WebHttpServer extends HttpServer
 {
@@ -98,12 +100,12 @@ class WebHttpServer extends HttpServer
             return $this->uri;
         }
 
-        $uri = $requestUri ? new PsrUri($requestUri) : $this->getRequest()->getUri();
+        $uri = $requestUri ? new Uri($requestUri) : $this->getRequest()->getUri();
 
         $server = $this->getRequest()->getServerParams();
 
         // If we are working from a CGI SAPI with the 'cgi.fix_pathinfo' directive disabled we use PHP_SELF.
-        if (strpos(PHP_SAPI, 'cgi') !== false && !ini_get('cgi.fix_pathinfo') && !empty($server['REQUEST_URI'])) {
+        if (str_contains(PHP_SAPI, 'cgi') && !ini_get('cgi.fix_pathinfo') && !empty($server['REQUEST_URI'])) {
             // We aren't expecting PATH_INFO within PHP_SELF so this should work.
             $uri = $uri->withPath(rtrim(\dirname((string) ServerHelper::getValue($server, 'PHP_SELF')), '/\\'));
         } else {

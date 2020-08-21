@@ -98,22 +98,12 @@ class StreamTransport extends AbstractTransport
         $context = stream_context_create(['http' => $options]);
 
         // Capture PHP errors
-        $php_errormsg = '';
-        $track_errors = ini_get('track_errors');
-        ini_set('track_errors', '1');
-
         $connection = @fopen($request->getRequestTarget(), Stream::MODE_READ_ONLY_FROM_BEGIN, false, $context);
 
         if (!$connection) {
-            if (!$php_errormsg) {
-                // Error but nothing from php? Create our own
-                $php_errormsg = sprintf('Could not connect to resource: %s', $request->getRequestTarget());
-            }
+            $error = error_get_last();
 
-            // Restore error tracking to give control to the exception handler
-            ini_set('track_errors', $track_errors);
-
-            throw new \RuntimeException($php_errormsg);
+            throw new \RuntimeException($error['message'] ?? 'Unknown error');
         }
 
         $stream = new Stream($connection);

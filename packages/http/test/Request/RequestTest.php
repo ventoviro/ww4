@@ -11,7 +11,6 @@ namespace Windwalker\Http\Test\Request;
 use PHPUnit\Framework\TestCase;
 use Windwalker\Http\Request\Request;
 use Windwalker\Http\Uri\Uri;
-use Windwalker\Uri\PsrUri;
 
 /**
  * Test class of Request

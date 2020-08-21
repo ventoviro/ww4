@@ -33,12 +33,7 @@ class HttpServer implements ServerInterface
     protected ?ServerAdapterInterface $adapter;
 
     /**
-     * Create a Server instance from an existing request object
-     *
-     * Provided a callback, an existing request object, and optionally an
-     * existing response object, create and return the Server instance.
-     *
-     * If no Response object is provided, one will be created.
+     * Create a Server instance.
      *
      * @param  int                          $options
      * @param  ServerAdapterInterface|null  $adapter
