@@ -42,9 +42,9 @@ abstract class AbstractEvent implements EventInterface
      * @param  string|EventInterface  $event
      * @param  array                  $args
      *
-     * @return  EventInterface
+     * @return  static
      */
-    public static function wrap($event, array $args = []): EventInterface
+    public static function wrap($event, array $args = [])
     {
         ArgumentsAssert::assert(
             is_string($event) || $event instanceof EventInterface,

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Http\Server;
+namespace Windwalker\Http\Server\Adapter;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Windwalker\Event\EventListenableTrait;
@@ -21,7 +21,7 @@ use Windwalker\Http\Output\StreamOutput;
 /**
  * The WebAdapter class.
  */
-class PhpAdapter implements ServerAdapterInterface
+class PhpServerAdapter implements ServerAdapterInterface
 {
     use EventListenableTrait;
 
@@ -50,13 +50,8 @@ class PhpAdapter implements ServerAdapterInterface
     {
         /** @var WebRequestEvent $event */
         $event = $this->emit(
-            WebRequestEvent::wrap(
-                'request',
-                [
-                    'request' => $request ?? $this->httpFactory->createServerRequestFromGlobals(),
-                    'response' => $this->httpFactory->createResponse()
-                ]
-            )
+            WebRequestEvent::wrap('request')
+                ->setRequest($request ?? $this->httpFactory->createServerRequestFromGlobals())
         );
 
         $this->getOutput()->respond($event->getResponse());

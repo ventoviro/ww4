@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Http\Server;
+namespace Windwalker\Http\Server\Adapter;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Windwalker\Event\EventListenableInterface;

@@ -17,26 +17,25 @@ if (!is_file($autoload)) {
 
 include $autoload;
 
-use Windwalker\Http\Event\ErrorEvent;
 use Windwalker\Http\Event\WebRequestEvent;
-use Windwalker\Http\Request\ServerRequestFactory;
+use Windwalker\Http\Server\Adapter\ReactServerAdapter;
 use Windwalker\Http\Server\HttpServer;
 
-$server = new HttpServer();
+$server = new HttpServer(new ReactServerAdapter('0.0.0.0', 8888));
 $server->on(
     'request',
     static function (WebRequestEvent $event) {
         $app = require __DIR__ . '/app.php';
 
-        $res = $app($event->getRequest(), $event->getResponse());
+        $res = $app($event->getRequest());
 
         $event->setResponse($res);
     }
 );
 $server->on(
     'error',
-    static function (ErrorEvent $event) {
+    static function ($event) {
         echo $event->getException();
     }
 );
-$server->handle(ServerRequestFactory::createFromGlobals());
+$server->listen();

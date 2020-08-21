@@ -20,14 +20,14 @@ use Windwalker\Event\AbstractEvent;
  */
 class WebRequestEvent extends AbstractEvent
 {
-    public ServerRequestInterface $request;
+    public ?ServerRequestInterface $request = null;
 
-    public ResponseInterface $response;
+    public ?ResponseInterface $response = null;
 
     /**
      * @return ServerRequestInterface
      */
-    public function getRequest(): ServerRequestInterface
+    public function getRequest(): ?ServerRequestInterface
     {
         return $this->request;
     }
@@ -35,7 +35,7 @@ class WebRequestEvent extends AbstractEvent
     /**
      * @return ResponseInterface
      */
-    public function getResponse(): ResponseInterface
+    public function getResponse(): ?ResponseInterface
     {
         return $this->response;
     }

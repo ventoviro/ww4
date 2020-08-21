@@ -13,6 +13,8 @@ namespace Windwalker\Http\Server;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Windwalker\Event\EventListenableTrait;
+use Windwalker\Http\Server\Adapter\PhpServerAdapter;
+use Windwalker\Http\Server\Adapter\ServerAdapterInterface;
 
 /**
  * The Server class.
@@ -46,7 +48,7 @@ class HttpServer implements ServerInterface
         int $options = 0
     ) {
         $this->options = $options;
-        $this->adapter = $adapter ?? new PhpAdapter();
+        $this->adapter = $adapter ?? new PhpServerAdapter();
 
         $this->adapter->getDispatcher()
             ->registerDealer($this->getDispatcher());
