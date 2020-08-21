@@ -17,85 +17,85 @@ if (!is_file($autoload)) {
 
 include $autoload;
 
-use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface;
+use Windwalker\Http\Event\WebRequestEvent;
 use Windwalker\Http\Request\ServerRequestFactory;
-use Windwalker\Http\WebHttpServer;
+use Windwalker\Http\Server\HttpServer;
 use Windwalker\Stream\StringStream;
 
-$server = new WebHttpServer(
-    function (Request $req, Response $res) {
-        $app = new class
+$server = new HttpServer();
+$server->on('request', function (WebRequestEvent $event) {
+    $app = new class
+    {
+        public ServerRequestInterface $req;
+        public Response $res;
+
+        public function __invoke(ServerRequestInterface $req, Response $res)
         {
-            public ServerRequestInterface $req;
-            public Response $res;
+            $uri = $req->getUri();
+            $path = trim($uri->getPath(), '/') ?: 'index';
 
-            public function __invoke(ServerRequestInterface $req, Response $res)
-            {
-                $uri = $req->getUri();
-                $path = trim($uri->getPath(), '/') ?: 'index';
+            $this->req = $req;
+            $this->res = $res;
 
-                $this->req = $req;
-                $this->res = $res;
-
-                if (method_exists($this, $path)) {
-                    return $this->$path();
-                }
-
-                return $res->withStatus(404);
+            if (method_exists($this, $path)) {
+                return $this->$path();
             }
 
-            public function index(): Response
-            {
-                $headers = $this->req->getHeaders();
-                $head = '';
-                foreach ($headers as $name => $headerItems) {
-                    $head .= sprintf("%s: %s\n", $name, $this->req->getHeaderLine($name));
-                }
+            return $res->withStatus(404);
+        }
 
-                $fp = fopen('php://input', 'r');
+        public function index(): Response
+        {
+            $headers = $this->req->getHeaders();
+            $head = '';
+            foreach ($headers as $name => $headerItems) {
+                $head .= sprintf("%s: %s\n", $name, $this->req->getHeaderLine($name));
+            }
 
-                $body = stream_get_contents($fp);
+            $fp = fopen('php://input', 'r');
 
-                fclose($fp);
+            $body = stream_get_contents($fp);
 
-                if (!$body) {
-                    $body = http_build_query($_POST);
-                }
+            fclose($fp);
 
-                $output = <<<BODY
+            if (!$body) {
+                $body = http_build_query($_POST);
+            }
+
+            $output = <<<BODY
                 {$this->req->getMethod()} {$this->req->getUri()}
                 {$head}
                 {$body}
                 BODY;
 
-                return $this->response($output);
-            }
+            return $this->response($output);
+        }
 
-            public function json()
-            {
-                $uri = $this->req->getUri();
-                $query = $uri->getQueryValues();
+        public function json()
+        {
+            $uri = $this->req->getUri();
+            $query = $uri->getQueryValues();
 
-                return $this->response(json_encode($query));
-            }
+            return $this->response(json_encode($query));
+        }
 
-            public function server()
-            {
-                return $this->response(json_encode($this->req->getServerParams()));
-            }
+        public function server()
+        {
+            return $this->response(json_encode($this->req->getServerParams()));
+        }
 
-            protected function response($value): Response
-            {
-                return $this->res->withBody(
-                    new StringStream($value)
-                );
-            }
-        };
+        protected function response($value): Response
+        {
+            return $this->res->withBody(
+                new StringStream($value)
+            );
+        }
+    };
 
-        return $app($req, $res);
-    },
-    ServerRequestFactory::createFromGlobals(),
-);
-$server->listen();
+    $res = $app($event->getRequest(), $event->getResponse());
+
+    $event->setResponse($res);
+});
+$server->handle(ServerRequestFactory::createFromGlobals());

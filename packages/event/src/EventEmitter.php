@@ -25,7 +25,7 @@ use function Windwalker\tap;
  */
 class EventEmitter extends EventDispatcher implements
     EventEmitterInterface,
-    EventAttachableInterface,
+    EventListenableInterface,
     EventDisposableInterface
 {
     /**
@@ -66,7 +66,7 @@ class EventEmitter extends EventDispatcher implements
     /**
      * @inheritDoc
      */
-    public function emit($event, $args = []): EventInterface
+    public function emit(EventInterface|string $event, array $args = []): EventInterface
     {
         $event = Event::wrap($event, $args);
 

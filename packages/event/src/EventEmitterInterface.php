@@ -30,5 +30,5 @@ interface EventEmitterInterface extends EventDispatcherInterface
      *
      * @since   2.0
      */
-    public function emit($event, $args = []): EventInterface;
+    public function emit(EventInterface|string $event, array $args = []): EventInterface;
 }

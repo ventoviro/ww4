@@ -13,8 +13,8 @@ namespace Windwalker\Queue;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Windwalker\Event\EventAttachableInterface;
-use Windwalker\Event\ListenableTrait;
+use Windwalker\Event\EventListenableInterface;
+use Windwalker\Event\EventListenableTrait;
 use Windwalker\Queue\Event\AfterJobRunEvent;
 use Windwalker\Queue\Event\BeforeJobRunEvent;
 use Windwalker\Queue\Event\JobFailureEvent;
@@ -31,9 +31,9 @@ use Windwalker\Queue\Job\NullJob;
  *
  * @since  3.2
  */
-class Worker implements EventAttachableInterface
+class Worker implements EventListenableInterface
 {
-    use ListenableTrait;
+    use EventListenableTrait;
 
     public const STATE_INACTIVE = 'inactive';
 

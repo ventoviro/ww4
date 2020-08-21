@@ -61,7 +61,7 @@ class ServerRequestFactory
         array $parsedBody = null,
         array $cookies = [],
         array $files = []
-    ) {
+    ): ServerRequestInterface {
         $server = static::prepareServers($server ?: $_SERVER);
         $headers = static::prepareHeaders($server);
 
@@ -75,9 +75,9 @@ class ServerRequestFactory
         if (in_array(strtoupper($method), ['PUT', 'PATCH', 'DELETE', 'LINK', 'UNLINK'])) {
             $type = (string) HeaderHelper::getValue($headers, 'Content-Type');
 
-            if (strpos($type, 'application/x-www-form-urlencoded') !== false) {
+            if (str_contains($type, 'application/x-www-form-urlencoded')) {
                 parse_str($body->__toString(), $decodedBody);
-            } elseif (strpos($type, 'multipart/form-data') !== false) {
+            } elseif (str_contains($type, 'multipart/form-data')) {
                 [$decodedBody, $decodedFiles] = array_values(ServerHelper::parseFormData($body->__toString()));
             }
         }
@@ -101,7 +101,7 @@ class ServerRequestFactory
     /**
      * createFromUri
      *
-     * @param string $uri
+     * @param string|UriInterface $uri
      * @param string $script
      * @param array  $server
      * @param array  $query
@@ -112,7 +112,7 @@ class ServerRequestFactory
      * @return  ServerRequestInterface
      */
     public static function createFromUri(
-        string $uri,
+        string|UriInterface $uri,
         ?string $script = null,
         array $server = [],
         array $query = [],
@@ -120,6 +120,10 @@ class ServerRequestFactory
         array $cookies = [],
         array $files = []
     ): ServerRequestInterface {
+        if (is_string($uri)) {
+            $uri = new Uri($uri);
+        }
+
         $server = $server ?: $_SERVER;
 
         if ($script) {
@@ -130,7 +134,7 @@ class ServerRequestFactory
 
         $request = static::createFromGlobals($server, $query, $parsedBody, $cookies, $files);
 
-        return $request->withUri(new Uri($uri));
+        return $request->withUri($uri);
     }
 
     /**
@@ -140,7 +144,7 @@ class ServerRequestFactory
      *
      * @return  array
      */
-    public static function prepareServers(array $server)
+    public static function prepareServers(array $server): array
     {
         // Authorization can only get by apache_request_headers()
         $apacheRequestHeaders = static::$apacheRequestHeaders;

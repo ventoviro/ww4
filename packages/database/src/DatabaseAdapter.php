@@ -20,8 +20,8 @@ use Windwalker\Database\Manager\WriterManager;
 use Windwalker\Database\Platform\AbstractPlatform;
 use Windwalker\Database\Schema\DatabaseManager;
 use Windwalker\Database\Schema\SchemaManager;
-use Windwalker\Event\EventAttachableInterface;
-use Windwalker\Event\ListenableTrait;
+use Windwalker\Event\EventListenableInterface;
+use Windwalker\Event\EventListenableTrait;
 use Windwalker\Query\Query;
 use Windwalker\Utilities\Cache\InstanceCacheTrait;
 use Windwalker\Utilities\Classes\OptionAccessTrait;
@@ -34,10 +34,10 @@ use Windwalker\Utilities\Classes\OptionAccessTrait;
  * @method Query delete(string $table, ?string $alias = null)
  * @method Query insert(string $table, ?string $incrementField = null)
  */
-class DatabaseAdapter implements EventAttachableInterface
+class DatabaseAdapter implements EventListenableInterface
 {
     use OptionAccessTrait;
-    use ListenableTrait;
+    use EventListenableTrait;
     use InstanceCacheTrait;
 
     protected ?AbstractDriver $driver = null;

@@ -14,14 +14,14 @@ namespace Windwalker\Event;
 /**
  * Trait EventAwareTrait
  */
-trait ListenableTrait
+trait EventListenableTrait
 {
     /**
      * Property dispatcher.
      *
      * @var  EventEmitter
      */
-    protected $dispatcher = null;
+    protected ?EventEmitter $dispatcher = null;
 
     /**
      * Trigger an event.
@@ -33,7 +33,7 @@ trait ListenableTrait
      *
      * @since   2.0
      */
-    public function emit($event, $args = []): EventInterface
+    public function emit(EventInterface|string $event, array $args = []): EventInterface
     {
         return $this->getDispatcher()->emit($event, $args);
     }

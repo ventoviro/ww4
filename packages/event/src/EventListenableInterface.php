@@ -14,7 +14,7 @@ namespace Windwalker\Event;
 /**
  * Interface DispatcherInterface
  */
-interface EventAttachableInterface
+interface EventListenableInterface
 {
     /**
      * Add a subscriber object with multiple listener methods to this dispatcher.

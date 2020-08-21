@@ -13,13 +13,13 @@ namespace Windwalker\Database\Driver;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Windwalker\Data\Collection;
-use Windwalker\Event\EventAttachableInterface;
+use Windwalker\Event\EventListenableInterface;
 use Windwalker\Query\Bounded\BindableInterface;
 
 /**
  * Interface StatementInterface
  */
-interface StatementInterface extends BindableInterface, \IteratorAggregate, EventAttachableInterface
+interface StatementInterface extends BindableInterface, \IteratorAggregate, EventListenableInterface
 {
     /**
      * execute

@@ -32,14 +32,14 @@ class Response implements ResponseInterface
      *
      * @var  int
      */
-    protected $statusCode = 200;
+    protected int $statusCode = 200;
 
     /**
      * Property reasonPhrase.
      *
      * @var  string
      */
-    protected $reasonPhrase;
+    protected ?string $reasonPhrase;
 
     /**
      * from
