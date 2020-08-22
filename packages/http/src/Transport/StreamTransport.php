@@ -29,86 +29,19 @@ class StreamTransport extends AbstractTransport
     /**
      * Send a request to the server and return a Response object with the response.
      *
-     * @param   RequestInterface $request The request object to store request params.
+     * @param  RequestInterface  $request  The request object to store request params.
+     *
+     * @param  array             $options
      *
      * @return  ResponseInterface
      *
      * @since   2.1
      */
-    protected function doRequest(RequestInterface $request)
+    protected function doRequest(RequestInterface $request, array $options = []): ResponseInterface
     {
-        // Create the stream context options array with the required method offset.
-        $options = ['method' => $request->getMethod()];
+        $stream = $this->createStream($request, $options);
 
-        // Set HTTP Version
-        $options['protocol_version'] = $request->getProtocolVersion();
-
-        // If data exists let's encode it and make sure our Content-Type header is set.
-        $data = (string) $request->getBody();
-
-        if (isset($data)) {
-            // If the data is a scalar value simply add it to the stream context options.
-            if (is_scalar($data)) {
-                $options['content'] = $data;
-            } else // Otherwise we need to encode the value first.
-            {
-                $options['content'] = http_build_query($data);
-            }
-
-            if (!$request->getHeader('Content-Type')) {
-                $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
-            }
-
-            // Add the relevant headers.
-            $request = $request->withHeader('Content-Length', (string) strlen($options['content']));
-        }
-
-        // Speed up stream get URL
-        // @see http://stackoverflow.com/questions/3629504/php-file-get-contents-very-slow-when-using-full-url
-        // @see http://stackoverflow.com/questions/13679976/how-to-speed-up-file-get-contents
-        $request = $request->withHeader('Connection', 'Close');
-
-        // Build the headers string for the request.
-        if ($headers = $request->getHeaders()) {
-            // Add the headers string into the stream context options array.
-            $options['header'] = HeaderHelper::toHeaderLine($headers, true);
-        }
-
-        // If an explicit timeout is given user it.
-        if ($this->getOption('timeout')) {
-            $options['timeout'] = (int) $this->getOption('timeout');
-        }
-
-        // If an explicit user agent is given use it.
-        if ($this->getOption('userAgent')) {
-            $options['user_agent'] = $this->getOption('userAgent');
-        }
-
-        // Ignore HTTP errors so that we can capture them.
-        $options['ignore_errors'] = 1;
-
-        // Follow redirects.
-        $options['follow_location'] = (int) $this->getOption('follow_location', 1);
-
-        foreach ((array) $this->getOption('options') as $key => $value) {
-            $options[$key] = $value;
-        }
-
-        // Create the stream context for the request.
-        $context = stream_context_create(['http' => $options]);
-
-        // Capture PHP errors
-        $connection = @fopen($request->getRequestTarget(), Stream::MODE_READ_ONLY_FROM_BEGIN, false, $context);
-
-        if (!$connection) {
-            $error = error_get_last();
-
-            throw new \RuntimeException($error['message'] ?? 'Unknown error');
-        }
-
-        $stream = new Stream($connection);
-
-        if ($dest = $this->getOption('target_file')) {
+        if ($dest = $options['target_file']) {
             $content = '';
             StreamHelper::copyTo($stream, $dest);
         } else {
@@ -128,6 +61,91 @@ class StreamTransport extends AbstractTransport
         }
 
         return $this->getResponse($headers, $content);
+    }
+
+    public function createConnection(RequestInterface $request, array $options = [])
+    {
+        // Create the stream context options array with the required method offset.
+        $opt = ['method' => $request->getMethod()];
+
+        // Set HTTP Version
+        $opt['protocol_version'] = $request->getProtocolVersion();
+
+        // If data exists let's encode it and make sure our Content-Type header is set.
+        $data = (string) $request->getBody();
+
+        if (isset($data)) {
+            // If the data is a scalar value simply add it to the stream context options.
+            if (is_scalar($data)) {
+                $opt['content'] = $data;
+            } else // Otherwise we need to encode the value first.
+            {
+                $opt['content'] = http_build_query($data);
+            }
+
+            if (!$request->getHeader('Content-Type')) {
+                $request = $request->withHeader('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
+            }
+
+            // Add the relevant headers.
+            $request = $request->withHeader('Content-Length', (string) strlen($opt['content']));
+        }
+
+        // Speed up stream get URL
+        // @see http://stackoverflow.com/questions/3629504/php-file-get-contents-very-slow-when-using-full-url
+        // @see http://stackoverflow.com/questions/13679976/how-to-speed-up-file-get-contents
+        $request = $request->withHeader('Connection', 'Close');
+
+        // Build the headers string for the request.
+        if ($headers = $request->getHeaders()) {
+            // Add the headers string into the stream context options array.
+            $opt['header'] = HeaderHelper::toHeaderLines($headers, true);
+        }
+
+        // If an explicit timeout is given user it.
+        if ($this->getOption('timeout')) {
+            $opt['timeout'] = (int) $this->getOption('timeout');
+        }
+
+        // If an explicit user agent is given use it.
+        if ($this->getOption('userAgent')) {
+            $opt['user_agent'] = $this->getOption('userAgent');
+        }
+
+        // Ignore HTTP errors so that we can capture them.
+        $opt['ignore_errors'] = 1;
+
+        // Follow redirects.
+        $opt['follow_location'] = (int) $this->getOption('follow_location', 1);
+
+        $opt = array_merge($opt, $options);
+
+        // Create the stream context for the request.
+        $context = stream_context_create(['http' => $opt]);
+
+        // Capture PHP errors
+        return @fopen($request->getRequestTarget(), Stream::MODE_READ_ONLY_FROM_BEGIN, false, $context);
+    }
+
+    /**
+     * createStream
+     *
+     * @param  RequestInterface  $request
+     * @param  array             $options
+     *
+     * @return  Stream
+     */
+    protected function createStream(RequestInterface $request, array $options): Stream
+    {
+        $connection = $this->createConnection($request, $options);
+
+        if (!$connection) {
+            $error = error_get_last();
+
+            throw new \RuntimeException($error['message'] ?? 'Unknown error');
+        }
+
+        return new Stream($connection);
     }
 
     /**
@@ -174,23 +192,27 @@ class StreamTransport extends AbstractTransport
     /**
      * Use stream to download file.
      *
-     * @param   RequestInterface       $request The request object to store request params.
-     * @param   string|StreamInterface $dest    The dest path to store file.
+     * @param  RequestInterface        $request  The request object to store request params.
+     * @param  string|StreamInterface  $dest     The dest path to store file.
+     *
+     * @param  array                   $options
      *
      * @return  ResponseInterface
      * @since   2.1
      */
-    public function download(RequestInterface $request, $dest)
+    public function download(RequestInterface $request, string|StreamInterface $dest, array $options = [])
     {
         if (!$dest) {
             throw new \InvalidArgumentException('Target file path is emptty.');
         }
 
-        $dest = $dest instanceof StreamInterface ? $dest : new Stream($dest, Stream::MODE_READ_WRITE_RESET);
+        if (!$dest instanceof StreamInterface) {
+            $dest = Stream::fromFilePath($dest);
+        }
 
         $this->setOption('target_file', $dest);
 
-        $response = $this->request($request);
+        $response = $this->request($request, $options);
 
         $this->setOption('target_file', null);
 

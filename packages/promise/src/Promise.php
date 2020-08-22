@@ -78,10 +78,9 @@ class Promise implements ExtendedPromiseInterface
                         ->then(
                             static function ($v) use (&$done, &$count, $resolve, $i, $values) {
                                 $values[$i] = $v;
+                                $done++;
 
                                 if ($done !== $count) {
-                                    $done++;
-
                                     return;
                                 }
 
@@ -239,7 +238,7 @@ class Promise implements ExtendedPromiseInterface
      * @throws \Throwable
      * @since  __DEPLOY_VERSION__
      */
-    public static function resolved($value): ExtendedPromiseInterface
+    public static function resolved($value = null): ExtendedPromiseInterface
     {
         return new static(
             static function (callable $resolve) use ($value) {
@@ -258,7 +257,7 @@ class Promise implements ExtendedPromiseInterface
      * @throws \Throwable
      * @since  __DEPLOY_VERSION__
      */
-    public static function rejected($value): ExtendedPromiseInterface
+    public static function rejected($value = null): ExtendedPromiseInterface
     {
         return new Promise(
             static function ($resolve, callable $reject) use ($value) {

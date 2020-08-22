@@ -234,7 +234,7 @@ abstract class HeaderHelper
      *
      *
      */
-    public static function toHeaderLine($headers, $toString = false)
+    public static function toHeaderLines($headers, $toString = false)
     {
         $headerArray = [];
 

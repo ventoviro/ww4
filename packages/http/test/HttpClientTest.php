@@ -99,7 +99,10 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
     {
         $url = new Uri('http://example.com/?foo=bar');
 
-        $this->instance->request('GET', $url, ['flower' => 'sakura'], ['X-Foo' => 'Bar']);
+        $this->instance->request('GET', $url, null, [
+            'params' => ['flower' => 'sakura'],
+            'headers' => ['X-Foo' => 'Bar']
+        ]);
 
         self::assertEquals('GET', $this->transport->request->getMethod());
         self::assertEquals('http://example.com/?foo=bar&flower=sakura', $this->transport->request->getRequestTarget());
@@ -108,7 +111,7 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
 
         $url = new Uri('http://example.com/?foo=bar');
 
-        $this->instance->request('POST', $url, ['flower' => 'sakura'], ['X-Foo' => 'Bar']);
+        $this->instance->request('POST', $url, ['flower' => 'sakura'], ['headers' => ['X-Foo' => 'Bar']]);
 
         self::assertEquals('POST', $this->transport->request->getMethod());
         self::assertEquals('http://example.com/?foo=bar', $this->transport->request->getRequestTarget());
@@ -140,7 +143,7 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
         $url = 'http://example.com/?foo=bar';
         $headers = ['X-Foo' => 'Bar'];
 
-        $this->instance->options($url, $headers);
+        $this->instance->options($url, compact('headers'));
 
         self::assertEquals('OPTIONS', $this->transport->request->getMethod());
         self::assertEquals($url, $this->transport->request->getRequestTarget());
@@ -157,7 +160,7 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
         $url = 'http://example.com/?foo=bar';
         $headers = ['X-Foo' => 'Bar'];
 
-        $this->instance->head($url, $headers);
+        $this->instance->head($url, compact('headers'));
 
         self::assertEquals('HEAD', $this->transport->request->getMethod());
         self::assertEquals($url, $this->transport->request->getRequestTarget());
@@ -175,7 +178,10 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
     {
         $url = new Uri('http://example.com/?foo=bar');
 
-        $this->instance->get($url, ['flower' => 'sakura'], ['X-Foo' => 'Bar']);
+        $this->instance->get($url, [
+            'params' => ['flower' => 'sakura'],
+            'headers' => ['X-Foo' => 'Bar']
+        ]);
 
         self::assertEquals('GET', $this->transport->request->getMethod());
         self::assertEquals('http://example.com/?foo=bar&flower=sakura', $this->transport->request->getRequestTarget());
@@ -196,7 +202,7 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
         $data = ['flower' => 'sakura'];
         $headers = ['X-Foo' => 'Bar'];
 
-        $this->instance->post($url, $data, $headers);
+        $this->instance->post($url, $data, compact('headers'));
 
         self::assertEquals('POST', $this->transport->request->getMethod());
         self::assertEquals($url, $this->transport->request->getRequestTarget());
@@ -217,7 +223,7 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
         $data = ['flower' => 'sakura'];
         $headers = ['X-Foo' => 'Bar'];
 
-        $this->instance->put($url, $data, $headers);
+        $this->instance->put($url, $data, compact('headers'));
 
         self::assertEquals('PUT', $this->transport->request->getMethod());
         self::assertEquals($url, $this->transport->request->getRequestTarget());
@@ -238,7 +244,7 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
         $data = ['flower' => 'sakura'];
         $headers = ['X-Foo' => 'Bar'];
 
-        $this->instance->delete($url, $data, $headers);
+        $this->instance->delete($url, $data, compact('headers'));
 
         self::assertEquals('DELETE', $this->transport->request->getMethod());
         self::assertEquals($url, $this->transport->request->getRequestTarget());
@@ -258,7 +264,7 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
         $url = 'http://example.com/?foo=bar';
         $headers = ['X-Foo' => 'Bar'];
 
-        $this->instance->trace($url, $headers);
+        $this->instance->trace($url, compact('headers'));
 
         self::assertEquals('TRACE', $this->transport->request->getMethod());
         self::assertEquals($url, $this->transport->request->getRequestTarget());
@@ -278,76 +284,12 @@ class HttpClientTest extends \PHPUnit\Framework\TestCase
         $data = ['flower' => 'sakura'];
         $headers = ['X-Foo' => 'Bar'];
 
-        $this->instance->patch($url, $data, $headers);
+        $this->instance->patch($url, $data, compact('headers'));
 
         self::assertEquals('PATCH', $this->transport->request->getMethod());
         self::assertEquals($url, $this->transport->request->getRequestTarget());
         self::assertEquals('Bar', $this->transport->request->getHeaderLine('X-Foo'));
         self::assertEquals(UriHelper::buildQuery($data), $this->transport->request->getBody()->__toString());
-    }
-
-    /**
-     * Method to test getOption().
-     *
-     * @return void
-     *
-     * @covers \Windwalker\Http\HttpClient::getOption
-     * @TODO   Implement testGetOption().
-     */
-    public function testGetOption()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * Method to test setOption().
-     *
-     * @return void
-     *
-     * @covers \Windwalker\Http\HttpClient::setOption
-     * @TODO   Implement testSetOption().
-     */
-    public function testSetOption()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * Method to test getOptions().
-     *
-     * @return void
-     *
-     * @covers \Windwalker\Http\HttpClient::getOptions
-     * @TODO   Implement testGetOptions().
-     */
-    public function testGetOptions()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * Method to test setOptions().
-     *
-     * @return void
-     *
-     * @covers \Windwalker\Http\HttpClient::setOptions
-     * @TODO   Implement testSetOptions().
-     */
-    public function testSetOptions()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
     }
 
     /**

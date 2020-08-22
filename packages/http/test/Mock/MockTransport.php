@@ -31,13 +31,15 @@ class MockTransport extends AbstractTransport
     /**
      * Send a request to the server and return a Response object with the response.
      *
-     * @param   RequestInterface $request The request object to send.
+     * @param  RequestInterface  $request  The request object to send.
+     *
+     * @param  array             $options
      *
      * @return  ResponseInterface
      *
      * @since   2.1
      */
-    public function request(RequestInterface $request)
+    public function request(RequestInterface $request, array $options = []): ResponseInterface
     {
         $this->request = $request;
 
@@ -47,13 +49,15 @@ class MockTransport extends AbstractTransport
     /**
      * Send a request to the server and return a Response object with the response.
      *
-     * @param   RequestInterface $request The request object to store request params.
+     * @param  RequestInterface  $request  The request object to store request params.
+     *
+     * @param  array             $options
      *
      * @return  ResponseInterface
      *
      * @since   2.1
      */
-    protected function doRequest(RequestInterface $request)
+    protected function doRequest(RequestInterface $request, array $options = []): ResponseInterface
     {
         return new Response();
     }
@@ -73,13 +77,15 @@ class MockTransport extends AbstractTransport
     /**
      * Use stream to download file.
      *
-     * @param   RequestInterface       $request The request object to store request params.
-     * @param   string|StreamInterface $dest    The dest path to store file.
+     * @param  RequestInterface        $request  The request object to store request params.
+     * @param  string|StreamInterface  $dest     The dest path to store file.
+     *
+     * @param  array                   $options
      *
      * @return  ResponseInterface
      * @since   2.1
      */
-    public function download(RequestInterface $request, $dest)
+    public function download(RequestInterface $request, string|StreamInterface $dest, array $options = [])
     {
         $this->setOption('target_file', $dest);
 

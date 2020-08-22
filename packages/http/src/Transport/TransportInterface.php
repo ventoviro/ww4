@@ -23,35 +23,29 @@ use Psr\Http\Message\StreamInterface;
 interface TransportInterface
 {
     /**
-     * Constructor.
-     *
-     * @param   array|\ArrayAccess $options Client options object.
-     *
-     * @since   2.1
-     */
-    public function __construct($options = []);
-
-    /**
      * Send a request to the server and return a Response object with the response.
      *
-     * @param   RequestInterface $request The request object to store request params.
+     * @param  RequestInterface  $request  The request object to store request params.
+     * @param  array             $options  Options array.
      *
      * @return  ResponseInterface
      *
      * @since   2.1
      */
-    public function request(RequestInterface $request);
+    public function request(RequestInterface $request, array $options = []): ResponseInterface;
 
     /**
      * Use stream to download file.
      *
-     * @param   RequestInterface       $request The request object to store request params.
-     * @param   string|StreamInterface $dest    The dest path to store file.
+     * @param  RequestInterface        $request  The request object to store request params.
+     * @param  string|StreamInterface  $dest     The dest path to store file.
+     *
+     * @param  array                   $options
      *
      * @return  ResponseInterface
      * @since   2.1
      */
-    public function download(RequestInterface $request, $dest);
+    public function download(RequestInterface $request, string|StreamInterface $dest, array $options = []);
 
     /**
      * Method to check if HTTP transport layer available for using

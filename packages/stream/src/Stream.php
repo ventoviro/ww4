@@ -63,6 +63,19 @@ class Stream implements StreamInterface
     }
 
     /**
+     * fromString
+     *
+     * @param  string  $file
+     * @param  string  $mode
+     *
+     * @return  static
+     */
+    public static function fromFilePath(string $file, string $mode = self::MODE_READ_WRITE_RESET)
+    {
+        return new static(fopen($file, $mode));
+    }
+
+    /**
      * wrap
      *
      * @param  string|resource|StreamInterface  $stream
