@@ -298,7 +298,7 @@ class HTMLFormatter extends DOMFormatter
      *
      * @return  array|string
      */
-    public function getUnpairedElements(bool $implode = false): array
+    public function getUnpairedElements(bool $implode = false): array|string
     {
         return $implode ? implode('|', $this->unpairedElements) : $this->unpairedElements;
     }

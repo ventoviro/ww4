@@ -71,16 +71,18 @@
         "php-amqplib/php-amqplib": "If you want to use RabbitMQ as queue service.",
         "pda/pheanstalk": "If you want to use Beanstalkd queue as service.",
         "chrisboulton/php-resque": "Install <= 1.2 if you want to use PHP Resque (Redis) as queue service.",
-        "reactivex/rxphp": "Support EventEmitter::observe() pattern."
+        "reactivex/rxphp": "Support EventEmitter::observe() pattern.",
+        "relay/relay": "Install ^2.0 to support PSR-15 middlewares."
     },
     "autoload": {
         "psr-4": {
             "Windwalker\\Cache\\": "packages/cache/src",
             "Windwalker\\Crypt\\": "packages/crypt/src",
-            "Windwalker\\Data\\": "packages/data/src",
-            "Windwalker\\Database\\": "packages/database/src",
             "Windwalker\\DI\\": "packages/di/src",
             "Windwalker\\DOM\\": "packages/dom/src",
+            "Windwalker\\Data\\": "packages/data/src",
+            "Windwalker\\Database\\": "packages/database/src",
+            "Windwalker\\Edge\\": "packages/edge/src",
             "Windwalker\\Event\\": "packages/event/src",
             "Windwalker\\Filesystem\\": "packages/filesystem/src",
             "Windwalker\\Http\\": "packages/http/src",
@@ -104,6 +106,7 @@
             "packages/database/src/bootstrap.php",
             "packages/di/src/bootstrap.php",
             "packages/dom/src/bootstrap.php",
+            "packages/edge/src/bootstrap.php",
             "packages/event/src/bootstrap.php",
             "packages/filesystem/src/bootstrap.php",
             "packages/http/src/bootstrap.php",
@@ -123,9 +126,10 @@
         "psr-4": {
             "Windwalker\\Cache\\Test\\": "packages/cache/test",
             "Windwalker\\Crypt\\Test\\": "packages/crypt/test",
-            "Windwalker\\Database\\Test\\": "packages/database/test",
             "Windwalker\\DI\\Test\\": "packages/di/test",
             "Windwalker\\DOM\\Test\\": "packages/dom/test",
+            "Windwalker\\Database\\Test\\": "packages/database/test",
+            "Windwalker\\Edge\\Test\\": "packages/edge/test",
             "Windwalker\\Event\\Test\\": "packages/event/test",
             "Windwalker\\Filesystem\\Test\\": "packages/filesystem/test",
             "Windwalker\\Http\\Test\\": "packages/http/test",

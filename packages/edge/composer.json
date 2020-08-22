@@ -1,0 +1,48 @@
+{
+    "name": "windwalker/edge",
+    "type": "windwalker-package",
+    "description": "Windwalker Edge package",
+    "keywords": [
+        "windwalker",
+        "framework",
+        "edge",
+        "template",
+        "blade"
+    ],
+    "homepage": "https://github.com/ventoviro/windwalker-edge",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.0.0",
+        "windwalker/utilities": "^4.0"
+    },
+    "require-dev": {
+        "windwalker/test": "dev-master",
+        "windwalker/dom": "dev-master"
+    },
+    "suggest": {
+    },
+    "minimum-stability": "beta",
+    "autoload": {
+        "psr-4": {
+            "Windwalker\\Edge\\": "src/"
+        },
+        "files": [
+            "src/bootstrap.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Windwalker\\Edge\\Test\\": "test/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "4.x-dev"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.0.0"
+        }
+    }
+}
