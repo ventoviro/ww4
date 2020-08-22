@@ -47,6 +47,22 @@ class Stream implements StreamInterface
     protected $stream;
 
     /**
+     * fromString
+     *
+     * @param  string  $string
+     * @param  string  $mode
+     *
+     * @return  static
+     */
+    public static function fromString(string $string, string $mode = self::MODE_READ_WRITE_FROM_BEGIN)
+    {
+        $stream = new static(null, $mode);
+        $stream->write($string);
+
+        return $stream;
+    }
+
+    /**
      * wrap
      *
      * @param  string|resource|StreamInterface  $stream
@@ -54,7 +70,7 @@ class Stream implements StreamInterface
      *
      * @return  StreamInterface
      */
-    public static function wrap($stream, string $mode = 'r'): StreamInterface
+    public static function wrap($stream, string $mode = self::MODE_READ_WRITE_FROM_BEGIN): StreamInterface
     {
         if ($stream instanceof StreamInterface) {
             return $stream;
@@ -69,9 +85,9 @@ class Stream implements StreamInterface
      * @param  string|resource  $stream  The stream resource cursor.
      * @param  string           $mode    Mode with which to open stream
      */
-    public function __construct($stream = 'php://memory', string $mode = 'r')
+    public function __construct($stream = null, string $mode = self::MODE_READ_WRITE_FROM_BEGIN)
     {
-        $this->attach($stream, $mode);
+        $this->attach($stream ?? 'php://memory', $mode);
     }
 
     /**
@@ -135,7 +151,7 @@ class Stream implements StreamInterface
             $this->resource = $stream;
         } elseif (is_string($stream)) {
             $this->resource = fopen($stream, $mode);
-        } else {
+        } elseif ($stream !== false) {
             throw new \InvalidArgumentException('Invalid resource.');
         }
 

@@ -15,6 +15,8 @@ namespace Windwalker\Http\Helper;
  * The ResponseHelper class.
  *
  * @since  2.1
+ *
+ * todo: Support php8 types hint
  */
 abstract class ResponseHelper
 {

@@ -9,11 +9,10 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Http\Server\Adapter;
+namespace Windwalker\Http\Server;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Windwalker\Event\EventListenableTrait;
-use Windwalker\Http\Event\WebRequestEvent;
+use Windwalker\Http\Event\RequestEvent;
 use Windwalker\Http\HttpFactory;
 use Windwalker\Http\Output\OutputInterface;
 use Windwalker\Http\Output\StreamOutput;
@@ -21,10 +20,8 @@ use Windwalker\Http\Output\StreamOutput;
 /**
  * The WebAdapter class.
  */
-class PhpServerAdapter implements ServerAdapterInterface
+class PhpServer extends AbstractServer
 {
-    use EventListenableTrait;
-
     protected ?OutputInterface $output = null;
 
     protected HttpFactory $httpFactory;
@@ -35,34 +32,33 @@ class PhpServerAdapter implements ServerAdapterInterface
      * @param  HttpFactory|null      $httpFactory
      * @param  OutputInterface|null  $output
      */
-    public function __construct(?HttpFactory $httpFactory = null, ?OutputInterface $output = null)
+    public function __construct(?OutputInterface $output = null, ?HttpFactory $httpFactory = null)
     {
         $this->output      = $output ?? $this->getOutput();
         $this->httpFactory = $httpFactory ?? new HttpFactory();
     }
 
-    public function resume(): void
+    public function listen(string $host = '0.0.0.0', int $port = 80, array $options = []): void
     {
-        $this->handle();
+        $this->handle(
+            $options['request'] ?? $this->httpFactory->createServerRequestFromGlobals()
+        );
     }
 
     public function handle(?ServerRequestInterface $request = null): void
     {
-        /** @var WebRequestEvent $event */
+        /** @var RequestEvent $event */
         $event = $this->emit(
-            WebRequestEvent::wrap('request')
+            RequestEvent::wrap('request')
                 ->setRequest($request ?? $this->httpFactory->createServerRequestFromGlobals())
         );
 
-        $this->getOutput()->respond($event->getResponse());
+        $this->getOutput()->respond(
+            $event->getResponse() ?? $this->httpFactory->createResponse()
+        );
     }
 
-    public function pause(): void
-    {
-        //
-    }
-
-    public function close(): void
+    public function stop(): void
     {
         //
     }
@@ -80,7 +76,7 @@ class PhpServerAdapter implements ServerAdapterInterface
     /**
      * Method to set property output
      *
-     * @param   OutputInterface $output
+     * @param  OutputInterface  $output
      *
      * @return  static  Return self to support chaining.
      */

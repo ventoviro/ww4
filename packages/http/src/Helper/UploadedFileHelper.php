@@ -15,6 +15,8 @@ namespace Windwalker\Http\Helper;
  * The UploadedFileHelper class.
  *
  * @since  3.0
+ *
+ * todo: Support php8 types hint
  */
 class UploadedFileHelper
 {

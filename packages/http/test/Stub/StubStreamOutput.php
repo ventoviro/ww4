@@ -74,7 +74,7 @@ class StubStreamOutput extends StreamOutput
     public function header($string, $replace = true, $code = null)
     {
         if (strpos($string, ':') !== false) {
-            list($header, $value) = explode(': ', $string, 2);
+            [$header, $value] = explode(': ', $string, 2);
 
             if ($replace) {
                 $this->message = $this->message->withHeader($header, $value);
@@ -93,11 +93,11 @@ class StubStreamOutput extends StreamOutput
     /**
      * sendBody
      *
-     * @param ResponseInterface $response
+     * @param  ResponseInterface  $response
      *
      * @return  void
      */
-    public function sendBody(ResponseInterface $response)
+    public function sendBody(ResponseInterface $response):void
     {
         ob_start();
 
@@ -114,7 +114,7 @@ class StubStreamOutput extends StreamOutput
      *
      * @return bool
      */
-    public function headersSent(&$filename = null, &$linenum = null)
+    public function headersSent(&$filename = null, &$linenum = null): bool
     {
         return false;
     }
@@ -124,7 +124,7 @@ class StubStreamOutput extends StreamOutput
      *
      * @return  void
      */
-    public function delay()
+    public function delay(): void
     {
         if ($this->delay === null) {
             return;

@@ -13,9 +13,9 @@ namespace Windwalker\Http\Response;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
-use Windwalker\Http\MessageTrait;
 use Windwalker\Http\Helper\HeaderHelper;
 use Windwalker\Http\Helper\ResponseHelper;
+use Windwalker\Http\MessageTrait;
 use Windwalker\Stream\Stream;
 
 /**
@@ -39,7 +39,21 @@ class Response implements ResponseInterface
      *
      * @var  string
      */
-    protected ?string $reasonPhrase;
+    protected ?string $reasonPhrase = null;
+
+    /**
+     * create
+     *
+     * @param  int                     $status
+     * @param  string  $body
+     * @param  array                   $headers
+     *
+     * @return  static
+     */
+    public static function fromString(string $body, int $status = 200, array $headers = [])
+    {
+        return new static(Stream::fromString($body), $status, $headers);
+    }
 
     /**
      * from
@@ -62,14 +76,16 @@ class Response implements ResponseInterface
     /**
      * Constructor.
      *
-     * @param  mixed  $body    The body data.
-     * @param  int    $status  The status code.
-     * @param  array  $headers The custom headers.
+     * @param  mixed  $body     The body data.
+     * @param  int    $status   The status code.
+     * @param  array  $headers  The custom headers.
      */
     public function __construct($body = 'php://memory', $status = 200, array $headers = [])
     {
-        if (!$body instanceof StreamInterface) {
-            $body = new Stream($body, Stream::MODE_READ_WRITE_RESET);
+        $stream = $body;
+
+        if (!$stream instanceof StreamInterface) {
+            $stream = new Stream($stream, Stream::MODE_READ_WRITE_RESET);
         }
 
         foreach ($headers as $name => $value) {
@@ -83,12 +99,12 @@ class Response implements ResponseInterface
                 throw new \InvalidArgumentException('Invalid header name');
             }
 
-            $normalized = strtolower($name);
+            $normalized                     = strtolower($name);
             $this->headerNames[$normalized] = $name;
-            $this->headers[$name] = $value;
+            $this->headers[$name]           = $value;
         }
 
-        $this->stream = $body;
+        $this->stream     = $stream;
         $this->statusCode = $status;
     }
 
@@ -119,10 +135,10 @@ class Response implements ResponseInterface
      * @link http://tools.ietf.org/html/rfc7231#section-6
      * @link http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
      *
-     * @param int    $code         The 3-digit integer result code to set.
-     * @param string $reasonPhrase The reason phrase to use with the
-     *                             provided status code; if none is provided, implementations MAY
-     *                             use the defaults as suggested in the HTTP specification.
+     * @param  int     $code          The 3-digit integer result code to set.
+     * @param  string  $reasonPhrase  The reason phrase to use with the
+     *                                provided status code; if none is provided, implementations MAY
+     *                                use the defaults as suggested in the HTTP specification.
      *
      * @return static
      * @throws \InvalidArgumentException For invalid status code arguments.
@@ -133,8 +149,8 @@ class Response implements ResponseInterface
             throw new \InvalidArgumentException('Invalid status code: ' . $code);
         }
 
-        $new = clone $this;
-        $new->statusCode = (int) $code;
+        $new               = clone $this;
+        $new->statusCode   = (int) $code;
         $new->reasonPhrase = $reasonPhrase;
 
         return $new;

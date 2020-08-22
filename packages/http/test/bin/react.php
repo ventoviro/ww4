@@ -17,14 +17,14 @@ if (!is_file($autoload)) {
 
 include $autoload;
 
-use Windwalker\Http\Event\WebRequestEvent;
-use Windwalker\Http\Server\Adapter\ReactServerAdapter;
+use Windwalker\Http\Event\RequestEvent;
 use Windwalker\Http\Server\HttpServer;
+use Windwalker\Http\Server\ReactServer;
 
-$server = new HttpServer(new ReactServerAdapter('0.0.0.0', 8888));
+$server = new HttpServer(new ReactServer('0.0.0.0', 8888));
 $server->on(
     'request',
-    static function (WebRequestEvent $event) {
+    static function (RequestEvent $event) {
         $app = require __DIR__ . '/app.php';
 
         $res = $app($event->getRequest());

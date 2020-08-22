@@ -111,7 +111,7 @@ class StringStream extends Stream
             throw new \InvalidArgumentException('StringStream only support string as resource.');
         }
 
-        if (strpos('+', $mode) === false) {
+        if (!str_contains('+', $mode)) {
             $this->writable = false;
         }
 

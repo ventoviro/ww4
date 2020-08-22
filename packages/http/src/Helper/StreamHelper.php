@@ -22,6 +22,8 @@ use Windwalker\Stream\Stream;
  * The StreamHelper class.
  *
  * @since  2.1
+ *
+ * todo: Support php8 types hint
  */
 abstract class StreamHelper
 {

@@ -17,6 +17,8 @@ use Psr\Http\Message\ResponseInterface;
  * The HeaderHelper class.
  *
  * @since  2.1
+ *
+ * todo: Support php8 types hint
  */
 abstract class HeaderHelper
 {

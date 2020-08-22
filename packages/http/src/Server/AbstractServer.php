@@ -13,11 +13,12 @@ namespace Windwalker\Http\Server;
 
 use Windwalker\Event\EventListenableInterface;
 use Windwalker\Event\EventListenableTrait;
+use Windwalker\Utilities\Classes\OptionAccessTrait;
 
 /**
  * The Server class.
  */
-abstract class AbstractServer implements ServerInterface, EventListenableInterface
+abstract class AbstractServer implements ServerInterface
 {
     use EventListenableTrait;
 }

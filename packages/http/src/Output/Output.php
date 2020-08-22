@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace Windwalker\Http\Output;
 
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use Windwalker\Http\Helper\HeaderHelper;
+use Windwalker\Stream\Stream;
 
 /**
  * Standard output object for PHP SAPI.
@@ -24,48 +26,57 @@ class Output implements OutputInterface
     /**
      * Property headerSent.
      *
-     * @var  string
+     * @var  callable
      */
     public $headerSent = 'headers_sent';
 
+    protected ?StreamInterface $outputStream = null;
+
     /**
-     * Method to send the application response to the client.  All headers will be sent prior to the main
-     * application output data.
+     * Output constructor.
      *
-     * @param   ResponseInterface $response   Respond body output.
-     * @param   boolean           $returnBody Return body as string.
-     *
-     * @return  ResponseInterface
-     *
-     * @since   3.0
+     * @param  StreamInterface|string|null  $outputStream
      */
-    public function respond(ResponseInterface $response, $returnBody = false)
+    public function __construct(StreamInterface|string|null $outputStream = null)
     {
-        if (!$this->headersSent()) {
-            $this->sendStatusLine($response);
-            $this->sendHeaders($response);
-        }
-
-        if ($returnBody) {
-            return $response;
-        }
-
-        $this->sendBody($response);
-
-        return null;
+        $this->setOutputStream($outputStream);
     }
 
     /**
      * Method to send the application response to the client.  All headers will be sent prior to the main
      * application output data.
      *
-     * @param ResponseInterface $response Emmit string to respond.
+     * @param  ResponseInterface  $response  Respond body output.
      *
-     * @return string
+     * @return void
+     *
+     * @since   3.0
      */
-    public function sendBody(ResponseInterface $response)
+    public function respond(ResponseInterface $response): void
     {
-        echo $response->getBody();
+        if (!$this->headersSent()) {
+            $this->sendStatusLine($response);
+            $this->sendHeaders($response);
+        }
+
+        $this->sendBody($response);
+    }
+
+    /**
+     * Method to send the application response to the client.  All headers will be sent prior to the main
+     * application output data.
+     *
+     * @param  ResponseInterface  $response  Emmit string to respond.
+     *
+     * @return void
+     */
+    public function sendBody(ResponseInterface $response): void
+    {
+        $stream = $this->getOutputStream();
+
+        $stream->write((string) $response->getBody());
+
+        $stream->close();
     }
 
     /**
@@ -81,9 +92,9 @@ class Output implements OutputInterface
      *
      * @see     header()
      */
-    public function header($string, $replace = true, $code = null)
+    public function header(string $string, bool $replace = true, int $code = null)
     {
-        header((string) $string, $replace, (int) $code);
+        header( $string, $replace, (int) $code);
 
         return $this;
     }
@@ -93,7 +104,7 @@ class Output implements OutputInterface
      *
      * @param   ResponseInterface $response Response object to contain headers.
      *
-     * @return  Output  Instance of $this to allow chaining.
+     * @return  static  Instance of $this to allow chaining.
      */
     public function sendHeaders(ResponseInterface $response)
     {
@@ -118,7 +129,7 @@ class Output implements OutputInterface
      *
      * @return  void
      */
-    public function sendStatusLine(ResponseInterface $response)
+    public function sendStatusLine(ResponseInterface $response): void
     {
         $reasonPhrase = $response->getReasonPhrase();
 
@@ -139,8 +150,29 @@ class Output implements OutputInterface
      *
      * @return bool
      */
-    public function headersSent()
+    public function headersSent(): bool
     {
-        return call_user_func($this->headerSent);
+        return ($this->headerSent)();
+    }
+
+    /**
+     * @return StreamInterface
+     */
+    public function getOutputStream(): StreamInterface
+    {
+        return $this->outputStream;
+    }
+
+    /**
+     * @param  StreamInterface|string|null  $outputStream
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setOutputStream(StreamInterface|string|null $outputStream)
+    {
+        $this->outputStream = $outputStream
+            ?? Stream::wrap($outputStream ?? 'php://output', Stream::MODE_WRITE_ONLY_RESET);
+
+        return $this;
     }
 }

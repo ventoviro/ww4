@@ -9,109 +9,72 @@
 
 declare(strict_types=1);
 
-namespace Windwalker\Http\Server\Adapter;
+namespace Windwalker\Http\Server;
 
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\Factory as ReactFactory;
 use React\EventLoop\LoopInterface;
 use React\Http\Server;
 use React\Socket\Server as SocketServer;
-use React\Socket\ServerInterface;
-use Windwalker\Event\Event;
-use Windwalker\Event\EventListenableTrait;
+use React\Socket\ServerInterface as ReactServerInterface;
 use Windwalker\Http\Event\ErrorEvent;
-use Windwalker\Http\Event\WebRequestEvent;
+use Windwalker\Http\Event\RequestEvent;
 use Windwalker\Http\Helper\ResponseHelper;
 use Windwalker\Http\HttpFactory;
-use Windwalker\Http\Response\Response;
 
 /**
  * The ReactServerAdapter class.
  */
-class ReactServerAdapter implements ServerAdapterInterface
+class ReactServer extends AbstractServer
 {
-    use EventListenableTrait;
-
-    protected string $host;
-
-    protected int $port;
-
-    protected bool $listening = false;
-
-    protected int $options;
-
     protected ?LoopInterface $loop = null;
 
     /**
-     * @var ServerInterface|null
+     * @var ReactServerInterface|null
      */
-    protected ?ServerInterface $socket = null;
+    protected ?ReactServerInterface $socket = null;
 
     protected ?Server $server = null;
 
+    protected bool $listening;
+
     /**
      * ReactServerAdapter constructor.
-     *
-     * @param  ServerInterface|null  $server
-     * @param  string                $host
-     * @param  int                   $port
-     * @param  int                   $options
      */
-    public function __construct(string $host = '0.0.0.0', int $port = 0, int $options = 0)
+    public function __construct()
     {
-        $this->host = $host;
-        $this->port = $port;
-        $this->options = $options;
-        $this->httpFactory = new HttpFactory();
+        //
     }
 
-    /**
-     * @return bool
-     */
-    public function isListening(): bool
-    {
-        return $this->listening;
-    }
-
-    protected function prepareServerLoop(): LoopInterface
+    protected function prepareServerLoop(?SocketServer $socket = null): LoopInterface
     {
         $server = $this->getServer();
 
-        $server->listen($this->getSocket());
+        $server->listen($socket ?? $this->getSocket());
 
         return $this->getLoop();
     }
 
-    protected function listen(): void
+    public function listen(string $host = '0.0.0.0', int $port = 0, array $options = []): void
     {
-        if (!$this->listening) {
-            $loop = $this->prepareServerLoop();
-
-            $this->listening = true;
-
-            $loop->run();
+        if ($this->listening) {
+            throw new \RuntimeException('Server is listening.');
         }
+
+        $this->socket = $this->createSocket($host, $port);
+
+        $loop = $this->prepareServerLoop($this->socket);
+
+        $this->listening = true;
+
+        $loop->run();
     }
 
-    public function handle(?ServerRequestInterface $request = null): void
-    {
-        $this->listen();
-    }
-
-    public function resume(): void
-    {
-        $this->listen();
-    }
-
-    public function pause(): void
-    {
-        $this->getSocket()->pause();
-    }
-
-    public function close(): void
+    public function stop(): void
     {
         $this->getSocket()->close();
         $this->getLoop()->stop();
+        $this->reset();
     }
 
     /**
@@ -135,19 +98,24 @@ class ReactServerAdapter implements ServerAdapterInterface
     }
 
     /**
-     * @return ServerInterface
+     * @return ReactServerInterface
      */
-    public function getSocket(): ServerInterface
+    public function getSocket(): ReactServerInterface
     {
-        return $this->socket ??= new SocketServer($this->host . ':' . $this->port, $this->getLoop());
+        return $this->socket ??= $this->createSocket('0.0.0.0', 0);
+    }
+
+    public function createSocket(string $host, int $port): SocketServer
+    {
+        return new SocketServer($host . ':' . $port, $this->getLoop());
     }
 
     /**
-     * @param  ServerInterface|null  $socket
+     * @param  ReactServerInterface|null  $socket
      *
      * @return  static  Return self to support chaining.
      */
-    public function setSocket(?ServerInterface $socket)
+    public function setSocket(?ReactServerInterface $socket)
     {
         $this->socket = $socket;
 
@@ -169,7 +137,7 @@ class ReactServerAdapter implements ServerAdapterInterface
             function (ServerRequestInterface $req) {
                 try {
                     $event = $this->emit(
-                        WebRequestEvent::wrap('request')
+                        RequestEvent::wrap('request')
                             ->setRequest($req)
                     );
                 } catch (\Throwable $e) {
@@ -186,12 +154,15 @@ class ReactServerAdapter implements ServerAdapterInterface
             }
         );
 
-        $server->on('error', function (\Throwable $e) {
-            $event = $this->emit(
-                ErrorEvent::wrap('error')
-                    ->setException($e)
-            );
-        });
+        $server->on(
+            'error',
+            function (\Throwable $e) {
+                $event = $this->emit(
+                    ErrorEvent::wrap('error')
+                        ->setException($e)
+                );
+            }
+        );
 
         return $server;
     }
@@ -206,5 +177,21 @@ class ReactServerAdapter implements ServerAdapterInterface
         $this->server = $server;
 
         return $this;
+    }
+
+    public function reset(): void
+    {
+        $this->loop      = null;
+        $this->socket    = null;
+        $this->server    = null;
+        $this->listening = false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isListening(): bool
+    {
+        return $this->listening;
     }
 }

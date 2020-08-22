@@ -20,50 +20,46 @@ use Psr\Http\Message\ResponseInterface;
  */
 class StreamOutput extends Output
 {
-    /**
-     * Property maxBufferLength.
-     *
-     * @var  integer
-     */
-    protected $maxBufferLength = 8192;
+    protected int $maxBufferLength = 8192;
 
     /**
      * Delay every loop for microseconds.
      *
-     * @var  integer
+     * @var int|null
      */
-    protected $delay = null;
+    protected ?int $delay = null;
 
     /**
      * Method to send the application response to the client.  All headers will be sent prior to the main
      * application output data.
      *
-     * @param   ResponseInterface $response   Respond body output.
-     * @param   boolean           $returnBody Return body as string.
+     * @param  ResponseInterface  $response  Respond body output.
      *
      * @return  void
      *
      * @since   3.0
      */
-    public function respond(ResponseInterface $response, $returnBody = false)
+    public function respond(ResponseInterface $response): void
     {
         $response = $this->prepareContentLength($response);
 
-        parent::respond($response, false);
+        parent::respond($response);
     }
 
     /**
      * Send body as response.
      *
-     * @param   ResponseInterface $response Response object.
+     * @param  ResponseInterface  $response  Response object.
      *
      * @return  void
      */
-    public function sendBody(ResponseInterface $response)
+    public function sendBody(ResponseInterface $response): void
     {
         $range = $this->getContentRange($response->getHeaderLine('content-range'));
 
         $maxBufferLength = $this->getMaxBufferLength() ?: 8192;
+
+        $fp = fopen('php://output', 'wb+');
 
         if ($range === false) {
             $body = $response->getBody();
@@ -73,7 +69,7 @@ class StreamOutput extends Output
             }
 
             while (!$body->eof()) {
-                echo $body->read($maxBufferLength);
+                fwrite($fp, $body->read($maxBufferLength));
 
                 $this->delay();
             }
@@ -81,7 +77,7 @@ class StreamOutput extends Output
             return;
         }
 
-        list($unit, $first, $last, $length) = array_values($range);
+        [$unit, $first, $last, $length] = array_values($range);
 
         ++$last;
 
@@ -92,29 +88,31 @@ class StreamOutput extends Output
         while (!$body->eof() && $position < $last) {
             // The latest part
             if (($position + $maxBufferLength) > $last) {
-                echo $body->read($last - $position);
+                fwrite($fp, $body->read($last - $position));
 
                 $this->delay();
 
                 break;
             }
 
-            echo $body->read($maxBufferLength);
+            fwrite($fp, $body->read($maxBufferLength));
 
             $position = $body->tell();
 
             $this->delay();
         }
+
+        fclose($fp);
     }
 
     /**
      * Prepare content-length header.
      *
-     * @param   ResponseInterface $response The response object with headers.
+     * @param  ResponseInterface  $response  The response object with headers.
      *
      * @return  ResponseInterface
      */
-    protected function prepareContentLength(ResponseInterface $response)
+    protected function prepareContentLength(ResponseInterface $response): ResponseInterface
     {
         if (!$response->hasHeader('content-length')) {
             if ($response->getBody()->getSize() !== null) {
@@ -134,7 +132,7 @@ class StreamOutput extends Output
      *
      * @return  false|array  An array with [unit, first, last, length] elements;
      */
-    protected function getContentRange($header)
+    protected function getContentRange(string $header): bool|array
     {
         if (preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches)) {
             $return = [];
@@ -155,7 +153,7 @@ class StreamOutput extends Output
      *
      * @return  int
      */
-    public function getMaxBufferLength()
+    public function getMaxBufferLength(): int
     {
         return $this->maxBufferLength;
     }
@@ -167,7 +165,7 @@ class StreamOutput extends Output
      *
      * @return  static  Return self to support chaining.
      */
-    public function setMaxBufferLength($maxBufferLength)
+    public function setMaxBufferLength(int $maxBufferLength)
     {
         $this->maxBufferLength = $maxBufferLength;
 
@@ -179,7 +177,7 @@ class StreamOutput extends Output
      *
      * @return  int
      */
-    public function getDelay()
+    public function getDelay(): ?int
     {
         return $this->delay;
     }
@@ -187,11 +185,11 @@ class StreamOutput extends Output
     /**
      * Method to set property delay
      *
-     * @param   int $delay
+     * @param  int  $delay
      *
      * @return  static  Return self to support chaining.
      */
-    public function setDelay($delay)
+    public function setDelay(int $delay)
     {
         $this->delay = $delay;
 
@@ -203,7 +201,7 @@ class StreamOutput extends Output
      *
      * @return  void
      */
-    protected function delay()
+    protected function delay(): void
     {
         if ($this->delay === null) {
             return;

@@ -12,6 +12,8 @@ namespace Windwalker\Http\Helper;
  * The HttpHelper class.
  *
  * @since  3.5.13
+ *
+ * todo: Support php8 types hint
  */
 class HttpHelper
 {

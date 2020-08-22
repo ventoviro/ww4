@@ -18,16 +18,18 @@ use Windwalker\Event\AbstractEvent;
 /**
  * The WebRequestEvent class.
  */
-class WebRequestEvent extends AbstractEvent
+class RequestEvent extends AbstractEvent
 {
-    public ?ServerRequestInterface $request = null;
+    public ServerRequestInterface $request;
 
     public ?ResponseInterface $response = null;
+
+    public int $id = 0;
 
     /**
      * @return ServerRequestInterface
      */
-    public function getRequest(): ?ServerRequestInterface
+    public function getRequest(): ServerRequestInterface
     {
         return $this->request;
     }
@@ -60,6 +62,26 @@ class WebRequestEvent extends AbstractEvent
     public function setRequest(ServerRequestInterface $request)
     {
         $this->request = $request;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param  int  $id
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setId(int $id)
+    {
+        $this->id = $id;
 
         return $this;
     }

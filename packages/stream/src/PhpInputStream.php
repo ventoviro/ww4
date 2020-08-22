@@ -37,9 +37,9 @@ class PhpInputStream extends Stream
      *
      * @param  string|resource  $stream  The stream resource cursor.
      */
-    public function __construct($stream = 'php://input')
+    public function __construct($stream = null)
     {
-        parent::__construct($stream, static::MODE_READ_ONLY_FROM_BEGIN);
+        parent::__construct($stream ?? 'php://input', static::MODE_READ_ONLY_FROM_BEGIN);
     }
 
     /**

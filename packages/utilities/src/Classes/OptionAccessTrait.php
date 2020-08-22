@@ -14,6 +14,7 @@ namespace Windwalker\Utilities\Classes;
 use ArrayAccess;
 use Windwalker\Utilities\Arr;
 use Windwalker\Utilities\Contract\AccessibleInterface;
+use Windwalker\Utilities\TypeCast;
 
 /**
  * The OptionAccessTrait class.
@@ -34,7 +35,7 @@ trait OptionAccessTrait
      */
     protected function prepareOptions(array $defaults = [], array $options = []): void
     {
-        $this->options = Arr::mergeRecursive($this->options, $defaults, $options);
+        $this->options = Arr::mergeRecursive(TypeCast::toArray($this->options), $defaults, $options);
     }
 
     public function getOption(string $name, $default = null)

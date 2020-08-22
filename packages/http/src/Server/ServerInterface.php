@@ -18,7 +18,7 @@ use Windwalker\Event\EventListenableInterface;
  */
 interface ServerInterface extends EventListenableInterface
 {
-    public function listen(string $host = '0.0.0.0', int $port = 0, int $options = 0): void;
+    public function listen(string $host = '0.0.0.0', int $port = 0, array $options = []): void;
 
     public function stop(): void;
 }

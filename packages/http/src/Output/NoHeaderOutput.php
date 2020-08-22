@@ -19,17 +19,15 @@ namespace Windwalker\Http\Output;
 class NoHeaderOutput extends Output
 {
     /**
-     * Method to override parent header() and do nothing.
+     * header
      *
-     * @param   string  $string    The header string.
-     * @param   boolean $replace   The optional replace parameter indicates whether the header should
-     *                             replace a previous similar header, or add a second header of the same type.
-     * @param   integer $code      Forces the HTTP response code to the specified value. Note that
-     *                             this parameter only has an effect if the string is not empty.
+     * @param  string    $string
+     * @param  bool      $replace
+     * @param  int|null  $code
      *
-     * @return  static
+     * @return  $this
      */
-    public function header($string, $replace = true, $code = null)
+    public function header(string $string, bool $replace = true, int $code = null)
     {
         return $this;
     }
