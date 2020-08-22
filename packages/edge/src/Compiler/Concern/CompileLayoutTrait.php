@@ -28,7 +28,7 @@ trait CompileLayoutTrait
         $expression = $this->stripParentheses($expression);
 
         // @codingStandardsIgnoreStart
-        $data = "<?php echo \$this->render($expression, \$this->arrayExcept(get_defined_vars(), array('__data', '__path'))); ?>";
+        $data = "<?php echo \$__edge->render($expression, \$__edge->except(get_defined_vars(), ['__data', '__path'])); ?>";
         // @codingStandardsIgnoreEnd
 
         $this->footer[] = $data;
@@ -45,7 +45,7 @@ trait CompileLayoutTrait
      */
     protected function compileYield(string $expression): string
     {
-        return "<?php echo \$this->yieldContent{$expression}; ?>";
+        return "<?php echo \$__edge->yieldContent{$expression}; ?>";
     }
 
     /**
@@ -57,7 +57,7 @@ trait CompileLayoutTrait
      */
     protected function compileShow(string $expression): string
     {
-        return '<?php endif; echo $this->yieldSection(); ?>';
+        return '<?php endif; echo $__edge->yieldSection(); ?>';
     }
 
     /**
@@ -72,10 +72,10 @@ trait CompileLayoutTrait
         $params = explode(',', $expression);
 
         if (count($params) >= 2) {
-            return "<?php \$this->startSection{$expression}; ?>";
+            return "<?php \$__edge->startSection{$expression}; ?>";
         }
 
-        return "<?php \$this->startSection{$expression}; if (\$this->hasParent{$expression}): ?>";
+        return "<?php \$__edge->startSection{$expression}; if (\$__edge->hasParent{$expression}): ?>";
     }
 
     /**
@@ -87,7 +87,7 @@ trait CompileLayoutTrait
      */
     protected function compileAppend(string $expression): string
     {
-        return '<?php endif; $this->appendSection(); ?>';
+        return '<?php endif; $__edge->appendSection(); ?>';
     }
 
     /**
@@ -99,7 +99,7 @@ trait CompileLayoutTrait
      */
     protected function compileEndsection(string $expression): string
     {
-        return '<?php endif; $this->stopSection(); ?>';
+        return '<?php endif; $__edge->stopSection(); ?>';
     }
 
     /**
@@ -111,7 +111,7 @@ trait CompileLayoutTrait
      */
     protected function compileStop(string $expression): string
     {
-        return '<?php endif; $this->stopSection(); ?>';
+        return '<?php endif; $__edge->stopSection(); ?>';
     }
 
     /**
@@ -123,7 +123,7 @@ trait CompileLayoutTrait
      */
     protected function compileOverwrite(string $expression): string
     {
-        return '<?php endif; $this->stopSection(true); ?>';
+        return '<?php endif; $__edge->stopSection(true); ?>';
     }
 
     /**
@@ -135,6 +135,6 @@ trait CompileLayoutTrait
      */
     protected function compileHasSection(string $expression): string
     {
-        return "<?php if (! empty(trim(\$this->yieldContent{$expression}))): ?>";
+        return "<?php if (! empty(trim(\$__edge->yieldContent{$expression}))): ?>";
     }
 }

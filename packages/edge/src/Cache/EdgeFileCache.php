@@ -59,7 +59,7 @@ class EdgeFileCache implements EdgeCacheInterface
      */
     public function getCacheKey(string $path): string
     {
-        return md5($path);
+        return md5(realpath($path));
     }
 
     /**
@@ -96,6 +96,8 @@ class EdgeFileCache implements EdgeCacheInterface
      */
     public function store(string $path, string $value): void
     {
+        $value = "<?php /* File: {$path} */ ?>" . $value;
+
         $file = $this->getCacheFile($this->getCacheKey($path));
 
         if (!is_dir(dirname($file))) {
@@ -117,5 +119,25 @@ class EdgeFileCache implements EdgeCacheInterface
     public function remove(string $path): void
     {
         @unlink($this->getCacheFile($this->getCacheKey($path)));
+    }
+
+    /**
+     * @return string
+     */
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    /**
+     * @param  string  $path
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setPath(string $path)
+    {
+        $this->path = $path;
+
+        return $this;
     }
 }

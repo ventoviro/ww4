@@ -18,9 +18,9 @@ interface EdgeLoaderInterface
     /**
      * load
      *
-     * @param   string $key
+     * @param  string  $key
      *
      * @return  string
      */
-    public function find($key);
+    public function find(string $key): string;
 }

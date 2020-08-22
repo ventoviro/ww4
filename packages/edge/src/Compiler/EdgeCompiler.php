@@ -86,7 +86,7 @@ class EdgeCompiler implements EdgeCompilerInterface
      *
      * @var string
      */
-    protected string $echoFormat = '$this->escape(%s)';
+    protected string $echoFormat = '$__edge->escape(%s)';
 
     /**
      * Array of footer lines to be added to template.

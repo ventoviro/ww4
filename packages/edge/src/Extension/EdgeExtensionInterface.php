@@ -20,26 +20,5 @@ interface EdgeExtensionInterface
      *
      * @return  string
      */
-    public function getName();
-
-    /**
-     * getDirectives
-     *
-     * @return  callable[]
-     */
-    public function getDirectives();
-
-    /**
-     * getGlobals
-     *
-     * @return  array
-     */
-    public function getGlobals();
-
-    /**
-     * getParsers
-     *
-     * @return  callable[]
-     */
-    public function getParsers();
+    public function getName(): string;
 }

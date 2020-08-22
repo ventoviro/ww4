@@ -22,33 +22,41 @@ class EdgeFileLoader implements EdgeLoaderInterface
      *
      * @var  array
      */
-    protected $extensions = ['.edge.php', '.blade.php'];
+    protected array $extensions = [
+        '.edge.php',
+        '.blade.php'
+    ];
 
     /**
      * Property paths.
      *
      * @var  array
      */
-    protected $paths = [];
+    protected array $paths = [];
 
     /**
      * EdgeFileLoader constructor.
      *
-     * @param array $paths
+     * @param  array       $paths
+     * @param  array|null  $extensions
      */
-    public function __construct(array $paths = [])
+    public function __construct(array $paths = [], ?array $extensions = null)
     {
         $this->paths = $paths;
+
+        if ($extensions !== null) {
+            $this->extensions = $extensions;
+        }
     }
 
     /**
      * find
      *
-     * @param string $key
+     * @param  string  $key
      *
      * @return  string
      */
-    public function find($key)
+    public function find(string $key): string
     {
         $key = $this->normalize($key);
 
@@ -76,11 +84,11 @@ class EdgeFileLoader implements EdgeLoaderInterface
     /**
      * loadFile
      *
-     * @param   string $path
+     * @param  string  $path
      *
      * @return  string
      */
-    public function load($path)
+    public function load(string $path): string
     {
         return file_get_contents($path);
     }
@@ -88,11 +96,11 @@ class EdgeFileLoader implements EdgeLoaderInterface
     /**
      * addPath
      *
-     * @param   string $path
+     * @param  string  $path
      *
      * @return  static
      */
-    public function addPath($path)
+    public function addPath(string $path)
     {
         $this->paths[] = $path;
 
@@ -102,11 +110,11 @@ class EdgeFileLoader implements EdgeLoaderInterface
     /**
      * prependPath
      *
-     * @param   string $path
+     * @param  string  $path
      *
      * @return  static
      */
-    public function prependPath($path)
+    public function prependPath(string $path)
     {
         array_unshift($this->paths, $path);
 
@@ -120,7 +128,7 @@ class EdgeFileLoader implements EdgeLoaderInterface
      *
      * @return  string
      */
-    protected function normalize($path)
+    protected function normalize(string $path)
     {
         return str_replace('.', '/', $path);
     }
@@ -130,7 +138,7 @@ class EdgeFileLoader implements EdgeLoaderInterface
      *
      * @return  array
      */
-    public function getPaths()
+    public function getPaths(): array
     {
         return $this->paths;
     }
@@ -142,7 +150,7 @@ class EdgeFileLoader implements EdgeLoaderInterface
      *
      * @return  static  Return self to support chaining.
      */
-    public function setPaths($paths)
+    public function setPaths(array $paths)
     {
         $this->paths = $paths;
 
@@ -156,7 +164,7 @@ class EdgeFileLoader implements EdgeLoaderInterface
      *
      * @return  static
      */
-    public function addFileExtension($name)
+    public function addFileExtension(string $name)
     {
         $this->extensions[] = $name;
 
@@ -168,7 +176,7 @@ class EdgeFileLoader implements EdgeLoaderInterface
      *
      * @return  array
      */
-    public function getExtensions()
+    public function getExtensions(): array
     {
         return $this->extensions;
     }
@@ -180,7 +188,7 @@ class EdgeFileLoader implements EdgeLoaderInterface
      *
      * @return  static  Return self to support chaining.
      */
-    public function setExtensions($extensions)
+    public function setExtensions(array $extensions)
     {
         $this->extensions = $extensions;
 

@@ -20,14 +20,14 @@ class EdgeStringLoader implements EdgeLoaderInterface
      *
      * @var  string
      */
-    protected $content;
+    protected string $content;
 
     /**
      * EdgeTextLoader constructor.
      *
      * @param string $content
      */
-    public function __construct($content = null)
+    public function __construct(string $content = '')
     {
         $this->content = $content;
     }
@@ -35,11 +35,11 @@ class EdgeStringLoader implements EdgeLoaderInterface
     /**
      * load
      *
-     * @param   string $key
+     * @param  string  $key
      *
      * @return  string
      */
-    public function find($key)
+    public function find(string $key): string
     {
         return $key;
     }
@@ -51,7 +51,7 @@ class EdgeStringLoader implements EdgeLoaderInterface
      *
      * @return  string
      */
-    public function load($path)
+    public function load(string $path): string
     {
         return $path ?: $this->content;
     }
@@ -61,7 +61,7 @@ class EdgeStringLoader implements EdgeLoaderInterface
      *
      * @return  string
      */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }

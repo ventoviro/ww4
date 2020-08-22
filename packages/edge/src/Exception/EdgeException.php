@@ -22,15 +22,22 @@ class EdgeException extends \Exception
      *
      * @link  http://php.net/manual/en/exception.construct.php
      *
-     * @param string    $message  [optional] The Exception message to throw.
-     * @param int       $code     [optional] The Exception code.
-     * @param Exception $previous [optional] The previous exception used for the exception chaining.
+     * @param  null  $message   The Exception message to throw.
+     * @param  null  $code      The Exception code.
+     * @param  null  $file      File name.
+     * @param  null  $line      File line.
+     * @param  null  $previous  The previous exception used for the exception chaining.
      */
     public function __construct($message = null, $code = null, $file = null, $line = null, $previous = null)
     {
         parent::__construct($message, $code, $previous);
 
-        $this->file = $file;
-        $this->line = $line;
+        if ($file) {
+            $this->file = $file;
+        }
+
+        if ($line) {
+            $this->line = $line;
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace Windwalker\Edge\Test;
 
 use PHPUnit\Framework\TestCase;
 use Windwalker\DOM\Test\DOMTestTrait;
+use Windwalker\Edge\Cache\EdgeFileCache;
 use Windwalker\Edge\Edge;
 use Windwalker\Edge\Loader\EdgeFileLoader;
 
@@ -44,6 +45,13 @@ class EdgeTest extends TestCase
                 ]
             )
         );
+
+        // Clear tmp
+        $files = glob( __DIR__ . '/../tmp/~*');
+
+        foreach ($files as $file) {
+            unlink($file);
+        }
     }
 
     /**
@@ -84,5 +92,80 @@ class EdgeTest extends TestCase
 HTML;
 
         $this->assertHtmlFormatEquals($expected, $result);
+    }
+
+    public function testRenderEdgeFile()
+    {
+        $result = $this->instance->render(
+            'tmpl',
+            [
+                'test' => '<TEST>',
+                'escape' => '<TEST>',
+                'yoo' => '<TEST>',
+                'a' => array_fill(0, 3, 'Hello')
+            ]
+        );
+
+        self::assertStringSafeEquals(
+            <<<HTML
+            <html>
+            <body>
+            &lt;TEST&gt;
+
+            <TEST>
+
+            &lt;TEST&gt;
+
+
+                <li>Hello</li>
+                <li>Hello</li>
+                <li>Hello</li>
+            </body>
+            </html>
+            HTML,
+            $result
+        );
+    }
+
+    public function testCachedFile()
+    {
+        $edge = new Edge(
+            new EdgeFileLoader(
+                [
+                    __DIR__ . '/tmpl',
+                ]
+            ),
+            new EdgeFileCache(
+                __DIR__ . '/../tmp'
+            )
+        );
+
+        $result = $edge->renderWithContext(
+            'context-cached',
+            [
+                'foo' => 'bar'
+            ],
+            $this
+        );
+
+        self::assertStringDataEquals(
+            <<<HTML
+            Windwalker\Edge\Test\EdgeTest
+            HTML,
+            $result
+        );
+
+        $path = __DIR__ . '/tmpl/context-cached.blade.php';
+
+        self::assertStringDataEquals(
+            <<<HTML
+            <?php /* File: $path */ ?><?php ?>
+            <?php echo \$__edge->escape(\$this::class); ?>
+            HTML,
+            file_get_contents(
+                __DIR__ . '/../tmp/~'
+                . $edge->getCache()->getCacheKey($path)
+            )
+        );
     }
 }

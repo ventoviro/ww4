@@ -14,7 +14,7 @@ $compiler = new \Windwalker\Edge\Compiler\EdgeCompiler();
 
 //$compiler->addExtension(new \Windwalker\Edge\Extension\BasicExtension);
 
-//echo $compiler->compile(file_get_contents(__DIR__ . '/tmpl.blade.php'));
+//echo $compiler->compile(file_get_contents(__DIR__ . '/tmpl.edge.php'));
 
 $edge = new \Windwalker\Edge\Edge(
     new \Windwalker\Edge\Loader\EdgeFileLoader(

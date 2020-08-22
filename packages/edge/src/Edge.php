@@ -8,6 +8,9 @@
 
 namespace Windwalker\Edge;
 
+use Closure;
+use Exception;
+use Throwable;
 use Windwalker\Edge\Cache\EdgeArrayCache;
 use Windwalker\Edge\Cache\EdgeCacheInterface;
 use Windwalker\Edge\Cache\EdgeFileCache;
@@ -16,12 +19,12 @@ use Windwalker\Edge\Compiler\EdgeCompilerInterface;
 use Windwalker\Edge\Concern\ManageComponentTrait;
 use Windwalker\Edge\Concern\ManageEventTrait;
 use Windwalker\Edge\Concern\ManageLayoutTrait;
-use Windwalker\Edge\Concern\ManageLoopTrait;
 use Windwalker\Edge\Concern\ManageStackTrait;
 use Windwalker\Edge\Exception\EdgeException;
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
 use Windwalker\Edge\Loader\EdgeLoaderInterface;
 use Windwalker\Edge\Loader\EdgeStringLoader;
+use Windwalker\Utilities\Arr;
 
 /**
  * The Edge template engine.
@@ -37,7 +40,6 @@ class Edge
     use ManageComponentTrait;
     use ManageEventTrait;
     use ManageLayoutTrait;
-    use ManageLoopTrait;
     use ManageStackTrait;
 
     /**
@@ -101,6 +103,8 @@ class Edge
      */
     protected ?EdgeCacheInterface $cache = null;
 
+    protected ?object $context = null;
+
     /**
      * EdgeEnvironment constructor.
      *
@@ -110,20 +114,31 @@ class Edge
      */
     public function __construct(
         EdgeLoaderInterface $loader = null,
-        EdgeCompilerInterface $compiler = null,
-        EdgeCacheInterface $cache = null
+        EdgeCacheInterface $cache = null,
+        EdgeCompilerInterface $compiler = null
     ) {
         $this->loader = $loader ?: new EdgeStringLoader();
         $this->compiler = $compiler ?: new EdgeCompiler();
         $this->cache = $cache ?: new EdgeArrayCache();
     }
 
+    public function renderWithContext(string $layout, array $data = [], ?object $context = null): string
+    {
+        $this->context = $context;
+
+        $result = $this->render($layout, $data);
+
+        $this->context = null;
+
+        return $result;
+    }
+
     /**
      * render
      *
-     * @param string $__layout
-     * @param array  $__data
-     * @param array  $__more
+     * @param  string  $__layout
+     * @param  array   $__data
+     * @param  array   $__more
      *
      * @return string
      * @throws EdgeException
@@ -141,10 +156,6 @@ class Edge
 
             $compiled = $compiler->compile($this->loader->load($__path));
 
-            if ($this->cache instanceof EdgeFileCache) {
-                $compiled = "<?php /* File: {$__path} */ ?>" . $compiled;
-            }
-
             $this->cache->store($__path, $compiled);
 
             unset($compiler, $compiled);
@@ -152,25 +163,19 @@ class Edge
 
         $__data = array_merge($this->getGlobals(true), $__more, $__data);
 
-        foreach ($__data as $__key => $__value) {
-            if ($__key === '__path' || $__key === '__data') {
-                continue;
-            }
+        unset($__data['__path'], $__data['__data']);
 
-            $$__key = $__value;
+        $closure = $this->getRenderFunction($__data);
+
+        if ($this->getContext()) {
+            $closure = $closure->bindTo($this->getContext(), $this->getContext());
         }
-
-        unset($__data, $__value, $__key);
 
         ob_start();
 
         try {
-            if ($this->cache instanceof EdgeFileCache) {
-                include $this->cache->getCacheFile($this->cache->getCacheKey($__path));
-            } else {
-                eval(' ?>' . $this->cache->load($__path) . '<?php ');
-            }
-        } catch (\Throwable $e) {
+            $closure($__path);
+        } catch (Throwable $e) {
             ob_clean();
             $this->wrapException($e, $__path, $__layout);
 
@@ -186,22 +191,68 @@ class Edge
         return $result;
     }
 
+    protected function getRenderFunction(array $data): Closure
+    {
+        $__data = $data;
+        $__edge = $this;
+
+        return function ($__path) use ($__data, $__edge) {
+            extract($__data, EXTR_OVERWRITE);
+
+            if ($__edge->getCache() instanceof EdgeFileCache) {
+                include $__edge->getCache()->getCacheFile($__edge->getCache()->getCacheKey($__path));
+            } else {
+                eval(' ?>' . $__edge->getCache()->load($__path) . '<?php ');
+            }
+        };
+    }
+
     /**
      * wrapException
      *
-     * @param \Exception|\Throwable $e
-     * @param string                $path
-     * @param                       $layout
+     * @param  Throwable  $e
+     * @param  string     $path
+     * @param  string     $layout
+     *
+     * @return  void
      *
      * @throws EdgeException
      */
-    protected function wrapException($e, $path, $layout)
+    protected function wrapException(\Throwable $e, string $path, string $layout)
     {
         $msg = $e->getMessage();
 
         $msg .= sprintf("\n\n| View layout: %s (%s)", $path, $layout);
 
-        throw new EdgeException($msg, $e->getCode(), $path, $e->getLine(), $e);
+        $cache = $this->getCache();
+
+        if ($cache instanceof EdgeFileCache) {
+            if (str_starts_with(realpath($cache->getPath()), $e->getFile())) {
+                throw new EdgeException($msg, $e->getCode(), $path, $e->getLine());
+            }
+        }
+
+        throw new EdgeException($msg, $e->getCode(), null, null, $e);
+    }
+
+    /**
+     * @return object|null
+     */
+    public function getContext(): ?object
+    {
+        return $this->context;
+    }
+
+    /**
+     * @param  object|null  $context
+     *
+     * @return  static  Return self to support chaining.
+     */
+    public function setContext(?object $context)
+    {
+        $this->context = $context;
+
+        return $this;
     }
 
     /**
@@ -241,7 +292,7 @@ class Edge
      * @return string
      * @throws EdgeException
      */
-    public function renderEach($view, $data, $iterator, $empty = 'raw|')
+    public function renderEach(string $view, array $data, string $iterator, string $empty = 'raw|')
     {
         $result = '';
 
@@ -254,15 +305,13 @@ class Edge
 
                 $result .= $this->render($view, $data);
             }
-        } else {
+        } elseif (str_starts_with($empty, 'raw|')) {
             // If there is no data in the array, we will render the contents of the empty
             // view. Alternatively, the "empty view" could be a raw string that begins
             // with "raw|" for convenience and to let this know that it is a string.
-            if (strpos($empty, 'raw|') === 0) {
-                $result = substr($empty, 4);
-            } else {
-                $result = $this->render($empty);
-            }
+            $result = substr($empty, 4);
+        } else {
+            $result = $this->render($empty);
         }
 
         return $result;
@@ -330,15 +379,9 @@ class Edge
      *
      * @return  array
      */
-    public function arrayExcept(array $array, array $fields)
+    public function except(array $array, array $fields)
     {
-        foreach ($fields as $field) {
-            if (array_key_exists($field, $array)) {
-                unset($array[$field]);
-            }
-        }
-
-        return $array;
+        return Arr::except($array, $fields);
     }
 
     /**
@@ -461,12 +504,12 @@ class Edge
     /**
      * addExtension
      *
-     * @param EdgeExtensionInterface $extension
-     * @param string                 $name
+     * @param  EdgeExtensionInterface  $extension
+     * @param  string|null             $name
      *
      * @return static
      */
-    public function addExtension(EdgeExtensionInterface $extension, $name = null)
+    public function addExtension(EdgeExtensionInterface $extension, ?string $name = null)
     {
         if (!$name) {
             $name = $extension->getName();
@@ -484,7 +527,7 @@ class Edge
      *
      * @return  static
      */
-    public function removeExtension($name)
+    public function removeExtension(string $name)
     {
         if (array_key_exists($name, $this->extensions)) {
             unset($this->extensions[$name]);
@@ -498,9 +541,9 @@ class Edge
      *
      * @param   string $name
      *
-     * @return  boolean
+     * @return  bool
      */
-    public function hasExtension($name)
+    public function hasExtension(string $name)
     {
         return array_key_exists($name, $this->extensions) && $this->extensions[$name] instanceof EdgeExtensionInterface;
     }
@@ -512,7 +555,7 @@ class Edge
      *
      * @return  EdgeExtensionInterface
      */
-    public function getExtension($name)
+    public function getExtension(string $name)
     {
         if ($this->hasExtension($name)) {
             return $this->extensions[$name];
@@ -526,7 +569,7 @@ class Edge
      *
      * @return  Extension\EdgeExtensionInterface[]
      */
-    public function getExtensions()
+    public function getExtensions(): array
     {
         return $this->extensions;
     }
@@ -538,7 +581,7 @@ class Edge
      *
      * @return  static  Return self to support chaining.
      */
-    public function setExtensions($extensions)
+    public function setExtensions(array $extensions)
     {
         $this->extensions = $extensions;
 

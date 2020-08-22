@@ -25,7 +25,7 @@ trait CompileStackTrait
      */
     protected function compileStack(string $expression): string
     {
-        return "<?php echo \$this->yieldPushContent{$expression}; ?>";
+        return "<?php echo \$__edge->yieldPushContent{$expression}; ?>";
     }
 
     /**
@@ -37,7 +37,7 @@ trait CompileStackTrait
      */
     protected function compilePush(string $expression): string
     {
-        return "<?php \$this->startPush{$expression}; ?>";
+        return "<?php \$__edge->startPush{$expression}; ?>";
     }
 
     /**
@@ -49,6 +49,6 @@ trait CompileStackTrait
      */
     protected function compileEndpush(string $expression): string
     {
-        return '<?php $this->stopPush(); ?>';
+        return '<?php $__edge->stopPush(); ?>';
     }
 }

@@ -25,7 +25,7 @@ trait CompileIncludeTrait
      */
     protected function compileEach(string $expression): string
     {
-        return "<?php echo \$this->renderEach{$expression}; ?>";
+        return "<?php echo \$__edge->renderEach{$expression}; ?>";
     }
 
     /**
@@ -40,7 +40,7 @@ trait CompileIncludeTrait
         $expression = $this->stripParentheses($expression);
 
         // @codingStandardsIgnoreStart
-        return "<?php echo \$this->render($expression, \$this->arrayExcept(get_defined_vars(), array('__data', '__path'))); ?>";
+        return "<?php echo \$__edge->render($expression, \$__edge->except(get_defined_vars(), ['__data', '__path'])); ?>";
         // @codingStandardsIgnoreEnd
     }
 
@@ -56,7 +56,7 @@ trait CompileIncludeTrait
         $expression = $this->stripParentheses($expression);
 
         // @codingStandardsIgnoreStart
-        return "<?php if (\$this->exists($expression)) echo \$this->render($expression, \$this->arrayExcept(get_defined_vars(), array('__data', '__path'))); ?>";
+        return "<?php if (\$__edge->exists($expression)) echo \$__edge->render($expression, \$__edge->except(get_defined_vars(), ['__data', '__path'])); ?>";
         // @codingStandardsIgnoreEnd
     }
 }

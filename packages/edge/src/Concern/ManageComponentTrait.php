@@ -52,7 +52,7 @@ trait ManageComponentTrait
      *
      * @return void
      */
-    public function startComponent($name, array $data = [], array $more = [])
+    public function startComponent(string $name, array $data = [], array $more = [])
     {
         if (ob_start()) {
             $this->componentStack[] = $name;

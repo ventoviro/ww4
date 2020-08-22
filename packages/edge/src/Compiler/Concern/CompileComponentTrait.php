@@ -24,7 +24,7 @@ trait CompileComponentTrait
      */
     protected function compileComponent(string $expression): string
     {
-        return "<?php \$this->startComponent{$expression}; ?>";
+        return "<?php \$__edge->startComponent{$expression}; ?>";
     }
 
     /**
@@ -34,7 +34,7 @@ trait CompileComponentTrait
      */
     protected function compileEndComponent(): string
     {
-        return '<?php echo $this->renderComponent(); ?>';
+        return '<?php echo $__edge->renderComponent(); ?>';
     }
 
     /**
@@ -46,7 +46,7 @@ trait CompileComponentTrait
      */
     protected function compileSlot(string $expression): string
     {
-        return "<?php \$this->slot{$expression}; ?>";
+        return "<?php \$__edge->slot{$expression}; ?>";
     }
 
     /**
@@ -56,6 +56,6 @@ trait CompileComponentTrait
      */
     protected function compileEndSlot(): string
     {
-        return '<?php $this->endSlot(); ?>';
+        return '<?php $__edge->endSlot(); ?>';
     }
 }
