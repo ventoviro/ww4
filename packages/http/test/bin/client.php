@@ -9,14 +9,10 @@
 
 declare(strict_types=1);
 
-use Psr\Http\Message\ResponseInterface;
-use Windwalker\Http\Event\ErrorEvent;
-use Windwalker\Http\Event\RequestEvent;
+use React\EventLoop\StreamSelectLoop;
 use Windwalker\Http\HttpClient;
-use Windwalker\Http\Request\ServerRequestFactory;
-use Windwalker\Http\Server\HttpServer;
-use Windwalker\Http\Server\PhpServer;
-use Windwalker\Http\Transport\StreamTransport;
+use Windwalker\Http\Transport\SimpleAsyncTransport;
+use Windwalker\Promise\Scheduler\EventLoopScheduler;
 use Windwalker\Promise\Scheduler\ScheduleRunner;
 
 $autoload = __DIR__ . '/../../vendor/autoload.php';
@@ -27,16 +23,24 @@ if (!is_file($autoload)) {
 
 include $autoload;
 
-$t1 = new StreamTransport();
-$fp1 = $t1->createConnection(
-    (new \Windwalker\Http\Request\Request())
-        ->withRequestTarget('https://google.com')
-);
+ScheduleRunner::getInstance();
 
-$t2 = new StreamTransport();
-$fp2 = $t1->createConnection(
-    (new \Windwalker\Http\Request\Request())
-        ->withRequestTarget('https://github.com')
-);
+$loop = new StreamSelectLoop();
+ScheduleRunner::getInstance()->setSchedulers([new EventLoopScheduler($loop)]);
 
-show($socket = stream_socket_server("tcp://0.0.0.0:6001", $errno, $errstr));
+$http = new HttpClient();
+$http->setAsyncTransport(new SimpleAsyncTransport($http->getTransport()));
+$p1 = $http->getAsync('https://github.com')
+    ->then(function ($res) {
+        show((string) $res->getBody());
+    });
+$p2 = $http->getAsync('https://pravatar.cc/')
+    ->then(function ($res) {
+        show((string) $res->getBody());
+    });
+
+$p2 = $p2->then(fn () => $loop->stop());
+// $p1->wait();
+$p2->wait();
+
+$loop->run();

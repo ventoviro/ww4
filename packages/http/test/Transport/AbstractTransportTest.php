@@ -10,8 +10,11 @@ namespace Windwalker\Http\Test\Transport;
 
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
+use PHPUnit\Framework\CodeCoverageException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestResult;
 use Psr\Http\Message\StreamInterface;
+use Windwalker\Http\Exception\HttpRequestException;
 use Windwalker\Http\Request\Request;
 use Windwalker\Http\Transport\AbstractTransport;
 use Windwalker\Http\Uri\Uri;
@@ -270,10 +273,37 @@ abstract class AbstractTransportTest extends TestCase
         );
     }
 
+    protected function getTestUrl(): Uri
+    {
+        return new Uri(WINDWALKER_TEST_HTTP_URL);
+    }
+
     protected function getHost(): string
     {
-        $uri = new Uri(WINDWALKER_TEST_HTTP_URL);
+        $uri = $this->getTestUrl();
 
         return $uri->toString(Uri::HOST | Uri::PORT);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function runTest()
+    {
+        try {
+            return parent::runTest();
+        } catch (HttpRequestException $e) {
+            if (str_contains($e->getMessage(), 'Connection refused')) {
+                throw new HttpRequestException(
+                    $e->getMessage() . ' - Try run: ' . sprintf(
+                        'php -S %s:%s bin/test-server.php',
+                        $this->getTestUrl()->getHost(),
+                        $this->getTestUrl()->getPort()
+                    )
+                );
+            }
+
+            throw $e;
+        }
     }
 }

@@ -54,9 +54,10 @@ class EventLoopScheduler implements SchedulerInterface
             // Return waiter/doner
             return [
                 static function () use (&$done) {
-                    while (!$done) {
-                        usleep(100);
-                    }
+                    // todo: Truly support reactphp stream
+                    // while (!$done) {
+                    //     usleep(100);
+                    // }
                 },
                 static function () use (&$done) {
                     $done = true;

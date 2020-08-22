@@ -14,6 +14,7 @@ namespace Windwalker\Http\Transport;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
+use Windwalker\Http\Exception\HttpRequestException;
 use Windwalker\Http\Helper\HeaderHelper;
 use Windwalker\Http\Helper\StreamHelper;
 use Windwalker\Http\Response\Response;
@@ -41,7 +42,7 @@ class StreamTransport extends AbstractTransport
     {
         $stream = $this->createStream($request, $options);
 
-        if ($dest = $options['target_file']) {
+        if ($dest = ($options['target_file'] ?? null)) {
             $content = '';
             StreamHelper::copyTo($stream, $dest);
         } else {
@@ -142,7 +143,7 @@ class StreamTransport extends AbstractTransport
         if (!$connection) {
             $error = error_get_last();
 
-            throw new \RuntimeException($error['message'] ?? 'Unknown error');
+            throw new HttpRequestException($error['message'] ?? 'Unknown error');
         }
 
         return new Stream($connection);
@@ -210,11 +211,9 @@ class StreamTransport extends AbstractTransport
             $dest = Stream::fromFilePath($dest);
         }
 
-        $this->setOption('target_file', $dest);
+        $options['target_file'] = $dest;
 
         $response = $this->request($request, $options);
-
-        $this->setOption('target_file', null);
 
         $dest->close();
 

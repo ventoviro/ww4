@@ -12,6 +12,7 @@ declare(strict_types=1);
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Windwalker\Http\HttpFactory;
+use Windwalker\Stream\Stream;
 use Windwalker\Stream\StringStream;
 
 return new class {
@@ -77,8 +78,6 @@ return new class {
     {
         return (new HttpFactory())
             ->createResponse()
-            ->withBody(
-                new StringStream($value)
-            );
+            ->withBody(Stream::fromString($value));
     }
 };

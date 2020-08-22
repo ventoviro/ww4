@@ -29,11 +29,4 @@ interface AsyncTransportInterface
      * @return  mixed|PromiseInterface
      */
     public function sendRequest(RequestInterface $request, array $options = []);
-
-    /**
-     * resolve
-     *
-     * @return  mixed|PromiseInterface
-     */
-    public function resolve();
 }
