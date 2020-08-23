@@ -13,6 +13,8 @@ namespace Windwalker\Edge\Concern;
 
 /**
  * Trait ManageStackTrait
+ *
+ * todo: Add prepend() supports
  */
 trait ManageStackTrait
 {
@@ -24,6 +26,13 @@ trait ManageStackTrait
     protected array $pushStack = [];
 
     /**
+     * Property pushes.
+     *
+     * @var array
+     */
+    protected array $pushes = [];
+
+    /**
      * Start injecting content into a push section.
      *
      * @param  string $section
@@ -31,9 +40,9 @@ trait ManageStackTrait
      *
      * @return void
      */
-    public function startPush(string $section, string $content = '')
+    public function startPush(string $section, ?string $content = null): void
     {
-        if ($content === '') {
+        if ($content === null) {
             if (ob_start()) {
                 $this->pushStack[] = $section;
             }

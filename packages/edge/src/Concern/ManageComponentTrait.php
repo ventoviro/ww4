@@ -76,11 +76,11 @@ trait ManageComponentTrait
     /**
      * Get the data for the given component.
      *
-     * @param  string $name
+     * @param  string  $name
      *
      * @return array
      */
-    protected function componentData($name)
+    protected function componentData(string $name): array
     {
         return array_merge(
             $this->componentData[count($this->componentStack)],
@@ -92,20 +92,18 @@ trait ManageComponentTrait
     /**
      * Start the slot rendering process.
      *
-     * @param  string      $name
-     * @param  string|null $content
+     * @param  string       $name
+     * @param  string|null  $content
      *
      * @return void
      */
-    public function slot($name, $content = null)
+    public function slot(string $name, ?string $content = null): void
     {
-        if (count(\func_get_args()) === 2) {
+        if ($content !== null) {
             $this->slots[$this->currentComponent()][$name] = $content;
-        } else {
-            if (ob_start()) {
-                $this->slots[$this->currentComponent()][$name] = '';
-                $this->slotStack[$this->currentComponent()][] = $name;
-            }
+        } elseif (ob_start()) {
+            $this->slots[$this->currentComponent()][$name] = '';
+            $this->slotStack[$this->currentComponent()][] = $name;
         }
     }
 
@@ -114,14 +112,13 @@ trait ManageComponentTrait
      *
      * @return void
      */
-    public function endSlot()
+    public function endSlot(): void
     {
         end($this->componentStack);
         $currentSlot = array_pop(
             $this->slotStack[$this->currentComponent()]
         );
-        $this->slots[$this->currentComponent()]
-        [$currentSlot] = trim(ob_get_clean());
+        $this->slots[$this->currentComponent()][$currentSlot] = trim(ob_get_clean());
     }
 
     /**
@@ -129,7 +126,7 @@ trait ManageComponentTrait
      *
      * @return int
      */
-    protected function currentComponent()
+    protected function currentComponent(): int
     {
         return count($this->componentStack) - 1;
     }

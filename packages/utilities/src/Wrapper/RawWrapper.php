@@ -14,7 +14,7 @@ namespace Windwalker\Utilities\Wrapper;
 /**
  * The RawWrapper class.
  */
-class RawWrapper implements WrapperInterface
+class RawWrapper implements WrapperInterface, \Stringable
 {
     /**
      * Property value.
@@ -67,5 +67,13 @@ class RawWrapper implements WrapperInterface
     public function __invoke($src = null)
     {
         return $this->get();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString()
+    {
+        return (string) $this->get();
     }
 }

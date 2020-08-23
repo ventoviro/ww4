@@ -17,6 +17,13 @@ namespace Windwalker\Edge\Concern;
 trait ManageLayoutTrait
 {
     /**
+     * Property sections.
+     *
+     * @var  array
+     */
+    protected array $sections;
+
+    /**
      * The stack of in-progress sections.
      *
      * @var array
@@ -24,23 +31,30 @@ trait ManageLayoutTrait
     protected array $sectionStack = [];
 
     /**
+     * @var array
+     */
+    protected array $hasParents = [];
+
+    protected static array $parentPlaceholder = [];
+
+    /**
      * Start injecting content into a section.
      *
      * @param  string  $section
-     * @param  string  $content
+     * @param  mixed   $content
      *
      * @return void
      */
-    public function startSection(string $section, string $content = ''): void
+    public function startSection(string $section, $content = null): void
     {
-        if ($content === '') {
+        if ($content === null) {
             if (ob_start()) {
                 $this->sectionStack[] = $section;
             }
         } else {
             $this->hasParents[$section] = str_contains($content, '@parent');
 
-            $this->extendSection($section, $content);
+            $this->extendSection($section, $this->escape($content));
         }
     }
 
@@ -48,11 +62,11 @@ trait ManageLayoutTrait
      * Inject inline content into a section.
      *
      * @param  string  $section
-     * @param  string  $content
+     * @param  mixed   $content
      *
      * @return void
      */
-    public function inject(string $section, string $content): void
+    public function inject(string $section, $content): void
     {
         $this->startSection($section, $content);
     }
@@ -92,7 +106,7 @@ trait ManageLayoutTrait
         } else {
             $content = ob_get_clean();
 
-            $this->hasParents[$last] = strpos($content, '@parent') !== false;
+            $this->hasParents[$last] = str_contains($content, '@parent');
 
             $this->extendSection($last, $content);
         }
@@ -134,7 +148,7 @@ trait ManageLayoutTrait
     protected function extendSection(string $section, string $content): void
     {
         if (isset($this->sections[$section])) {
-            $content = str_replace('@parent', $content, $this->sections[$section]);
+            $content = str_replace(static::parentPlaceholder($section), $content, $this->sections[$section]);
         }
 
         $this->sections[$section] = $content;
@@ -173,11 +187,23 @@ trait ManageLayoutTrait
             return str_replace(
                 '--parent--holder--',
                 '@parent',
-                str_replace('@parent', $default, $sectionContent)
+                str_replace(static::parentPlaceholder($section), $default, $sectionContent)
             );
         }
 
         return $sectionContent;
+    }
+
+    /**
+     * Get the parent placeholder for the current request.
+     *
+     * @param  string  $section
+     *
+     * @return string
+     */
+    public static function parentPlaceholder(string $section = ''): string
+    {
+        return static::$parentPlaceholder[$section] ??= '##parent-placeholder-' . sha1($section) . '##';
     }
 
     /**
@@ -189,11 +215,11 @@ trait ManageLayoutTrait
     {
         $this->renderCount = 0;
 
-        $this->sections = [];
+        $this->sections     = [];
         $this->sectionStack = [];
-        $this->hasParents = [];
+        $this->hasParents   = [];
 
-        $this->pushes = [];
+        $this->pushes    = [];
         $this->pushStack = [];
     }
 

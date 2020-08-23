@@ -21,10 +21,14 @@ use Windwalker\Edge\Concern\ManageEventTrait;
 use Windwalker\Edge\Concern\ManageLayoutTrait;
 use Windwalker\Edge\Concern\ManageStackTrait;
 use Windwalker\Edge\Exception\EdgeException;
+use Windwalker\Edge\Extension\DirectivesExtensionInterface;
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
+use Windwalker\Edge\Extension\GlobalVariablesExtensionInterface;
+use Windwalker\Edge\Extension\ParsersExtensionInterface;
 use Windwalker\Edge\Loader\EdgeLoaderInterface;
 use Windwalker\Edge\Loader\EdgeStringLoader;
 use Windwalker\Utilities\Arr;
+use Windwalker\Utilities\Wrapper\RawWrapper;
 
 /**
  * The Edge template engine.
@@ -57,18 +61,6 @@ class Edge
     protected array $extensions = [];
 
     /**
-     * Property sections.
-     *
-     * @var  array
-     */
-    protected array $sections;
-
-    /**
-     * @var array
-     */
-    protected array $hasParents = [];
-
-    /**
      * The number of active rendering operations.
      *
      * @var int
@@ -76,16 +68,9 @@ class Edge
     protected int $renderCount = 0;
 
     /**
-     * Property pushes.
-     *
-     * @var array
-     */
-    protected array $pushes = [];
-
-    /**
      * Property loader.
      *
-     * @var  EdgeLoaderInterface
+     * @var EdgeLoaderInterface|null
      */
     protected ?EdgeLoaderInterface $loader = null;
 
@@ -99,7 +84,7 @@ class Edge
     /**
      * Property cacheHandler.
      *
-     * @var  EdgeCacheInterface
+     * @var EdgeCacheInterface|null
      */
     protected ?EdgeCacheInterface $cache = null;
 
@@ -108,9 +93,9 @@ class Edge
     /**
      * EdgeEnvironment constructor.
      *
-     * @param EdgeLoaderInterface   $loader
-     * @param EdgeCompilerInterface $compiler
-     * @param EdgeCacheInterface    $cache
+     * @param  EdgeLoaderInterface|null    $loader
+     * @param  EdgeCacheInterface|null     $cache
+     * @param  EdgeCompilerInterface|null  $compiler
      */
     public function __construct(
         EdgeLoaderInterface $loader = null,
@@ -122,6 +107,17 @@ class Edge
         $this->cache = $cache ?: new EdgeArrayCache();
     }
 
+    /**
+     * renderWithContext
+     *
+     * @param  string       $layout
+     * @param  array        $data
+     * @param  object|null  $context
+     *
+     * @return  string
+     *
+     * @throws EdgeException
+     */
     public function renderWithContext(string $layout, array $data = [], ?object $context = null): string
     {
         $this->context = $context;
@@ -143,7 +139,7 @@ class Edge
      * @return string
      * @throws EdgeException
      */
-    public function render(string $__layout, array $__data = [], array $__more = [])
+    public function render(string $__layout, array $__data = [], array $__more = []): string
     {
         // TODO: Aliases
 
@@ -179,7 +175,7 @@ class Edge
             ob_clean();
             $this->wrapException($e, $__path, $__layout);
 
-            return null;
+            return '';
         }
 
         $result = ltrim(ob_get_clean());
@@ -218,7 +214,7 @@ class Edge
      *
      * @throws EdgeException
      */
-    protected function wrapException(\Throwable $e, string $path, string $layout)
+    protected function wrapException(\Throwable $e, string $path, string $layout): void
     {
         $msg = $e->getMessage();
 
@@ -272,27 +268,31 @@ class Edge
     /**
      * escape
      *
-     * @param  string $string
+     * @param  mixed $string
      *
      * @return  string
      */
-    public function escape($string)
+    public function escape($string): string
     {
+        if ($string instanceof RawWrapper) {
+            return $string->get();
+        }
+
         return htmlspecialchars((string) $string, ENT_COMPAT, 'UTF-8');
     }
 
     /**
      * Get the rendered contents of a partial from a loop.
      *
-     * @param  string $view
-     * @param  array  $data
-     * @param  string $iterator
-     * @param  string $empty
+     * @param  string  $layout
+     * @param  array   $data
+     * @param  string  $iterator
+     * @param  string  $empty
      *
      * @return string
      * @throws EdgeException
      */
-    public function renderEach(string $view, array $data, string $iterator, string $empty = 'raw|')
+    public function renderEach(string $layout, array $data, string $iterator, string $empty = 'raw|'): string
     {
         $result = '';
 
@@ -303,7 +303,7 @@ class Edge
             foreach ($data as $key => $value) {
                 $data = ['key' => $key, $iterator => $value];
 
-                $result .= $this->render($view, $data);
+                $result .= $this->render($layout, $data);
             }
         } elseif (str_starts_with($empty, 'raw|')) {
             // If there is no data in the array, we will render the contents of the empty
@@ -317,14 +317,12 @@ class Edge
         return $result;
     }
 
-
-
     /**
      * Increment the rendering counter.
      *
      * @return void
      */
-    public function incrementRender()
+    public function incrementRender(): void
     {
         $this->renderCount++;
     }
@@ -334,7 +332,7 @@ class Edge
      *
      * @return void
      */
-    public function decrementRender()
+    public function decrementRender(): void
     {
         $this->renderCount--;
     }
@@ -344,27 +342,31 @@ class Edge
      *
      * @return bool
      */
-    public function doneRendering()
+    public function doneRendering(): bool
     {
-        return $this->renderCount == 0;
+        return $this->renderCount === 0;
     }
 
     /**
      * prepareDirectives
      *
-     * @param EdgeCompilerInterface $compiler
+     * @param  EdgeCompilerInterface  $compiler
      *
      * @return EdgeCompilerInterface
      */
-    public function prepareExtensions(EdgeCompilerInterface $compiler)
+    public function prepareExtensions(EdgeCompilerInterface $compiler): EdgeCompilerInterface
     {
         foreach ($this->getExtensions() as $extension) {
-            foreach ((array) $extension->getDirectives() as $name => $directive) {
-                $compiler->directive($name, $directive);
+            if ($extension instanceof DirectivesExtensionInterface) {
+                foreach ($extension->getDirectives() as $name => $directive) {
+                    $compiler->directive($name, $directive);
+                }
             }
 
-            foreach ((array) $extension->getParsers() as $parser) {
-                $compiler->parser($parser);
+            if ($extension instanceof ParsersExtensionInterface) {
+                foreach ($extension->getParsers() as $parser) {
+                    $compiler->parser($parser);
+                }
             }
         }
 
@@ -379,7 +381,7 @@ class Edge
      *
      * @return  array
      */
-    public function except(array $array, array $fields)
+    public function except(array $array, array $fields): array
     {
         return Arr::except($array, $fields);
     }
@@ -391,18 +393,22 @@ class Edge
      *
      * @return array
      */
-    public function getGlobals($withExtensions = false)
+    public function getGlobals($withExtensions = false): array
     {
         $globals = $this->globals;
 
         if ($withExtensions) {
-            $temp = [];
+            $values = [];
 
-            foreach ((array) $this->getExtensions() as $extension) {
-                $temp = array_merge($temp, (array) $extension->getGlobals());
+            foreach ($this->getExtensions() as $extension) {
+                if ($extension instanceof GlobalVariablesExtensionInterface) {
+                    $values[] = $extension->getGlobals();
+                }
             }
 
-            $globals = array_merge($temp, $globals);
+            $values[] = $globals;
+
+            $globals = array_merge(...$values);
         }
 
         return $globals;
@@ -411,26 +417,33 @@ class Edge
     /**
      * addGlobal
      *
-     * @param   string $name
-     * @param   string $value
+     * @param  string  $name
+     * @param  string  $value
      *
      * @return  static
      */
-    public function addGlobal($name, $value)
+    public function addGlobal(string $name, string $value)
     {
         $this->globals[$name] = $value;
 
         return $this;
     }
 
-    public function removeGlobal($name)
+    /**
+     * removeGlobal
+     *
+     * @param  string  $name
+     *
+     * @return  static
+     */
+    public function removeGlobal(string $name)
     {
         unset($this->globals[$name]);
 
         return $this;
     }
 
-    public function getGlobal($name, $default = null)
+    public function getGlobal(string $name, $default = null)
     {
         if (array_key_exists($name, $this->globals)) {
             return $this->globals[$name];
@@ -446,7 +459,7 @@ class Edge
      *
      * @return  static  Return self to support chaining.
      */
-    public function setGlobals($globals)
+    public function setGlobals(array $globals): array
     {
         $this->globals = $globals;
 
@@ -458,7 +471,7 @@ class Edge
      *
      * @return  EdgeCompilerInterface
      */
-    public function getCompiler()
+    public function getCompiler(): EdgeCompilerInterface
     {
         return $this->compiler;
     }
@@ -482,7 +495,7 @@ class Edge
      *
      * @return  EdgeLoaderInterface
      */
-    public function getLoader()
+    public function getLoader(): EdgeLoaderInterface
     {
         return $this->loader;
     }
@@ -543,7 +556,7 @@ class Edge
      *
      * @return  bool
      */
-    public function hasExtension(string $name)
+    public function hasExtension(string $name): bool
     {
         return array_key_exists($name, $this->extensions) && $this->extensions[$name] instanceof EdgeExtensionInterface;
     }
@@ -555,7 +568,7 @@ class Edge
      *
      * @return  EdgeExtensionInterface
      */
-    public function getExtension(string $name)
+    public function getExtension(string $name): ?EdgeExtensionInterface
     {
         if ($this->hasExtension($name)) {
             return $this->extensions[$name];
@@ -593,7 +606,7 @@ class Edge
      *
      * @return  EdgeCacheInterface
      */
-    public function getCache()
+    public function getCache(): EdgeCacheInterface
     {
         return $this->cache;
     }
