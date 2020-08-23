@@ -57,7 +57,11 @@
         "react/socket": "^1.5",
         "react/http": "^1.0",
         "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0"
+        "psr/http-server-middleware": "^1.0",
+        "twig/twig": "^2.0",
+        "illuminate/view": "^6.0||^7.0||^8.0",
+        "mustache/mustache": "^2.0",
+        "league/plates": "dev-master"
     },
     "suggest": {
         "symfony/yaml": "Install ~4.0 if you require YAML support.",

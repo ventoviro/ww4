@@ -72,12 +72,12 @@ trait DOMTestTrait
      *
      * @throws Exception
      */
-    public function assertHtmlFormatEquals(
+    public static function assertHtmlFormatEquals(
         $expected,
         $actual,
         $message = ''
     ): void {
-        $this->assertEquals(
+        self::assertEquals(
             HTMLFormatter::format((string) $expected),
             HTMLFormatter::format((string) $actual),
             $message

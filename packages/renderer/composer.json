@@ -8,17 +8,23 @@
         "renderer",
         "blade",
         "edge",
-        ""
+        "mustach",
+        "plates"
     ],
     "homepage": "https://github.com/ventoviro/windwalker-renderer",
     "license": "MIT",
     "require": {
         "php": ">=8.0.0",
-        "windwalker/event": "~3.0",
-        "ext-json": "*"
+        "windwalker/utilities": "dev-master"
     },
     "require-dev": {
-        "windwalker/test": "dev-master"
+        "windwalker/test": "dev-master",
+        "windwalker/dom": "dev-master",
+        "windwalker/filesystem": "dev-master",
+        "twig/twig": "^2.0",
+        "illuminate/view": "^6.0||^7.0||^8.0",
+        "mustache/mustache": "^2.0",
+        "league/plates": "4.0-dev"
     },
     "suggest": {
     },
